@@ -190,7 +190,7 @@ var DRAW_ED = {
     g.fillStyle(parseInt(AT.outline.slice(1),16),1); g.fillRect(3,-4+legOff,8,6);
     g.fillStyle(parseInt(AT.skinEdDk.slice(1),16),1); g.fillRect(4,-3+legOff,6,5);
 
-    g.restoreCanvas();
+    g.restore();
   }
 };
 
@@ -237,7 +237,7 @@ var DRAW_CAT = {
     g.beginPath(); g.moveTo(-10,bY+8);
     for (var j=1;j<=7;j++) { var tt=j/7; g.lineTo(-10-tt*18,bY+8-Math.sin(tailAng+tt*Math.PI)*8*tt); }
     g.strokePath();
-    g.restoreCanvas();
+    g.restore();
   }
 };
 
@@ -286,7 +286,7 @@ var DRAW_BUS = {
     g.fillStyle(parseInt(AT.outline.slice(1),16),1); g.fillEllipse(-92,10,22,14);
     g.fillStyle(parseInt(AT.busPurple.slice(1),16),1); g.fillEllipse(-91,9,20,12);
     g.fillStyle(parseInt(AT.purple.slice(1),16),0.5); g.fillEllipse(-91,9,14,8);
-    g.restoreCanvas();
+    g.restore();
   },
   _fl: function(g,x,y,r,pc,cc) {
     g.fillStyle(parseInt(pc.slice(1),16),0.85);
@@ -1063,7 +1063,7 @@ Level13Scene.prototype.update=function(){};
 // GAME INIT
 // ════════════════════════════════════════════════════════════════
 var config={
-  type:Phaser.AUTO, width:960, height:540,
+  type:Phaser.CANVAS, width:960, height:540,
   backgroundColor:'#0a0014',
   physics:{default:'arcade',arcade:{gravity:{y:0},debug:false}},
   scene:[BootScene,TitleScene,WorldMapScene,Level11Scene,Level12Scene,Level13Scene],
