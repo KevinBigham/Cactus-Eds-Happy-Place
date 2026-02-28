@@ -349,7 +349,8 @@ BootScene.prototype.create=function() {
   var pa=this.add.text(W/2,420,"PRESS ANY KEY",{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.uiText,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5);
   this.tweens.add({targets:pa,alpha:0.1,duration:550,yoyo:true,repeat:-1});
 
-  this.add.text(W/2,472,"(P2: hold J for CO-OP MODE)",{fontFamily:'Courier New,monospace',fontSize:'13px',color:AT.uiGold,alpha:0.7}).setOrigin(0.5);
+  this.add.text(W/2,460,"Controller supported  |  Left Stick / D-Pad = Move  |  A = Jump  |  X = Punch",{fontFamily:'Courier New,monospace',fontSize:'12px',color:AT.uiText,alpha:0.6}).setOrigin(0.5);
+  this.add.text(W/2,478,"(P2: hold J for CO-OP MODE)",{fontFamily:'Courier New,monospace',fontSize:'13px',color:AT.uiGold,alpha:0.7}).setOrigin(0.5);
 
   // Ed on title
   var edG=this.add.graphics(), cigF=0, smokeT=0;
@@ -617,13 +618,25 @@ WorldMapScene.prototype.update=function(time,delta){
   // Map tile redraw (level node beat state may change)
   this.mapG.clear(); this._drawMap();
 
+  // Gamepad map navigation
+  var pad=this.input.gamepad&&this.input.gamepad.total>0?this.input.gamepad.getPad(0):null;
+  var gpMapL=false,gpMapR=false,gpMapU=false,gpMapD=false,gpMapA=false;
+  if(pad){
+    var ax=pad.axes.length>0?pad.axes[0].getValue():0;
+    var ay=pad.axes.length>1?pad.axes[1].getValue():0;
+    gpMapL=pad.left||(ax<-0.5); gpMapR=pad.right||(ax>0.5);
+    gpMapU=pad.up||(ay<-0.5);   gpMapD=pad.down||(ay>0.5);
+    var aNow=pad.A&&pad.A.pressed;
+    gpMapA=aNow&&!this._prevA; this._prevA=aNow;
+  }
+
   // Movement
   if(!this.moving&&time-this.lastMoveT>150){
     var dx=0,dy=0;
-    if(Phaser.Input.Keyboard.JustDown(this.keys.left)||Phaser.Input.Keyboard.JustDown(this.keys.altL)){dx=-1;this.edFacing=-1;}
-    else if(Phaser.Input.Keyboard.JustDown(this.keys.right)||Phaser.Input.Keyboard.JustDown(this.keys.altR)){dx=1;this.edFacing=1;}
-    else if(Phaser.Input.Keyboard.JustDown(this.keys.up)||Phaser.Input.Keyboard.JustDown(this.keys.altU)){dy=-1;}
-    else if(Phaser.Input.Keyboard.JustDown(this.keys.down)){dy=1;}
+    if(Phaser.Input.Keyboard.JustDown(this.keys.left)||Phaser.Input.Keyboard.JustDown(this.keys.altL)||gpMapL){dx=-1;this.edFacing=-1;}
+    else if(Phaser.Input.Keyboard.JustDown(this.keys.right)||Phaser.Input.Keyboard.JustDown(this.keys.altR)||gpMapR){dx=1;this.edFacing=1;}
+    else if(Phaser.Input.Keyboard.JustDown(this.keys.up)||Phaser.Input.Keyboard.JustDown(this.keys.altU)||gpMapU){dy=-1;}
+    else if(Phaser.Input.Keyboard.JustDown(this.keys.down)||gpMapD){dy=1;}
     if(dx!==0||dy!==0){
       var nx=this.edTile.x+dx, ny=this.edTile.y+dy;
       var tile=this._getTile(nx,ny);
@@ -637,8 +650,8 @@ WorldMapScene.prototype.update=function(time,delta){
     }
   }
 
-  // Z = pet cat or enter level
-  if(Phaser.Input.Keyboard.JustDown(this.keys.punch)){
+  // Z or gamepad A = pet cat or enter level
+  if(Phaser.Input.Keyboard.JustDown(this.keys.punch)||gpMapA){
     this._tryPet(); this._tryEnter();
   }
 
@@ -817,14 +830,27 @@ Level11Scene.prototype._drawLevel=function(g,LW,H){
 };
 
 Level11Scene.prototype.update=function(time,delta){
+  var LW=4800; // MUST be at top — var hoisting would make it undefined if declared later
   this.levelT+=delta;
   var dt=delta/1000, ep=this.ep, es=this.es;
 
-  // Input
-  var goL=this.keys.left.isDown||this.keys.altL.isDown;
-  var goR=this.keys.right.isDown||this.keys.altR.isDown;
-  var goJ=this.keys.up.isDown||this.keys.altU.isDown;
-  var doPunch=Phaser.Input.Keyboard.JustDown(this.keys.punch);
+  // Gamepad input (PowerA OPS V3 = Xbox layout: A=jump, X=punch, Y=kick)
+  var pad=this.input.gamepad&&this.input.gamepad.total>0?this.input.gamepad.getPad(0):null;
+  var gpL=false,gpR=false,gpJ=false,gpPunch=false;
+  if(pad){
+    gpL=pad.left||(pad.axes.length>0&&pad.axes[0].getValue()<-0.3);
+    gpR=pad.right||(pad.axes.length>0&&pad.axes[0].getValue()>0.3);
+    gpJ=pad.up||pad.A||(pad.axes.length>1&&pad.axes[1].getValue()<-0.5);
+    var punchNow=pad.X&&pad.X.pressed;
+    gpPunch=punchNow&&!this._prevPunchGP;
+    this._prevPunchGP=punchNow;
+  }
+
+  // Input (keyboard OR gamepad)
+  var goL=this.keys.left.isDown||this.keys.altL.isDown||gpL;
+  var goR=this.keys.right.isDown||this.keys.altR.isDown||gpR;
+  var goJ=this.keys.up.isDown||this.keys.altU.isDown||gpJ;
+  var doPunch=Phaser.Input.Keyboard.JustDown(this.keys.punch)||gpPunch;
 
   // Horizontal
   var tVx=0;
@@ -958,8 +984,6 @@ Level11Scene.prototype.update=function(time,delta){
   // HUD
   this.hudG.clear(); DRAW_HUD.draw(this.hudG);
   this.aloeText.setText(EWR_STATE.aloe+' ALOE');
-
-  var LW=4800; // for collision ref above
 };
 
 Level11Scene.prototype._spawnMochiParts=function(m){
@@ -1065,6 +1089,7 @@ Level13Scene.prototype.update=function(){};
 var config={
   type:Phaser.CANVAS, width:960, height:540,
   backgroundColor:'#0a0014',
+  input:{ gamepad:true },
   physics:{default:'arcade',arcade:{gravity:{y:0},debug:false}},
   scene:[BootScene,TitleScene,WorldMapScene,Level11Scene,Level12Scene,Level13Scene],
   parent:'body',
