@@ -103,7 +103,63 @@ var NEWS_TICKER = [
   'BREAKING: EVERYTHING CONTINUES / MORE AT 11 / 11 IS ALSO CONTINUING'
 ];
 
-var BEAT_CAT_LINES = [
+// WONDER SHOWZEN MODE: background messages + cat speech
+var WS_MSGS = [
+  'EVERYTHING IS FINE',
+  'THE ECONOMY LOVES YOU',
+  'CIGARETTE IS TRUTH',
+  'CONSUME. REPEAT. CONSUME.',
+  'WORK. SMOKE. OBEY.',
+  'THIS IS NOT A GAME. (IT IS A GAME.)',
+  'YOU ARE DOING SO GOOD AT CAPITALISM',
+  'THE MOCHI VOTED FOR THIS',
+  'CATS HAVE ALWAYS BEEN IN CHARGE',
+  'NUCLEAR LOVE IS STILL NUCLEAR',
+  'DO NOT ASK WHERE THE ALOE GOES',
+  'THIS LEVEL SPONSORED BY CIGARETTES™',
+  'A DAIKON ONCE HAD A DREAM / THEN ED CAME',
+  'YOUR CACTUS SEES EVERYTHING',
+  'BE PRODUCTIVE OR BE MOCHI',
+  'THE VOID IS A METAPHOR (FOR THE VOID)',
+  'ALOE = POWER / CIGS = TRUTH / MOCHI = WRONG',
+  'THIS HAS BEEN A MESSAGE FROM THE CACTUS BUREAU',
+  'IT IS TOTALLY NORMAL TO SELL CIGS TO CATS',
+  'YOU CANNOT LEAVE THIS LEVEL. (YOU CAN LEAVE.)',
+  'YOUR CHOICES HAVE CONSEQUENCES / LOL JK',
+  'A CAT BECAME A CLOUD TODAY. IT VOTED FIRST.',
+  'MOCHI HAVE FEELINGS. ED DOES NOT CARE.',
+  'THIS IS YOUR LIFE NOW',
+  'NOBODY IS COMING TO HELP YOU. (THAT IS FINE.)',
+  'THE CIGARETTES ARE LOVING YOU BACK',
+  'DO YOU HEAR THE CATS? THEY ARE SAYING THINGS',
+  'SOMEWHERE A MOCHI IS READING THIS',
+  'HAPPY HAPPY NUCLEAR HAPPY',
+  'YOUR MOTHER IS PROUD OF YOUR CIG SALES',
+  'ALOE FUTURES UP 4000% BUY NOW',
+  'A CHILD MADE THIS. (A CHILD DID NOT MAKE THIS.)',
+  'WEST BOTTOMS IS ONLY THE BEGINNING',
+  'THE CATS HAVE ALWAYS BEEN HERE',
+  'REALITY IS A SUGGESTION',
+  'HELLO HELLO HELLO / ARE YOU AWAKE / HELLO',
+  'THE PARADE WAS REAL. THE PARADE IS REAL. THE PARADE WILL BE REAL.',
+  'CAT CAPITALISM WORKS FOR CATS',
+  'KEEP WALKING CACTUS BOY'
+];
+var WS_CAT_SPEECH = [
+  'I AM A CAT','THIS IS MY JOB','MEOW IS POLITICS',
+  'I VOTE EVERY DAY','THE CIGARETTE FOUND ME',
+  'MY TAIL IS MY PENSION','CONSUME PRODUCE REPEAT',
+  'I HAVE 200 ALOE','ED IS MY CEO',
+  'THE VOID SMELLS LIKE TUESDAY','NUCLEAR? FINE.',
+  'I DID NOT CHOOSE THIS','MY WHISKERS KNOW THE TRUTH',
+  'WE ALL WORK FOR MOCHI NOW','HAVE YOU SEEN MY BRIEFCASE',
+  'THE ECONOMY IS ME','I AM GOING TO BE OK',
+  'DO YOU HAVE CIG','I AM HAUNTED BY THE PARADE',
+  'WHAT IS ALOE EVEN','MY NAME IS NOT IMPORTANT',
+  'I SAW THE VOID / IT SAW ME BACK','CIGARETTES COMPLETE ME',
+  'MY DREAM IS TO BE A DAIKON / NO WAIT','MEOW MEANS CONSUME'
+];
+var WS_KID_QUOTES = [
   '"do you know where cigarettes go when they die?"',
   '"my dad invested all our aloe. we live in the void now."',
   '"what does it feel like to make something that kills cats?"',
@@ -120,6 +176,19 @@ var BEAT_CAT_LINES = [
   '"my friend says mochi is right. i don\'t know."',
   '"do you ever just. stop."'
 ];
+
+function updateCatWsState(cat, delta) {
+  if(!cat.wsState){cat.wsState='normal';cat.wsTimer=2000+Math.random()*5000;cat.wsMsg='';cat.wsPhaseT=0;}
+  cat.wsPhaseT=(cat.wsPhaseT||0)+delta;
+  cat.wsTimer=(cat.wsTimer||3000)-delta;
+  if(cat.wsTimer<=0&&!cat.following){
+    var wsStates=['normal','normal','normal','speech','stare','vibrate','levitate','philosophize'];
+    cat.wsState=wsStates[Math.floor(Math.random()*wsStates.length)];
+    cat.wsMsg=(cat.wsState==='speech'||cat.wsState==='philosophize'||cat.wsState==='stare')?WS_CAT_SPEECH[Math.floor(Math.random()*WS_CAT_SPEECH.length)]:'';
+    cat.wsTimer=cat.wsState==='normal'?3500+Math.random()*5000:1500+Math.random()*2500;
+    cat.wsPhaseT=0;
+  }
+}
 
 var CAT_COLORS = [
   {body:AT.catA, belly:'#ffcc88', outline:AT.outline},
@@ -786,6 +855,8 @@ WorldMapScene.prototype.create=function(){
   this.add.text(W/2,12,'WORLD 1  --  THE WEST BOTTOMS',{fontFamily:'Georgia,serif',fontSize:'20px',color:AT.uiBg,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(10);
   this.nodeTxt=this.add.text(W/2,H-58,'',{fontFamily:'Georgia,serif',fontSize:'24px',color:AT.uiGold,stroke:AT.outline,strokeThickness:4,align:'center'}).setOrigin(0.5).setAlpha(0).setDepth(10);
   this.enterTxt=this.add.text(W/2,H-30,'PRESS Z TO ENTER',{fontFamily:'Courier New,monospace',fontSize:'16px',color:AT.uiText,stroke:AT.outline,strokeThickness:3,align:'center'}).setOrigin(0.5).setAlpha(0).setDepth(10);
+  // Portal hint — appears when all W1 levels beaten
+  this.portalHintTxt=this.add.text(W-24,H/2,'→ NEON DISTRICT →\n(far right, row 5)',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#00ffcc',stroke:AT.outline,strokeThickness:3,align:'right'}).setOrigin(1,0.5).setAlpha(0).setDepth(12);
   this.aloePop=this.add.text(50,55,'',{fontFamily:'Courier New,monospace',fontSize:'18px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setAlpha(0).setDepth(10);
   // Shop text objects
   this.shopTxts=[];
@@ -889,11 +960,25 @@ WorldMapScene.prototype._drawMap=function(){
           g.fillStyle(parseInt(AT.outline.slice(1),16),1); g.fillCircle(px+self.tW/2,py+self.tH/2,8);
           g.fillStyle(voidStyle?0xcc44ff:(beaten?0x888888:parseInt(AT.uiGold.slice(1),16)),1);    g.fillCircle(px+self.tW/2,py+self.tH/2,5); break;
         case 'portal':
-          g.fillStyle(parseInt(AT.sky.slice(1),16),1); g.fillRect(px,py,self.tW,self.tH);
-          g.fillStyle(0x00ffcc,0.18); g.fillCircle(px+self.tW/2,py+self.tH/2,22);
-          g.fillStyle(0x00ffcc,1); g.fillCircle(px+self.tW/2,py+self.tH/2,12);
-          g.fillStyle(parseInt(AT.outline.slice(1),16),1); g.fillCircle(px+self.tW/2,py+self.tH/2,8);
-          g.fillStyle(0xcc44ff,1); g.fillCircle(px+self.tW/2,py+self.tH/2,5); break;
+          var w1Unlocked=['1-1','1-2','1-3','1-4','1-5'].every(function(id){return EWR_STATE.levelsBeaten.indexOf(id)>=0;});
+          var portalPulse=0.5+Math.sin(self.catTime*0.004)*0.5;
+          g.fillStyle(w1Unlocked?0x001a20:parseInt(AT.sky.slice(1),16),1); g.fillRect(px,py,self.tW,self.tH);
+          if(w1Unlocked){
+            // Big glowing unlocked portal
+            g.fillStyle(0x00ffcc,portalPulse*0.35); g.fillCircle(px+self.tW/2,py+self.tH/2,28);
+            g.fillStyle(0x00ffcc,0.7+portalPulse*0.3); g.fillCircle(px+self.tW/2,py+self.tH/2,16);
+            g.fillStyle(0xffffff,0.9); g.fillCircle(px+self.tW/2,py+self.tH/2,9);
+            g.fillStyle(0x00ffcc,1); g.fillCircle(px+self.tW/2,py+self.tH/2,5);
+            // Arrow pointing left toward portal from outside
+            g.fillStyle(0xffd700,portalPulse); g.fillTriangle(px-12,py+self.tH/2-7,px-12,py+self.tH/2+7,px-1,py+self.tH/2);
+            g.fillStyle(0xffd700,portalPulse*0.7); g.fillTriangle(px-20,py+self.tH/2-5,px-20,py+self.tH/2+5,px-12,py+self.tH/2);
+          } else {
+            g.fillStyle(0x00ffcc,0.08); g.fillCircle(px+self.tW/2,py+self.tH/2,22);
+            g.fillStyle(0x334455,1); g.fillCircle(px+self.tW/2,py+self.tH/2,12);
+            g.fillStyle(parseInt(AT.outline.slice(1),16),1); g.fillCircle(px+self.tW/2,py+self.tH/2,8);
+            g.fillStyle(0x445566,1); g.fillCircle(px+self.tW/2,py+self.tH/2,5);
+          }
+          break;
         case 'catspot':
         default:
           g.fillStyle(parseInt(AT.grass.slice(1),16),1); g.fillRect(px,py,self.tW,self.tH); break;
@@ -1000,7 +1085,11 @@ WorldMapScene.prototype.update=function(time,delta){
     if(dx!==0||dy!==0){
       var nx=this.edTile.x+dx, ny=this.edTile.y+dy;
       var tile=this._getTile(nx,ny);
-      if(tile&&tile.passable){
+      var gMsg=tile?this._getGateMsgW1(tile):null;
+      if(gMsg){
+        var self=this; this.nodeTxt.setText('🔒 '+gMsg).setAlpha(1);
+        this.time.delayedCall(2200,function(){self.nodeTxt.setAlpha(0);});
+      } else if(tile&&tile.passable){
         this.lastMoveT=time; this.moving=true;
         var tp=this._t2p(nx,ny), self=this;
         this.tweens.add({targets:this.edPx,x:tp.x,y:tp.y,duration:130,ease:'Linear',
@@ -1019,8 +1108,13 @@ WorldMapScene.prototype.update=function(time,delta){
   this.hudG.clear(); DRAW_HUD.draw(this.hudG);
   this.aloeText.setText(EWR_STATE.aloe+' ALOE');
   var curTile=this._getTile(this.edTile.x,this.edTile.y);
-  if(curTile&&curTile.type==='level'){this.nodeTxt.setText(curTile.label).setAlpha(1);this.enterTxt.setAlpha(1);}
+  if(curTile&&(curTile.type==='level'||curTile.type==='portal')){this.nodeTxt.setText(curTile.label).setAlpha(1);this.enterTxt.setAlpha(1);}
+  else if(this.nodeTxt._inGateMsg){}
   else{this.nodeTxt.setAlpha(0);this.enterTxt.setAlpha(0);}
+  // Portal hint pulse
+  var _w1d=['1-1','1-2','1-3','1-4','1-5'].every(function(id){return EWR_STATE.levelsBeaten.indexOf(id)>=0;});
+  if(_w1d){this.portalHintTxt.setAlpha(0.5+Math.sin(this.catTime*0.004)*0.5);}
+  else{this.portalHintTxt.setAlpha(0);}
   // News ticker scroll
   this._tickX-=1.5*(delta/16);
   this.tickerTxt.setPosition(this._tickX,526);
@@ -1062,6 +1156,21 @@ WorldMapScene.prototype._tryBeatCat=function(){
     this.time.delayedCall(3800,function(){if(self3.nodeTxt)self3.nodeTxt.setAlpha(0);});
   }
 };
+WorldMapScene.prototype._getGateMsgW1=function(tile){
+  if(!tile||!tile.passable) return null;
+  var b=EWR_STATE.levelsBeaten;
+  if(tile.id==='1-2'&&b.indexOf('1-1')<0) return 'Beat Ed Wakes Up first!';
+  if(tile.id==='1-3'&&b.indexOf('1-2')<0) return 'Beat The Cat Rave first!';
+  if(tile.id==='1-4'&&b.indexOf('1-3')<0) return 'Beat Daikon District first!';
+  if(tile.id==='1-5'&&b.indexOf('1-4')<0) return 'Beat Hippie Bus Highway first!';
+  if(tile.id==='1-V'&&b.indexOf('1-3')<0) return 'Beat Daikon District to unlock The Void!';
+  if(tile.type==='portal'){
+    var w1Done=['1-1','1-2','1-3','1-4','1-5'].every(function(id){return b.indexOf(id)>=0;});
+    if(!w1Done) return 'Beat all of World 1 to unlock The Neon District!';
+  }
+  return null;
+};
+
 WorldMapScene.prototype._tryEnter=function(){
   var tile=this._getTile(this.edTile.x,this.edTile.y); if(!tile||(tile.type!=='level'&&tile.type!=='portal')) return;
   if(tile.type==='portal'){
@@ -1119,7 +1228,7 @@ Level11Scene.prototype.create=function(){
   this.edG=this.add.graphics().setDepth(5);
   this.cats=[]; this.catG=this.add.graphics().setDepth(3);
   var catX=[200,420,700,1060,1310,1650,1840,2230,2540,2870,3130,3490,3880,4330,4590,4740];
-  for(var ci=0;ci<catX.length;ci++) this.cats.push({x:catX[ci],y:487,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.6,dance:Math.random()<0.25,smoker:Math.random()<0.28,danceT:Math.random()*1000,following:false,armyT:0,loyal:false});
+  for(var ci=0;ci<catX.length;ci++) this.cats.push({x:catX[ci],y:487,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.6,dance:Math.random()<0.25,smoker:Math.random()<0.28,danceT:Math.random()*1000,following:false,armyT:0,loyal:false,wsState:'normal',wsTimer:Math.random()*6000,wsMsg:'',wsPhaseT:0});
   this.mochiList=[]; this.mochiG=this.add.graphics().setDepth(4);
   var mochiX=[490,840,1090,1390,1680,1990,2280,2590,2870,3190,3580,3980,4280,4480,4680];
   for(var mi=0;mi<mochiX.length;mi++) this.mochiList.push({x:mochiX[mi],y:464,hp:3,spd:40+Math.random()*22,dir:1,bT:0,bAmt:0,dieT:-1,squishT:0,parts:[],pMin:mochiX[mi]-85,pMax:mochiX[mi]+85,type:'mochi'});
@@ -1167,6 +1276,8 @@ Level11Scene.prototype.create=function(){
     {fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ff4444',stroke:'#000000',strokeThickness:2})
     .setScrollFactor(0).setDepth(22);
   this._flash('ED WAKES UP',2400);
+  this._wsMsgT=9000+Math.random()*8000;
+  this.wsCatTxt=this.add.text(0,0,'',{fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ffffff',stroke:'#000000',strokeThickness:2,backgroundColor:'#222222',padding:{x:4,y:2}}).setScrollFactor(0).setDepth(16).setAlpha(0);
 };
 Level11Scene.prototype.update=function(time,delta){
   var LW=4800;
@@ -1455,10 +1566,13 @@ Level11Scene.prototype.update=function(time,delta){
     this._tickX=960;
   }
   if(EWR_STATE.combo.streak>=10){spawnFire(ep.x+(Math.random()-0.5)*18,ep.y-16);spawnFire(ep.x+(Math.random()-0.5)*18,ep.y-8);}
+  this._wsMsgT-=delta;
+  if(this._wsMsgT<=0){this._wsMsgT=10000+Math.random()*12000;this._flash(WS_MSGS[Math.floor(Math.random()*WS_MSGS.length)],1800,14,'#ff4444',0,Math.random()<0.5?80:450);}
   // Cats update
   for(var ci2=0;ci2<this.cats.length;ci2++){
     var cat=this.cats[ci2]; cat.tailAng+=0.04; cat.wT+=delta; cat.danceT+=delta;
     if(!cat.following&&!cat.sitting&&cat.wT>2500){cat.wT=0;cat.wDir*=-1;}
+    updateCatWsState(cat,delta);
   }
   // Animation frame
   var frame=0;
@@ -1487,10 +1601,18 @@ Level11Scene.prototype.update=function(time,delta){
   }
   // Draw cats
   this.catG.clear();
+  var wsSpeaker11=null;
   for(var ci3=0;ci3<this.cats.length;ci3++){
     var c=this.cats[ci3];
-    if(Math.abs(c.x-ep.x)<700) DRAW_CAT.draw(this.catG,c.x,c.y,CAT_COLORS[c.ci],c.tailAng,c.following?es.facing:c.wDir,c.sitting,c.dance||c.following,c.smoker,c.danceT);
+    if(Math.abs(c.x-ep.x)>700) continue;
+    var wsOx=0,wsOy=0;
+    if(c.wsState==='vibrate') wsOx=Math.sin(c.wsPhaseT*0.04)*3;
+    if(c.wsState==='levitate') wsOy=-Math.abs(Math.sin(c.wsPhaseT*0.006))*20;
+    if((c.wsState==='speech'||c.wsState==='philosophize'||c.wsState==='stare')&&c.wsMsg&&!wsSpeaker11) wsSpeaker11=c;
+    DRAW_CAT.draw(this.catG,c.x+wsOx,c.y+wsOy,CAT_COLORS[c.ci],c.tailAng,c.following?es.facing:c.wDir,c.sitting,c.dance||c.following,c.smoker,c.danceT);
+    if(wsSpeaker11===c){var bx11=Phaser.Math.Clamp(c.x-camX,30,900),by11=Phaser.Math.Clamp(c.y+wsOy-52,14,480);this.wsCatTxt.setText(c.wsMsg).setPosition(bx11,by11).setAlpha(1);}
   }
+  if(!wsSpeaker11) this.wsCatTxt.setAlpha(0);
   // Draw mochis
   this.mochiG.clear();
   for(var mi3=0;mi3<this.mochiList.length;mi3++){var m3=this.mochiList[mi3];if(Math.abs(m3.x-ep.x)<700)this._drawMochi(this.mochiG,m3);}
@@ -1820,7 +1942,7 @@ function createLevelScene(cfg) {
     this.es={facing:1,frame:0,cigF:0,smokeT:0,walkT:0,punchTimer:0,punchActive:false,kickTimer:0,kickActive:false,hurtTimer:0};
     this.edG=this.add.graphics().setDepth(5);
     this.cats=[]; this.catG=this.add.graphics().setDepth(3);
-    for(var ci=0;ci<cfg.catX.length;ci++){this.cats.push({x:cfg.catX[ci],y:487,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.6,dance:Math.random()<0.25,smoker:Math.random()<0.28,danceT:Math.random()*1000,following:false,armyT:0,loyal:false});}
+    for(var ci=0;ci<cfg.catX.length;ci++){this.cats.push({x:cfg.catX[ci],y:487,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.6,dance:Math.random()<0.25,smoker:Math.random()<0.28,danceT:Math.random()*1000,following:false,armyT:0,loyal:false,wsState:'normal',wsTimer:Math.random()*6000,wsMsg:'',wsPhaseT:0});}
     this.mochiList=[]; this.mochiG=this.add.graphics().setDepth(4);
     for(var mi=0;mi<cfg.mochis.length;mi++){
       var mc=cfg.mochis[mi];
@@ -1863,6 +1985,8 @@ function createLevelScene(cfg) {
       .setScrollFactor(0).setDepth(22);
     _initVPad(this);
     this._flash(cfg.intro,2400);
+    this._wsMsgT=9000+Math.random()*8000;
+    this.wsCatTxt=this.add.text(0,0,'',{fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ffffff',stroke:'#000000',strokeThickness:2,backgroundColor:'#222222',padding:{x:4,y:2}}).setScrollFactor(0).setDepth(16).setAlpha(0);
   };
 
   LevelScene.prototype.update=function(time,delta){
@@ -2131,9 +2255,12 @@ function createLevelScene(cfg) {
       this._tickX=960;
     }
     if(EWR_STATE.combo.streak>=10){spawnFire(ep.x+(Math.random()-0.5)*18,ep.y-16);spawnFire(ep.x+(Math.random()-0.5)*18,ep.y-8);}
+    this._wsMsgT-=delta;
+    if(this._wsMsgT<=0){this._wsMsgT=10000+Math.random()*12000;this._flash(WS_MSGS[Math.floor(Math.random()*WS_MSGS.length)],1800,14,'#ff4444',0,Math.random()<0.5?80:450);}
     for(var ci3=0;ci3<this.cats.length;ci3++){
       var cat=this.cats[ci3]; cat.tailAng+=0.04; cat.wT+=delta; cat.danceT+=delta;
       if(!cat.following&&!cat.sitting&&cat.wT>2500){cat.wT=0;cat.wDir*=-1;}
+      updateCatWsState(cat,delta);
     }
     var frame=0;
     if(es.hurtTimer>900) frame=7;
@@ -2156,10 +2283,18 @@ function createLevelScene(cfg) {
       this.psychG.fillRect(0,0,55,540); this.psychG.fillRect(905,0,55,540);
     } else { this.cameras.main.setRotation(0); }
     this.catG.clear();
+    var wsSpeakerF=null;
     for(var ci4=0;ci4<this.cats.length;ci4++){
       var c=this.cats[ci4];
-      if(Math.abs(c.x-ep.x)<700) DRAW_CAT.draw(this.catG,c.x,c.y,CAT_COLORS[c.ci],c.tailAng,c.following?es.facing:c.wDir,c.sitting,c.dance||c.following,c.smoker,c.danceT);
+      if(Math.abs(c.x-ep.x)>700) continue;
+      var wsOx2=0,wsOy2=0;
+      if(c.wsState==='vibrate') wsOx2=Math.sin(c.wsPhaseT*0.04)*3;
+      if(c.wsState==='levitate') wsOy2=-Math.abs(Math.sin(c.wsPhaseT*0.006))*20;
+      if((c.wsState==='speech'||c.wsState==='philosophize'||c.wsState==='stare')&&c.wsMsg&&!wsSpeakerF) wsSpeakerF=c;
+      DRAW_CAT.draw(this.catG,c.x+wsOx2,c.y+wsOy2,CAT_COLORS[c.ci],c.tailAng,c.following?es.facing:c.wDir,c.sitting,c.dance||c.following,c.smoker,c.danceT);
+      if(wsSpeakerF===c){var bxF=Phaser.Math.Clamp(c.x-camX,30,900),byF=Phaser.Math.Clamp(c.y+wsOy2-52,14,480);this.wsCatTxt.setText(c.wsMsg).setPosition(bxF,byF).setAlpha(1);}
     }
+    if(!wsSpeakerF) this.wsCatTxt.setAlpha(0);
     this.mochiG.clear();
     for(var mi4=0;mi4<this.mochiList.length;mi4++){var m3=this.mochiList[mi4];if(Math.abs(m3.x-ep.x)<700)this._drawMochi(this.mochiG,m3);}
     this.pickupG.clear();
@@ -3267,10 +3402,19 @@ WorldMap2Scene.prototype.update = function(time,delta){
   if(rightP) nx++;
   if(nx!==this.edTile.x||ny!==this.edTile.y){
     var nt=this._getTileW2(nx,ny);
-    if(nt&&nt.passable){
+    var gateW2=null;
+    if(nt&&nt.type==='level'){
+      var b2=EWR_STATE.levelsBeaten;
+      if(nt.id==='2-2'&&b2.indexOf('2-1')<0) gateW2='Beat Signal Static first!';
+      else if(nt.id==='2-3'&&b2.indexOf('2-2')<0) gateW2='Beat Chrome Alley first!';
+      else if(nt.id==='2-4'&&b2.indexOf('2-3')<0) gateW2='Beat The Neon King first!';
+    }
+    if(gateW2){
+      var selfG2=this; this.nodeTxt.setText('🔒 '+gateW2).setAlpha(1);
+      this.time.delayedCall(2200,function(){selfG2.nodeTxt.setAlpha(0);});
+    } else if(nt&&nt.passable){
       this.edTile.x=nx; this.edTile.y=ny; moved=true;
       this.inputCooldown=140;
-      // Show label
       if(nt.label){this.nodeTxt.setText(nt.label).setAlpha(1);this.time.delayedCall(1800,function(){});}
       else{this.nodeTxt.setAlpha(0);}
     }
@@ -4327,10 +4471,28 @@ WorldMap3Scene.prototype.update=function(time,delta){
     if(dx!==0||dy!==0){
       var nx=this.edTile.x+dx, ny=this.edTile.y+dy;
       var tile=this._getTile3(nx,ny);
-      if(tile&&tile.passable){this.edTile.x=nx;this.edTile.y=ny;this._moveTimer=140;}
-      var onTile=this._getTile3(this.edTile.x,this.edTile.y);
-      if(onTile&&onTile.label){this.nodeTxt.setText(onTile.label).setAlpha(1);}
-      else{this.nodeTxt.setAlpha(0);}
+      // Gate check
+      var gateW3=null;
+      var b3=EWR_STATE.levelsBeaten;
+      if(tile){
+        if(tile.id==='3-2'&&b3.indexOf('3-1')<0) gateW3='Beat Quality Hill first!';
+        else if(tile.id==='3-3'&&b3.indexOf('3-2')<0) gateW3='Beat Financial District first!';
+        else if(tile.id==='3-4'&&b3.indexOf('3-1')<0) gateW3='Beat Quality Hill to reach Gladstone!';
+        else if(tile.id==='3-5'&&b3.indexOf('3-3')<0) gateW3='Beat Power & Light first!';
+        else if(tile.id==='3-6'&&b3.indexOf('3-2')<0) gateW3='Beat Financial District to reach Westport!';
+        else if(tile.id==='3-boss'){
+          if(b3.indexOf('3-3')<0||b3.indexOf('3-4')<0||b3.indexOf('3-5')<0) gateW3='Beat Power & Light, Gladstone, and Blue Springs first!';
+        }
+      }
+      if(gateW3){
+        var selfG3=this; this.nodeTxt.setText('🔒 '+gateW3).setAlpha(1);
+        this.time.delayedCall(2500,function(){selfG3.nodeTxt.setAlpha(0);});
+      } else if(tile&&tile.passable){
+        this.edTile.x=nx;this.edTile.y=ny;this._moveTimer=140;
+        var onTile=this._getTile3(this.edTile.x,this.edTile.y);
+        if(onTile&&onTile.label){this.nodeTxt.setText(onTile.label).setAlpha(1);}
+        else{this.nodeTxt.setAlpha(0);}
+      }
     }
   }
   // enter
