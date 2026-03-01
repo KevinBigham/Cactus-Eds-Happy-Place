@@ -105,7 +105,7 @@ var W1_TILES = {
   'T':{type:'tree',    passable:false},
   '1':{type:'level',   passable:true, id:'1-1', label:'Ed Wakes Up'},
   '2':{type:'level',   passable:true, id:'1-2', label:'The Cat Rave'},
-  '3':{type:'level',   passable:true, id:'1-3', label:'After Dark'},
+  '3':{type:'level',   passable:true, id:'1-3', label:'Daikon District'},
   '4':{type:'level',   passable:true, id:'1-4', label:'Hippie Bus Highway'},
   '5':{type:'level',   passable:true, id:'1-5', label:'Mochi HQ'},
   'V':{type:'level',   passable:true, id:'1-V', label:'THE VOID'},
@@ -116,12 +116,18 @@ var WS_TEXTS = [
   'CONSUME','ARE YOU REAL?','DO YOU FEEL?',
   'BIRTH SCHOOL WORK DEATH','YOU ARE PRODUCT',
   'LOOK AWAY','CACTUS MOMENT','THIS IS FINE',
-  'REALITY IS OPTIONAL','ED WAS RIGHT'
+  'REALITY IS OPTIONAL','ED WAS RIGHT',
+  'STAY WEIRD','NOTHING IS REAL','YOU CANNOT LEAVE',
+  'ALOE FOREVER','WHAT YEAR IS IT','THE MOCHIS KNOW',
+  'DO NOT LOOK DOWN','CAT IS GOD','EMBRACE THE VOID',
+  'ED APPROVES OF NOTHING'
 ];
 
 var ED_LINES = [
   '...','classic','leave me alone',"i don't care",
-  'sure','whatever','noted','no','fine','obviously','ok'
+  'sure','whatever','noted','no','fine','obviously','ok',
+  'hmm','unbelievable','of course','as expected',
+  'what','yeah no','sure sure','i guess','cool cool cool','ok but why'
 ];
 
 var VOID_KOANS = [
@@ -132,7 +138,12 @@ var VOID_KOANS = [
   'MOCHI WAS NEVER YOUR ENEMY',
   'CONSUME THE SELF',
   'FALLING IS JUST FLYING BADLY',
-  'THIS BOSS IS OPTIONAL'
+  'THIS BOSS IS OPTIONAL',
+  'EVERY MOCHI IS YOU',
+  'WHY WOULD YOU COME HERE',
+  'THE ALOE WAS INSIDE YOU ALL ALONG',
+  'THERE IS NO LEVEL 1-6',
+  'YOU CANNOT UNSEE THIS'
 ];
 
 // ── PARTICLES ────────────────────────────────────────────────────
@@ -633,7 +644,7 @@ WorldMapScene.prototype.create=function(){
     {label:'Speed Boost   +15%',      key:'speedBoost',   cost:150, bought:EWR_STATE.shop.speedBoost},
     {label:'Double Jump',             key:'doubleJump',   cost:300, bought:EWR_STATE.shop.doubleJump},
     {label:'Explosive Cig',           key:'explosiveCig', cost:250, bought:EWR_STATE.shop.explosiveCig},
-    {label:'CRT Filter    FREE',      key:'crtFilter',    cost:0,   bought:false}
+    {label:'CRT Filter    FREE',      key:'crtFilter',    cost:0,   bought:EWR_STATE.shop.crtFilter}
   ];
   var bgG=this.add.graphics();
   bgG.fillStyle(parseInt(AT.sky.slice(1),16),1); bgG.fillRect(0,0,W,H);
@@ -867,7 +878,7 @@ WorldMapScene.prototype._tryEnter=function(){
   var gateMsg=null;
   if(tile.id==='1-2'&&EWR_STATE.levelsBeaten.indexOf('1-1')<0) gateMsg='Beat Ed Wakes Up first!';
   if(tile.id==='1-3'&&EWR_STATE.levelsBeaten.indexOf('1-2')<0) gateMsg='Beat The Cat Rave first!';
-  if(tile.id==='1-4'&&EWR_STATE.levelsBeaten.indexOf('1-3')<0) gateMsg='Beat After Dark first!';
+  if(tile.id==='1-4'&&EWR_STATE.levelsBeaten.indexOf('1-3')<0) gateMsg='Beat Daikon District first!';
   if(tile.id==='1-5'&&EWR_STATE.levelsBeaten.indexOf('1-4')<0) gateMsg='Beat Hippie Bus Highway first!';
   if(tile.id==='1-V'&&EWR_STATE.levelsBeaten.indexOf('1-3')<0) gateMsg='Beat Daikon District to unlock The Void!';
   if(gateMsg){
@@ -903,7 +914,7 @@ Level11Scene.prototype.create=function(){
   for(var pi=0;pi<plats.length;pi++) this.platRects.push({x:plats[pi][0],y:plats[pi][1],w:plats[pi][2],h:plats[pi][3]});
   this.levelG=this.add.graphics(); this._drawLevel(this.levelG,LW,H);
   this.cameras.main.setBounds(0,0,LW,H);
-  this.ep={x:100,y:440,vx:0,vy:0,grounded:false,coyoteMs:0,jumpBufMs:0,chargeT:0};
+  this.ep={x:100,y:440,vx:0,vy:0,grounded:false,coyoteMs:0,jumpBufMs:0,chargeT:0,djUsed:false};
   this.es={facing:1,frame:0,cigF:0,smokeT:0,walkT:0,punchTimer:0,punchActive:false,kickTimer:0,kickActive:false,hurtTimer:0};
   this.edG=this.add.graphics().setDepth(5);
   this.cats=[]; this.catG=this.add.graphics().setDepth(3);
@@ -982,7 +993,7 @@ Level11Scene.prototype.update=function(time,delta){
   var zHeld=this.keys.punch.isDown||gpPunchHeld;
   var zWasHeld=this._prevZHeld||false;
   var zJustReleased=(!zHeld)&&zWasHeld;
-  if(zHeld&&es.punchTimer<=0&&es.kickTimer<=0) ep.chargeT+=delta;
+  if(zHeld&&es.punchTimer<=0&&es.kickTimer<=0){var _pct=ep.chargeT;ep.chargeT+=delta;if(ep.chargeT>200&&Math.floor(ep.chargeT/300)>Math.floor(_pct/300))SOUND.charge();}
   if(zJustReleased&&es.punchTimer<=0&&es.kickTimer<=0){
     if(ep.chargeT>=1200){ this._emberBlast(); }
     else if(ep.chargeT>=60){ es.punchTimer=340; es.punchActive=true; SOUND.punch(); }
@@ -1006,7 +1017,6 @@ Level11Scene.prototype.update=function(time,delta){
   if(ep.jumpBufMs>0&&ep.coyoteMs>0&&ep.vy>=-10){
     ep.vy=ED_MOVE.jumpVel; ep.jumpBufMs=0; ep.coyoteMs=0; ep.grounded=false;
     SOUND.jump();
-    if(EWR_STATE.shop.doubleJump&&!ep.djUsed){ep.djUsed=false;}
   }
   if(!goJ&&ep.vy<0) ep.vy*=ED_MOVE.jumpCut;
   // Double jump
@@ -1570,7 +1580,7 @@ function createLevelScene(cfg) {
     var zHeld=this.keys.punch.isDown||gpPunchHeld;
     var zWasHeld=this._prevZHeld||false;
     var zJustReleased=(!zHeld)&&zWasHeld;
-    if(zHeld&&es.punchTimer<=0&&es.kickTimer<=0) ep.chargeT+=delta;
+    if(zHeld&&es.punchTimer<=0&&es.kickTimer<=0){var _pct=ep.chargeT;ep.chargeT+=delta;if(ep.chargeT>200&&Math.floor(ep.chargeT/300)>Math.floor(_pct/300))SOUND.charge();}
     if(zJustReleased&&es.punchTimer<=0&&es.kickTimer<=0){
       if(ep.chargeT>=1200){this._emberBlast();}
       else if(ep.chargeT>=60){es.punchTimer=340;es.punchActive=true;SOUND.punch();}
@@ -2047,7 +2057,7 @@ Level15Scene.prototype.update=function(time,delta){
   var zHeld=this.keys.punch.isDown||gpPunchHeld;
   var zWasHeld=this._prevZHeld||false;
   var zJustReleased=(!zHeld)&&zWasHeld;
-  if(zHeld&&es.punchTimer<=0&&es.kickTimer<=0) ep.chargeT+=delta;
+  if(zHeld&&es.punchTimer<=0&&es.kickTimer<=0){var _pct=ep.chargeT;ep.chargeT+=delta;if(ep.chargeT>200&&Math.floor(ep.chargeT/300)>Math.floor(_pct/300))SOUND.charge();}
   if(zJustReleased&&es.punchTimer<=0&&es.kickTimer<=0){
     if(ep.chargeT>=1200){this._emberBlast();}
     else if(ep.chargeT>=60){es.punchTimer=340;es.punchActive=true;SOUND.punch();}
@@ -2414,7 +2424,7 @@ LevelVoidScene.prototype.update=function(time,delta){
   var zHeld=this.keys.punch.isDown||gpPunchHeld;
   var zWasHeld=this._prevZHeld||false;
   var zJustReleased=(!zHeld)&&zWasHeld;
-  if(zHeld&&es.punchTimer<=0&&es.kickTimer<=0) ep.chargeT+=delta;
+  if(zHeld&&es.punchTimer<=0&&es.kickTimer<=0){var _pct=ep.chargeT;ep.chargeT+=delta;if(ep.chargeT>200&&Math.floor(ep.chargeT/300)>Math.floor(_pct/300))SOUND.charge();}
   if(zJustReleased&&es.punchTimer<=0&&es.kickTimer<=0){
     if(ep.chargeT>=1200){this._emberBlast();}
     else if(ep.chargeT>=60){es.punchTimer=340;es.punchActive=true;SOUND.punch();}
