@@ -271,7 +271,40 @@ var WS_CAT_SPEECH = [
   'DO YOU HAVE CIG','I AM HAUNTED BY THE PARADE',
   'WHAT IS ALOE EVEN','MY NAME IS NOT IMPORTANT',
   'I SAW THE VOID / IT SAW ME BACK','CIGARETTES COMPLETE ME',
-  'MY DREAM IS TO BE A DAIKON / NO WAIT','MEOW MEANS CONSUME'
+  'MY DREAM IS TO BE A DAIKON / NO WAIT','MEOW MEANS CONSUME',
+  // Philosophical tier
+  'I HAVE OPINIONS','THE VOID AND I HAVE AN AGREEMENT',
+  'MY PAWPRINT IS MY VOTE','CIGARETTES UNDERSTAND ME',
+  'I MAKE 400 ALOE A YEAR AND I WANT MORE',
+  'MEOW IS A DEMAND','THE ECONOMY IS MY FAULT',
+  'I SAW WHAT THE MOCHI DID','DO NOT REPEAT THIS',
+  'I AM OPTIMIZING FOR SOMETHING',
+  'THE PLATFORM KNEW I WAS COMING',
+  // Unhinged tier
+  'MY THIRD EYE IS A CIG BURN',
+  'CATS HAVE ALWAYS HAD FEELINGS ABOUT THIS',
+  'I AM THE ECONOMY','I STUDIED UNDER A DAIKON',
+  'THE NUCLEAR LOVE BOMB WAS MY IDEA','I NAMED MY VOID',
+  'MY WHISKERS ARE AN ASSET CLASS',
+  'I FILE TAXES IN THE VOID',
+  'ALOE IS JUST HOPE WITH STATS',
+  'THE CAT PARADE IS A RETIREMENT PLAN',
+  // Wonder Showzen raw
+  'THIS IS MY JOB AND I LOVE MY JOB (I DO NOT LOVE MY JOB)',
+  'WHEN I DIE I WANT TO BECOME SMOKE',
+  'EIGHT',
+  'THE MAN IN THE BACKGROUND IS NOT A MAN',
+  'I AM THE BUILDING',
+  'MEOW IS HAPPENING RIGHT NOW',
+  'I SUBSCRIBE TO THE CIG',
+  'MY MOTHER WAS ALSO A CAT',
+  'I HAVE SEEN THE VOID SNEEZE',
+  'THE ALOE KNOWS MY NAME',
+  'DO NOT TELL ED',
+  'I VOTE FOR CIGARETTES / IN EVERY ELECTION',
+  'THE NUCLEAR LOVE BOMB LOVED ME BACK',
+  'MOCHI = WRONG / ALWAYS HAS BEEN',
+  'I AM NOT SITTING. I AM PROTESTING.'
 ];
 var WS_KID_QUOTES = [
   '"do you know where cigarettes go when they die?"',
@@ -1007,6 +1040,10 @@ WorldMapScene.prototype.create=function(){
   var dat=this.scene.settings.data;
   if(dat&&dat.aloeEarned) this._popAloe('+'+dat.aloeEarned+' ALOE!');
   // CAT NEWS card — 50% chance on level completion return
+  // WS map messages + cat speech
+  this._wsMsgT=8000+Math.random()*12000;
+  this.wsMsgTxt=this.add.text(W/2,H/2-30,'',{fontFamily:'Courier New,monospace',fontSize:'18px',color:'#ff4444',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.wsCatTxt=this.add.text(0,0,'',{fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ffffff',stroke:'#000000',strokeThickness:2,backgroundColor:'#222222',padding:{x:4,y:2}}).setDepth(30).setAlpha(0);
   if(dat&&dat.aloeEarned&&Math.random()<0.5){
     var self2=this;
     var overlay=this.add.graphics().setDepth(90);
@@ -1117,7 +1154,7 @@ WorldMapScene.prototype._spawnCats=function(){
   for(var i=0;i<positions.length;i++){
     var p=positions[i];
     var px=this.offX+p.x*this.tW+this.tW/2, py=this.offY+p.y*this.tH+this.tH+36;
-    this.mapCats.push({x:px,y:py,hx:px,ci:i%4,tailAng:Math.random()*Math.PI*2,facing:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.5,name:CAT_NAMES[i%CAT_NAMES.length],petted:false});
+    this.mapCats.push({x:px,y:py,hx:px,ci:i%4,tailAng:Math.random()*Math.PI*2,facing:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.5,name:CAT_NAMES[i%CAT_NAMES.length],petted:false,wsState:'normal',wsTimer:Math.random()*6000,wsMsg:'',wsPhaseT:0});
   }
 };
 WorldMapScene.prototype._popAloe=function(msg){
@@ -1158,9 +1195,20 @@ WorldMapScene.prototype.update=function(time,delta){
   this.catTime+=delta; this.edCigF++; this.edSmokeT+=delta;
   if(this.edSmokeT>1100){this.edSmokeT=0;spawnSmoke(this.edPx.x+14,this.edPx.y-22);}
   updateSmoke();
+  // WS map message timer
+  this._wsMsgT-=delta;
+  if(this._wsMsgT<=0){
+    this._wsMsgT=10000+Math.random()*14000;
+    var wmCols=['#ff4444','#ffd700','#ff44aa','#00eeff','#cc44ff'];
+    this.wsMsgTxt.setText(WS_MSGS[Math.floor(Math.random()*WS_MSGS.length)]).setColor(wmCols[Math.floor(Math.random()*wmCols.length)]).setAlpha(1);
+    this.tweens.add({targets:this.wsMsgTxt,alpha:0,delay:2400,duration:900});
+  }
+  var wmSpeaker=null;
   for(var i=0;i<this.mapCats.length;i++){
     var c=this.mapCats[i]; c.tailAng+=0.04; c.wT+=delta;
+    updateCatWsState(c,delta);
     if(!c.sitting&&c.wT>2200){c.wT=0;c.facing*=-1;c.x+=c.facing*8;if(Math.abs(c.x-c.hx)>22)c.x=c.hx;}
+    if((c.wsState==='speech'||c.wsState==='philosophize'||c.wsState==='stare')&&c.wsMsg&&!wmSpeaker) wmSpeaker=c;
   }
   var pad=this.input.gamepad&&this.input.gamepad.total>0?this.input.gamepad.getPad(0):null;
   var gpMapL=false,gpMapR=false,gpMapU=false,gpMapD=false,gpMapA=false,gpMapB=false;
@@ -1215,7 +1263,15 @@ WorldMapScene.prototype.update=function(time,delta){
   if(Phaser.Input.Keyboard.JustDown(this.keys.punch)||gpMapA){ this._tryPet(); this._tryEnter(); this._tryShop(); this._tryBeatCat(); }
   this.mapG.clear(); this._drawMap();
   this.catG.clear();
-  for(var ci3=0;ci3<this.mapCats.length;ci3++){var c3=this.mapCats[ci3];DRAW_CAT.draw(this.catG,c3.x,c3.y,CAT_COLORS[c3.ci],c3.tailAng,c3.facing,c3.sitting);}
+  for(var ci3=0;ci3<this.mapCats.length;ci3++){
+    var c3=this.mapCats[ci3];
+    var wsOxM=0,wsOyM=0;
+    if(c3.wsState==='vibrate') wsOxM=Math.sin(c3.wsPhaseT*0.04)*3;
+    if(c3.wsState==='levitate') wsOyM=-Math.abs(Math.sin(c3.wsPhaseT*0.006))*14;
+    DRAW_CAT.draw(this.catG,c3.x+wsOxM,c3.y+wsOyM,CAT_COLORS[c3.ci],c3.tailAng,c3.facing,c3.sitting);
+    if(wmSpeaker===c3){this.wsCatTxt.setText(c3.wsMsg).setPosition(Phaser.Math.Clamp(c3.x-60,10,860),Phaser.Math.Clamp(c3.y+wsOyM-50,14,490)).setAlpha(1);}
+  }
+  if(!wmSpeaker) this.wsCatTxt.setAlpha(0);
   var ef=this.moving?Math.floor(this.catTime/100)%4:0;
   this.edG.clear(); DRAW_ED.draw(this.edG,this.edPx.x,this.edPx.y,ef,this.edFacing<0,this.edCigF);
   for(var sp=0;sp<SMOKE_POOL.length;sp++){var p=SMOKE_POOL[sp];this.edG.fillStyle(0xaaaaaa,p.life*0.28);this.edG.fillCircle(p.x,p.y,p.r);}
@@ -1338,7 +1394,7 @@ Level11Scene.prototype.create=function(){
   this.levelG=this.add.graphics(); this._drawLevel(this.levelG,LW,H);
   this.cameras.main.setBounds(0,0,LW,H);
   this.ep={x:100,y:440,vx:0,vy:0,grounded:false,coyoteMs:0,jumpBufMs:0,chargeT:0,djUsed:false};
-  this.es={facing:1,frame:0,cigF:0,smokeT:0,walkT:0,punchTimer:0,punchActive:false,kickTimer:0,kickActive:false,hurtTimer:0};
+  this.es={facing:1,frame:0,cigF:0,smokeT:0,walkT:0,punchTimer:0,punchActive:false,kickTimer:0,kickActive:false,hurtTimer:0,rapidZ:0,rapidZT:0};
   this.edG=this.add.graphics().setDepth(5);
   this.cats=[]; this.catG=this.add.graphics().setDepth(3);
   var catX=[200,420,700,1060,1310,1650,1840,2230,2540,2870,3130,3490,3880,4330,4590,4740];
@@ -1380,7 +1436,8 @@ Level11Scene.prototype.create=function(){
     this.add.text(618,442,'Z=Punch  Hold Z=EMBER BLAST',{fontFamily:'Courier New,monospace',fontSize:'12px',color:AT.uiText}).setScrollFactor(0).setDepth(25),
     this.add.text(618,456,'X=Kick  Z near cat=Pet',{fontFamily:'Courier New,monospace',fontSize:'12px',color:AT.uiText}).setScrollFactor(0).setDepth(25),
     this.add.text(618,472,'-- CONTROLLER --',{fontFamily:'Courier New,monospace',fontSize:'12px',color:AT.uiGold}).setScrollFactor(0).setDepth(25),
-    this.add.text(618,486,'Stick=Move A=Jump X=Punch B=Kick',{fontFamily:'Courier New,monospace',fontSize:'12px',color:AT.uiText}).setScrollFactor(0).setDepth(25)
+    this.add.text(618,486,'Stick=Move A=Jump X=Punch B=Kick',{fontFamily:'Courier New,monospace',fontSize:'12px',color:AT.uiText}).setScrollFactor(0).setDepth(25),
+    this.add.text(618,500,'Z+Z+Z FAST = CIG FLURRY!!!',{fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ffd700',stroke:AT.outline,strokeThickness:2}).setScrollFactor(0).setDepth(25)
   ];
   this.levelT=0; this.checkpt=false;
   this.nukeG=this.add.graphics().setScrollFactor(0).setDepth(2);
@@ -1427,9 +1484,16 @@ Level11Scene.prototype.update=function(time,delta){
   if(zHeld&&es.punchTimer<=0&&es.kickTimer<=0){var _pct=ep.chargeT;ep.chargeT+=delta;if(ep.chargeT>200&&Math.floor(ep.chargeT/300)>Math.floor(_pct/300))SOUND.charge();}
   if(zJustReleased&&es.punchTimer<=0&&es.kickTimer<=0){
     if(ep.chargeT>=1200){ this._emberBlast(); }
-    else if(ep.chargeT>=60){ es.punchTimer=340; es.punchActive=true; SOUND.punch(); }
+    else if(ep.chargeT>=60){
+      es.punchTimer=340; es.punchActive=true; SOUND.punch();
+      // Rapid-Z tracking for CIG FLURRY
+      es.rapidZT=0; es.rapidZ=(es.rapidZ||0)+1;
+      if(es.rapidZ>=3){this._cigFlurry();es.rapidZ=0;}
+    }
     ep.chargeT=0;
   }
+  es.rapidZT=(es.rapidZT||0)+delta;
+  if(es.rapidZT>500) es.rapidZ=0;
   if(!zHeld) ep.chargeT=Math.max(0,ep.chargeT-delta*3);
   this._prevZHeld=zHeld;
   // Movement
@@ -1958,15 +2022,36 @@ Level11Scene.prototype._emberBlast=function(){
     }
   }
 };
+Level11Scene.prototype._cigFlurry=function(){
+  var ep=this.ep, es=this.es, self=this;
+  this._flash('CIG FLURRY!!!!',1200,22,'#ffd700');
+  SOUND.victory();
+  for(var fi=0;fi<5;fi++){
+    (function(idx){
+      self.time.delayedCall(idx*80,function(){
+        var bx=ep.x+es.facing*(44+idx*16),by=ep.y-18;
+        spawnExplosion(bx,by,0xffd700,1.1);
+        for(var mi=0;mi<self.mochiList.length;mi++){
+          var m=self.mochiList[mi]; if(m.dieT>=0) continue;
+          if(Math.abs(m.x-bx)<90&&Math.abs(m.y-ep.y)<60){
+            m.hp--; _addCombo(self,m.x,m.y); spawnExplosion(m.x,m.y-13,0xffcc00,1);
+            if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil(ALOE.mochiDeath*EWR_STATE.combo.mult);self._spawnMochiParts(m);}
+          }
+        }
+        if(self.cameras) self.cameras.main.shake(55,0.006);
+      });
+    })(fi);
+  }
+};
 Level11Scene.prototype._die=function(){this._triggerDeath();};
 Level11Scene.prototype._beatLevel=function(){
   if(this._beaten) return; this._beaten=true;
   if(EWR_STATE.levelsBeaten.indexOf('1-1')<0){EWR_STATE.levelsBeaten.push('1-1');EWR_STATE.aloe+=ALOE.beat11;}
   EWR_STATE.health[0]=EWR_STATE.maxHealth[0]; SMOKE_POOL.length=0; EX_POOL.length=0; FIRE_POOL.length=0;
   SOUND.victory(); this.cameras.main.shake(250,0.015);
-  this._flash('LEVEL CLEAR! +'+ALOE.beat11+' ALOE',2800);
+  this._flash('LEVEL CLEAR! +'+ALOE.beat11+' ALOE',1800);
   var self=this;
-  this.time.delayedCall(3000,function(){self.scene.start('WorldMap',{aloeEarned:ALOE.beat11});});
+  this.time.delayedCall(2000,function(){ self.scene.start('MochiSmash'); });
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -2047,6 +2132,19 @@ function _initVPad(scene) {
   TitleScene.prototype.create=function(){
     _origTitle.call(this); var self=this;
     this.input.once('pointerdown',function(){SMOKE_POOL.length=0;self.scene.start('WorldMap');});
+    // WS messages on title screen
+    this._wsTitleT=6000+Math.random()*6000;
+    this.wsTitleTxt=this.add.text(480,448,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ff4444',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setAlpha(0).setDepth(12);
+  };
+  TitleScene.prototype.update=function(time,delta){
+    if(!this.wsTitleTxt) return;
+    this._wsTitleT=(this._wsTitleT||6000)-delta;
+    if(this._wsTitleT<=0){
+      this._wsTitleT=7000+Math.random()*8000;
+      var tc=['#ff4444','#ffd700','#ff44aa','#00eeff'][Math.floor(Math.random()*4)];
+      this.wsTitleTxt.setText(WS_MSGS[Math.floor(Math.random()*WS_MSGS.length)]).setColor(tc).setAlpha(0.72);
+      this.tweens.add({targets:this.wsTitleTxt,alpha:0,delay:2800,duration:1000});
+    }
   };
   var _origL11=Level11Scene.prototype.create;
   Level11Scene.prototype.create=function(){ _origL11.call(this); _initVPad(this); };
@@ -2069,7 +2167,7 @@ function createLevelScene(cfg) {
     this.levelG=this.add.graphics(); this._drawLevel(this.levelG,LW,H);
     this.cameras.main.setBounds(0,0,LW,H);
     this.ep={x:100,y:440,vx:0,vy:0,grounded:false,coyoteMs:0,jumpBufMs:0,chargeT:0,djUsed:false};
-    this.es={facing:1,frame:0,cigF:0,smokeT:0,walkT:0,punchTimer:0,punchActive:false,kickTimer:0,kickActive:false,hurtTimer:0};
+    this.es={facing:1,frame:0,cigF:0,smokeT:0,walkT:0,punchTimer:0,punchActive:false,kickTimer:0,kickActive:false,hurtTimer:0,rapidZ:0,rapidZT:0};
     this.edG=this.add.graphics().setDepth(5);
     this.cats=[]; this.catG=this.add.graphics().setDepth(3);
     for(var ci=0;ci<cfg.catX.length;ci++){this.cats.push({x:cfg.catX[ci],y:487,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.6,dance:Math.random()<0.25,smoker:Math.random()<0.28,danceT:Math.random()*1000,following:false,armyT:0,loyal:false,wsState:'normal',wsTimer:Math.random()*6000,wsMsg:'',wsPhaseT:0});}
@@ -2152,9 +2250,15 @@ function createLevelScene(cfg) {
     if(zHeld&&es.punchTimer<=0&&es.kickTimer<=0){var _pct=ep.chargeT;ep.chargeT+=delta;if(ep.chargeT>200&&Math.floor(ep.chargeT/300)>Math.floor(_pct/300))SOUND.charge();}
     if(zJustReleased&&es.punchTimer<=0&&es.kickTimer<=0){
       if(ep.chargeT>=1200){this._emberBlast();}
-      else if(ep.chargeT>=60){es.punchTimer=340;es.punchActive=true;SOUND.punch();}
+      else if(ep.chargeT>=60){
+        es.punchTimer=340;es.punchActive=true;SOUND.punch();
+        es.rapidZT=0; es.rapidZ=(es.rapidZ||0)+1;
+        if(es.rapidZ>=3){this._cigFlurry();es.rapidZ=0;}
+      }
       ep.chargeT=0;
     }
+    es.rapidZT=(es.rapidZT||0)+delta;
+    if(es.rapidZT>500) es.rapidZ=0;
     if(!zHeld) ep.chargeT=Math.max(0,ep.chargeT-delta*3);
     this._prevZHeld=zHeld;
     var tVx=0;
@@ -2478,6 +2582,7 @@ function createLevelScene(cfg) {
   LevelScene.prototype._drawMochi     = Level11Scene.prototype._drawMochi;
   LevelScene.prototype._drawAloe      = Level11Scene.prototype._drawAloe;
   LevelScene.prototype._emberBlast    = Level11Scene.prototype._emberBlast;
+  LevelScene.prototype._cigFlurry     = Level11Scene.prototype._cigFlurry;
   LevelScene.prototype._die           = Level11Scene.prototype._die;
   return LevelScene;
 }
@@ -2500,7 +2605,14 @@ var Level12Scene=createLevelScene({
     {x:2930,type:'mochi'},{x:3220,type:'mochi'},{x:3610,type:'mochi'},{x:4010,type:'mochi'},
     {x:4310,type:'mochi'},{x:4520,type:'mochi'},{x:4720,type:'mochi'},{x:4940,type:'mochi'}
   ],
-  pickups:[[1320,245],[2760,295],[3820,220],[4560,380]]
+  pickups:[[1320,245],[2760,295],[3820,220],[4560,380]],
+  onBeat:function(scene){
+    if(EWR_STATE.levelsBeaten.indexOf('1-2')<0){EWR_STATE.levelsBeaten.push('1-2');EWR_STATE.aloe+=ALOE.beat12;}
+    EWR_STATE.health[0]=EWR_STATE.maxHealth[0]; SMOKE_POOL.length=0; EX_POOL.length=0; FIRE_POOL.length=0;
+    SOUND.victory();
+    scene._flash('BUS STOP BLUES CLEAR! +'+ALOE.beat12+' ALOE',1800);
+    scene.time.delayedCall(2000,function(){ scene.scene.start('SlotMachine'); });
+  }
 });
 
 // ── LEVEL 13: DAIKON DISTRICT ────────────────────────────────────
@@ -3375,6 +3487,9 @@ WorldMap2Scene.prototype.create = function(){
   this.keyX2= this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
   this.keyEnter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
   _initVPad(this);
+  // WS neon messages
+  this._wsMsgT=8000+Math.random()*10000;
+  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Courier New,monospace',fontSize:'18px',color:'#ff00ff',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(30).setAlpha(0);
 };
 
 WorldMap2Scene.prototype._updateHudW2 = function(){
@@ -3522,6 +3637,16 @@ WorldMap2Scene.prototype._buyShopW2 = function(){
 
 WorldMap2Scene.prototype.update = function(time,delta){
   if(this.inputCooldown>0){this.inputCooldown-=delta; return;}
+  // WS neon messages
+  if(this.wsMsgTxt){
+    this._wsMsgT=(this._wsMsgT||10000)-delta;
+    if(this._wsMsgT<=0){
+      this._wsMsgT=10000+Math.random()*12000;
+      var nc=['#ff00ff','#00ffcc','#ff4444','#ffd700'][Math.floor(Math.random()*4)];
+      this.wsMsgTxt.setText(WS_MSGS[Math.floor(Math.random()*WS_MSGS.length)]).setColor(nc).setAlpha(1);
+      this.tweens.add({targets:this.wsMsgTxt,alpha:0,delay:2400,duration:900});
+    }
+  }
   var cur=this.cursors;
   var upP=Phaser.Input.Keyboard.JustDown(cur.up);
   var downP=Phaser.Input.Keyboard.JustDown(cur.down);
@@ -4585,6 +4710,9 @@ WorldMap3Scene.prototype.create = function(){
     self._cats.push({x:cp.x,y:cp.y+self.tH*0.4,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.6,danceT:0,dance:false});
   }
   this._t=0;
+  // WS messages over World 3
+  this._wsMsgT=9000+Math.random()*10000;
+  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Courier New,monospace',fontSize:'18px',color:'#ffd700',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(30).setAlpha(0);
   if(startData&&startData.fromRace){
     this._showMsg('EYE 70 UNLOCKED! WELCOME TO WORLD 3',3500);
   } else if(startData&&startData.aloeEarned){
@@ -4607,6 +4735,16 @@ WorldMap3Scene.prototype._showMsg=function(txt,dur){
 WorldMap3Scene.prototype.update=function(time,delta){
   var self=this; this._t+=delta; this._moveTimer-=delta;
   this.aloeText.setText('ALOE: '+EWR_STATE.aloe);
+  // WS messages
+  if(this.wsMsgTxt){
+    this._wsMsgT=(this._wsMsgT||10000)-delta;
+    if(this._wsMsgT<=0){
+      this._wsMsgT=10000+Math.random()*12000;
+      var w3c=['#ffd700','#ff4444','#ff44aa','#00eeff'][Math.floor(Math.random()*4)];
+      this.wsMsgTxt.setText(WS_MSGS[Math.floor(Math.random()*WS_MSGS.length)]).setColor(w3c).setAlpha(1);
+      this.tweens.add({targets:this.wsMsgTxt,alpha:0,delay:2400,duration:900});
+    }
+  }
   // movement
   if(this._moveTimer<=0){
     var dx=0,dy=0;
@@ -5488,6 +5626,361 @@ HandtowelScene.prototype._killBoss=function(){
 };
 
 
+// ════════════════════════════════════════════════════════════════
+// MOCHI SMASH — AAA mini-game (triggered after Level 1-1 beat)
+// ════════════════════════════════════════════════════════════════
+function MochiSmashScene(){ Phaser.Scene.call(this,{key:'MochiSmash'}); }
+MochiSmashScene.prototype=Object.create(Phaser.Scene.prototype);
+MochiSmashScene.prototype.constructor=MochiSmashScene;
+MochiSmashScene.prototype.create=function(){
+  var W=960,H=540,self=this;
+  this._score=0; this._timeLeft=20000; this._done=false;
+  this._cursor=4; // center of 3x3 grid
+  this._wsMT=4000+Math.random()*3000;
+  this._wsMsg='';
+  var wsMsgs=['DESTROY THEM','HOW DOES IT FEEL','GOOD. GOOD. GOOD.',
+    'THE MOCHI FEEL THIS','THIS IS THERAPEUTIC (IT IS NOT)',
+    'SMASH MORE','DO NOT STOP','MOCHI POPULATION: DECLINING',
+    'THEY KEEP COMING','THIS IS YOUR PURPOSE'];
+  this._wsMsgs=wsMsgs;
+  // Grid holes — 3x3
+  var cols=3,rows=3,hw=90,hh=90,gOx=(W-cols*hw*2)/2+hw,gOy=130;
+  this._holes=[];
+  for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){
+    this._holes.push({x:gOx+c*hw*2,y:gOy+r*hh*1.5,mochi:false,mochiT:0,interval:700+Math.random()*1200,popT:0,up:false});
+  }
+  // Schedule first mochi pops
+  for(var i=0;i<this._holes.length;i++){
+    (function(h,delay){ self.time.delayedCall(delay,function(){ if(!self._done) h.interval=500+Math.random()*1100; }); })(this._holes[i],500+i*300);
+  }
+  // Graphics layers
+  this.bgG=this.add.graphics().setDepth(0);
+  this.holeG=this.add.graphics().setDepth(1);
+  this.mochiG=this.add.graphics().setDepth(2);
+  this.hudG=this.add.graphics().setDepth(5);
+  // Text
+  this.add.text(W/2,18,'MOCHI SMASH',{fontFamily:'Georgia,serif',fontSize:'38px',color:'#ffd700',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setDepth(6);
+  this.add.text(W/2,56,'Arrows/WASD = Move  Z = SMASH',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#aaaaaa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6);
+  this.scoreTxt=this.add.text(W-20,18,'SCORE: 0',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#00e676',stroke:'#000000',strokeThickness:3}).setOrigin(1,0).setDepth(6);
+  this.timerTxt=this.add.text(W/2,H-20,'20s',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#ff4444',stroke:'#000000',strokeThickness:3}).setOrigin(0.5,1).setDepth(6);
+  this.flashTxt=this.add.text(W/2,H/2,'',{fontFamily:'Georgia,serif',fontSize:'36px',color:'#ffd700',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.wsTxt=this.add.text(W/2,86,'',{fontFamily:'Courier New,monospace',fontSize:'15px',color:'#ff44aa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6).setAlpha(0);
+  // Keys
+  this.keys={
+    left:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
+    right:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
+    up:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP),
+    down:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN),
+    a:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+    d:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+    w:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+    s:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+    z:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z)
+  };
+  this._moveCooldown=0;
+  SOUND.pickup();
+};
+MochiSmashScene.prototype._flash=function(txt,dur,sz,col){
+  var self=this;
+  this.flashTxt.setText(txt).setFontSize((sz||34)+'px').setColor(col||'#ffd700').setAlpha(1);
+  this.tweens.add({targets:this.flashTxt,alpha:0,duration:dur||800,delay:200});
+};
+MochiSmashScene.prototype.update=function(time,delta){
+  if(this._done) return;
+  var self=this;
+  // Timer
+  this._timeLeft-=delta;
+  if(this._timeLeft<=0){
+    this._timeLeft=0; this._done=true;
+    SOUND.victory();
+    this._flash('TIME\'S UP!  SCORE: '+this._score,2500,30,'#ffd700');
+    this.time.delayedCall(3000,function(){ self.scene.start('WorldMap',{aloeEarned:0}); });
+    return;
+  }
+  var secsLeft=Math.ceil(this._timeLeft/1000);
+  this.timerTxt.setText(secsLeft+'s').setColor(secsLeft<=5?'#ff2222':secsLeft<=10?'#ff8800':'#ff4444');
+  // WS messages
+  this._wsMT-=delta;
+  if(this._wsMT<=0){
+    this._wsMT=4000+Math.random()*3000;
+    var wsm=this._wsMsgs[Math.floor(Math.random()*this._wsMsgs.length)];
+    this.wsTxt.setText(wsm).setAlpha(1);
+    this.tweens.add({targets:this.wsTxt,alpha:0,delay:2000,duration:700});
+  }
+  // Mochi pop timing
+  for(var i=0;i<this._holes.length;i++){
+    var h=this._holes[i];
+    h.mochiT+=delta;
+    if(!h.up&&h.mochiT>=h.interval){
+      h.up=true; h.mochiT=0; h.popT=0;
+      h.interval=800+Math.random()*1400;
+    }
+    if(h.up){
+      h.popT+=delta;
+      if(h.popT>1600+Math.random()*600) { h.up=false; h.mochiT=0; }
+    }
+  }
+  // Input - cursor movement
+  this._moveCooldown=Math.max(0,this._moveCooldown-delta);
+  if(this._moveCooldown<=0){
+    var moved=false;
+    if(Phaser.Input.Keyboard.JustDown(this.keys.left)||Phaser.Input.Keyboard.JustDown(this.keys.a)){
+      if(this._cursor%3>0){this._cursor--;moved=true;}
+    } else if(Phaser.Input.Keyboard.JustDown(this.keys.right)||Phaser.Input.Keyboard.JustDown(this.keys.d)){
+      if(this._cursor%3<2){this._cursor++;moved=true;}
+    } else if(Phaser.Input.Keyboard.JustDown(this.keys.up)||Phaser.Input.Keyboard.JustDown(this.keys.w)){
+      if(this._cursor>=3){this._cursor-=3;moved=true;}
+    } else if(Phaser.Input.Keyboard.JustDown(this.keys.down)||Phaser.Input.Keyboard.JustDown(this.keys.s)){
+      if(this._cursor<6){this._cursor+=3;moved=true;}
+    }
+    if(moved) this._moveCooldown=130;
+  }
+  // Smash
+  if(Phaser.Input.Keyboard.JustDown(this.keys.z)){
+    var h2=this._holes[this._cursor];
+    if(h2&&h2.up){
+      h2.up=false; h2.mochiT=0; h2.popT=0;
+      this._score+=10; EWR_STATE.aloe+=10;
+      this.scoreTxt.setText('SCORE: '+this._score);
+      SOUND.punch(); this.cameras.main.shake(60,0.008);
+      spawnExplosion(h2.x,h2.y,0xff4444,1.8);
+      var floatTxt=this.add.text(h2.x,h2.y-20,'+10',{fontFamily:'Courier New,monospace',fontSize:'22px',color:'#ff4444',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(8);
+      this.tweens.add({targets:floatTxt,y:h2.y-70,alpha:0,duration:700,onComplete:function(){floatTxt.destroy();}});
+    } else {
+      SOUND.hurt();
+      var missMsgs=['THERE WAS NOTHING THERE','MISS','NOTHING','THE MOCHI WAS A CONCEPT'];
+      this._flash(missMsgs[Math.floor(Math.random()*missMsgs.length)],600,18,'#888888');
+    }
+  }
+  // Draw
+  this._draw();
+};
+MochiSmashScene.prototype._draw=function(){
+  var W=960,H=540;
+  // BG
+  this.bgG.clear();
+  this.bgG.fillStyle(0x0a0008,1); this.bgG.fillRect(0,0,W,H);
+  // subtle grid
+  this.bgG.lineStyle(1,0x220033,0.4);
+  for(var gx=0;gx<W;gx+=60){this.bgG.beginPath();this.bgG.moveTo(gx,0);this.bgG.lineTo(gx,H);this.bgG.strokePath();}
+  for(var gy=0;gy<H;gy+=60){this.bgG.beginPath();this.bgG.moveTo(0,gy);this.bgG.lineTo(W,gy);this.bgG.strokePath();}
+  // timer bar
+  var tf=Math.max(0,this._timeLeft/20000);
+  var barCol=tf>0.5?0x00e676:tf>0.25?0xff8800:0xff2222;
+  this.hudG.clear();
+  this.hudG.fillStyle(0x333333,1); this.hudG.fillRect(80,H-14,800,8);
+  this.hudG.fillStyle(barCol,1); this.hudG.fillRect(80,H-14,Math.floor(800*tf),8);
+  // Holes + mochis
+  this.holeG.clear();
+  this.mochiG.clear();
+  for(var i=0;i<this._holes.length;i++){
+    var h=this._holes[i];
+    var isCursor=(i===this._cursor);
+    // hole shadow
+    this.holeG.fillStyle(0x1a0028,1); this.holeG.fillEllipse(h.x,h.y+6,64,20);
+    // hole
+    this.holeG.fillStyle(0x2a1040,1); this.holeG.fillEllipse(h.x,h.y,60,18);
+    this.holeG.lineStyle(2,isCursor?0xffd700:0x550088,1); this.holeG.strokeEllipse(h.x,h.y,60,18);
+    // cursor glow ring
+    if(isCursor){
+      this.holeG.lineStyle(3,0xffd700,0.7+Math.sin(Date.now()*0.005)*0.3);
+      this.holeG.strokeEllipse(h.x,h.y,76,34);
+    }
+    // Mochi
+    if(h.up){
+      var popPct=Math.min(h.popT/200,1.0);
+      var my=h.y-Math.round(32*popPct);
+      // body
+      this.mochiG.fillStyle(0xffeedd,1); this.mochiG.fillEllipse(h.x,my,38,28);
+      // eyes
+      this.mochiG.fillStyle(0x111111,1);
+      this.mochiG.fillCircle(h.x-7,my-4,3); this.mochiG.fillCircle(h.x+7,my-4,3);
+      // angry eyebrows (V shape)
+      this.mochiG.lineStyle(2,0x111111,1);
+      this.mochiG.beginPath(); this.mochiG.moveTo(h.x-11,my-9); this.mochiG.lineTo(h.x-4,my-7); this.mochiG.strokePath();
+      this.mochiG.beginPath(); this.mochiG.moveTo(h.x+11,my-9); this.mochiG.lineTo(h.x+4,my-7); this.mochiG.strokePath();
+      // frown
+      this.mochiG.beginPath(); this.mochiG.arc(h.x,my+3,5,0.4*Math.PI,0.6*Math.PI,false); this.mochiG.strokePath();
+    }
+  }
+};
+
+
+// ════════════════════════════════════════════════════════════════
+// SLOT MACHINE — AAA mini-game (triggered after Level 1-2 beat)
+// ════════════════════════════════════════════════════════════════
+var SL_SYMS=['CIG','CAT','VOID','ALOE','MOCHI','7 7 7','BEEF'];
+var SL_COLS=[0xffd700,0xff9f43,0xcc44ff,0x00e676,0xff4444,0xffffff,0xff8888];
+function SlotMachineScene(){ Phaser.Scene.call(this,{key:'SlotMachine'}); }
+SlotMachineScene.prototype=Object.create(Phaser.Scene.prototype);
+SlotMachineScene.prototype.constructor=SlotMachineScene;
+SlotMachineScene.prototype.create=function(){
+  var W=960,H=540,self=this;
+  this._t=0; this._done=false;
+  this._stopT=[1500,2500,3500]; // when each reel stops
+  this._stopped=[false,false,false];
+  // Pre-determine result
+  var r=Math.random();
+  var result;
+  if(r<0.05) result='jackpot';
+  else if(r<0.30) result='double';
+  else result='miss';
+  // Choose symbols based on result
+  var s0,s1,s2;
+  if(result==='jackpot'){
+    var ji=Math.floor(Math.random()*SL_SYMS.length);
+    s0=ji;s1=ji;s2=ji;
+    if(s0===2) { result='void_jackpot'; } // 3x VOID special
+  } else if(result==='double'){
+    var di=Math.floor(Math.random()*SL_SYMS.length);
+    s0=di;s1=di;
+    do{s2=Math.floor(Math.random()*SL_SYMS.length);}while(s2===di);
+    if(Math.random()<0.5){var tmp=s1;s1=s2;s2=tmp;} // randomize which differs
+  } else {
+    s0=Math.floor(Math.random()*SL_SYMS.length);
+    do{s1=Math.floor(Math.random()*SL_SYMS.length);}while(s1===s0);
+    do{s2=Math.floor(Math.random()*SL_SYMS.length);}while(s2===s0||s2===s1);
+  }
+  this._finalSyms=[s0,s1,s2];
+  this._result=result;
+  // Current displayed symbol index per reel (spinning)
+  this._spinIdx=[0,0,0];
+  this._spinSpeed=12; // frames between symbol changes while spinning
+  this._spinCounter=0;
+  // Graphics
+  this.bgG=this.add.graphics().setDepth(0);
+  this.slotG=this.add.graphics().setDepth(2);
+  this.hudG=this.add.graphics().setDepth(5);
+  // Text objects for reel symbols
+  var reelStyle={fontFamily:'Georgia,serif',fontSize:'28px',color:'#ffffff',stroke:'#000000',strokeThickness:4,align:'center'};
+  var rx=[W/2-155,W/2,W/2+155];
+  this._reelTxts=[];
+  for(var i=0;i<3;i++){
+    this._reelTxts.push(this.add.text(rx[i],H/2+10,SL_SYMS[0],reelStyle).setOrigin(0.5).setDepth(4));
+  }
+  this.flashTxt=this.add.text(W/2,130,'',{fontFamily:'Georgia,serif',fontSize:'44px',color:'#ffd700',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.wsTxt=this.add.text(W/2,H-36,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ff44aa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6).setAlpha(0);
+  this.add.text(W/2,28,'ED\'S LUCKY CIG SLOTS',{fontFamily:'Georgia,serif',fontSize:'30px',color:'#ffd700',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setDepth(6);
+  // WS spin messages
+  var wsSpinMsgs=['THE MACHINE KNOWS','GAMBLING IS LOVING YOURSELF','THIS IS FINE','SPIN IS TRUTH','DO NOT LOOK AT THE REELS (LOOK AT THE REELS)','THE SYMBOLS ARE CHOSEN','FATE IS ALSO A CIG'];
+  var wsIdx=0;
+  this._wsSpinTimer=2500;
+  this._wsSpinMsgs=wsSpinMsgs; this._wsSpinIdx=0;
+  // Result revealed flags
+  this._revealed=false;
+  this._revealDelay=3800;
+  SOUND.pickup();
+};
+SlotMachineScene.prototype._flash=function(txt,dur,sz,col){
+  var self=this;
+  this.flashTxt.setText(txt).setFontSize((sz||42)+'px').setColor(col||'#ffd700').setAlpha(1);
+  this.tweens.add({targets:this.flashTxt,alpha:0,duration:dur||1200,delay:300});
+};
+SlotMachineScene.prototype.update=function(time,delta){
+  if(this._done) return;
+  var self=this;
+  this._t+=delta;
+  // WS spin messages
+  this._wsSpinTimer-=delta;
+  if(this._wsSpinTimer<=0){
+    this._wsSpinTimer=2200+Math.random()*1500;
+    var wm=this._wsSpinMsgs[this._wsSpinIdx%this._wsSpinMsgs.length]; this._wsSpinIdx++;
+    this.wsTxt.setText(wm).setAlpha(1);
+    this.tweens.add({targets:this.wsTxt,alpha:0,delay:1800,duration:600});
+  }
+  // Reel spinning
+  this._spinCounter+=delta;
+  var spinRate=80; // ms per symbol change while spinning
+  if(this._spinCounter>=spinRate){
+    this._spinCounter=0;
+    for(var i=0;i<3;i++){
+      if(!this._stopped[i]){
+        this._spinIdx[i]=(this._spinIdx[i]+1)%SL_SYMS.length;
+        this._reelTxts[i].setText(SL_SYMS[this._spinIdx[i]]);
+        var cc=SL_COLS[this._spinIdx[i]]; 
+        this._reelTxts[i].setColor('#'+('000000'+cc.toString(16)).slice(-6));
+      }
+    }
+  }
+  // Stop reels at scheduled times
+  for(var ri=0;ri<3;ri++){
+    if(!this._stopped[ri]&&this._t>=this._stopT[ri]){
+      this._stopped[ri]=true;
+      this._spinIdx[ri]=this._finalSyms[ri];
+      this._reelTxts[ri].setText(SL_SYMS[this._finalSyms[ri]]);
+      var fc=SL_COLS[this._finalSyms[ri]];
+      this._reelTxts[ri].setColor('#'+('000000'+fc.toString(16)).slice(-6));
+      SOUND.punch(); this.cameras.main.shake(80,0.007);
+    }
+  }
+  // Reveal result
+  if(!this._revealed&&this._t>=this._revealDelay){
+    this._revealed=true;
+    var res=this._result;
+    var reward=0;
+    if(res==='void_jackpot'){
+      reward=80; EWR_STATE.aloe+=reward;
+      this._flash('THE VOID WINS. SO DO YOU.',2200,28,'#cc44ff');
+      SOUND.victory();
+    } else if(res==='jackpot'){
+      reward=150; EWR_STATE.aloe+=reward;
+      SOUND.victory();
+      for(var jj=0;jj<3;jj++){(function(d){self.time.delayedCall(d,function(){SOUND.victory();self.cameras.main.shake(200,0.02);});})(jj*300);}
+      this._flash('JACKPOT!!! +150 ALOE',2400,44,'#ffd700');
+    } else if(res==='double'){
+      reward=50; EWR_STATE.aloe+=reward;
+      this._flash('+50 ALOE / CLOSE ENOUGH',1800,30,'#ffcc00');
+      SOUND.pickup();
+    } else {
+      reward=10; EWR_STATE.aloe+=reward;
+      var missMsgs=['THE MACHINE SAW YOUR SOUL / +10 ALOE','BETTER LUCK IN THE ECONOMY / +10','THE CIG WINS / YOU WIN ANYWAY / +10','BEEF / +10 ALOE'];
+      this._flash(missMsgs[Math.floor(Math.random()*missMsgs.length)],2000,20,'#aaaaaa');
+    }
+    this.time.delayedCall(3500,function(){ self._done=true; self.scene.start('WorldMap',{aloeEarned:reward}); });
+  }
+  this._draw();
+};
+SlotMachineScene.prototype._draw=function(){
+  var W=960,H=540;
+  var t=this._t;
+  // Background — dark purple casino
+  this.bgG.clear();
+  this.bgG.fillStyle(0x12002a,1); this.bgG.fillRect(0,0,W,H);
+  // Pulsing border
+  var pulse=0.5+Math.sin(t*0.003)*0.5;
+  this.bgG.lineStyle(3,0xffd700,0.4+pulse*0.4); this.bgG.strokeRect(8,8,W-16,H-16);
+  this.bgG.lineStyle(2,0xcc44ff,0.2+pulse*0.3); this.bgG.strokeRect(14,14,W-28,H-28);
+  // Reel backgrounds
+  this.slotG.clear();
+  var rx2=[W/2-155,W/2,W/2+155];
+  for(var i=0;i<3;i++){
+    var stopped=this._stopped[i];
+    var rc=stopped?0xcc44ff:0x220044;
+    this.slotG.fillStyle(rc,stopped?0.25:0.12); this.slotG.fillRoundedRect(rx2[i]-65,H/2-55,130,110,8);
+    this.slotG.lineStyle(2,stopped?0xffd700:0x440088,1); this.slotG.strokeRoundedRect(rx2[i]-65,H/2-55,130,110,8);
+    // spinning lines inside reel
+    if(!stopped){
+      var lineOff=((t*0.3)+i*40)%110;
+      this.slotG.lineStyle(1,0x440088,0.3);
+      for(var sl=0;sl<3;sl++){
+        var ly=H/2-55+((lineOff+sl*37)%110);
+        this.slotG.beginPath(); this.slotG.moveTo(rx2[i]-65,ly); this.slotG.lineTo(rx2[i]+65,ly); this.slotG.strokePath();
+      }
+    }
+  }
+  // Center pay line
+  this.slotG.lineStyle(2,0xffd700,0.5); this.slotG.beginPath();
+  this.slotG.moveTo(W/2-220,H/2+8); this.slotG.lineTo(W/2+220,H/2+8); this.slotG.strokePath();
+  // Neon corner lights
+  var cornerCols=[0xff00ff,0x00ffcc,0xffd700,0xff4444];
+  var corners=[[30,80],[W-30,80],[30,H-80],[W-30,H-80]];
+  for(var ci=0;ci<4;ci++){
+    this.slotG.fillStyle(cornerCols[ci],0.4+Math.sin(t*0.004+ci)*0.3);
+    this.slotG.fillCircle(corners[ci][0],corners[ci][1],8+Math.sin(t*0.005+ci)*3);
+  }
+};
+
+
 var config = {
   type: Phaser.CANVAS,
   width: 960,
@@ -5506,7 +5999,9 @@ var config = {
     TitleScene,
     WorldMapScene,
     Level11Scene,
+    MochiSmashScene,
     Level12Scene,
+    SlotMachineScene,
     Level13Scene,
     Level14Scene,
     Level15Scene,
