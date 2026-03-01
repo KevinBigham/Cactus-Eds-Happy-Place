@@ -44,10 +44,10 @@ var EWR_STATE = {
   playerPos:{x:5,y:5},
   coopMode:false,
   health:[3,3], maxHealth:[3,3],
-  catsPetted:0, fightWins:0,
+  catsPetted:0, fightWins:0, healFraction:0,
   // V1.2 new
   combo:{streak:0,mult:1,timer:0},
-  shop:{doubleJump:false,speedBoost:false,explosiveCig:false,crtFilter:false},
+  shop:{doubleJump:false,speedBoost:false,explosiveCig:false,crtFilter:false,lifeSteal:false,aloeMagnet:false},
   secretBeaten:{}
 };
 
@@ -63,7 +63,8 @@ var ALOE = {
   start:200, beat11:50, beat12:80, beat13:60, beat14:80, beat15:300,
   secretFind:20, catPet:5, fightWin:40,
   mochiDeath:8, aloePickup:15, raceEntryFee:25,
-  tankDeath:20, daikonDeath:16, throwerDeath:18, bossHit:12, voidBeat:200
+  tankDeath:20, daikonDeath:16, throwerDeath:18, bossHit:12, voidBeat:200,
+  beat21:100, beat22:120, beat23:500, ghostDeath:14, bomberDeath:25
 };
 
 var CAT_NAMES = [
@@ -88,7 +89,7 @@ var W1_ROWS = [
   'M   M    T  5 MM',
   'M G  G  GT  P MM',
   'M GG G  GPPP4 MM',
-  'M GGC G2VP  C MM',
+  'M GGC G2VP  CP!M',
   'M P  1P P3P   MM',
   'M P  GPPPP    MM',
   'M PP  GG PPCG MM',
@@ -109,7 +110,8 @@ var W1_TILES = {
   '4':{type:'level',   passable:true, id:'1-4', label:'Hippie Bus Highway'},
   '5':{type:'level',   passable:true, id:'1-5', label:'Mochi HQ'},
   'V':{type:'level',   passable:true, id:'1-V', label:'THE VOID'},
-  'C':{type:'catspot', passable:true}
+  'C':{type:'catspot', passable:true},
+  '!':{type:'portal',  passable:true, id:'portal-W2', label:'THE NEON DISTRICT'}
 };
 
 var WS_TEXTS = [
@@ -723,6 +725,12 @@ WorldMapScene.prototype._drawMap=function(){
           g.fillStyle(voidStyle?0xcc44ff:(beaten?0x888888:parseInt(AT.uiGold.slice(1),16)),1);    g.fillCircle(px+self.tW/2,py+self.tH/2,12);
           g.fillStyle(parseInt(AT.outline.slice(1),16),1); g.fillCircle(px+self.tW/2,py+self.tH/2,8);
           g.fillStyle(voidStyle?0xcc44ff:(beaten?0x888888:parseInt(AT.uiGold.slice(1),16)),1);    g.fillCircle(px+self.tW/2,py+self.tH/2,5); break;
+        case 'portal':
+          g.fillStyle(parseInt(AT.sky.slice(1),16),1); g.fillRect(px,py,self.tW,self.tH);
+          g.fillStyle(0x00ffcc,0.18); g.fillCircle(px+self.tW/2,py+self.tH/2,22);
+          g.fillStyle(0x00ffcc,1); g.fillCircle(px+self.tW/2,py+self.tH/2,12);
+          g.fillStyle(parseInt(AT.outline.slice(1),16),1); g.fillCircle(px+self.tW/2,py+self.tH/2,8);
+          g.fillStyle(0xcc44ff,1); g.fillCircle(px+self.tW/2,py+self.tH/2,5); break;
         case 'catspot':
         default:
           g.fillStyle(parseInt(AT.grass.slice(1),16),1); g.fillRect(px,py,self.tW,self.tH); break;
@@ -874,7 +882,18 @@ WorldMapScene.prototype._tryShop=function(){
   }
 };
 WorldMapScene.prototype._tryEnter=function(){
-  var tile=this._getTile(this.edTile.x,this.edTile.y); if(!tile||tile.type!=='level') return;
+  var tile=this._getTile(this.edTile.x,this.edTile.y); if(!tile||(tile.type!=='level'&&tile.type!=='portal')) return;
+  if(tile.type==='portal'){
+    var w1Done=['1-1','1-2','1-3','1-4','1-5'].every(function(id){return EWR_STATE.levelsBeaten.indexOf(id)>=0;});
+    if(!w1Done){
+      var self=this;
+      this.nodeTxt.setText('Beat all of World 1 to unlock The Neon District!').setAlpha(1);
+      this.time.delayedCall(2500,function(){self.nodeTxt.setAlpha(0);});
+      return;
+    }
+    SMOKE_POOL.length=0;EX_POOL.length=0;FIRE_POOL.length=0;
+    this.scene.start('WorldMap2'); return;
+  }
   var gateMsg=null;
   if(tile.id==='1-2'&&EWR_STATE.levelsBeaten.indexOf('1-1')<0) gateMsg='Beat Ed Wakes Up first!';
   if(tile.id==='1-3'&&EWR_STATE.levelsBeaten.indexOf('1-2')<0) gateMsg='Beat The Cat Rave first!';
@@ -1057,7 +1076,7 @@ Level11Scene.prototype.update=function(time,delta){
         m.hp--; spawnExplosion(m.x,m.y-13,0xffd60a,1); SOUND.punch();
         this.cameras.main.shake(80,0.005);
         _addCombo(this,m.x,m.y);
-        if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);}
+        if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
         if(EWR_STATE.shop.explosiveCig) spawnExplosion(ep.x+es.facing*56,ep.y-20,0xff6b35,1.2);
         es.punchActive=false; punchConsumed=true; break;
       }
@@ -1073,7 +1092,7 @@ Level11Scene.prototype.update=function(time,delta){
         km.hp-=2; spawnExplosion(km.x,km.y-13,0xff6b35,1.5); SOUND.kick();
         this.cameras.main.shake(120,0.008);
         _addCombo(this,km.x,km.y);
-        if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);}
+        if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='ghost'?ALOE.ghostDeath:km.type==='bomber'?ALOE.bomberDeath:km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
         es.kickActive=false; break;
       }
     }
@@ -1122,11 +1141,41 @@ Level11Scene.prototype.update=function(time,delta){
   for(var mi2=0;mi2<this.mochiList.length;mi2++){
     var m2=this.mochiList[mi2];
     if(m2.dieT>=0){
+      if(m2.type==='bomber'&&!m2._exploded){
+        m2._exploded=true;
+        spawnExplosion(m2.x,m2.y-15,0xff2200,2.5); SOUND.blast();
+        if(es.hurtTimer<=0&&Math.abs(ep.x-m2.x)<70&&Math.abs(ep.y-m2.y)<60){
+          EWR_STATE.health[0]--; EWR_STATE.combo.streak=0; EWR_STATE.combo.mult=1;
+          es.hurtTimer=1200; SOUND.hurt(); this.cameras.main.shake(300,0.015);
+          if(EWR_STATE.health[0]<=0){this._triggerDeath();return;}
+        }
+      }
       m2.dieT+=delta; m2.squishT+=delta;
       for(var pp=0;pp<m2.parts.length;pp++){var pt=m2.parts[pp];pt.x+=pt.vx;pt.y+=pt.vy;pt.vy+=0.3;pt.life-=0.025;}
       continue;
     }
     // Type-specific update
+    if(m2.type==='ghost'){
+      m2.bT+=delta; m2.x+=m2.dir*m2.spd*dt;
+      m2.y=(m2.baseY||320)+Math.sin(m2.bT*0.003)*22;
+      if(m2.x<m2.pMin){m2.x=m2.pMin;m2.dir=1;} if(m2.x>m2.pMax){m2.x=m2.pMax;m2.dir=-1;}
+      if(es.hurtTimer<=0&&Math.abs(ep.x-m2.x)<26&&Math.abs(ep.y-m2.y)<30){
+        es.hurtTimer=1200; EWR_STATE.health[0]--; EWR_STATE.combo.streak=0; EWR_STATE.combo.mult=1;
+        SOUND.hurt(); this.cameras.main.shake(250,0.012); ep.vx=-es.facing*190; ep.vy=-210;
+        if(EWR_STATE.health[0]<=0){this._triggerDeath();return;}
+      }
+      continue;
+    }
+    if(m2.type==='bomber'){
+      m2.x+=m2.dir*(m2.spd||28)*dt; m2.bT+=delta; m2.bAmt=Math.sin(m2.bT*0.004)*3;
+      if(m2.x<m2.pMin){m2.x=m2.pMin;m2.dir=1;} if(m2.x>m2.pMax){m2.x=m2.pMax;m2.dir=-1;}
+      if(es.hurtTimer<=0&&Math.abs(ep.x-m2.x)<38&&Math.abs(ep.y-m2.y)<38){
+        es.hurtTimer=1200; EWR_STATE.health[0]--; EWR_STATE.combo.streak=0; EWR_STATE.combo.mult=1;
+        SOUND.hurt(); this.cameras.main.shake(300,0.015); ep.vx=-es.facing*190; ep.vy=-210;
+        if(EWR_STATE.health[0]<=0){this._triggerDeath();return;}
+      }
+      continue;
+    }
     if(m2.type==='daikon'){
       m2.bT+=delta; m2.y=m2.baseY+Math.sin(m2.bT*0.003)*28;
       m2.x+=m2.dir*m2.spd*dt;
@@ -1177,7 +1226,7 @@ Level11Scene.prototype.update=function(time,delta){
   for(var ai=0;ai<this.pickups.length;ai++){
     var ap=this.pickups[ai]; if(ap.collected) continue;
     ap.bobT+=delta;
-    if(Math.abs(ep.x-ap.x)+Math.abs(ep.y-ap.y)<44){
+    if(Math.abs(ep.x-ap.x)+Math.abs(ep.y-ap.y)<(EWR_STATE.shop.aloeMagnet?140:44)){
       ap.collected=true;EWR_STATE.aloe+=ALOE.aloePickup;
       spawnExplosion(ap.x,ap.y,0x00e676,1); SOUND.pickup();
       this._flash('+'+ALOE.aloePickup+' ALOE',1200);
@@ -1328,6 +1377,32 @@ Level11Scene.prototype._drawMochi=function(g,m){
       return;
     }
     for(var i=0;i<m.parts.length;i++){var p=m.parts[i];if(p.life>0){g.fillStyle(p.color,p.life);g.fillCircle(p.x,p.y,p.r);}}
+    return;
+  }
+  // Ghost: translucent blue shimmer
+  if(m.type==='ghost'){
+    var ga=0.25+Math.sin((m.bT||0)*0.005)*0.12;
+    g.fillStyle(0x0000aa,0.12); g.fillEllipse(m.x,m.y+2,28,8);
+    g.fillStyle(0xaaccff,ga+0.15); g.fillCircle(m.x,m.y-13,16);
+    g.fillStyle(0xeeeeff,ga); g.fillCircle(m.x,m.y-13,13);
+    g.fillStyle(0x00ffff,0.85); g.fillCircle(m.x-5,m.y-17,4); g.fillCircle(m.x+5,m.y-17,4);
+    g.fillStyle(0x000000,1); g.fillCircle(m.x-5,m.y-17,2); g.fillCircle(m.x+5,m.y-17,2);
+    for(var gh=0;gh<m.hp;gh++){g.fillStyle(0x00ffff,0.7);g.fillCircle(m.x-3+gh*6,m.y-32,2);}
+    return;
+  }
+  // Bomber: round red pulsing ball with LED timer
+  if(m.type==='bomber'){
+    var bpulse=0.88+Math.sin((m.bT||0)*0.008)*0.12;
+    g.fillStyle(0x000000,0.22); g.fillEllipse(m.x,m.y+2,36*bpulse,10);
+    g.fillStyle(0xff2200,0.35); g.fillCircle(m.x,m.y-13,26*bpulse);
+    g.fillStyle(parseInt(AT.outline.slice(1),16),1); g.fillCircle(m.x,m.y-13,20*bpulse);
+    g.fillStyle(0xdd2200,1); g.fillCircle(m.x,m.y-13,18*bpulse);
+    g.fillStyle(0xff5500,0.55); g.fillCircle(m.x-6,m.y-18,5); g.fillCircle(m.x+7,m.y-12,4);
+    g.fillStyle(0x1a0000,1); g.fillEllipse(m.x-5,m.y-16,5,4); g.fillEllipse(m.x+5,m.y-16,5,4);
+    var ledOn=Math.sin((m.bT||0)*0.014)>0;
+    g.fillStyle(ledOn?0xff0000:0x550000,1); g.fillCircle(m.x,m.y-8,4);
+    g.fillStyle(0xff4444,1); g.fillRect(m.x-18,m.y-35,Math.max(0,36*(m.hp/5)),4);
+    g.lineStyle(1,0xffffff,0.4); g.strokeRect(m.x-18,m.y-35,36,4);
     return;
   }
   var scl=m.type==='tank'?1.5:1;
@@ -1518,7 +1593,9 @@ function createLevelScene(cfg) {
     for(var mi=0;mi<cfg.mochis.length;mi++){
       var mc=cfg.mochis[mi];
       var hp=mc.hp||(mc.type==='tank'?4:mc.type==='daikon'?2:mc.type==='thrower'?3:3);
-      this.mochiList.push({x:mc.x,y:mc.type==='daikon'?(mc.baseY||330):464,hp:hp,spd:45+Math.random()*25,dir:1,bT:0,bAmt:0,dieT:-1,squishT:0,parts:[],pMin:mc.x-90,pMax:mc.x+90,type:mc.type||'mochi',baseY:mc.baseY||330,sineT:Math.random()*100,projectiles:[],shotT:0,shotInterval:2200+Math.random()*1000});
+      var mSpd=mc.spd||(45+Math.random()*25);
+      var mY=mc.type==='daikon'||(mc.type==='ghost')?(mc.baseY||330):464;
+      this.mochiList.push({x:mc.x,y:mY,hp:hp,spd:mSpd,dir:mc.dir||1,bT:0,bAmt:0,dieT:-1,squishT:0,parts:[],pMin:mc.pMin!==undefined?mc.pMin:mc.x-90,pMax:mc.pMax!==undefined?mc.pMax:mc.x+90,type:mc.type||'mochi',baseY:mc.baseY||330,sineT:Math.random()*100,projectiles:[],shotT:0,shotInterval:2200+Math.random()*1000});
     }
     this.pickups=[]; this.pickupG=this.add.graphics().setDepth(4);
     for(var ai=0;ai<cfg.pickups.length;ai++){this.pickups.push({x:cfg.pickups[ai][0],y:cfg.pickups[ai][1],collected:false,bobT:0});}
@@ -1638,7 +1715,7 @@ function createLevelScene(cfg) {
         if(Math.abs(hx-m.x)<hRange&&Math.abs(ep.y-m.y)<hRangeY){
           m.hp--; spawnExplosion(m.x,m.y-13,0xffd60a,1); SOUND.punch();
           this.cameras.main.shake(80,0.005); _addCombo(this,m.x,m.y);
-          if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:m.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);}
+          if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:m.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
           if(EWR_STATE.shop.explosiveCig) spawnExplosion(ep.x+es.facing*56,ep.y-20,0xff6b35,1.2);
           es.punchActive=false; punchConsumed=true; break;
         }
@@ -1652,7 +1729,7 @@ function createLevelScene(cfg) {
         if(Math.abs(kx-km.x)<65&&Math.abs(ep.y-km.y)<42){
           km.hp-=2; spawnExplosion(km.x,km.y-13,0xff6b35,1.5); SOUND.kick();
           this.cameras.main.shake(120,0.008); _addCombo(this,km.x,km.y);
-          if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:km.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);}
+          if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='ghost'?ALOE.ghostDeath:km.type==='bomber'?ALOE.bomberDeath:km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:km.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
           es.kickActive=false; break;
         }
       }
@@ -1695,8 +1772,38 @@ function createLevelScene(cfg) {
     for(var mi3=0;mi3<this.mochiList.length;mi3++){
       var m2=this.mochiList[mi3];
       if(m2.dieT>=0){
+        if(m2.type==='bomber'&&!m2._exploded){
+          m2._exploded=true;
+          spawnExplosion(m2.x,m2.y-15,0xff2200,2.5); SOUND.blast();
+          if(es.hurtTimer<=0&&Math.abs(ep.x-m2.x)<70&&Math.abs(ep.y-m2.y)<60){
+            EWR_STATE.health[0]--; EWR_STATE.combo.streak=0; EWR_STATE.combo.mult=1;
+            es.hurtTimer=1200; SOUND.hurt(); this.cameras.main.shake(300,0.015);
+            if(EWR_STATE.health[0]<=0){this._triggerDeath();return;}
+          }
+        }
         m2.dieT+=delta; m2.squishT+=delta;
         for(var pp=0;pp<m2.parts.length;pp++){var pt=m2.parts[pp];pt.x+=pt.vx;pt.y+=pt.vy;pt.vy+=0.3;pt.life-=0.025;}
+        continue;
+      }
+      if(m2.type==='ghost'){
+        m2.bT+=delta; m2.x+=m2.dir*m2.spd*dt;
+        m2.y=(m2.baseY||320)+Math.sin(m2.bT*0.003)*22;
+        if(m2.x<m2.pMin){m2.x=m2.pMin;m2.dir=1;} if(m2.x>m2.pMax){m2.x=m2.pMax;m2.dir=-1;}
+        if(es.hurtTimer<=0&&Math.abs(ep.x-m2.x)<26&&Math.abs(ep.y-m2.y)<30){
+          es.hurtTimer=1200; EWR_STATE.health[0]--; EWR_STATE.combo.streak=0; EWR_STATE.combo.mult=1;
+          SOUND.hurt(); this.cameras.main.shake(250,0.012); ep.vx=-es.facing*190; ep.vy=-210;
+          if(EWR_STATE.health[0]<=0){this._triggerDeath();return;}
+        }
+        continue;
+      }
+      if(m2.type==='bomber'){
+        m2.x+=m2.dir*(m2.spd||28)*dt; m2.bT+=delta; m2.bAmt=Math.sin(m2.bT*0.004)*3;
+        if(m2.x<m2.pMin){m2.x=m2.pMin;m2.dir=1;} if(m2.x>m2.pMax){m2.x=m2.pMax;m2.dir=-1;}
+        if(es.hurtTimer<=0&&Math.abs(ep.x-m2.x)<38&&Math.abs(ep.y-m2.y)<38){
+          es.hurtTimer=1200; EWR_STATE.health[0]--; EWR_STATE.combo.streak=0; EWR_STATE.combo.mult=1;
+          SOUND.hurt(); this.cameras.main.shake(300,0.015); ep.vx=-es.facing*190; ep.vy=-210;
+          if(EWR_STATE.health[0]<=0){this._triggerDeath();return;}
+        }
         continue;
       }
       if(m2.type==='daikon'){
@@ -1745,7 +1852,7 @@ function createLevelScene(cfg) {
     for(var ai2=0;ai2<this.pickups.length;ai2++){
       var ap=this.pickups[ai2]; if(ap.collected) continue;
       ap.bobT+=delta;
-      if(Math.abs(ep.x-ap.x)+Math.abs(ep.y-ap.y)<44){
+      if(Math.abs(ep.x-ap.x)+Math.abs(ep.y-ap.y)<(EWR_STATE.shop.aloeMagnet?140:44)){
         ap.collected=true; EWR_STATE.aloe+=ALOE.aloePickup;
         spawnExplosion(ap.x,ap.y,0x00e676,1); SOUND.pickup();
         this._flash('+'+ALOE.aloePickup+' ALOE',1200);
@@ -1813,7 +1920,7 @@ function createLevelScene(cfg) {
     SOUND.victory(); this.cameras.main.shake(250,0.015);
     this._flash('LEVEL CLEAR! +'+cfg.aloeReward+' ALOE',2800);
     var self=this;
-    this.time.delayedCall(3000,function(){self.scene.start('WorldMap',{aloeEarned:cfg.aloeReward});});
+    this.time.delayedCall(3000,function(){self.scene.start(cfg.returnScene||'WorldMap',{aloeEarned:cfg.aloeReward});});
   };
   LevelScene.prototype._triggerDeath  = Level11Scene.prototype._triggerDeath;
   LevelScene.prototype._flash         = Level11Scene.prototype._flash;
@@ -2622,6 +2729,909 @@ LevelVoidScene.prototype.update=function(time,delta){
 // ════════════════════════════════════════════════════════════════
 // CHUNK 6: PHASER GAME CONFIG
 // ════════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════
+// WORLD 2: THE NEON DISTRICT — MAP DATA + SCENE
+// ══════════════════════════════════════════════════════
+var W2_ROWS = [
+  'NNNNNNNN',
+  'NX  6  N',
+  'N  PPP N',
+  'N  P   N',
+  'N  7   N',
+  'N  P   N',
+  'N  8 C N',
+  'NNNNNNNN'
+];
+var W2_TILES = {
+  ' ':{type:'empty',   passable:true},
+  'N':{type:'neon_wall',passable:false},
+  'P':{type:'neon_path',passable:true},
+  'X':{type:'exit',    passable:true, id:'exit-W1', label:'Back to West Bottoms'},
+  '6':{type:'level',   passable:true, id:'2-1', label:'Signal Static'},
+  '7':{type:'level',   passable:true, id:'2-2', label:'Chrome Alley'},
+  '8':{type:'level',   passable:true, id:'2-3', label:'The Neon King'},
+  'C':{type:'catspot', passable:true}
+};
+
+function WorldMap2Scene(){ Phaser.Scene.call(this,{key:'WorldMap2'}); }
+WorldMap2Scene.prototype = Object.create(Phaser.Scene.prototype);
+WorldMap2Scene.prototype.constructor = WorldMap2Scene;
+
+WorldMap2Scene.prototype.create = function(){
+  var W=960,H=540,self=this;
+  this.tW=80; this.tH=60; this.offX=80; this.offY=60;
+  this.edTile={x:2,y:1};
+  if(EWR_STATE.playerPosW2){this.edTile.x=EWR_STATE.playerPosW2.x;this.edTile.y=EWR_STATE.playerPosW2.y;}
+  this.shopOpen=false; this.shopSel=0;
+  this.inputCooldown=0;
+
+  // Neon city background
+  var bg=this.add.graphics().setDepth(0);
+  bg.fillStyle(0x050010,1); bg.fillRect(0,0,W,H);
+  // Grid lines
+  bg.lineStyle(1,0x001133,0.5);
+  for(var gx=0;gx<W;gx+=40){bg.beginPath();bg.moveTo(gx,0);bg.lineTo(gx,H);bg.strokePath();}
+  for(var gy=0;gy<H;gy+=40){bg.beginPath();bg.moveTo(0,gy);bg.lineTo(W,gy);bg.strokePath();}
+  // Neon buildings silhouette
+  var bldColors=[0x00ffcc,0xff00ff,0x00aaff,0xffaa00];
+  var bldData=[[20,200,60,340],[110,280,50,260],[200,230,70,310],[310,260,45,280],
+               [600,190,65,350],[700,250,55,290],[790,220,70,320],[870,270,50,270]];
+  for(var bi=0;bi<bldData.length;bi++){
+    var bd=bldData[bi];
+    bg.fillStyle(0x08001a,1); bg.fillRect(bd[0],bd[1],bd[2],bd[3]);
+    bg.lineStyle(1,bldColors[bi%4],0.6); bg.strokeRect(bd[0],bd[1],bd[2],bd[3]);
+    // Windows
+    bg.fillStyle(bldColors[bi%4],0.4);
+    for(var wr=bd[1]+8;wr<bd[1]+bd[3]-10;wr+=16){
+      for(var wc=bd[0]+6;wc<bd[0]+bd[2]-6;wc+=12){
+        if(Math.random()<0.6) bg.fillRect(wc,wr,6,8);
+      }
+    }
+  }
+  // Stars
+  bg.fillStyle(0xffffff,0.8);
+  for(var si=0;si<60;si++) bg.fillRect(Math.random()*W,Math.random()*180,1,1);
+
+  this.mapG = this.add.graphics().setDepth(2);
+  this._drawMapW2();
+
+  // Ed sprite (reuse from WorldMap logic)
+  this.edG = this.add.graphics().setDepth(10);
+  this._drawEdW2();
+
+  // Node label
+  this.nodeTxt = this.add.text(W/2,H-22,'',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#00ffcc',stroke:'#000022',strokeThickness:3}).setOrigin(0.5,1).setDepth(20).setAlpha(0);
+
+  // HUD
+  this.hudTxt = this.add.text(10,8,'',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#00ffcc',stroke:'#000022',strokeThickness:3}).setDepth(20);
+  this._updateHudW2();
+
+  // Shop panel (hidden)
+  this.shopPanel = this.add.graphics().setDepth(25).setAlpha(0);
+  this.shopTxt   = this.add.text(W/2,H/2,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#00ffcc',stroke:'#000022',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(26).setAlpha(0);
+
+  // Title
+  this.add.text(W/2,14,'THE NEON DISTRICT',{fontFamily:'Courier New,monospace',fontSize:'16px',color:'#ff00ff',stroke:'#000022',strokeThickness:4}).setOrigin(0.5,0).setDepth(20);
+
+  // Cats
+  this.mapCats = [];
+  this._spawnCatsW2();
+  this.catG = this.add.graphics().setDepth(8);
+
+  // Input
+  this.cursors = this.input.keyboard.createCursorKeys();
+  this.keyZ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+  this.keyX2= this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+  this.keyEnter = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+  _initVPad(this);
+};
+
+WorldMap2Scene.prototype._updateHudW2 = function(){
+  this.hudTxt.setText('ALOE: '+EWR_STATE.aloe+'  HP: '+EWR_STATE.health[0]+'/'+EWR_STATE.maxHealth[0]);
+};
+
+WorldMap2Scene.prototype._drawEdW2 = function(){
+  var g=this.edG; g.clear();
+  var p=this._t2pW2(this.edTile.x,this.edTile.y);
+  var ex=p.x, ey=p.y-10;
+  g.fillStyle(0x00ffcc,1); g.fillCircle(ex,ey-8,9);
+  g.fillStyle(0x050010,1); g.fillCircle(ex-3,ey-10,2); g.fillCircle(ex+3,ey-10,2);
+  g.fillStyle(0x00ffcc,0.9); g.fillRect(ex-7,ey,14,16);
+};
+
+WorldMap2Scene.prototype._t2pW2 = function(tx,ty){
+  return {x:this.offX+tx*this.tW+this.tW/2, y:this.offY+ty*this.tH+this.tH+60};
+};
+
+WorldMap2Scene.prototype._getTileW2 = function(tx,ty){
+  if(ty<0||ty>=W2_ROWS.length) return null;
+  var row=W2_ROWS[ty]; if(tx<0||tx>=row.length) return null;
+  var ch=row[tx]; return W2_TILES[ch]||null;
+};
+
+WorldMap2Scene.prototype._drawMapW2 = function(){
+  var g=this.mapG, self=this;
+  g.clear();
+  for(var row=0;row<W2_ROWS.length;row++){
+    for(var col=0;col<W2_ROWS[row].length;col++){
+      var ch=W2_ROWS[row][col], tile=W2_TILES[ch]; if(!tile) continue;
+      var px=self.offX+col*self.tW, py=self.offY+row*self.tH+60;
+      switch(tile.type){
+        case 'neon_wall':
+          g.fillStyle(0x0a0020,1); g.fillRect(px,py,self.tW,self.tH);
+          g.lineStyle(1,0x440088,0.8); g.strokeRect(px,py,self.tW,self.tH); break;
+        case 'neon_path':
+          g.fillStyle(0x050015,1); g.fillRect(px,py,self.tW,self.tH);
+          g.lineStyle(1,0x00ffcc,0.25); g.strokeRect(px,py,self.tW,self.tH); break;
+        case 'empty':
+          g.fillStyle(0x070018,1); g.fillRect(px,py,self.tW,self.tH); break;
+        case 'exit':
+          g.fillStyle(0x070018,1); g.fillRect(px,py,self.tW,self.tH);
+          g.fillStyle(0xff00ff,0.18); g.fillCircle(px+self.tW/2,py+self.tH/2,22);
+          g.fillStyle(0xff00ff,1); g.fillCircle(px+self.tW/2,py+self.tH/2,12);
+          g.fillStyle(0x050010,1); g.fillCircle(px+self.tW/2,py+self.tH/2,8);
+          g.fillStyle(0x00ffcc,1); g.fillCircle(px+self.tW/2,py+self.tH/2,5); break;
+        case 'level':
+          g.fillStyle(0x070018,1); g.fillRect(px,py,self.tW,self.tH);
+          var beaten2=EWR_STATE.levelsBeaten.indexOf(tile.id)>=0;
+          g.fillStyle(beaten2?0x444444:0x00ffcc,0.22); g.fillCircle(px+self.tW/2,py+self.tH/2,22);
+          g.fillStyle(beaten2?0x666666:0x00ffcc,1);    g.fillCircle(px+self.tW/2,py+self.tH/2,12);
+          g.fillStyle(0x050010,1); g.fillCircle(px+self.tW/2,py+self.tH/2,8);
+          g.fillStyle(beaten2?0x666666:0x00ffcc,1);    g.fillCircle(px+self.tW/2,py+self.tH/2,5); break;
+        case 'catspot':
+        default:
+          g.fillStyle(0x070018,1); g.fillRect(px,py,self.tW,self.tH); break;
+      }
+    }
+  }
+};
+
+WorldMap2Scene.prototype._spawnCatsW2 = function(){
+  for(var ri=0;ri<W2_ROWS.length;ri++){
+    for(var ci=0;ci<W2_ROWS[ri].length;ci++){
+      if(W2_ROWS[ri][ci]==='C'){
+        var p=this._t2pW2(ci,ri);
+        this.mapCats.push({x:p.x,y:p.y-10,ci:0,tailAng:0,facing:1,wT:0,sitting:true,petted:false});
+      }
+    }
+  }
+};
+
+WorldMap2Scene.prototype._tryEnterW2 = function(){
+  var tile=this._getTileW2(this.edTile.x,this.edTile.y);
+  if(!tile) return;
+  if(tile.type==='exit'){
+    EWR_STATE.playerPosW2={x:this.edTile.x,y:this.edTile.y};
+    SMOKE_POOL.length=0;EX_POOL.length=0;FIRE_POOL.length=0;
+    this.scene.start('WorldMap'); return;
+  }
+  if(tile.type==='level'){
+    var gateMsg2=null;
+    if(tile.id==='2-2'&&EWR_STATE.levelsBeaten.indexOf('2-1')<0) gateMsg2='Beat Signal Static first!';
+    if(tile.id==='2-3'&&EWR_STATE.levelsBeaten.indexOf('2-2')<0) gateMsg2='Beat Chrome Alley first!';
+    if(gateMsg2){
+      var self=this;
+      this.nodeTxt.setText(gateMsg2).setAlpha(1);
+      this.time.delayedCall(2200,function(){self.nodeTxt.setAlpha(0);});
+      return;
+    }
+    var destMap={'2-1':'Level21','2-2':'Level22','2-3':'Level23'};
+    var dest2=destMap[tile.id];
+    if(dest2){EWR_STATE.playerPosW2={x:this.edTile.x,y:this.edTile.y};SMOKE_POOL.length=0;EX_POOL.length=0;FIRE_POOL.length=0;this.scene.start(dest2);}
+  }
+};
+
+WorldMap2Scene.prototype._openShopW2 = function(){
+  var W=960,H=540;
+  this.shopOpen=true; this.shopSel=0;
+  this.shopPanel.setAlpha(1);
+  this.shopPanel.clear();
+  this.shopPanel.fillStyle(0x050010,0.95); this.shopPanel.fillRoundedRect(W/2-200,H/2-130,400,260,12);
+  this.shopPanel.lineStyle(2,0x00ffcc,1); this.shopPanel.strokeRoundedRect(W/2-200,H/2-130,400,260,12);
+  this._renderShopW2();
+};
+
+WorldMap2Scene.prototype._renderShopW2 = function(){
+  var items=[
+    {key:'lifeSteal',  label:'Life Steal',   cost:350, desc:'Kills heal 0.33 HP'},
+    {key:'aloeMagnet', label:'Aloe Magnet',  cost:200, desc:'Pickup range 44\u219244px\u219244140px'}
+  ];
+  var lines=['[ NEON DISTRICT SHOP ]',''];
+  for(var i=0;i<items.length;i++){
+    var it=items[i];
+    var owned=EWR_STATE.shop[it.key];
+    var prefix=this.shopSel===i?'> ':'  ';
+    lines.push(prefix+(owned?'[OWNED] ':'')+it.label+' — '+it.cost+' aloe');
+    lines.push('    '+it.desc);
+    lines.push('');
+  }
+  lines.push('  [ESC / X to close]');
+  this.shopTxt.setText(lines.join('\n')).setAlpha(1);
+};
+
+WorldMap2Scene.prototype._buyShopW2 = function(){
+  var items=[
+    {key:'lifeSteal',  cost:350},
+    {key:'aloeMagnet', cost:200}
+  ];
+  var it=items[this.shopSel];
+  if(!it) return;
+  if(EWR_STATE.shop[it.key]){return;}
+  if(EWR_STATE.aloe<it.cost){
+    this.nodeTxt.setText('Not enough aloe!').setAlpha(1);
+    var self=this; this.time.delayedCall(1500,function(){self.nodeTxt.setAlpha(0);});
+    return;
+  }
+  EWR_STATE.aloe-=it.cost;
+  EWR_STATE.shop[it.key]=true;
+  this._renderShopW2();
+  this._updateHudW2();
+};
+
+WorldMap2Scene.prototype.update = function(time,delta){
+  if(this.inputCooldown>0){this.inputCooldown-=delta; return;}
+  var cur=this.cursors;
+  var upP=Phaser.Input.Keyboard.JustDown(cur.up);
+  var downP=Phaser.Input.Keyboard.JustDown(cur.down);
+  var leftP=Phaser.Input.Keyboard.JustDown(cur.left);
+  var rightP=Phaser.Input.Keyboard.JustDown(cur.right);
+  var zJD=Phaser.Input.Keyboard.JustDown(this.keyZ);
+  var xJD=Phaser.Input.Keyboard.JustDown(this.keyX2);
+  var entJD=Phaser.Input.Keyboard.JustDown(this.keyEnter);
+
+  if(this.shopOpen){
+    var items2=[{key:'lifeSteal'},{key:'aloeMagnet'}];
+    if(upP){this.shopSel=Math.max(0,this.shopSel-1);this._renderShopW2();}
+    if(downP){this.shopSel=Math.min(items2.length-1,this.shopSel+1);this._renderShopW2();}
+    if(zJD||entJD){this._buyShopW2();}
+    if(xJD){this.shopOpen=false;this.shopPanel.setAlpha(0);this.shopTxt.setAlpha(0);}
+    return;
+  }
+
+  var moved=false;
+  var nx=this.edTile.x, ny=this.edTile.y;
+  if(upP)    ny--;
+  if(downP)  ny++;
+  if(leftP)  nx--;
+  if(rightP) nx++;
+  if(nx!==this.edTile.x||ny!==this.edTile.y){
+    var nt=this._getTileW2(nx,ny);
+    if(nt&&nt.passable){
+      this.edTile.x=nx; this.edTile.y=ny; moved=true;
+      this.inputCooldown=140;
+      // Show label
+      if(nt.label){this.nodeTxt.setText(nt.label).setAlpha(1);this.time.delayedCall(1800,function(){});}
+      else{this.nodeTxt.setAlpha(0);}
+    }
+  }
+  if((zJD||entJD)&&!moved){
+    this._tryEnterW2();
+  }
+  if(xJD&&!moved){
+    // Check shop — shop is near exit tile
+    var shopTile=this._getTileW2(this.edTile.x,this.edTile.y);
+    if(shopTile&&shopTile.type==='neon_path'){this._openShopW2();}
+  }
+  // Cat petting
+  for(var ci=0;ci<this.mapCats.length;ci++){
+    var cat=this.mapCats[ci]; cat.tailAng+=0.04;
+    var ep2=this._t2pW2(this.edTile.x,this.edTile.y);
+    if(zJD&&Math.abs(ep2.x-cat.x)<50&&!cat.petted){
+      cat.petted=true; EWR_STATE.aloe+=ALOE.catPet; EWR_STATE.catsPetted++;
+      this.nodeTxt.setText('+'+ALOE.catPet+' ALOE  (neon meow!)').setAlpha(1);
+      this._updateHudW2();
+    }
+  }
+  if(moved){this._drawEdW2(); this._drawMapW2();}
+  // Draw cats
+  var cg=this.catG; cg.clear();
+  for(var ci2=0;ci2<this.mapCats.length;ci2++){
+    var ct=this.mapCats[ci2];
+    cg.fillStyle(0x00ffcc,1); cg.fillCircle(ct.x,ct.y-8,7);
+    cg.fillStyle(0x050010,1); cg.fillCircle(ct.x-2,ct.y-10,1); cg.fillCircle(ct.x+2,ct.y-10,1);
+    cg.fillStyle(0xff00ff,1); cg.fillRect(ct.x-5,ct.y,10,10);
+    cg.lineStyle(1,0x00ffcc,0.8); cg.beginPath();
+    cg.moveTo(ct.x,ct.y+10);
+    cg.lineTo(ct.x+Math.sin(ct.tailAng)*12,ct.y+20); cg.strokePath();
+  }
+};
+
+
+// ══════════════════════════════════════════════════════
+// LEVEL 2-1: SIGNAL STATIC (factory)
+// ══════════════════════════════════════════════════════
+var Level21Scene = createLevelScene({
+  key:'Level21', LW:5200, beatX:5185, beatKey:'2-1', checkptX:2600,
+  aloeReward:ALOE.beat21, returnScene:'WorldMap2',
+  title:'2-1  SIGNAL STATIC', intro:'SIGNAL STATIC',
+  plats:[
+    [130,400,100,18],[340,360,80,18],[560,420,70,18],[780,380,90,18],[1000,340,80,18],
+    [1180,420,100,18],[1360,370,80,18],[1520,440,70,18],[1680,390,90,18],
+    [1860,350,80,18],[2020,420,90,18],[2160,370,70,18],[2340,410,100,18],
+    [2520,340,80,18],[2680,400,90,18],[2840,450,70,18],[3000,370,80,18],
+    [3160,430,90,18],[3320,380,70,18],[3480,340,90,18],[3640,420,80,18],
+    [3800,370,100,18],[3980,440,70,18],[4140,390,80,18],[4300,360,100,18],
+    [4460,420,90,18],[4620,380,80,18],[4800,350,100,18]
+  ],
+  catX:[400,800,1200,1600,2000,2400,2800,3200,3600,4000,4400,4800],
+  mochis:[
+    {x:350,  type:'ghost',baseY:310, dir:1,spd:55,hp:2,pMin:200, pMax:600},
+    {x:680,  type:'ghost',baseY:340, dir:-1,spd:55,hp:2,pMin:500, pMax:900},
+    {x:1050, type:'ghost',baseY:300, dir:1,spd:55,hp:2,pMin:850, pMax:1250},
+    {x:1400, type:'ghost',baseY:330, dir:-1,spd:55,hp:2,pMin:1200,pMax:1600},
+    {x:1750, type:'ghost',baseY:310, dir:1,spd:55,hp:2,pMin:1550,pMax:1950},
+    {x:2100, type:'ghost',baseY:340, dir:-1,spd:55,hp:2,pMin:1900,pMax:2300},
+    {x:2450, type:'ghost',baseY:315, dir:1,spd:60,hp:2,pMin:2250,pMax:2650},
+    {x:2800, type:'ghost',baseY:325, dir:-1,spd:60,hp:2,pMin:2600,pMax:3000},
+    {x:3150, type:'ghost',baseY:300, dir:1,spd:60,hp:2,pMin:2950,pMax:3350},
+    {x:3500, type:'ghost',baseY:335, dir:-1,spd:65,hp:2,pMin:3300,pMax:3700},
+    {x:3850, type:'ghost',baseY:310, dir:1,spd:65,hp:2,pMin:3650,pMax:4050},
+    {x:4200, type:'ghost',baseY:320, dir:-1,spd:65,hp:2,pMin:4000,pMax:4500},
+    {x:4600, type:'ghost',baseY:300, dir:1,spd:70,hp:2,pMin:4400,pMax:4900},
+    {x:4950, type:'ghost',baseY:330, dir:-1,spd:70,hp:2,pMin:4700,pMax:5100}
+  ],
+  pickups:[[1200,280],[2600,300],[3800,270],[4600,300]]
+});
+
+// ══════════════════════════════════════════════════════
+// LEVEL 2-2: CHROME ALLEY (factory)
+// ══════════════════════════════════════════════════════
+var Level22Scene = createLevelScene({
+  key:'Level22', LW:5600, beatX:5585, beatKey:'2-2', checkptX:2800,
+  aloeReward:ALOE.beat22, returnScene:'WorldMap2',
+  title:'2-2  CHROME ALLEY', intro:'CHROME ALLEY',
+  plats:[
+    [120,410,110,18],[330,370,80,18],[550,430,70,18],[760,380,100,18],[970,340,80,18],
+    [1150,420,90,18],[1320,460,60,18],[1480,390,80,18],[1640,350,100,18],
+    [1820,430,80,18],[1990,370,90,18],[2160,440,70,18],[2330,400,100,18],
+    [2510,360,80,18],[2670,430,90,18],[2830,380,70,18],[2990,340,80,18],
+    [3160,420,100,18],[3320,460,70,18],[3480,370,90,18],[3640,410,80,18],
+    [3800,350,100,18],[3960,430,80,18],[4120,380,90,18],[4280,440,70,18],
+    [4440,360,100,18],[4600,420,80,18],[4760,380,90,18],[4920,340,70,18],
+    [5080,410,100,18],[5200,380,80,18],[5380,350,90,18]
+  ],
+  catX:[500,1000,1500,2000,2500,3000,3500,4000,4500,5000],
+  mochis:[
+    {x:350,  type:'ghost',  baseY:320, dir:1, spd:55,hp:2,pMin:200, pMax:650},
+    {x:700,  type:'bomber',            dir:-1,spd:28,hp:5,pMin:500, pMax:950},
+    {x:1100, type:'ghost',  baseY:310, dir:1, spd:55,hp:2,pMin:850, pMax:1300},
+    {x:1500, type:'bomber',            dir:-1,spd:28,hp:5,pMin:1300,pMax:1700},
+    {x:1850, type:'ghost',  baseY:330, dir:1, spd:60,hp:2,pMin:1650,pMax:2100},
+    {x:2200, type:'bomber',            dir:-1,spd:30,hp:5,pMin:2000,pMax:2500},
+    {x:2600, type:'ghost',  baseY:315, dir:1, spd:60,hp:2,pMin:2400,pMax:2900},
+    {x:3000, type:'bomber',            dir:-1,spd:30,hp:5,pMin:2800,pMax:3200},
+    {x:3350, type:'ghost',  baseY:305, dir:1, spd:65,hp:2,pMin:3150,pMax:3600},
+    {x:3700, type:'ghost',  baseY:325, dir:-1,spd:60,hp:2,pMin:3500,pMax:3950},
+    {x:4050, type:'bomber',            dir:1, spd:32,hp:5,pMin:3900,pMax:4400},
+    {x:4450, type:'ghost',  baseY:310, dir:-1,spd:65,hp:2,pMin:4200,pMax:4700},
+    {x:4800, type:'bomber',            dir:1, spd:32,hp:5,pMin:4600,pMax:5100},
+    {x:5200, type:'ghost',  baseY:320, dir:-1,spd:70,hp:2,pMin:5000,pMax:5500},
+    {x:5500, type:'bomber',            dir:1, spd:28,hp:5,pMin:5300,pMax:5580}
+  ],
+  pickups:[[1300,280],[2800,290],[4000,270],[5200,280]]
+});
+
+
+// ══════════════════════════════════════════════════════
+// LEVEL 2-3: THE NEON KING (custom boss scene)
+// ══════════════════════════════════════════════════════
+function Level23Scene(){ Phaser.Scene.call(this,{key:'Level23'}); }
+Level23Scene.prototype = Object.create(Phaser.Scene.prototype);
+Level23Scene.prototype.constructor = Level23Scene;
+
+Level23Scene.prototype.create = function(){
+  var W=960, H=540, self=this;
+  this._dying=false; this._dyingT=0; this._beaten=false;
+  EX_POOL.length=0; SMOKE_POOL.length=0; FIRE_POOL.length=0;
+
+  // Arena platforms
+  this.platRects = [
+    {x:0,   y:490, w:960, h:50},   // floor
+    {x:100, y:370, w:160, h:18},   // left platform
+    {x:400, y:310, w:160, h:18},   // center platform
+    {x:700, y:370, w:160, h:18}    // right platform
+  ];
+
+  // Ed player
+  this.ep = {x:120, y:460, vx:0, vy:0, grounded:false, djUsed:false,
+             w:14, h:32, chargeT:0};
+  this.es = {facing:1, hurtTimer:0, punchTimer:0, punchActive:false,
+             kickTimer:0, kickActive:false, smokeT:0, cigF:0};
+
+  // Boss object
+  this.boss = {
+    x:720, y:462, hp:28, maxHp:28, phase:1,
+    vx:-120, vy:0, grounded:true,
+    shotT:0, shotInterval:2400,
+    projectiles:[],
+    minions:[],
+    spawnTimer:0,
+    bT:0, hitFlash:0, dieT:-1,
+    rotAngle:0,
+    _jumpT:0
+  };
+
+  // Background: dark neon arena
+  var bg = this.add.graphics().setDepth(0);
+  bg.fillStyle(0x020008,1); bg.fillRect(0,0,W,H);
+  bg.lineStyle(1,0x002244,0.4);
+  for(var gx=0;gx<W;gx+=48){bg.beginPath();bg.moveTo(gx,0);bg.lineTo(gx,H);bg.strokePath();}
+  for(var gy=0;gy<H;gy+=48){bg.beginPath();bg.moveTo(0,gy);bg.lineTo(W,gy);bg.strokePath();}
+  // Neon floor line
+  bg.lineStyle(3,0x00ffcc,0.8); bg.beginPath(); bg.moveTo(0,490); bg.lineTo(W,490); bg.strokePath();
+  bg.lineStyle(1,0xff00ff,0.4); bg.beginPath(); bg.moveTo(0,492); bg.lineTo(W,492); bg.strokePath();
+
+  // Platform graphics
+  this.platG = this.add.graphics().setDepth(1);
+  this._drawPlats23();
+
+  // Game graphics layers
+  this.mainG  = this.add.graphics().setDepth(5);
+  this.bossG  = this.add.graphics().setDepth(6);
+  this.projG  = this.add.graphics().setDepth(7);
+  this.particleG = this.add.graphics().setDepth(8);
+  this.hudG   = this.add.graphics().setDepth(20);
+
+  // HUD texts
+  this.bossHpTxt = this.add.text(W/2, 14, '', {
+    fontFamily:'Courier New,monospace', fontSize:'13px',
+    color:'#00ffcc', stroke:'#000022', strokeThickness:3
+  }).setOrigin(0.5,0).setDepth(21);
+
+  this.flashTxt = this.add.text(W/2, H/2-60, '', {
+    fontFamily:'Courier New,monospace', fontSize:'22px',
+    color:'#ff00ff', stroke:'#000022', strokeThickness:4
+  }).setOrigin(0.5).setDepth(22).setAlpha(0);
+
+  this.phaseTxt = this.add.text(W/2, H/2, '', {
+    fontFamily:'Courier New,monospace', fontSize:'28px',
+    color:'#00ffcc', stroke:'#000022', strokeThickness:5
+  }).setOrigin(0.5).setDepth(22).setAlpha(0);
+
+  // Intro text
+  this.add.text(W/2, 60, 'THE NEON KING', {
+    fontFamily:'Courier New,monospace', fontSize:'32px',
+    color:'#ff00ff', stroke:'#000022', strokeThickness:6
+  }).setOrigin(0.5).setDepth(21);
+  SOUND.charge&&SOUND.charge();
+
+  // Input
+  this.cursors = this.input.keyboard.createCursorKeys();
+  this.keyZ    = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+  this.keyX2   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+  _initVPad(this);
+
+  this.levelT = 0;
+  this.aloeEarned = 0;
+  this.comboMult = 1;
+};
+
+Level23Scene.prototype._drawPlats23 = function(){
+  var g=this.platG; g.clear();
+  for(var i=0;i<this.platRects.length;i++){
+    var p=this.platRects[i];
+    if(i===0){
+      g.fillStyle(0x0a001a,1); g.fillRect(p.x,p.y,p.w,p.h);
+      g.lineStyle(2,0x00ffcc,0.8); g.strokeRect(p.x,p.y,p.w,p.h);
+    } else {
+      g.fillStyle(0x110022,1); g.fillRect(p.x,p.y,p.w,p.h);
+      g.lineStyle(2,0xff00ff,0.9); g.strokeRect(p.x,p.y,p.w,p.h);
+      g.fillStyle(0x00ffcc,0.5); g.fillRect(p.x,p.y,p.w,3);
+    }
+  }
+};
+
+Level23Scene.prototype._drawBoss23 = function(g, boss){
+  if(boss.dieT>=0) return;
+  var bx=boss.x, by=boss.y;
+  var ph=boss.phase;
+  var sc = ph===3?1.9:(ph===2?1.65:1.4);
+  var flash=boss.hitFlash>0;
+  var p3=ph===3;
+  // Shadow
+  g.fillStyle(0x000000,0.3); g.fillEllipse(bx,by+4,56*sc,14);
+  // Body (metallic dark gray)
+  g.fillStyle(flash?0xffffff:0x404048,1);
+  g.fillRoundedRect(bx-18*sc,by-48*sc,36*sc,36*sc,5);
+  // Outline neon
+  g.lineStyle(2,p3?0xff0066:0x00ffcc,1);
+  g.strokeRoundedRect(bx-18*sc,by-48*sc,36*sc,36*sc,5);
+  // Arms
+  g.fillStyle(0x303038,1);
+  g.fillRect(bx-30*sc,by-42*sc,12*sc,22*sc); // left arm
+  g.fillRect(bx+18*sc, by-42*sc,12*sc,22*sc); // right arm
+  g.fillStyle(p3?0xff0066:0x00ffcc,1);
+  g.fillCircle(bx-24*sc,by-20*sc,4*sc); // left fist
+  g.fillCircle(bx+24*sc,by-20*sc,4*sc); // right fist
+  // Legs
+  g.fillStyle(0x303038,1);
+  g.fillRect(bx-14*sc,by-12*sc,10*sc,18*sc);
+  g.fillRect(bx+4*sc,  by-12*sc,10*sc,18*sc);
+  // Crown antennae (5 spikes)
+  var tipColor=p3?0xff0000:0x00ffcc;
+  for(var sp=-2;sp<=2;sp++){
+    var sx=bx+sp*8*sc, sy=by-48*sc;
+    var sh=12+Math.abs(sp)*4; // taller in center
+    g.fillStyle(0x505058,1); g.fillRect(sx-2,sy-sh*sc,4,sh*sc);
+    g.fillStyle(tipColor,1); g.fillCircle(sx,sy-sh*sc,3);
+  }
+  // Eyes
+  g.fillStyle(p3?0xff0000:0x00ffff,1);
+  g.fillCircle(bx-7*sc,by-36*sc,5*sc);
+  g.fillCircle(bx+7*sc, by-36*sc,5*sc);
+  g.fillStyle(0x000000,1);
+  g.fillCircle(bx-7*sc,by-36*sc,2*sc);
+  g.fillCircle(bx+7*sc, by-36*sc,2*sc);
+  // HP bar
+  var barW=100, barH=8;
+  var hpFrac=Math.max(0,boss.hp/boss.maxHp);
+  var hpColor = p3?0xff0066:(ph===2?0xffaa00:0x00ffcc);
+  g.fillStyle(0x111111,1); g.fillRect(bx-barW/2,by-70*sc,barW,barH);
+  g.fillStyle(hpColor,1); g.fillRect(bx-barW/2,by-70*sc,barW*hpFrac,barH);
+  g.lineStyle(1,0xffffff,0.4); g.strokeRect(bx-barW/2,by-70*sc,barW,barH);
+};
+
+Level23Scene.prototype._drawEd23 = function(g, ep, es, levelT){
+  var ex=ep.x, ey=ep.y;
+  g.fillStyle(0x000000,0.25); g.fillEllipse(ex,ey+2,24,8);
+  // Body
+  g.fillStyle(0x2d1b4e,1);
+  g.fillRect(ex-6,ey-24,12,20);
+  // Head
+  g.fillStyle(0xffe0a0,1); g.fillCircle(ex,ey-30,10);
+  g.fillStyle(0x111111,1); g.fillCircle(ex+(es.facing*3),ey-31,3);
+  // Arms
+  g.fillStyle(0x2d1b4e,1); g.fillRect(ex-12,ey-22,6,12); g.fillRect(ex+6,ey-22,6,12);
+  // Legs
+  g.fillStyle(0x1a0a2e,1);
+  g.fillRect(ex-6,ey-4,5,10); g.fillRect(ex+1,ey-4,5,10);
+};
+
+Level23Scene.prototype._physEd23 = function(ep, plats, dt, delta){
+  var GRAV=1200;
+  ep.vy+=GRAV*dt;
+  if(ep.vy>700) ep.vy=700;
+  ep.x+=ep.vx*dt; ep.y+=ep.vy*dt;
+  ep.vx*=Math.pow(0.0001,dt);
+  ep.grounded=false;
+  for(var i=0;i<plats.length;i++){
+    var p=plats[i];
+    if(ep.x+ep.w/2>p.x&&ep.x-ep.w/2<p.x+p.w&&ep.y>p.y-2&&ep.y-(ep.vy*dt)<=p.y+2&&ep.vy>=0){
+      ep.y=p.y; ep.vy=0; ep.grounded=true; ep.djUsed=false; break;
+    }
+  }
+  if(ep.x<14) ep.x=14;
+  if(ep.x>946) ep.x=946;
+};
+
+Level23Scene.prototype._physBoss23 = function(boss, delta, dt){
+  var GRAV=900, FLOOR=490;
+  boss.vy+=GRAV*dt;
+  if(boss.vy>600) boss.vy=600;
+  boss.x+=boss.vx*dt;
+  boss.y+=boss.vy*dt;
+  boss.grounded=false;
+  if(boss.y>=FLOOR){boss.y=FLOOR;boss.vy=0;boss.grounded=true;}
+  if(boss.x<60){boss.x=60;boss.vx=Math.abs(boss.vx);}
+  if(boss.x>900){boss.x=900;boss.vx=-Math.abs(boss.vx);}
+};
+
+Level23Scene.prototype._triggerDeath = function(){
+  this._dying=true;
+  SOUND.hurt&&SOUND.hurt();
+  this.cameras.main.shake(400,0.025);
+  var self=this;
+  this.time.delayedCall(1800,function(){
+    EWR_STATE.health[0]=1;
+    self.scene.start('WorldMap2');
+  });
+};
+
+Level23Scene.prototype._beatBoss23 = function(){
+  if(this._beaten) return;
+  this._beaten=true;
+  EWR_STATE.levelsBeaten.indexOf('2-3')<0&&EWR_STATE.levelsBeaten.push('2-3');
+  EWR_STATE.aloe+=ALOE.beat23;
+  EWR_STATE.fightWins=(EWR_STATE.fightWins||0)+1;
+  this.phaseTxt.setText('THE NEON KING\nDEFEATED!').setAlpha(1);
+  this.cameras.main.shake(500,0.03);
+  var self=this;
+  this.time.delayedCall(3200,function(){
+    SMOKE_POOL.length=0;EX_POOL.length=0;FIRE_POOL.length=0;
+    self.scene.start('WorldMap2',{aloeEarned:ALOE.beat23});
+  });
+};
+
+Level23Scene.prototype.update = function(time, delta){
+  if(this._beaten) return;
+  if(this._dying){this._dyingT+=delta; return;}
+  var self=this;
+  var dt=Math.min(delta/1000,0.05);
+  this.levelT+=delta;
+
+  var ep=this.ep, es=this.es, boss=this.boss;
+  var cur=this.cursors;
+
+  // --- Input ---
+  var left  = cur.left.isDown;
+  var right = cur.right.isDown;
+  var up    = Phaser.Input.Keyboard.JustDown(cur.up);
+  var zDown = this.keyZ.isDown;
+  var zJD   = Phaser.Input.Keyboard.JustDown(this.keyZ);
+  var xJD   = Phaser.Input.Keyboard.JustDown(this.keyX2);
+  var doKick= xJD;
+
+  // Horizontal move
+  if(left) {ep.vx-=1600*dt; es.facing=-1;}
+  if(right){ep.vx+=1600*dt; es.facing=1;}
+  if(!left&&!right) ep.vx*=Math.pow(0.001,dt);
+  if(ep.vx>220) ep.vx=220; if(ep.vx<-220) ep.vx=-220;
+
+  // Jump
+  if(up){
+    if(ep.grounded){ep.vy=-520;ep.grounded=false;}
+    else if(!ep.djUsed&&EWR_STATE.shop.doubleJump){ep.vy=-480;ep.djUsed=true;}
+  }
+  if(!cur.up.isDown&&ep.vy<-200) ep.vy*=0.6;
+
+  // Timers
+  if(es.hurtTimer>0) es.hurtTimer-=delta;
+  if(es.punchTimer>0){es.punchTimer-=delta;es.punchActive=es.punchTimer>90;}
+  if(doKick&&es.kickTimer<=0&&es.punchTimer<=0){es.kickTimer=600;es.kickActive=true;}
+  if(es.kickTimer>0){es.kickTimer-=delta;es.kickActive=es.kickTimer>200;}
+
+  // Punch / charge
+  if(zJD&&es.punchTimer<=0&&es.kickTimer<=0) ep.chargeT=0;
+  if(zDown) ep.chargeT+=delta;
+  if(!zDown&&ep.chargeT>0){
+    if(ep.chargeT>=1200){
+      // Ember blast
+      var er=80;
+      if(Math.abs(ep.x-boss.x)<er+40&&Math.abs(ep.y-boss.y)<er+40&&boss.dieT<0&&boss.hitFlash<=0){
+        boss.hp-=3; boss.hitFlash=200;
+        spawnExplosion(boss.x,boss.y-20,0xff6b35,2.0);
+        this.cameras.main.shake(200,0.018);
+        this.aloeEarned+=ALOE.bossHit;
+        if(boss.hp<=0){this._killBoss23();return;}
+      }
+      spawnExplosion(ep.x+es.facing*40,ep.y-20,0xff6b35,1.8);
+      SOUND.blast&&SOUND.blast();
+    } else if(ep.chargeT>50){
+      es.punchTimer=340; es.punchActive=true;
+    }
+    ep.chargeT=0;
+  }
+
+  // Physics
+  this._physEd23(ep,this.platRects,dt,delta);
+  if(ep.y>620){this._triggerDeath();return;}
+
+  // Punch hits boss
+  if(es.punchActive&&boss.dieT<0&&boss.hitFlash<=0){
+    var hx=ep.x+es.facing*56;
+    if(Math.abs(hx-boss.x)<72&&Math.abs(ep.y-boss.y)<52){
+      boss.hp--; boss.hitFlash=200;
+      spawnExplosion(boss.x,boss.y-20,0xffd60a,1.2); SOUND.punch&&SOUND.punch();
+      this.cameras.main.shake(80,0.006);
+      this.aloeEarned+=ALOE.bossHit;
+      es.punchActive=false;
+      if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}
+      if(boss.hp<=0){this._killBoss23();return;}
+    }
+  }
+  // Kick hits boss
+  if(es.kickActive&&boss.dieT<0&&boss.hitFlash<=0){
+    var kx=ep.x+es.facing*ED_MOVE.kickRange;
+    if(Math.abs(kx-boss.x)<72&&Math.abs(ep.y-boss.y)<52){
+      boss.hp-=2; boss.hitFlash=220;
+      spawnExplosion(boss.x,boss.y-20,0xff6b35,1.5); SOUND.kick&&SOUND.kick();
+      this.cameras.main.shake(120,0.009);
+      this.aloeEarned+=ALOE.bossHit*2;
+      es.kickActive=false;
+      if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}
+      if(boss.hp<=0){this._killBoss23();return;}
+    }
+  }
+
+  // Phase transitions
+  if(boss.dieT<0){
+    if(boss.phase===1&&boss.hp<=18){
+      boss.phase=2; boss.vx=es.facing>0?-160:160;
+      boss.shotInterval=1800; boss.spawnTimer=0;
+      this.phaseTxt.setText('PHASE 2').setAlpha(1);
+      this.time.delayedCall(1200,function(){self.phaseTxt.setAlpha(0);});
+      this.cameras.main.shake(300,0.022);
+      spawnExplosion(boss.x,boss.y-30,0xff00ff,3.0);
+    }
+    if(boss.phase===2&&boss.hp<=9){
+      boss.phase=3; boss.vx=es.facing>0?-200:200;
+      boss.shotInterval=1200; boss.spawnTimer=0;
+      this.phaseTxt.setText('PHASE 3\nBULLET HELL').setAlpha(1);
+      this.time.delayedCall(1500,function(){self.phaseTxt.setAlpha(0);});
+      this.cameras.main.shake(500,0.03);
+      spawnExplosion(boss.x,boss.y-30,0xff0000,4.0);
+    }
+  }
+
+  // Boss update
+  if(boss.dieT<0){
+    boss.bT+=delta;
+    if(boss.hitFlash>0) boss.hitFlash-=delta;
+    boss.rotAngle+=delta*0.0018; // slow rotation for bullet hell
+
+    // Phase 3: random jumps
+    if(boss.phase===3){
+      boss._jumpT=(boss._jumpT||0)+delta;
+      if(boss._jumpT>3000&&boss.grounded){boss._jumpT=0;boss.vy=-440;}
+    }
+
+    // Boss physics
+    this._physBoss23(boss,delta,dt);
+
+    // Boss facing Ed
+    boss.vx=boss.phase===3?200:boss.phase===2?160:120;
+    if(boss.x>ep.x) boss.vx=-boss.vx;
+
+    // Boss shoot
+    boss.shotT+=delta;
+    if(boss.shotT>=boss.shotInterval){
+      boss.shotT=0;
+      var dx=ep.x-boss.x, dy=(ep.y-30)-(boss.y-30);
+      var dist=Math.sqrt(dx*dx+dy*dy)||1;
+      if(boss.phase===1){
+        // Single aimed shot
+        boss.projectiles.push({x:boss.x,y:boss.y-30,vx:(dx/dist)*240,vy:(dy/dist)*240,life:2.0});
+        SOUND.blast&&SOUND.blast();
+      } else if(boss.phase===2){
+        // 3-way fan
+        var ang=Math.atan2(dy,dx);
+        for(var f=-1;f<=1;f++){
+          var fa=ang+f*0.35;
+          boss.projectiles.push({x:boss.x,y:boss.y-30,vx:Math.cos(fa)*260,vy:Math.sin(fa)*260,life:2.0});
+        }
+        SOUND.blast&&SOUND.blast();
+      } else {
+        // Phase 3: rotating 8-way bullet hell
+        for(var ai=0;ai<8;ai++){
+          var a=boss.rotAngle+(ai/8)*Math.PI*2;
+          boss.projectiles.push({x:boss.x,y:boss.y-30,vx:Math.cos(a)*280,vy:Math.sin(a)*280,life:2.5});
+        }
+        SOUND.blast&&SOUND.blast();
+      }
+    }
+
+    // Minion spawning (phase 2+)
+    if(boss.phase>=2){
+      var mSpawnInterval=boss.phase===3?6000:8000;
+      boss.spawnTimer=(boss.spawnTimer||0)+delta;
+      if(boss.spawnTimer>=mSpawnInterval){
+        boss.spawnTimer=0;
+        var spawnSide=boss.x>480?1:-1;
+        boss.minions.push({x:spawnSide<0?900:60,y:450,type:'ghost',baseY:320,
+          dir:spawnSide,spd:55,hp:2,pMin:30,pMax:930,
+          dieT:-1,squishT:0,bT:0,bAmt:0,parts:[]});
+      }
+    }
+
+    // Boss contact damage
+    if(es.hurtTimer<=0&&Math.abs(ep.x-boss.x)<42&&Math.abs(ep.y-boss.y)<52){
+      EWR_STATE.health[0]--; EWR_STATE.combo.streak=0; EWR_STATE.combo.mult=1;
+      es.hurtTimer=1200; SOUND.hurt&&SOUND.hurt(); this.cameras.main.shake(250,0.014);
+      ep.vx=-es.facing*260; ep.vy=-240;
+      if(EWR_STATE.health[0]<=0){this._triggerDeath();return;}
+    }
+
+    // Projectile hits Ed
+    for(var pi=boss.projectiles.length-1;pi>=0;pi--){
+      var prj=boss.projectiles[pi];
+      prj.x+=prj.vx*dt; prj.y+=prj.vy*dt; prj.life-=delta*0.001;
+      if(prj.life<=0||prj.x<0||prj.x>960||prj.y<0||prj.y>600){boss.projectiles.splice(pi,1);continue;}
+      if(es.hurtTimer<=0&&Math.abs(prj.x-ep.x)<16&&Math.abs(prj.y-ep.y)<16){
+        EWR_STATE.health[0]--; EWR_STATE.combo.streak=0; EWR_STATE.combo.mult=1;
+        es.hurtTimer=1200; SOUND.hurt&&SOUND.hurt(); this.cameras.main.shake(200,0.012);
+        ep.vx=-prj.vx*0.3; ep.vy=-160;
+        boss.projectiles.splice(pi,1);
+        if(EWR_STATE.health[0]<=0){this._triggerDeath();return;}
+      }
+    }
+
+    // Minion update
+    for(var mni=boss.minions.length-1;mni>=0;mni--){
+      var mn=boss.minions[mni];
+      if(mn.dieT>=0){mn.dieT+=delta; if(mn.dieT>600) boss.minions.splice(mni,1); continue;}
+      mn.bT+=delta; mn.x+=mn.dir*mn.spd*dt;
+      mn.y=(mn.baseY||320)+Math.sin(mn.bT*0.003)*22;
+      if(mn.x<mn.pMin){mn.x=mn.pMin;mn.dir=1;} if(mn.x>mn.pMax){mn.x=mn.pMax;mn.dir=-1;}
+      // Punch/kick hits minion
+      if(es.punchActive&&mn.dieT<0){
+        var hxm=ep.x+es.facing*56;
+        if(Math.abs(hxm-mn.x)<52&&Math.abs(ep.y-mn.y)<36){
+          mn.hp--; spawnExplosion(mn.x,mn.y,0xffd60a,0.8);
+          if(mn.hp<=0){mn.dieT=0;mn.squishT=0;EWR_STATE.aloe+=ALOE.ghostDeath;}
+        }
+      }
+      if(es.kickActive&&mn.dieT<0){
+        var kxm=ep.x+es.facing*ED_MOVE.kickRange;
+        if(Math.abs(kxm-mn.x)<65&&Math.abs(ep.y-mn.y)<36){
+          mn.hp-=2; spawnExplosion(mn.x,mn.y,0xff6b35,1.0);
+          if(mn.hp<=0){mn.dieT=0;mn.squishT=0;EWR_STATE.aloe+=ALOE.ghostDeath;}
+        }
+      }
+      // Minion contact damage
+      if(es.hurtTimer<=0&&mn.dieT<0&&Math.abs(ep.x-mn.x)<26&&Math.abs(ep.y-mn.y)<30){
+        EWR_STATE.health[0]--; EWR_STATE.combo.streak=0; EWR_STATE.combo.mult=1;
+        es.hurtTimer=1200; SOUND.hurt&&SOUND.hurt();
+        ep.vx=-es.facing*190; ep.vy=-210;
+        if(EWR_STATE.health[0]<=0){this._triggerDeath();return;}
+      }
+    }
+  } else {
+    boss.dieT+=delta;
+  }
+
+  // Particles
+  es.smokeT+=delta;
+  if(es.smokeT>950){es.smokeT=0;spawnSmoke(ep.x+es.facing*14,ep.y-25);}
+  updateSmoke(); updateExplosions(); updateFire();
+
+  // ── Draw ──
+  var mg=this.mainG; mg.clear();
+  // Ed
+  this._drawEd23(mg,ep,es,this.levelT);
+  // Ed punch arc
+  if(es.punchActive){
+    mg.fillStyle(0xffd60a,0.5);
+    mg.fillCircle(ep.x+es.facing*46,ep.y-20,16);
+  }
+
+  var bg2=this.bossG; bg2.clear();
+  // Boss
+  this._drawBoss23(bg2,boss);
+  // Minions
+  for(var di=0;di<boss.minions.length;di++){
+    if(boss.minions[di].dieT<0) Level11Scene.prototype._drawMochi.call(this,bg2,boss.minions[di]);
+  }
+
+  var pg=this.projG; pg.clear();
+  // Projectiles
+  for(var qi=0;qi<boss.projectiles.length;qi++){
+    var qp=boss.projectiles[qi];
+    pg.fillStyle(boss.phase===3?0xff0066:0x00ffcc,0.9);
+    pg.fillCircle(qp.x,qp.y,6);
+    pg.fillStyle(boss.phase===3?0xff6666:0x88ffee,0.4);
+    pg.fillCircle(qp.x,qp.y,10);
+  }
+
+  // Particle graphics
+  var pg2=this.particleG; pg2.clear();
+  drawExplosions(pg2); drawFire(pg2);
+  for(var sp2=0;sp2<SMOKE_POOL.length;sp2++){var sp2p=SMOKE_POOL[sp2];pg2.fillStyle(0xaaaaaa,sp2p.life*0.3);pg2.fillCircle(sp2p.x,sp2p.y,sp2p.r);}
+
+  // HUD
+  var hg=this.hudG; hg.clear();
+  // Health bar
+  var hpFrac2=EWR_STATE.health[0]/EWR_STATE.maxHealth[0];
+  hg.fillStyle(0x333333,1); hg.fillRect(10,8,120,10);
+  hg.fillStyle(0x00ff88,1); hg.fillRect(10,8,120*hpFrac2,10);
+  hg.lineStyle(1,0xffffff,0.4); hg.strokeRect(10,8,120,10);
+  this.bossHpTxt.setText('HP:'+EWR_STATE.health[0]+'  ALOE:'+EWR_STATE.aloe+'  NEON KING HP:'+Math.max(0,boss.hp));
+};
+
+Level23Scene.prototype._killBoss23 = function(){
+  this.boss.dieT=0;
+  this.cameras.main.shake(600,0.035);
+  spawnExplosion(this.boss.x,this.boss.y-30,0xff00ff,5.0);
+  spawnExplosion(this.boss.x+30,this.boss.y-10,0x00ffcc,3.0);
+  spawnExplosion(this.boss.x-30,this.boss.y-10,0xff0066,3.0);
+  SOUND.blast&&SOUND.blast();
+  EWR_STATE.aloe+=this.aloeEarned;
+  this.time.delayedCall(2000, this._beatBoss23.bind(this));
+};
+
+// Share draw methods from Level11Scene prototype
+Level23Scene.prototype._spawnMochiParts = Level11Scene.prototype._spawnMochiParts;
+
 var config = {
   type: Phaser.CANVAS,
   width: 960,
@@ -2644,7 +3654,11 @@ var config = {
     Level13Scene,
     Level14Scene,
     Level15Scene,
-    LevelVoidScene
+    LevelVoidScene,
+    WorldMap2Scene,
+    Level21Scene,
+    Level22Scene,
+    Level23Scene
   ]
 };
 new Phaser.Game(config);
