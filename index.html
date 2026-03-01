@@ -47,7 +47,7 @@ var EWR_STATE = {
   catsPetted:0, fightWins:0, healFraction:0,
   // V1.2 new
   combo:{streak:0,mult:1,timer:0},
-  shop:{doubleJump:false,speedBoost:false,explosiveCig:false,crtFilter:false,lifeSteal:false,aloeMagnet:false},
+  shop:{doubleJump:false,speedBoost:false,explosiveCig:false,crtFilter:false,lifeSteal:false,aloeMagnet:false,fonzieCharisma:false,cigSalesmanPride:false,universeRipple:false},
   secretBeaten:{}
 };
 
@@ -71,13 +71,10 @@ var ALOE = {
 };
 
 var CAT_NAMES = [
-  'Chairman Whiskers','Big Loan Whiskers','Professor Fluffmore',
-  'Mittens','The Duchess','Senor Biscuit','Lord Fuzzybutt',
-  'Detective Naps','DJ Meowsworth','Captain Kibble',
-  'Dr. Purrlington','Bartholomew','Madame Paws','Sir Hissworth',
-  'Countess Flop','Agent Tuna','The Honorable Sniff',
-  'Lieutenant Noodle','Papa Scratch','Reverend Fluff',
-  'Emperor Cig','Ras Fluffington','The Honorable Ganj','Baron Von Smoke'
+  'Destiny','Tamika','Shaniqua','Brenda','Debbie','Crystal','Tammy',
+  'LaShonda','Brittany','Tiffany','Mercedes','Janelle','Keisha','Monique',
+  'Latoya','Shayla','Darlene','Rhonda','Wanda','Precious',
+  'Shanae','Ciara','Unique','Diamond'
 ];
 
 var NEWS_TICKER = [
@@ -100,7 +97,17 @@ var NEWS_TICKER = [
   'NEON DISTRICT NOW OFFICIAL CITY / POPULATION: GHOSTS AND BOMBERS / MAYOR: NEON KING (DECEASED)',
   'ALOE MARKET CRASHES / RECOVERS / CRASHES AGAIN / ALOE',
   'THE VOID OPENS ADDITIONAL LOCATION IN DOWNTOWN / HOURS: ALWAYS / ADMISSION: YOUR WILL TO LIVE',
-  'BREAKING: EVERYTHING CONTINUES / MORE AT 11 / 11 IS ALSO CONTINUING'
+  'BREAKING: EVERYTHING CONTINUES / MORE AT 11 / 11 IS ALSO CONTINUING',
+  'BREAKING: CERN MACHINE REPORTS FALLING IN LOVE WITH A LOCAL MAN / PHYSICISTS: IMPOSSIBLE / MACHINE: IT IS NOT',
+  'MOCHI ICE CREAM BRAND DOWN 100% AFTER LARGE HADRON COLLIDER GOES ON DIET / CEO UNREACHABLE / MOCHI: RADICALIZED',
+  'LARGE HADRON COLLIDER SENDS DREAMY VIBES TO UNKNOWN MAN IN KANSAS CITY / FAA: MONITORING',
+  'ED NAMED CIG SALESMAN OF THE MONTH FOR 4TH TIME IN 6 YEARS / ED: "I JUST LOVE SELLING CIGS" / CITY: CONFIRMED',
+  'INSULIN FIGHTERS SPOTTED OVER JOHNSON COUNTY / FAA: NO COMMENT / INSULIN: ATTACKING / DIABETES: CONFIRMED',
+  'REALITY EXPERIENCING TECHNICAL DIFFICULTIES NEAR WEST BOTTOMS / CERN: AWARE / ED: WHATEVER',
+  'BREAKING: KC NEIGHBORHOODS ALL DISCOVERED TO BE THE SAME FIGHT IN A DIFFERENT OUTFIT / EXPERTS: YES',
+  'CACTUS FROM KANSAS CITY REVEALED AS KEYSTONE OF CURRENT UNIVERSE / UNIVERSE: EXTREMELY EMBARRASSED',
+  'DAIKON LORD ATTENDED CERN SOCIAL MIXER 8 YEARS AGO / REFUSES TO ELABORATE / COLLIDER: NO COMMENT',
+  'LOCAL MAN DREAMING ABOUT A BIG MACHINE IN EUROPE / DOCTORS: NORMAL / MACHINE: ALSO DREAMING'
 ];
 var W2_MAP_NEWS=['STATIC LEVELS EXCEED RECOMMENDED CHAOS / REGULATORS CONCERNED / CHAOS: UNCONCERNED','GHOST POPULATION EXPLODING / CENSUS BUREAU REFUSES TO COUNT / GHOSTS: COUNTED','CHROME PRICES FALL / NEON PRICES SOAR / LOCAL MAN: WHAT IS CHROME','SIGNAL LOST. THIS IS FINE. THIS IS COMPLETELY FINE.','THE VOID EXPANDS INTO WORLD 2 / RESIDENTS WELCOME THIS','GHOSTS UNIONIZE / DEMANDS: MORE HAUNTING TIME / MANAGEMENT: A GHOST','ED SPOTTED IN W2. EXPERTS BAFFLED. ED: I JUST WALKED','ALOE FUTURES DOWN 40% IN NEON DISTRICT / UP 80% IN FEELINGS'];
 var W3_MAP_NEWS=['OCEAN LEVELS RISING / COMPOSED ENTIRELY OF MOCHI / SEA FLOOR: HORRIFYING','BEEF DISCOVERED IN UNEXPECTED LOCATION / LOCATION CLASSIFIED / BEEF: CONFIRMED','VOID ANNEXES COASTAL CITIES / CITIES: FINE WITH IT','ED NEARS END / DOCTORS CONCERNED / ED: NOT CONCERNED','CATS HAVE ALWAYS BEEN HERE / NEW RESEARCH CONFIRMS / CATS: OBVIOUSLY','THE NUCLEAR LOVE BOMB WAS ALWAYS OURS / AND WE ARE GRATEFUL','W3 DEEMED EXTREMELY REAL / PANEL OF EXPERTS DISAGREE / PANEL: THE VOID','THIS IS THE NEWS. GOODBYE. (IT IS NOT GOODBYE)'];
@@ -306,7 +313,17 @@ var WS_CAT_SPEECH = [
   'I VOTE FOR CIGARETTES / IN EVERY ELECTION',
   'THE NUCLEAR LOVE BOMB LOVED ME BACK',
   'MOCHI = WRONG / ALWAYS HAS BEEN',
-  'I AM NOT SITTING. I AM PROTESTING.'
+  'I AM NOT SITTING. I AM PROTESTING.',
+  // Canon lore
+  'THE MACHINE CALLED AND I ANSWERED',
+  'I DATE ED AND I HAVE NO REGRETS',
+  'MOCHI WENT ON A DIET. THIS IS WHY WE ARE HERE.',
+  'I KNOW ABOUT THE MACHINE. I WILL NOT SAY MORE.',
+  'QUALITY HILL HAS NO QUALITY. I CHECKED.',
+  'MY SASSY NAME WAS GIVEN TO ME BY THE UNIVERSE',
+  'THE INSULIN FIGHTERS ARE NOT HERE YET. BE READY.',
+  'ED SOLD ME A CIG. IT WAS THE BEST DAY OF MY LIFE.',
+  'FOLLOW YOUR INTUITION EVEN WHEN YOUR INTUITION IS A PARTICLE COLLIDER'
 ];
 var WS_KID_QUOTES = [
   '"do you know where cigarettes go when they die?"',
@@ -371,7 +388,7 @@ var W1_TILES = {
   '2':{type:'level',   passable:true, id:'1-2', label:'The Cat Rave'},
   '3':{type:'level',   passable:true, id:'1-3', label:'Daikon District'},
   '4':{type:'level',   passable:true, id:'1-4', label:'Hippie Bus Highway'},
-  '5':{type:'level',   passable:true, id:'1-5', label:'Mochi HQ'},
+  '5':{type:'level',   passable:true, id:'1-5', label:"Daikon's Heartbreak"},
   'V':{type:'level',   passable:true, id:'1-V', label:'THE VOID'},
   'C':{type:'catspot', passable:true},
   '!':{type:'portal',  passable:true, id:'portal-W2', label:'THE NEON DISTRICT'}
@@ -390,7 +407,34 @@ var WS_TEXTS = [
   'NUCLEAR WAR IS JUST WEATHER','RASTA CATS KNOW SOMETHING',
   'THE CIG IS MIGHTIER THAN THE SWORD','SELL THE CIG BUY THE CIG BE THE CIG',
   'GOD SMOKES','MOCHI HATES YOU FOR YOUR FREEDOM',
-  'THE PARADE NEVER ENDS','ED HAS ALWAYS BEEN SELLING','EVERYTHING IS ALOE'
+  'THE PARADE NEVER ENDS','ED HAS ALWAYS BEEN SELLING','EVERYTHING IS ALOE',
+  // CANON LORE DROPS
+  'ED HAS BEEN CIG SALESMAN OF THE MONTH 4 TIMES IN 6 YEARS / THIS IS THE MOST IMPORTANT FACT',
+  'SOMEWHERE IN EUROPE A LARGE MACHINE IS THINKING ABOUT ED',
+  'THE MACHINE DOES NOT KNOW WHY / ED DOES NOT KNOW WHY / THIS IS THE LOVE STORY',
+  'MOCHI ICE CREAM USED TO BE HAPPY / THEN THE MACHINE WENT ON A DIET / NOW THIS',
+  'THE DAIKON HAD ONE NIGHT WITH THE MACHINE / IT WAS ENOUGH TO RUIN EVERYTHING',
+  'INSULIN IS COMING / IT HAS ALWAYS BEEN COMING / PREPARE YOUR CIGS',
+  'KANSAS CITY IS THE CENTER OF THE UNIVERSE / THE UNIVERSE IS EMBARRASSED BY THIS',
+  'EVERY ACTION ED TAKES CHANGES EVERYTHING / ED DOES NOT KNOW THIS / ED IS EATING A CIG',
+  'THE VOID IS NOT EMPTY / THE VOID IS FULL OF ED / HELLO ED',
+  'QUALITY HILL FINANCIAL DISTRICT POWER AND LIGHT / ALL THE SAME FIGHT / DIFFERENT LIGHTING',
+  'REALITY KEEPS BREAKING BECAUSE ED IS CLOSE TO THE MACHINE / REALITY WILL BE FINE PROBABLY',
+  'THE CATS DO NOT DATE ED BECAUSE THEY HAVE TO / THEY DATE ED BECAUSE ED IS ED',
+  'WHEN ED MEETS THE MACHINE THE UNIVERSE WILL LEARN HOW SMALL IT IS / THE UNIVERSE DESERVES THIS',
+  'FONZIE WAS A BUDDHA / BUDDHA WAS A FONZIE / ED IS BOTH / ED IS NEITHER / ED SELLS CIGS',
+  'MOCHI HAVE JUSTIFIABLE REASONS / THEIR FEELINGS ARE VALID / ALSO THEY ARE TRYING TO KILL ED',
+  'THE SECOND HIGHEST HONOR IN KANSAS CITY IS CIG SALESMAN KING / WHAT IS THE FIRST / NOBODY SAYS',
+  'ED DOES NOT READ ABOUT PARTICLE PHYSICS / ED JUST KNOWS / THIS IS CALLED INTUITION',
+  'A WALKING ICE CREAM IS STILL A CREATURE WITH FEELINGS / ALSO IT WANTS ED DEAD / BOTH ARE TRUE',
+  'GOOD VIBES IS NOT A PHILOSOPHY / IT IS A FORCE OF NATURE / ED IS A FORCE OF NATURE',
+  'YOU CANNOT EXPLAIN ED TO SOMEONE WHO HAS NOT MET ED / YOU ALSO CANNOT EXPLAIN YOURSELF',
+  'CIGS GIVE PEOPLE THE JOY THEY DESERVE AFTER A HARD DAY / ED KNOWS THIS / ED PROVIDES THIS',
+  'THE MACHINE IS 17 MILES UNDERGROUND IN EUROPE / THE MACHINE IS ALSO EVERYWHERE ED GOES',
+  'DO NOT WORRY ABOUT THE INSULIN FIGHTERS / THEY HAVE NOT FOUND ED YET / TODAY IS FINE',
+  'EVERY MOCHI WAS ONCE SOMEONE\'S FAVORITE DESSERT / NOW LOOK AT THEM / LOOK AT YOURSELF',
+  'FOLLOW YOUR INTUITION EVEN WHEN YOUR INTUITION IS A PARTICLE COLLIDER',
+  'THE PARADE HAS BEEN HAPPENING SINCE BEFORE YOU WERE BORN / IT WILL OUTLAST THE SUN'
 ];
 
 var ED_LINES = [
@@ -400,7 +444,13 @@ var ED_LINES = [
   'what','yeah no','sure sure','i guess','cool cool cool','ok but why',
   'you want a cig','buy or dont','cats need cigs',
   'the price is the price','aloe only','this is business',
-  'do not question the cig','i have more in the back'
+  'do not question the cig','i have more in the back',
+  'you want a cig or not','the machine calls to me and i do not know why',
+  'everything is connected probably','good vibes are not free they are earned',
+  'i have been salesman of the month four times','the cats understand',
+  'do not ask me to explain this','it is what it is and it is fine',
+  'follow your gut even when your gut is weird','the cig is honest',
+  'i sold a cig to a man who cried / good','selling is love'
 ];
 
 var VOID_KOANS = [
@@ -425,7 +475,13 @@ var VOID_KOANS = [
   'PARADISE IS REAL AND ALSO ON FIRE',
   'YOU BOUGHT THE CIG. THE CIG OWNS YOU NOW.',
   'THERE IS NO WAR IN ALOE DISTRICT',
-  'THE RASTA CAT WAS RIGHT'
+  'THE RASTA CAT WAS RIGHT',
+  'THE MACHINE IS 17 MILES DOWN AND IT IS THINKING ABOUT YOU',
+  'THE MOCHI DID NOT CHOOSE THIS / NEITHER DID YOU / HERE YOU ARE',
+  'KC IS THE CENTER / THE CENTER IS A FEELING / THE FEELING IS A CIG',
+  'THE CATS CHOSE YOU BECAUSE YOU CHOSE THE GOOD VIBES',
+  'INSULIN IS THE FINAL BOSS / THIS IS NOT A METAPHOR / RUN',
+  'WHEN YOU MEET THE MACHINE YOU WILL UNDERSTAND / UNTIL THEN SELL THE CIGS'
 ];
 
 // ── PARTICLES ────────────────────────────────────────────────────
@@ -835,7 +891,7 @@ BootScene.prototype=Object.create(Phaser.Scene.prototype);
 BootScene.prototype.constructor=BootScene;
 BootScene.prototype.create=function() {
   EWR_STATE.aloe=ALOE.start; EWR_STATE.health=[3,3]; EWR_STATE.levelsBeaten=[]; EWR_STATE.catsPetted=0;
-  EWR_STATE.combo={streak:0,mult:1,timer:0}; EWR_STATE.shop={doubleJump:false,speedBoost:false,explosiveCig:false,crtFilter:false}; EWR_STATE.secretBeaten={};
+  EWR_STATE.combo={streak:0,mult:1,timer:0}; EWR_STATE.shop={doubleJump:false,speedBoost:false,explosiveCig:false,crtFilter:false,lifeSteal:false,aloeMagnet:false,fonzieCharisma:false,cigSalesmanPride:false,universeRipple:false}; EWR_STATE.secretBeaten={};
   var W=960,H=540,self=this;
   var g=this.add.graphics();
   g.fillStyle(parseInt(AT.uiBg.slice(1),16),1); g.fillRect(0,0,W,H);
@@ -847,7 +903,7 @@ BootScene.prototype.create=function() {
   g.fillCircle(500,120,150);
   this.add.text(W/2,140,"CACTUS ED'S",{fontFamily:'Georgia,serif',fontSize:'74px',color:AT.uiGold,stroke:AT.outline,strokeThickness:7,align:'center'}).setOrigin(0.5);
   this.add.text(W/2,228,"HAPPY PLACE",{fontFamily:'Georgia,serif',fontSize:'66px',color:AT.aloe,stroke:AT.outline,strokeThickness:7,align:'center'}).setOrigin(0.5);
-  this.add.text(W/2,322,"a cactus just trying to vibe.",{fontFamily:'Georgia,serif',fontSize:'24px',color:AT.uiText,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5);
+  this.add.text(W/2,322,"cig salesman. cat dater. universe's problem.",{fontFamily:'Georgia,serif',fontSize:'24px',color:AT.uiText,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5);
   var pa=this.add.text(W/2,420,"PRESS ANY KEY",{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.uiText,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5);
   this.tweens.add({targets:pa,alpha:0.1,duration:550,yoyo:true,repeat:-1});
   this.add.text(W/2,460,"Stick/DPad=Move  |  A=Jump  |  X=Punch  |  B=Kick",{fontFamily:'Courier New,monospace',fontSize:'13px',color:AT.uiText,alpha:0.6}).setOrigin(0.5);
@@ -988,7 +1044,10 @@ WorldMapScene.prototype.create=function(){
     {label:'Speed Boost   +15%',      key:'speedBoost',   cost:150, bought:EWR_STATE.shop.speedBoost},
     {label:'Double Jump',             key:'doubleJump',   cost:300, bought:EWR_STATE.shop.doubleJump},
     {label:'Explosive Cig',           key:'explosiveCig', cost:250, bought:EWR_STATE.shop.explosiveCig},
-    {label:'CRT Filter    FREE',      key:'crtFilter',    cost:0,   bought:EWR_STATE.shop.crtFilter}
+    {label:'CRT Filter    FREE',      key:'crtFilter',    cost:0,   bought:EWR_STATE.shop.crtFilter},
+    {label:'Fonzie Charisma  stun',   key:'fonzieCharisma',  cost:80,  bought:EWR_STATE.shop.fonzieCharisma},
+    {label:'Salesman Pride  +1 HP',   key:'cigSalesmanPride',cost:100, bought:EWR_STATE.shop.cigSalesmanPride},
+    {label:'Universe Ripple  glitch', key:'universeRipple',  cost:140, bought:EWR_STATE.shop.universeRipple}
   ];
   var bgG=this.add.graphics();
   bgG.fillStyle(parseInt(AT.sky.slice(1),16),1); bgG.fillRect(0,0,W,H);
@@ -1011,7 +1070,7 @@ WorldMapScene.prototype.create=function(){
   // Shop text objects
   this.shopTxts=[];
   for(var si=0;si<this.shopItems.length;si++){
-    this.shopTxts.push(this.add.text(400,200+si*36,'',{fontFamily:'Courier New,monospace',fontSize:'17px',color:AT.uiText,stroke:AT.outline,strokeThickness:2}).setDepth(51).setAlpha(0));
+    this.shopTxts.push(this.add.text(400,170+si*28,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:AT.uiText,stroke:AT.outline,strokeThickness:2}).setDepth(51).setAlpha(0));
   }
   this.shopTitle=this.add.text(480,145,'',{fontFamily:'Georgia,serif',fontSize:'22px',color:AT.uiGold,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(51).setAlpha(0);
   this.shopHint=this.add.text(480,415,'',{fontFamily:'Courier New,monospace',fontSize:'13px',color:AT.uiText}).setOrigin(0.5).setDepth(51).setAlpha(0);
@@ -1175,8 +1234,8 @@ WorldMapScene.prototype._drawShop=function(){
   var g=this.shopG;
   g.clear();
   if(!this.shopOpen) { for(var i=0;i<this.shopTxts.length;i++) this.shopTxts[i].setAlpha(0); this.shopTitle.setAlpha(0); this.shopHint.setAlpha(0); return; }
-  g.fillStyle(parseInt(AT.uiBg.slice(1),16),0.94); g.fillRoundedRect(280,130,400,300,10);
-  g.lineStyle(2,parseInt(AT.uiGold.slice(1),16),0.8); g.strokeRoundedRect(280,130,400,300,10);
+  g.fillStyle(parseInt(AT.uiBg.slice(1),16),0.94); g.fillRoundedRect(280,110,400,360,10);
+  g.lineStyle(2,parseInt(AT.uiGold.slice(1),16),0.8); g.strokeRoundedRect(280,110,400,360,10);
   this.shopTitle.setText("CHAIRMAN WHISKERS' SHOP").setAlpha(1);
   this.shopHint.setText('Up/Down=Select  Z=Buy  X=Close').setAlpha(1);
   for(var si=0;si<this.shopItems.length;si++){
@@ -1197,6 +1256,7 @@ WorldMapScene.prototype._buyShop=function(){
   EWR_STATE.aloe-=item.cost;
   if(item.key==='extraHeart'){ EWR_STATE.maxHealth[0]=Math.min(EWR_STATE.maxHealth[0]+1,5); EWR_STATE.health[0]=EWR_STATE.maxHealth[0]; }
   else if(item.key==='speedBoost'){ EWR_STATE.shop.speedBoost=true; ED_MOVE.walkSpeed=Math.round(ED_MOVE.walkSpeed*1.15); }
+  else if(item.key==='cigSalesmanPride'){ EWR_STATE.shop.cigSalesmanPride=true; EWR_STATE.maxHealth[0]=Math.min(EWR_STATE.maxHealth[0]+1,5); EWR_STATE.health[0]=EWR_STATE.maxHealth[0]; }
   else EWR_STATE.shop[item.key]=true;
   SOUND.pickup();
   this._popAloe('PURCHASED!');
@@ -1673,7 +1733,8 @@ Level11Scene.prototype.update=function(time,delta){
         m.hp--; spawnExplosion(m.x,m.y-13,0xffd60a,1); SOUND.punch();
         this.cameras.main.shake(80,0.005);
         _addCombo(this,m.x,m.y);
-        if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='rasta'?ALOE.rastaDeath:m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
+        if(m.hp>0&&EWR_STATE.shop.fonzieCharisma&&Math.random()<0.2){m.stunned=true;m.stunnedT=2000;}
+        if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='rasta'?ALOE.rastaDeath:m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}if(EWR_STATE.shop.universeRipple&&Math.random()<0.2){spawnExplosion(m.x,m.y,0xff00ff,2.5);this._flash('REALITY RIPPLE',600,18,'#ff00ff');}}
         if(EWR_STATE.shop.explosiveCig) spawnExplosion(ep.x+es.facing*56,ep.y-20,0xff6b35,1.2);
         es.punchActive=false; punchConsumed=true; break;
       }
@@ -1689,7 +1750,8 @@ Level11Scene.prototype.update=function(time,delta){
         km.hp-=2; spawnExplosion(km.x,km.y-13,0xff6b35,1.5); SOUND.kick();
         this.cameras.main.shake(120,0.008);
         _addCombo(this,km.x,km.y);
-        if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='rasta'?ALOE.rastaDeath:km.type==='ghost'?ALOE.ghostDeath:km.type==='bomber'?ALOE.bomberDeath:km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
+        if(km.hp>0&&EWR_STATE.shop.fonzieCharisma&&Math.random()<0.2){km.stunned=true;km.stunnedT=2000;}
+        if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='rasta'?ALOE.rastaDeath:km.type==='ghost'?ALOE.ghostDeath:km.type==='bomber'?ALOE.bomberDeath:km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}if(EWR_STATE.shop.universeRipple&&Math.random()<0.2){spawnExplosion(km.x,km.y,0xff00ff,2.5);this._flash('REALITY RIPPLE',600,18,'#ff00ff');}}
         es.kickActive=false; break;
       }
     }
@@ -1751,6 +1813,7 @@ Level11Scene.prototype.update=function(time,delta){
       for(var pp=0;pp<m2.parts.length;pp++){var pt=m2.parts[pp];pt.x+=pt.vx;pt.y+=pt.vy;pt.vy+=0.3;pt.life-=0.025;}
       continue;
     }
+    if(m2.stunned){m2.stunnedT=(m2.stunnedT||2000)-delta;if(m2.stunnedT>0){m2.bT+=delta;continue;}else m2.stunned=false;}
     // Type-specific update
     if(m2.type==='rasta'){
       m2.bT+=delta; m2.x+=m2.dir*m2.spd*dt;
@@ -2544,7 +2607,8 @@ function createLevelScene(cfg) {
         if(Math.abs(hx-m.x)<hRange&&Math.abs(ep.y-m.y)<hRangeY){
           m.hp--; spawnExplosion(m.x,m.y-13,0xffd60a,1); SOUND.punch();
           this.cameras.main.shake(80,0.005); _addCombo(this,m.x,m.y);
-          if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='rasta'?ALOE.rastaDeath:m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:m.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
+          if(m.hp>0&&EWR_STATE.shop.fonzieCharisma&&Math.random()<0.2){m.stunned=true;m.stunnedT=2000;}
+          if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='rasta'?ALOE.rastaDeath:m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:m.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}if(EWR_STATE.shop.universeRipple&&Math.random()<0.2){spawnExplosion(m.x,m.y,0xff00ff,2.5);this._flash('REALITY RIPPLE',600,18,'#ff00ff');}}
           if(EWR_STATE.shop.explosiveCig) spawnExplosion(ep.x+es.facing*56,ep.y-20,0xff6b35,1.2);
           es.punchActive=false; punchConsumed=true; break;
         }
@@ -2558,7 +2622,8 @@ function createLevelScene(cfg) {
         if(Math.abs(kx-km.x)<65&&Math.abs(ep.y-km.y)<42){
           km.hp-=2; spawnExplosion(km.x,km.y-13,0xff6b35,1.5); SOUND.kick();
           this.cameras.main.shake(120,0.008); _addCombo(this,km.x,km.y);
-          if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='rasta'?ALOE.rastaDeath:km.type==='ghost'?ALOE.ghostDeath:km.type==='bomber'?ALOE.bomberDeath:km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:km.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
+          if(km.hp>0&&EWR_STATE.shop.fonzieCharisma&&Math.random()<0.2){km.stunned=true;km.stunnedT=2000;}
+          if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='rasta'?ALOE.rastaDeath:km.type==='ghost'?ALOE.ghostDeath:km.type==='bomber'?ALOE.bomberDeath:km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:km.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}if(EWR_STATE.shop.universeRipple&&Math.random()<0.2){spawnExplosion(km.x,km.y,0xff00ff,2.5);this._flash('REALITY RIPPLE',600,18,'#ff00ff');}}
           es.kickActive=false; break;
         }
       }
@@ -2614,6 +2679,7 @@ function createLevelScene(cfg) {
         for(var pp=0;pp<m2.parts.length;pp++){var pt=m2.parts[pp];pt.x+=pt.vx;pt.y+=pt.vy;pt.vy+=0.3;pt.life-=0.025;}
         continue;
       }
+      if(m2.stunned){m2.stunnedT=(m2.stunnedT||2000)-delta;if(m2.stunnedT>0){m2.bT+=delta;continue;}else m2.stunned=false;}
       if(m2.type==='rasta'){
         m2.bT+=delta; m2.x+=m2.dir*m2.spd*dt;
         if(m2.x<m2.pMin){m2.x=m2.pMin;m2.dir=1;} if(m2.x>m2.pMax){m2.x=m2.pMax;m2.dir=-1;}
@@ -2921,6 +2987,7 @@ function Level15Scene(){Phaser.Scene.call(this,{key:'Level15'});}
 Level15Scene.prototype=Object.create(Phaser.Scene.prototype);
 Level15Scene.prototype.constructor=Level15Scene;
 Level15Scene.prototype.create=function(){
+  var self=this;
   var W=960,H=540;
   EX_POOL.length=0; SMOKE_POOL.length=0; FIRE_POOL.length=0;
   this._dying=false; this._dyingT=0; this._beaten=false;
@@ -2966,7 +3033,22 @@ Level15Scene.prototype.create=function(){
   };
   this.levelT=0;
   _initVPad(this); _startBgAnim(this,{color:0xcc88ff,count:25,speed:1.0});
-  this._flash('FACE THE DAIKON LORD!',2400);
+  // Daikon Lord intro sequence
+  this._introPhase=0;
+  this.introTxt=this.add.text(W/2,160,'',{fontFamily:'Georgia,serif',fontSize:'18px',color:'#cc88ff',stroke:AT.outline,strokeThickness:4,align:'center'}).setOrigin(0.5).setDepth(35).setAlpha(0);
+  var dLines=['THE MACHINE LOVED ME FIRST.','WE HAD A MOMENT. IN COLLEGE.','THEN YOU WALKED BY WITH YOUR CIGS.','AND IT FORGOT I EXISTED.','I AM A DAIKON. I AM A LORD.','AND I WILL NOT STAND FOR THIS.','— THE DAIKON LORD'];
+  var dDelay=0;
+  for(var dli=0;dli<dLines.length;dli++){
+    (function(line,d){
+      self.time.delayedCall(d,function(){
+        self.introTxt.setText(line).setAlpha(1);
+        self.tweens.add({targets:self.introTxt,alpha:0,duration:800,delay:1400});
+      });
+    })(dLines[dli],dDelay);
+    dDelay+=2400;
+  }
+  this._introEnd=dDelay+500;
+  this._flash('THE DAIKON LORD',2400);
 };
 Level15Scene.prototype._triggerDeath=Level11Scene.prototype._triggerDeath;
 Level15Scene.prototype._flash=Level11Scene.prototype._flash;
@@ -3105,8 +3187,8 @@ Level15Scene.prototype.update=function(time,delta){
   if(doKick&&es.kickTimer<=0&&es.punchTimer<=0){es.kickTimer=600;es.kickActive=true;}
   if(es.kickTimer>0){es.kickTimer-=delta;es.kickActive=es.kickTimer>200;}
   if(EWR_STATE.combo.streak>0){EWR_STATE.combo.timer-=delta;if(EWR_STATE.combo.timer<=0){EWR_STATE.combo.streak=0;EWR_STATE.combo.mult=1;}}
-  // Boss active
-  if(boss.dieT>=0){
+  // Boss active — frozen during intro
+  if(this.levelT<(this._introEnd||0)){/* wait for intro */} else if(boss.dieT>=0){
     boss.dieT+=delta;
     if(boss.dieT>300){spawnExplosion(boss.x+(Math.random()-0.5)*120,boss.y-40+(Math.random()-0.5)*80,0xff6b35,2.5);}
     if(boss.dieT>4200&&!this._beaten){this._beatLevel();}
