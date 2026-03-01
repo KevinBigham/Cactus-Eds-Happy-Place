@@ -2207,8 +2207,7 @@ function _initVPad(scene) {
   _patchKey(scene.keys.down,  'down');
   _patchKey(scene.keys.punch, 'punch');
   _patchKey(scene.keys.kick,  'kick');
-  if(!MOBILE_MODE) return;
-  var vg=scene.add.graphics().setScrollFactor(0).setDepth(96);
+  var vg=scene.add.graphics().setScrollFactor(0).setDepth(96).setVisible(MOBILE_MODE);
   // D-pad circle background
   vg.fillStyle(0x000000,0.38); vg.fillCircle(127,432,112);
   vg.lineStyle(1.5,0xffffff,0.18); vg.strokeCircle(127,432,112);
@@ -2227,10 +2226,10 @@ function _initVPad(scene) {
   vg.lineStyle(2,0xffd60a,0.8); vg.strokeCircle(912,479,40);
   vg.fillStyle(0x997700,0.52); vg.fillCircle(912,479,37);
   // Labels
-  scene.add.text(800,466,'Z',{fontFamily:'Courier New,monospace',fontSize:'28px',color:'#ffaa55',fontStyle:'bold',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(97);
-  scene.add.text(800,494,'PUNCH',{fontFamily:'Courier New,monospace',fontSize:'9px',color:'#ff9955'}).setOrigin(0.5).setScrollFactor(0).setDepth(97);
-  scene.add.text(912,468,'X',{fontFamily:'Courier New,monospace',fontSize:'24px',color:'#ffdd44',fontStyle:'bold',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(97);
-  scene.add.text(912,494,'KICK',{fontFamily:'Courier New,monospace',fontSize:'9px',color:'#ffdd44'}).setOrigin(0.5).setScrollFactor(0).setDepth(97);
+  scene.add.text(800,466,'Z',{fontFamily:'Courier New,monospace',fontSize:'28px',color:'#ffaa55',fontStyle:'bold',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
+  scene.add.text(800,494,'PUNCH',{fontFamily:'Courier New,monospace',fontSize:'9px',color:'#ff9955'}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
+  scene.add.text(912,468,'X',{fontFamily:'Courier New,monospace',fontSize:'24px',color:'#ffdd44',fontStyle:'bold',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
+  scene.add.text(912,494,'KICK',{fontFamily:'Courier New,monospace',fontSize:'9px',color:'#ffdd44'}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
   // Touch detection (circular d-pad + round action buttons)
   function _upd() {
     VPAD.left=false; VPAD.right=false; VPAD.up=false; VPAD.down=false; VPAD.punch=false; VPAD.kick=false;
