@@ -64,7 +64,8 @@ var ALOE = {
   secretFind:20, catPet:5, fightWin:40,
   mochiDeath:8, aloePickup:15, raceEntryFee:25,
   tankDeath:20, daikonDeath:16, throwerDeath:18, bossHit:12, voidBeat:200,
-  beat21:100, beat22:120, beat23:500, ghostDeath:14, bomberDeath:25
+  beat21:100, beat22:120, beat23:500, ghostDeath:14, bomberDeath:25,
+  rastaDeath:18, beat24:150
 };
 
 var CAT_NAMES = [
@@ -73,7 +74,49 @@ var CAT_NAMES = [
   'Detective Naps','DJ Meowsworth','Captain Kibble',
   'Dr. Purrlington','Bartholomew','Madame Paws','Sir Hissworth',
   'Countess Flop','Agent Tuna','The Honorable Sniff',
-  'Lieutenant Noodle','Papa Scratch','Reverend Fluff'
+  'Lieutenant Noodle','Papa Scratch','Reverend Fluff',
+  'Emperor Cig','Ras Fluffington','The Honorable Ganj','Baron Von Smoke'
+];
+
+var NEWS_TICKER = [
+  'BREAKING: CAT NATIONS EXCHANGE NUCLEAR WARHEADS / BACKGROUND FOOTAGE AT 11 / MARKET UNAFFECTED',
+  'RASTA CAT COALITION REJECTS CIG DEAL: "WE WANT THE GANJ NOT THE CIG" / TALKS COLLAPSE',
+  'ALOE REACHES NEW ALL-TIME HIGH / ANALYSTS CONFIRM: 1 ALOE = 1 ALOE / EXPERTS DISAGREE',
+  'ED\'S CIGARETTE EMPIRE EXPANDS TO THE MOON / ASTRONAUT CATS REPORT HIGH SATISFACTION',
+  'MOCHI GOVERNMENT DECLARES TOTAL WAR ON CIGARETTES / "CATS MUST NOT SMOKE" / CATS DISAGREE',
+  'BREAKING: SECOND NUCLEAR EXCHANGE TODAY / CATS FINE / DAIKON: NOT FINE',
+  'ECONOMIST EXPLAINS ALOE: "IT\'S LIKE BITCOIN BUT REAL AND ALSO NOT REAL" / INVESTORS CONFUSED',
+  'THE GREAT CAT CIG PARADE CONFIRMED / ROUTE: WEST BOTTOMS TO THE VOID / CIGS PROVIDED',
+  'DAIKON LORD DEFEATED FOR SEVENTH TIME THIS WEEK / STILL A DAIKON / STILL A LORD',
+  'VOID SCIENTISTS DISCOVER NOTHING / PUBLISH PAPER ON IT / PAPER WINS AWARD',
+  'ED NAMED BUSINESSMAN OF THE YEAR / "I JUST SELL CIGS TO CATS" -- ED / CATS UNAVAILABLE',
+  'RASTA MOVEMENT GROWS: 40% OF CATS NOW REFUSE CIGARETTES / ED CALLS THIS A WIN',
+  'MOCHI CRIME SYNDICATE EXPOSED: ANTI-CIG TERROR CELL IN DAIKON DISTRICT / ALOE SOARS',
+  'NUCLEAR CAT STANDOFF ENTERS DAY 400 / NOBODY KNOWS WHAT THEY ARE FIGHTING ABOUT',
+  'BREAKING: IS GOD A MUSHROOM CLOUD? / LOCAL RASTA SAYS YES / MOCHI: NO COMMENT',
+  'WEST BOTTOMS CATS PETITION FOR MORE CIGS / ED PERSONALLY DELIVERS ANYWAY',
+  'NEON DISTRICT NOW OFFICIAL CITY / POPULATION: GHOSTS AND BOMBERS / MAYOR: NEON KING (DECEASED)',
+  'ALOE MARKET CRASHES / RECOVERS / CRASHES AGAIN / ALOE',
+  'THE VOID OPENS ADDITIONAL LOCATION IN DOWNTOWN / HOURS: ALWAYS / ADMISSION: YOUR WILL TO LIVE',
+  'BREAKING: EVERYTHING CONTINUES / MORE AT 11 / 11 IS ALSO CONTINUING'
+];
+
+var BEAT_CAT_LINES = [
+  '"do you know where cigarettes go when they die?"',
+  '"my dad invested all our aloe. we live in the void now."',
+  '"what does it feel like to make something that kills cats?"',
+  '"if mochi wins, will there still be cigs?"',
+  '"i asked my teacher about nuclear war and she said soon"',
+  '"ed, do you ever think about the cats who coughed?"',
+  '"the news said another country got nuked. they had cats there too."',
+  '"aloe used to be worth something my mom says"',
+  '"is there a god in west bottoms or just mochi"',
+  '"you smell like a cig that knows it\'s dying but doesn\'t care"',
+  '"what happens when there are no more cats to sell to"',
+  '"the rasta cats seem very calm about everything"',
+  '"i saw the void once. it looked back."',
+  '"my friend says mochi is right. i don\'t know."',
+  '"do you ever just. stop."'
 ];
 
 var CAT_COLORS = [
@@ -122,14 +165,22 @@ var WS_TEXTS = [
   'STAY WEIRD','NOTHING IS REAL','YOU CANNOT LEAVE',
   'ALOE FOREVER','WHAT YEAR IS IT','THE MOCHIS KNOW',
   'DO NOT LOOK DOWN','CAT IS GOD','EMBRACE THE VOID',
-  'ED APPROVES OF NOTHING'
+  'ED APPROVES OF NOTHING',
+  'ALOE IS BITCOIN IS ALOE','CATS SMOKE THEREFORE CATS ARE',
+  'NUCLEAR WAR IS JUST WEATHER','RASTA CATS KNOW SOMETHING',
+  'THE CIG IS MIGHTIER THAN THE SWORD','SELL THE CIG BUY THE CIG BE THE CIG',
+  'GOD SMOKES','MOCHI HATES YOU FOR YOUR FREEDOM',
+  'THE PARADE NEVER ENDS','ED HAS ALWAYS BEEN SELLING','EVERYTHING IS ALOE'
 ];
 
 var ED_LINES = [
   '...','classic','leave me alone',"i don't care",
   'sure','whatever','noted','no','fine','obviously','ok',
   'hmm','unbelievable','of course','as expected',
-  'what','yeah no','sure sure','i guess','cool cool cool','ok but why'
+  'what','yeah no','sure sure','i guess','cool cool cool','ok but why',
+  'you want a cig','buy or dont','cats need cigs',
+  'the price is the price','aloe only','this is business',
+  'do not question the cig','i have more in the back'
 ];
 
 var VOID_KOANS = [
@@ -145,7 +196,16 @@ var VOID_KOANS = [
   'WHY WOULD YOU COME HERE',
   'THE ALOE WAS INSIDE YOU ALL ALONG',
   'THERE IS NO LEVEL 1-6',
-  'YOU CANNOT UNSEE THIS'
+  'YOU CANNOT UNSEE THIS',
+  'GOD IS A MUSHROOM CLOUD',
+  'DEATH IS THE ORIGINAL CIG',
+  'WHAT GOD WANTS GOD GETS AND GOD WANTS NOTHING',
+  'NUCLEAR WINTER IS JUST WINTER WITH MORE CONVICTION',
+  'THE BOMB IS JUST A BIG CIG',
+  'PARADISE IS REAL AND ALSO ON FIRE',
+  'YOU BOUGHT THE CIG. THE CIG OWNS YOU NOW.',
+  'THERE IS NO WAR IN ALOE DISTRICT',
+  'THE RASTA CAT WAS RIGHT'
 ];
 
 // ── PARTICLES ────────────────────────────────────────────────────
@@ -205,6 +265,45 @@ function drawFire(g) {
     var p=FIRE_POOL[i];
     g.fillStyle(p.color, p.life*0.75);
     g.fillCircle(p.x, p.y, p.r*p.life+1);
+  }
+}
+
+// Nuclear mushroom cloud pool
+var NUKE_POOL = [];
+function spawnNuke() {
+  NUKE_POOL.push({x:80+Math.random()*800, t:0, maxT:4000});
+}
+function updateNukes(delta) {
+  for (var i=NUKE_POOL.length-1;i>=0;i--) {
+    NUKE_POOL[i].t+=delta;
+    if (NUKE_POOL[i].t>=NUKE_POOL[i].maxT) NUKE_POOL.splice(i,1);
+  }
+}
+function drawNukes(g) {
+  for (var i=0;i<NUKE_POOL.length;i++) {
+    var n=NUKE_POOL[i];
+    var prog=n.t/n.maxT; // 0..1
+    // fade: in 0..0.15, hold 0.15..0.75, out 0.75..1
+    var al=prog<0.15?(prog/0.15):prog<0.75?1.0:((1.0-prog)/0.25);
+    al=Math.max(0,Math.min(1,al));
+    var stemH=Math.min(160,prog*1200);
+    var capR=Math.min(55,prog*400);
+    var bx=n.x, by=496; // screen bottom anchor
+    // glow base
+    g.fillStyle(0xffaa00, al*0.18);
+    g.fillCircle(bx, by, capR*1.8);
+    // stem
+    g.fillStyle(0xff6b35, al*0.85);
+    g.fillRect(bx-8, by-stemH, 16, stemH);
+    // stem inner
+    g.fillStyle(0xffcc88, al*0.6);
+    g.fillRect(bx-4, by-stemH, 8, stemH);
+    // cap ellipse
+    g.fillStyle(0xff4400, al*0.9);
+    g.fillEllipse(bx, by-stemH, capR*2, capR*0.85);
+    // cap highlight
+    g.fillStyle(0xffdd44, al*0.5);
+    g.fillEllipse(bx-capR*0.25, by-stemH-capR*0.15, capR*0.9, capR*0.45);
   }
 }
 
@@ -600,11 +699,22 @@ TitleScene.prototype.create=function(){
   });
   var ttxt=this.add.text(W/2,78,"CACTUS ED'S HAPPY PLACE",{fontFamily:'Georgia,serif',fontSize:'54px',color:AT.uiGold,stroke:AT.outline,strokeThickness:8,align:'center'}).setOrigin(0.5);
   this.tweens.add({targets:ttxt,y:83,duration:2200,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
-  this.add.text(W/2,148,"WORLD 1  --  THE WEST BOTTOMS",{fontFamily:'Courier New,monospace',fontSize:'19px',color:AT.uiText,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5);
+  this.add.text(W/2,148,'WEST BOTTOMS CIG DISTRICT  //  EST. UNKNOWN',{fontFamily:'Courier New,monospace',fontSize:'19px',color:AT.uiText,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5);
   var ps=this.add.text(W/2,488,"PRESS ANY KEY",{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5);
   this.tweens.add({targets:ps,alpha:0.15,duration:480,yoyo:true,repeat:-1});
+  var tTickN=Math.floor(Math.random()*NEWS_TICKER.length);
+  var tTickX=960;
+  var tTickTxt=this.add.text(960,520,'⚡ '+NEWS_TICKER[tTickN]+'  ◆  ',
+    {fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ff4444',stroke:'#000000',strokeThickness:2});
   this.events.on('update',function(time,delta){
     edCigF++; edSmokeT+=delta; busT++;
+    tTickX-=1.5*(delta/16);
+    tTickTxt.setPosition(tTickX,520);
+    if(tTickX<-tTickTxt.width){
+      tTickN=(tTickN+1)%NEWS_TICKER.length;
+      tTickTxt.setText('⚡ '+NEWS_TICKER[tTickN]+'  ◆  ');
+      tTickX=960;
+    }
     if(edSmokeT>950){edSmokeT=0;spawnSmoke(520+14,398);}
     updateSmoke();
     for(var i=0;i<catData.length;i++){
@@ -683,8 +793,48 @@ WorldMapScene.prototype.create=function(){
     punch:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z),
     kick: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X)
   };
+  // News ticker
+  this._tickX=960; this._tickN=Math.floor(Math.random()*NEWS_TICKER.length);
+  this.tickerTxt=this.add.text(960,526,'⚡ '+NEWS_TICKER[this._tickN]+'  ◆  ',
+    {fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ff4444',stroke:'#000000',strokeThickness:2})
+    .setDepth(10);
+  // Beat Cat NPC at tile (2,6)
+  var bcPx=this._t2p(2,6);
+  this.beatCatG=this.add.graphics().setDepth(8);
+  this._drawBeatCat(bcPx.x, bcPx.y);
+  this.add.text(bcPx.x,bcPx.y-38,'TRUTH KID',
+    {fontFamily:'Courier New,monospace',fontSize:'10px',color:'#ff8800',stroke:'#000000',strokeThickness:2})
+    .setOrigin(0.5).setDepth(9);
+  this._beatCatPx=bcPx; this._beatCatLineIdx=0;
   var dat=this.scene.settings.data;
   if(dat&&dat.aloeEarned) this._popAloe('+'+dat.aloeEarned+' ALOE!');
+  // CAT NEWS card — 50% chance on level completion return
+  if(dat&&dat.aloeEarned&&Math.random()<0.5){
+    var self2=this;
+    var overlay=this.add.graphics().setDepth(90);
+    overlay.fillStyle(0x000000,1); overlay.fillRect(0,0,960,540);
+    var catNewsTitle=this.add.text(480,160,'CAT NEWS',{fontFamily:'Georgia,serif',fontSize:'52px',color:'#ff2222',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setDepth(91);
+    var catNewsSub=this.add.text(480,240,'BREAKING',{fontFamily:'Courier New,monospace',fontSize:'28px',color:'#ffffff',stroke:'#000000',strokeThickness:4}).setOrigin(0.5).setDepth(91);
+    var hl=NEWS_TICKER[Math.floor(Math.random()*NEWS_TICKER.length)];
+    var catNewsHl=this.add.text(480,310,hl,{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffdd00',stroke:'#000000',strokeThickness:3,align:'center',wordWrap:{width:800}}).setOrigin(0.5).setDepth(91);
+    this.time.delayedCall(3500,function(){overlay.destroy();catNewsTitle.destroy();catNewsSub.destroy();catNewsHl.destroy();});
+  }
+};
+WorldMapScene.prototype._drawBeatCat=function(bx,by){
+  var g=this.beatCatG;
+  g.clear();
+  // shadow
+  g.fillStyle(0x000000,0.18); g.fillEllipse(bx,by+2,22,6);
+  // small orange body
+  g.fillStyle(0xff8800,1); g.fillCircle(bx,by-8,9);
+  g.fillStyle(0xffcc44,0.5); g.fillCircle(bx-3,by-11,3);
+  // sign
+  g.fillStyle(0xffffff,0.9); g.fillRect(bx-12,by-28,24,14);
+  g.lineStyle(1,0x333333,1); g.strokeRect(bx-12,by-28,24,14);
+  // sign stick
+  g.fillStyle(0x884400,1); g.fillRect(bx-1,by-14,2,8);
+  // face
+  g.fillStyle(0x333300,1); g.fillCircle(bx-3,by-10,2); g.fillCircle(bx+3,by-10,2);
 };
 WorldMapScene.prototype._t2p=function(tx,ty){
   return {x:this.offX+tx*this.tW+this.tW/2,y:this.offY+ty*this.tH+this.tH/2+36};
@@ -846,7 +996,7 @@ WorldMapScene.prototype.update=function(time,delta){
       }
     }
   }
-  if(Phaser.Input.Keyboard.JustDown(this.keys.punch)||gpMapA){ this._tryPet(); this._tryEnter(); this._tryShop(); }
+  if(Phaser.Input.Keyboard.JustDown(this.keys.punch)||gpMapA){ this._tryPet(); this._tryEnter(); this._tryShop(); this._tryBeatCat(); }
   this.mapG.clear(); this._drawMap();
   this.catG.clear();
   for(var ci3=0;ci3<this.mapCats.length;ci3++){var c3=this.mapCats[ci3];DRAW_CAT.draw(this.catG,c3.x,c3.y,CAT_COLORS[c3.ci],c3.tailAng,c3.facing,c3.sitting);}
@@ -858,6 +1008,14 @@ WorldMapScene.prototype.update=function(time,delta){
   var curTile=this._getTile(this.edTile.x,this.edTile.y);
   if(curTile&&curTile.type==='level'){this.nodeTxt.setText(curTile.label).setAlpha(1);this.enterTxt.setAlpha(1);}
   else{this.nodeTxt.setAlpha(0);this.enterTxt.setAlpha(0);}
+  // News ticker scroll
+  this._tickX-=1.5*(delta/16);
+  this.tickerTxt.setPosition(this._tickX,526);
+  if(this._tickX<-this.tickerTxt.width){
+    this._tickN=(this._tickN+1)%NEWS_TICKER.length;
+    this.tickerTxt.setText('⚡ '+NEWS_TICKER[this._tickN]+'  ◆  ');
+    this._tickX=960;
+  }
 };
 WorldMapScene.prototype._onTile=function(tx,ty){
   var tile=this._getTile(tx,ty); if(!tile) return;
@@ -879,6 +1037,16 @@ WorldMapScene.prototype._tryShop=function(){
   var shopTile=this._t2p(7,6);
   if(Math.abs(this.edPx.x-shopTile.x)<40&&Math.abs(this.edPx.y-shopTile.y)<40){
     this.shopOpen=true; this.shopSel=0;
+  }
+};
+WorldMapScene.prototype._tryBeatCat=function(){
+  if(!this._beatCatPx) return;
+  if(Math.abs(this.edPx.x-this._beatCatPx.x)<55&&Math.abs(this.edPx.y-this._beatCatPx.y)<55){
+    var line=BEAT_CAT_LINES[this._beatCatLineIdx%BEAT_CAT_LINES.length];
+    this._beatCatLineIdx++;
+    var self3=this;
+    this.nodeTxt.setText(line).setAlpha(1);
+    this.time.delayedCall(3800,function(){if(self3.nodeTxt)self3.nodeTxt.setAlpha(0);});
   }
 };
 WorldMapScene.prototype._tryEnter=function(){
@@ -917,7 +1085,7 @@ Level11Scene.prototype.constructor=Level11Scene;
 Level11Scene.prototype.create=function(){
   var W=960,H=540,self=this;
   var LW=4800;
-  EX_POOL.length=0; SMOKE_POOL.length=0; FIRE_POOL.length=0;
+  EX_POOL.length=0; SMOKE_POOL.length=0; FIRE_POOL.length=0; NUKE_POOL.length=0;
   this._dying=false; this._dyingT=0; this._beaten=false;
   this.platRects=[{x:0,y:490,w:LW,h:50}];
   var plats=[
@@ -979,6 +1147,12 @@ Level11Scene.prototype.create=function(){
     this.add.text(618,486,'Stick=Move A=Jump X=Punch B=Kick',{fontFamily:'Courier New,monospace',fontSize:'12px',color:AT.uiText}).setScrollFactor(0).setDepth(25)
   ];
   this.levelT=0; this.checkpt=false;
+  this.nukeG=this.add.graphics().setScrollFactor(0).setDepth(2);
+  this._nukeT=0; this._nukeInterval=30000+Math.random()*20000;
+  this._tickX=960; this._tickN=Math.floor(Math.random()*NEWS_TICKER.length);
+  this.tickerTxt=this.add.text(960,526,'⚡ '+NEWS_TICKER[this._tickN]+'  ◆  ',
+    {fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ff4444',stroke:'#000000',strokeThickness:2})
+    .setScrollFactor(0).setDepth(22);
   this._flash('ED WAKES UP',2400);
 };
 Level11Scene.prototype.update=function(time,delta){
@@ -1076,7 +1250,7 @@ Level11Scene.prototype.update=function(time,delta){
         m.hp--; spawnExplosion(m.x,m.y-13,0xffd60a,1); SOUND.punch();
         this.cameras.main.shake(80,0.005);
         _addCombo(this,m.x,m.y);
-        if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
+        if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='rasta'?ALOE.rastaDeath:m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
         if(EWR_STATE.shop.explosiveCig) spawnExplosion(ep.x+es.facing*56,ep.y-20,0xff6b35,1.2);
         es.punchActive=false; punchConsumed=true; break;
       }
@@ -1092,7 +1266,7 @@ Level11Scene.prototype.update=function(time,delta){
         km.hp-=2; spawnExplosion(km.x,km.y-13,0xff6b35,1.5); SOUND.kick();
         this.cameras.main.shake(120,0.008);
         _addCombo(this,km.x,km.y);
-        if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='ghost'?ALOE.ghostDeath:km.type==='bomber'?ALOE.bomberDeath:km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
+        if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='rasta'?ALOE.rastaDeath:km.type==='ghost'?ALOE.ghostDeath:km.type==='bomber'?ALOE.bomberDeath:km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
         es.kickActive=false; break;
       }
     }
@@ -1155,6 +1329,16 @@ Level11Scene.prototype.update=function(time,delta){
       continue;
     }
     // Type-specific update
+    if(m2.type==='rasta'){
+      m2.bT+=delta; m2.x+=m2.dir*m2.spd*dt;
+      if(m2.x<m2.pMin){m2.x=m2.pMin;m2.dir=1;} if(m2.x>m2.pMax){m2.x=m2.pMax;m2.dir=-1;}
+      if(es.hurtTimer<=0&&Math.abs(ep.x-m2.x)<28&&Math.abs(ep.y-m2.y)<36){
+        es.hurtTimer=1200; EWR_STATE.health[0]--; EWR_STATE.combo.streak=0; EWR_STATE.combo.mult=1;
+        SOUND.hurt(); this.cameras.main.shake(250,0.012); ep.vx=-es.facing*190; ep.vy=-210;
+        if(EWR_STATE.health[0]<=0){this._triggerDeath();return;}
+      }
+      continue;
+    }
     if(m2.type==='ghost'){
       m2.bT+=delta; m2.x+=m2.dir*m2.spd*dt;
       m2.y=(m2.baseY||320)+Math.sin(m2.bT*0.003)*22;
@@ -1238,6 +1422,21 @@ Level11Scene.prototype.update=function(time,delta){
   es.cigF++; es.smokeT+=delta;
   if(es.smokeT>950){es.smokeT=0;spawnSmoke(ep.x+es.facing*14,ep.y-25);}
   updateSmoke(); updateExplosions(); updateFire();
+  // Nuclear clouds
+  this._nukeT+=delta;
+  if(this._nukeT>=this._nukeInterval){
+    this._nukeT=0; this._nukeInterval=30000+Math.random()*20000;
+    spawnNuke(); this._flash('NUCLEAR EVENT DETECTED',1400,14,'#ff4444',0,90);
+  }
+  updateNukes(delta); this.nukeG.clear(); drawNukes(this.nukeG);
+  // News ticker scroll
+  this._tickX-=1.5*(delta/16);
+  this.tickerTxt.setPosition(this._tickX,526);
+  if(this._tickX<-this.tickerTxt.width){
+    this._tickN=(this._tickN+1)%NEWS_TICKER.length;
+    this.tickerTxt.setText('⚡ '+NEWS_TICKER[this._tickN]+'  ◆  ');
+    this._tickX=960;
+  }
   if(EWR_STATE.combo.streak>=10){spawnFire(ep.x+(Math.random()-0.5)*18,ep.y-16);spawnFire(ep.x+(Math.random()-0.5)*18,ep.y-8);}
   // Cats update
   for(var ci2=0;ci2<this.cats.length;ci2++){
@@ -1403,6 +1602,22 @@ Level11Scene.prototype._drawMochi=function(g,m){
     g.fillStyle(ledOn?0xff0000:0x550000,1); g.fillCircle(m.x,m.y-8,4);
     g.fillStyle(0xff4444,1); g.fillRect(m.x-18,m.y-35,Math.max(0,36*(m.hp/5)),4);
     g.lineStyle(1,0xffffff,0.4); g.strokeRect(m.x-18,m.y-35,36,4);
+    return;
+  }
+  // Rasta cat: orange body, 3-stripe rasta hat, dreads, red eyes, green HP dots
+  if(m.type==='rasta'){
+    g.fillStyle(0x1a0a00,1); g.fillEllipse(m.x,m.y+2,30,8);
+    g.fillStyle(0xff8800,1); g.fillCircle(m.x,m.y-13,15);
+    g.fillStyle(0xffcc44,0.5); g.fillCircle(m.x-5,m.y-17,5);
+    g.fillStyle(0x117700,1); g.fillRoundedRect(m.x-12,m.y-28,24,9,3);
+    g.fillStyle(0xffdd00,1); g.fillRect(m.x-12,m.y-25,24,3);
+    g.fillStyle(0xff2200,1); g.fillRect(m.x-12,m.y-22,24,3);
+    for(var dr=0;dr<5;dr++){
+      var rdx=m.x-10+dr*5;
+      g.fillStyle(0x553300,1); g.fillRect(rdx,m.y-27+Math.sin((m.bT||0)*0.004+dr)*2,3,14);
+    }
+    g.fillStyle(0xff3300,0.9); g.fillCircle(m.x-4,m.y-16,3); g.fillCircle(m.x+4,m.y-16,3);
+    for(var rh=0;rh<m.hp;rh++){g.fillStyle(0x00cc00,1);g.fillCircle(m.x-5+rh*5,m.y-32,2);}
     return;
   }
   var scl=m.type==='tank'?1.5:1;
@@ -1578,7 +1793,7 @@ function createLevelScene(cfg) {
 
   LevelScene.prototype.create=function(){
     var W=960,H=540; var LW=cfg.LW;
-    EX_POOL.length=0; SMOKE_POOL.length=0; FIRE_POOL.length=0;
+    EX_POOL.length=0; SMOKE_POOL.length=0; FIRE_POOL.length=0; NUKE_POOL.length=0;
     this._dying=false; this._dyingT=0; this._beaten=false;
     this.platRects=[{x:0,y:490,w:LW,h:50}];
     for(var pi=0;pi<cfg.plats.length;pi++){var p=cfg.plats[pi];this.platRects.push({x:p[0],y:p[1],w:p[2],h:18});}
@@ -1623,6 +1838,12 @@ function createLevelScene(cfg) {
       altD: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S)
     };
     this.levelT=0; this.checkpt=false;
+    this.nukeG=this.add.graphics().setScrollFactor(0).setDepth(2);
+    this._nukeT=0; this._nukeInterval=30000+Math.random()*20000;
+    this._tickX=960; this._tickN=Math.floor(Math.random()*NEWS_TICKER.length);
+    this.tickerTxt=this.add.text(960,526,'⚡ '+NEWS_TICKER[this._tickN]+'  ◆  ',
+      {fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ff4444',stroke:'#000000',strokeThickness:2})
+      .setScrollFactor(0).setDepth(22);
     _initVPad(this);
     this._flash(cfg.intro,2400);
   };
@@ -1715,7 +1936,7 @@ function createLevelScene(cfg) {
         if(Math.abs(hx-m.x)<hRange&&Math.abs(ep.y-m.y)<hRangeY){
           m.hp--; spawnExplosion(m.x,m.y-13,0xffd60a,1); SOUND.punch();
           this.cameras.main.shake(80,0.005); _addCombo(this,m.x,m.y);
-          if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:m.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
+          if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='rasta'?ALOE.rastaDeath:m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:m.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
           if(EWR_STATE.shop.explosiveCig) spawnExplosion(ep.x+es.facing*56,ep.y-20,0xff6b35,1.2);
           es.punchActive=false; punchConsumed=true; break;
         }
@@ -1729,7 +1950,7 @@ function createLevelScene(cfg) {
         if(Math.abs(kx-km.x)<65&&Math.abs(ep.y-km.y)<42){
           km.hp-=2; spawnExplosion(km.x,km.y-13,0xff6b35,1.5); SOUND.kick();
           this.cameras.main.shake(120,0.008); _addCombo(this,km.x,km.y);
-          if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='ghost'?ALOE.ghostDeath:km.type==='bomber'?ALOE.bomberDeath:km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:km.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
+          if(km.hp<=0){km.dieT=0;km.squishT=0;EWR_STATE.aloe+=Math.ceil((km.type==='rasta'?ALOE.rastaDeath:km.type==='ghost'?ALOE.ghostDeath:km.type==='bomber'?ALOE.bomberDeath:km.type==='tank'?ALOE.tankDeath:km.type==='daikon'?ALOE.daikonDeath:km.type==='thrower'?ALOE.throwerDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(km.x,km.y-13,0xff4444,2.5);this._spawnMochiParts(km);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}}
           es.kickActive=false; break;
         }
       }
@@ -1783,6 +2004,16 @@ function createLevelScene(cfg) {
         }
         m2.dieT+=delta; m2.squishT+=delta;
         for(var pp=0;pp<m2.parts.length;pp++){var pt=m2.parts[pp];pt.x+=pt.vx;pt.y+=pt.vy;pt.vy+=0.3;pt.life-=0.025;}
+        continue;
+      }
+      if(m2.type==='rasta'){
+        m2.bT+=delta; m2.x+=m2.dir*m2.spd*dt;
+        if(m2.x<m2.pMin){m2.x=m2.pMin;m2.dir=1;} if(m2.x>m2.pMax){m2.x=m2.pMax;m2.dir=-1;}
+        if(es.hurtTimer<=0&&Math.abs(ep.x-m2.x)<28&&Math.abs(ep.y-m2.y)<36){
+          es.hurtTimer=1200; EWR_STATE.health[0]--; EWR_STATE.combo.streak=0; EWR_STATE.combo.mult=1;
+          SOUND.hurt(); this.cameras.main.shake(250,0.012); ep.vx=-es.facing*190; ep.vy=-210;
+          if(EWR_STATE.health[0]<=0){this._triggerDeath();return;}
+        }
         continue;
       }
       if(m2.type==='ghost'){
@@ -1863,6 +2094,21 @@ function createLevelScene(cfg) {
     es.cigF++; es.smokeT+=delta;
     if(es.smokeT>950){es.smokeT=0;spawnSmoke(ep.x+es.facing*14,ep.y-25);}
     updateSmoke(); updateExplosions(); updateFire();
+    // Nuclear clouds
+    this._nukeT+=delta;
+    if(this._nukeT>=this._nukeInterval){
+      this._nukeT=0; this._nukeInterval=30000+Math.random()*20000;
+      spawnNuke(); this._flash('NUCLEAR EVENT DETECTED',1400,14,'#ff4444',0,90);
+    }
+    updateNukes(delta); this.nukeG.clear(); drawNukes(this.nukeG);
+    // News ticker
+    this._tickX-=1.5*(delta/16);
+    this.tickerTxt.setPosition(this._tickX,526);
+    if(this._tickX<-this.tickerTxt.width){
+      this._tickN=(this._tickN+1)%NEWS_TICKER.length;
+      this.tickerTxt.setText('⚡ '+NEWS_TICKER[this._tickN]+'  ◆  ');
+      this._tickX=960;
+    }
     if(EWR_STATE.combo.streak>=10){spawnFire(ep.x+(Math.random()-0.5)*18,ep.y-16);spawnFire(ep.x+(Math.random()-0.5)*18,ep.y-8);}
     for(var ci3=0;ci3<this.cats.length;ci3++){
       var cat=this.cats[ci3]; cat.tailAng+=0.04; cat.wT+=delta; cat.danceT+=delta;
@@ -2739,8 +2985,8 @@ var W2_ROWS = [
   'N  PPP N',
   'N  P   N',
   'N  7   N',
-  'N  P   N',
-  'N  8 C N',
+  'N  P C N',
+  'N  8P9 N',
   'NNNNNNNN'
 ];
 var W2_TILES = {
@@ -2751,6 +2997,7 @@ var W2_TILES = {
   '6':{type:'level',   passable:true, id:'2-1', label:'Signal Static'},
   '7':{type:'level',   passable:true, id:'2-2', label:'Chrome Alley'},
   '8':{type:'level',   passable:true, id:'2-3', label:'The Neon King'},
+  '9':{type:'level',   passable:true, id:'2-4', label:'The Cat Cig Parade'},
   'C':{type:'catspot', passable:true}
 };
 
@@ -2910,13 +3157,14 @@ WorldMap2Scene.prototype._tryEnterW2 = function(){
     var gateMsg2=null;
     if(tile.id==='2-2'&&EWR_STATE.levelsBeaten.indexOf('2-1')<0) gateMsg2='Beat Signal Static first!';
     if(tile.id==='2-3'&&EWR_STATE.levelsBeaten.indexOf('2-2')<0) gateMsg2='Beat Chrome Alley first!';
+    if(tile.id==='2-4'&&EWR_STATE.levelsBeaten.indexOf('2-3')<0) gateMsg2='Beat The Neon King first!';
     if(gateMsg2){
       var self=this;
       this.nodeTxt.setText(gateMsg2).setAlpha(1);
       this.time.delayedCall(2200,function(){self.nodeTxt.setAlpha(0);});
       return;
     }
-    var destMap={'2-1':'Level21','2-2':'Level22','2-3':'Level23'};
+    var destMap={'2-1':'Level21','2-2':'Level22','2-3':'Level23','2-4':'Level24'};
     var dest2=destMap[tile.id];
     if(dest2){EWR_STATE.playerPosW2={x:this.edTile.x,y:this.edTile.y};SMOKE_POOL.length=0;EX_POOL.length=0;FIRE_POOL.length=0;this.scene.start(dest2);}
   }
@@ -3632,6 +3880,51 @@ Level23Scene.prototype._killBoss23 = function(){
 // Share draw methods from Level11Scene prototype
 Level23Scene.prototype._spawnMochiParts = Level11Scene.prototype._spawnMochiParts;
 
+
+var Level24Scene = createLevelScene({
+  key:'Level24', LW:6400, beatX:6385, beatKey:'2-4', checkptX:3200,
+  aloeReward:ALOE.beat24, returnScene:'WorldMap2',
+  title:'2-4  THE CAT CIG PARADE', intro:'THE PARADE HAS BEGUN',
+  plats:[
+    [120,400,110,18],[300,360,80,18],[500,430,70,18],[700,380,100,18],[900,340,80,18],
+    [1080,420,90,18],[1260,460,60,18],[1440,390,80,18],[1620,350,100,18],
+    [1800,430,80,18],[1980,370,90,18],[2160,440,70,18],[2340,400,100,18],
+    [2520,360,80,18],[2680,430,90,18],[2840,380,70,18],[3000,340,80,18],
+    [3160,420,100,18],[3320,460,70,18],[3480,370,90,18],[3640,410,80,18],
+    [3800,350,100,18],[3960,430,80,18],[4120,380,90,18],[4280,440,70,18],
+    [4440,360,100,18],[4600,420,80,18],[4760,380,90,18],[4920,340,70,18],
+    [5080,410,100,18],[5240,380,80,18],[5440,350,90,18],[5600,410,80,18],
+    [5800,370,100,18],[6000,400,90,18]
+  ],
+  catX:[180,360,560,740,950,1130,1320,1520,1700,1880,2060,2240,2440,2610,2760,
+        2920,3090,3260,3440,3620,3780,3960,4160,4360,4560,4760,4960,5160],
+  mochis:[
+    {x:350,type:'rasta',spd:55,hp:3,pMin:200,pMax:600},
+    {x:700,type:'ghost',baseY:310,spd:62,hp:2,pMin:500,pMax:900},
+    {x:1000,type:'bomber',spd:28,hp:5,pMin:850,pMax:1250},
+    {x:1400,type:'rasta',spd:55,hp:3,pMin:1200,pMax:1700},
+    {x:1800,type:'ghost',baseY:320,spd:60,hp:2,pMin:1600,pMax:2100},
+    {x:2200,type:'bomber',spd:26,hp:5,pMin:2000,pMax:2500},
+    {x:2600,type:'rasta',spd:58,hp:3,pMin:2400,pMax:2900},
+    {x:3000,type:'ghost',baseY:300,spd:65,hp:2,pMin:2800,pMax:3300},
+    {x:3400,type:'bomber',spd:30,hp:5,pMin:3100,pMax:3600},
+    {x:3800,type:'rasta',spd:55,hp:3,pMin:3600,pMax:4100},
+    {x:4200,type:'ghost',baseY:315,spd:60,hp:2,pMin:4000,pMax:4500},
+    {x:4600,type:'bomber',spd:28,hp:5,pMin:4300,pMax:4800},
+    {x:5000,type:'rasta',spd:58,hp:3,pMin:4800,pMax:5300},
+    {x:5300,type:'ghost',baseY:305,spd:62,hp:2,pMin:5100,pMax:5600},
+    {x:5600,type:'bomber',spd:26,hp:5,pMin:5400,pMax:5900},
+    {x:5800,type:'rasta',spd:55,hp:3,pMin:5600,pMax:6100},
+    {x:6000,type:'ghost',baseY:310,spd:60,hp:2,pMin:5800,pMax:6300},
+    {x:6150,type:'bomber',spd:28,hp:5,pMin:5950,pMax:6380}
+  ],
+  pickups:[
+    [600,280],[1200,290],[1800,270],[2400,280],
+    [3000,270],[3600,285],[4200,275],[4800,280],
+    [5400,265],[6000,275]
+  ]
+});
+
 var config = {
   type: Phaser.CANVAS,
   width: 960,
@@ -3658,7 +3951,8 @@ var config = {
     WorldMap2Scene,
     Level21Scene,
     Level22Scene,
-    Level23Scene
+    Level23Scene,
+    Level24Scene
   ]
 };
 new Phaser.Game(config);
