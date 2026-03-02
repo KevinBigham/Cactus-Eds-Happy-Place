@@ -460,6 +460,10 @@ var ED_LINES = [
   'follow your gut even when your gut is weird','the cig is honest',
   'i sold a cig to a man who cried / good','selling is love'
 ];
+var ED_LINES_HURT   = ['...','unbelievable','of course','as expected','what','ok but why','noted','rude'];
+var ED_LINES_CATS   = ['cats need cigs','the cats understand','good vibes are not free they are earned','the cats were here first','this one gets it','correct'];
+var ED_LINES_COMBAT = ['classic','sure','fine','obviously','ok','yeah no','i guess','cool cool cool'];
+var ED_LINES_WIN    = ['everything is connected probably','it is what it is and it is fine','the cig is honest','i have been salesman of the month four times','follow your gut even when your gut is weird'];
 
 var VOID_KOANS = [
   'WHAT IS ALOE IF NOT GRIEF PERSEVERING?',
@@ -549,6 +553,14 @@ function drawFire(g) {
     var p=FIRE_POOL[i];
     g.fillStyle(p.color, p.life*0.75);
     g.fillCircle(p.x, p.y, p.r*p.life+1);
+  }
+}
+
+// Heart particles (cat petting VFX)
+var HEART_POOL = [];
+function spawnHearts(wx, wy) {
+  for(var i=0;i<6;i++){
+    HEART_POOL.push({x:wx+(Math.random()-0.5)*28,y:wy-10,vy:-(28+Math.random()*36),alpha:1,r:5+Math.random()*3,t:0});
   }
 }
 
@@ -644,9 +656,9 @@ function _addCombo(scene, x, y) {
   c.streak++;
   c.timer = 3500;
   c.mult = c.streak>=10 ? 3 : c.streak>=6 ? 2 : c.streak>=3 ? 1.5 : 1;
-  if(c.streak===3) { scene._flash('x1.5 COMBO!',1200); }
-  if(c.streak===6) { scene._flash('x2 COMBO!!',1200); SOUND.pickup(); }
-  if(c.streak===10){ scene._flash('x3 ON FIRE!!!',1500); if(scene.cameras) scene.cameras.main.shake(200,0.01); SOUND.victory(); }
+  if(c.streak===3) { scene._flash('x1.5 COMBO!',1200); if(scene._showEdLine)scene._showEdLine(ED_LINES_COMBAT); }
+  if(c.streak===6) { scene._flash('x2 COMBO!!',1200); SOUND.pickup(); if(scene._showEdLine)scene._showEdLine(ED_LINES_WIN); }
+  if(c.streak===10){ scene._flash('x3 ON FIRE!!!',1500); if(scene.cameras) scene.cameras.main.shake(200,0.01); SOUND.victory(); if(scene._showEdLine)scene._showEdLine(ED_LINES_WIN); }
   // Float text near hit
   try {
     var ft=scene.add.text(x,y-28,c.streak+' HIT!',{fontFamily:'Courier New,monospace',fontSize:'16px',color:'#ffd60a',stroke:'#000000',strokeThickness:3}).setDepth(25);
@@ -1525,8 +1537,8 @@ Level11Scene.prototype.constructor=Level11Scene;
 Level11Scene.prototype.create=function(){
   var W=960,H=540,self=this;
   var LW=4800;
-  EX_POOL.length=0; SMOKE_POOL.length=0; FIRE_POOL.length=0; NUKE_POOL.length=0;
-  this._dying=false; this._dyingT=0; this._beaten=false;
+  EX_POOL.length=0; SMOKE_POOL.length=0; FIRE_POOL.length=0; NUKE_POOL.length=0; HEART_POOL.length=0;
+  this._dying=false; this._dyingT=0; this._beaten=false; this._edSpeaking=false; this._hurtSaid=false;
   this.platRects=[{x:0,y:490,w:LW,h:50}];
   var plats=[
     [160,390,130,18],[380,340,90,18],[580,420,70,18],
@@ -1777,13 +1789,12 @@ Level11Scene.prototype.update=function(time,delta){
         if(!pc.loyal&&pc.sitting){
           pc.loyal=true; pc.following=true; pc.dance=true; pc.sitting=false;
           EWR_STATE.aloe+=ALOE.catPet; EWR_STATE.catsPetted++;
+          if(EWR_STATE.health[0]<EWR_STATE.maxHealth[0])EWR_STATE.health[0]++;
+          spawnHearts(pc.x,pc.y-30);
           SOUND.pickup(); this._flash('+'+ALOE.catPet+' ALOE  (meow)',1000);
-          petted=true;
+          this._showEdLine(ED_LINES_CATS); petted=true;
         } else {
-          // Dialogue
-          var line=ED_LINES[Math.floor(Math.random()*ED_LINES.length)];
-          try{var bbl=this.add.text(ep.x,ep.y-72,'"'+line+'"',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffffff',stroke:'#000000',strokeThickness:3,backgroundColor:'#1a0a2e',padding:{x:5,y:3}}).setDepth(26);this.time.delayedCall(1800,function(){bbl.destroy();});}catch(e){}
-          petted=true;
+          this._showEdLine(ED_LINES); petted=true;
         }
         break;
       }
@@ -2057,6 +2068,11 @@ Level11Scene.prototype.update=function(time,delta){
   if(es.punchActive){this.edG.fillStyle(0xffd60a,0.15);this.edG.fillCircle(ep.x+es.facing*56,ep.y-20,28);}
   if(es.kickActive){this.edG.fillStyle(0xff6b35,0.18);this.edG.fillCircle(ep.x+es.facing*ED_MOVE.kickRange,ep.y-10,32);}
   drawExplosions(this.edG); drawFire(this.edG);
+  // Hurt dialogue (fires once per hurt cycle)
+  if(es.hurtTimer>1100&&!this._hurtSaid){this._hurtSaid=true;if(Math.random()<0.35)this._showEdLine(ED_LINES_HURT);}
+  if(es.hurtTimer<=0)this._hurtSaid=false;
+  // Floating hearts (cat petting VFX)
+  for(var hi=HEART_POOL.length-1;hi>=0;hi--){var hrt=HEART_POOL[hi];hrt.t+=delta;hrt.y+=hrt.vy*(delta/1000);hrt.alpha=Math.max(0,1-hrt.t/1300);if(hrt.alpha<=0){HEART_POOL.splice(hi,1);continue;}var hr=hrt.r;this.edG.fillStyle(0xff69b4,hrt.alpha);this.edG.fillCircle(hrt.x-hr*0.4,hrt.y,hr*0.55);this.edG.fillCircle(hrt.x+hr*0.4,hrt.y,hr*0.55);this.edG.fillTriangle(hrt.x-hr,hrt.y,hrt.x+hr,hrt.y,hrt.x,hrt.y+hr*1.2);}
   for(var sp=0;sp<SMOKE_POOL.length;sp++){var p=SMOKE_POOL[sp];this.edG.fillStyle(0xaaaaaa,p.life*0.3);this.edG.fillCircle(p.x,p.y,p.r);}
   // Combo text
   if(EWR_STATE.combo.streak>=3){
@@ -2319,6 +2335,18 @@ Level11Scene.prototype._throwJavelin=function(){
   this._flash('CIG JAVELIN!',600,16,'#ffd700');
 };
 Level11Scene.prototype._die=function(){this._triggerDeath();};
+Level11Scene.prototype._showEdLine=function(lines){
+  if(this._edSpeaking) return;
+  var self=this; this._edSpeaking=true;
+  var pool=lines||ED_LINES;
+  var line=pool[Math.floor(Math.random()*pool.length)];
+  try{
+    var px=this.ep?this.ep.x:480, py=this.ep?this.ep.y:200;
+    var bbl=this.add.text(px,py-82,'"'+line+'"',
+      {fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffffff',stroke:'#2d1b00',strokeThickness:3,backgroundColor:'#1a0a2e',padding:{x:6,y:4}}).setDepth(27);
+    this.time.delayedCall(2200,function(){try{bbl.destroy();}catch(e){}self._edSpeaking=false;});
+  }catch(e){self._edSpeaking=false;}
+};
 Level11Scene.prototype._beatLevel=function(){
   if(this._beaten) return; this._beaten=true;
   if(EWR_STATE.levelsBeaten.indexOf('1-1')<0){EWR_STATE.levelsBeaten.push('1-1');EWR_STATE.aloe+=ALOE.beat11;}
@@ -2498,8 +2526,8 @@ function createLevelScene(cfg) {
 
   LevelScene.prototype.create=function(){
     var W=960,H=540; var LW=cfg.LW;
-    EX_POOL.length=0; SMOKE_POOL.length=0; FIRE_POOL.length=0; NUKE_POOL.length=0;
-    this._dying=false; this._dyingT=0; this._beaten=false;
+    EX_POOL.length=0; SMOKE_POOL.length=0; FIRE_POOL.length=0; NUKE_POOL.length=0; HEART_POOL.length=0;
+    this._dying=false; this._dyingT=0; this._beaten=false; this._edSpeaking=false; this._hurtSaid=false;
     this.platRects=[{x:0,y:490,w:LW,h:50}];
     for(var pi=0;pi<cfg.plats.length;pi++){var p=cfg.plats[pi];this.platRects.push({x:p[0],y:p[1],w:p[2],h:18});}
     this.levelG=this.add.graphics(); this._drawLevel(this.levelG,LW,H);
@@ -2720,11 +2748,12 @@ function createLevelScene(cfg) {
           if(!pc.loyal&&pc.sitting){
             pc.loyal=true; pc.following=true; pc.dance=true; pc.sitting=false;
             EWR_STATE.aloe+=ALOE.catPet; EWR_STATE.catsPetted++;
-            SOUND.pickup(); this._flash('+'+ALOE.catPet+' ALOE  (meow)',1000); petted=true;
+            if(EWR_STATE.health[0]<EWR_STATE.maxHealth[0])EWR_STATE.health[0]++;
+            spawnHearts(pc.x,pc.y-30);
+            SOUND.pickup(); this._flash('+'+ALOE.catPet+' ALOE  (meow)',1000);
+            this._showEdLine(ED_LINES_CATS); petted=true;
           } else {
-            var line=ED_LINES[Math.floor(Math.random()*ED_LINES.length)];
-            try{var bbl=this.add.text(ep.x,ep.y-72,'"'+line+'"',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffffff',stroke:'#000000',strokeThickness:3,backgroundColor:'#1a0a2e',padding:{x:5,y:3}}).setDepth(26);this.time.delayedCall(1800,function(){bbl.destroy();});}catch(e){}
-            petted=true;
+            this._showEdLine(ED_LINES); petted=true;
           }
           break;
         }
@@ -2938,6 +2967,11 @@ function createLevelScene(cfg) {
     if(es.punchActive){this.edG.fillStyle(0xffd60a,0.15);this.edG.fillCircle(ep.x+es.facing*56,ep.y-20,28);}
     if(es.kickActive){this.edG.fillStyle(0xff6b35,0.18);this.edG.fillCircle(ep.x+es.facing*ED_MOVE.kickRange,ep.y-10,32);}
     drawExplosions(this.edG); drawFire(this.edG);
+    // Hurt dialogue (fires once per hurt cycle)
+    if(es.hurtTimer>1100&&!this._hurtSaid){this._hurtSaid=true;if(Math.random()<0.35)this._showEdLine(ED_LINES_HURT);}
+    if(es.hurtTimer<=0)this._hurtSaid=false;
+    // Floating hearts (cat petting VFX)
+    for(var hi=HEART_POOL.length-1;hi>=0;hi--){var hrt=HEART_POOL[hi];hrt.t+=delta;hrt.y+=hrt.vy*(delta/1000);hrt.alpha=Math.max(0,1-hrt.t/1300);if(hrt.alpha<=0){HEART_POOL.splice(hi,1);continue;}var hr=hrt.r;this.edG.fillStyle(0xff69b4,hrt.alpha);this.edG.fillCircle(hrt.x-hr*0.4,hrt.y,hr*0.55);this.edG.fillCircle(hrt.x+hr*0.4,hrt.y,hr*0.55);this.edG.fillTriangle(hrt.x-hr,hrt.y,hrt.x+hr,hrt.y,hrt.x,hrt.y+hr*1.2);}
     for(var sp=0;sp<SMOKE_POOL.length;sp++){var p2=SMOKE_POOL[sp];this.edG.fillStyle(0xaaaaaa,p2.life*0.3);this.edG.fillCircle(p2.x,p2.y,p2.r);}
     if(EWR_STATE.combo.streak>=3){
       var cStr=EWR_STATE.combo.streak>=10?'ON FIRE '+EWR_STATE.combo.streak+'x':EWR_STATE.combo.streak+'x COMBO';
@@ -2968,6 +3002,7 @@ function createLevelScene(cfg) {
   LevelScene.prototype._cigFlurry     = Level11Scene.prototype._cigFlurry;
   LevelScene.prototype._throwJavelin  = Level11Scene.prototype._throwJavelin;
   LevelScene.prototype._die           = Level11Scene.prototype._die;
+  LevelScene.prototype._showEdLine    = Level11Scene.prototype._showEdLine;
   return LevelScene;
 }
 
