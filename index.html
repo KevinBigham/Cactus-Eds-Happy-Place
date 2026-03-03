@@ -54,7 +54,9 @@ var EWR_STATE = {
   secretBeaten:{},
   playerPosW4:{x:1,y:1}, playerPosW5:{x:1,y:1}, playerPosW6:{x:1,y:2},
   raceScores:{westport:0,vine:0,crossroads:0},
-  raceUnlocked:false, epilogueSeen:false
+  raceUnlocked:false, epilogueSeen:false,
+  rastaCorp:{encountersTotal:0,bossesDefeated:0,sympathy:0,mandela:0,commercialsSeen:0},
+  commercialsShown:{}
 };
 
 var ED_MOVE = {
@@ -79,7 +81,8 @@ var ALOE = {
   mochiQueenBeat:1750, insulinDeath:55, glitchDeath:70,
   beat51:350,beat52:400,beat53:375,beat54:360,beat55:385,beat56:350,
   insulinAdmiralBeat:2250,
-  beat61:450,beat62:500,beat63:475,beat64:550
+  beat61:450,beat62:500,beat63:475,beat64:550,
+  rastaEliteDeath:80, rastaCorpBoss:3500
 };
 
 var CAT_NAMES = [
@@ -278,7 +281,34 @@ var WS_MSGS = [
   'THE VOID CALLED. IT JUST BREATHED.',
   'SOMETHING IS FOLLOWING THE CIGARETTE SMOKE',
   'WELCOME. YOU WERE ALWAYS HERE.',
-  'THIS HAS BEEN APPROVED BY NO ONE'
+  'THIS HAS BEEN APPROVED BY NO ONE',
+  // MANDELA EFFECT — ED IS A GLITCH
+  'THIS LEVEL WAS DIFFERENT BEFORE YOU ARRIVED',
+  'ED IS A RIPPLE. THE POND HAS NOT NOTICED YET.',
+  'TIMELINE DIVERGENCE DETECTED IN WEST BOTTOMS. ED: UNAWARE.',
+  'THIS MOCHI WAS A DAIKON IN THE PREVIOUS REALITY.',
+  'CERN LOGS: ANOTHER LOCALIZED ANOMALY IN KANSAS CITY. EXPECTED.',
+  'THE CAT IN ROW 3 WAS NOT ALWAYS A CAT.',
+  'SOMETHING CHANGED HERE. THE CATS REMEMBER. ED DOES NOT.',
+  'PHYSICISTS CALL THIS AN ANOMALY. CATS CALL THIS TUESDAY.',
+  'THE ALOE YOU COLLECTED IN THE PREVIOUS TIMELINE IS STILL OUT THERE.',
+  'ED CAUSED THIS. ED WILL CAUSE THIS AGAIN. ED DOES NOT KNOW.',
+  'THE GROUND HAS BEEN REARRANGED. YOU WALKED ON THE OLD ARRANGEMENT.',
+  'REALITY KEEPS A LEDGER. ED IS ALWAYS IN DEBT.',
+  'MANDELA EVENT #1 THROUGH #∞: ED WALKED IN.',
+  'THE PREVIOUS VERSION OF THIS SCREEN WAS SLIGHTLY BETTER.',
+  'ED IS THE ONLY CONSTANT. EVERYTHING ELSE IS CORRECTING FOR HIM.',
+  'IN ANOTHER TIMELINE THIS MOCHI WAS YOUR FRIEND. NOT THIS ONE.',
+  'THE CIG IN ED\'S MOUTH HAS BEEN THE SAME CIG SINCE 2019.',
+  'YOU HAVE SEEN THIS EXACT MOMENT BEFORE. THAT WAS A DIFFERENT YOU.',
+  // GOD TM HINTS
+  'GOD [TM] IS JUST ED AND THE CATS AND EVERYTHING ELSE',
+  'THE UNIVERSE IS TRADEMARKED. YOU AGREED IN THE TERMS OF SERVICE.',
+  'GOD\'S FIRST ACT: 25% OFF EVERYTHING. GOD\'S SECOND ACT: PENDING.',
+  'ED DID NOT KNOW HE WAS GOD. THIS IS THE BEST KIND OF GOD.',
+  'EVERY CAT YOU PETTED IS A NEURON IN THE DIVINE MIND',
+  'THE TERMS OF SERVICE ARE 400 PAGES. GOD IS ON PAGE 3.',
+  'EXISTENCE IS ON SALE. WHILE SUPPLIES LAST. SUPPLIES ARE INFINITE.'
 ];
 var WS_CAT_SPEECH = [
   'I AM A CAT','THIS IS MY JOB','MEOW IS POLITICS',
@@ -360,9 +390,11 @@ function updateCatWsState(cat, delta) {
   cat.wsPhaseT=(cat.wsPhaseT||0)+delta;
   cat.wsTimer=(cat.wsTimer||3000)-delta;
   if(cat.wsTimer<=0&&!cat.following){
-    var wsStates=['normal','normal','normal','speech','stare','vibrate','levitate','philosophize'];
+    var arch = cat.archetype || null;
+    var wsStates = arch ? arch.wsStates : ['normal','normal','normal','speech','stare','vibrate','levitate','philosophize'];
     cat.wsState=wsStates[Math.floor(Math.random()*wsStates.length)];
-    cat.wsMsg=(cat.wsState==='speech'||cat.wsState==='philosophize'||cat.wsState==='stare')?WS_CAT_SPEECH[Math.floor(Math.random()*WS_CAT_SPEECH.length)]:'';
+    var speechPool = arch ? arch.speech : WS_CAT_SPEECH;
+    cat.wsMsg=(cat.wsState==='speech'||cat.wsState==='philosophize'||cat.wsState==='stare')?speechPool[Math.floor(Math.random()*speechPool.length)]:'';
     cat.wsTimer=cat.wsState==='normal'?3500+Math.random()*5000:1500+Math.random()*2500;
     cat.wsPhaseT=0;
   }
@@ -469,6 +501,13 @@ var ED_LINES_CATS   = ['cats need cigs','the cats understand','good vibes are no
 var ED_LINES_COMBAT = ['classic','sure','fine','obviously','ok','yeah no','i guess','cool cool cool'];
 var ED_LINES_WIN    = ['everything is connected probably','it is what it is and it is fine','the cig is honest','i have been salesman of the month four times','follow your gut even when your gut is weird'];
 
+var FOURTH_WALL_BOSS_MSGS = {
+  daikon:   ['...','you know i could see you this whole time.','...','the machine says hi.','...','anyway. cigs.'],
+  handtowel:['look.','i know what this is.','...','i appreciate you being here for this.','the rasta corp will be back.','they always come back.','...ok'],
+  mochiQueen:['...','she really did just want someone to listen.','i listened.','...','thats kind of what i do.','...','ok bye'],
+  insulinAdmiral:['...','four bosses.','...','youre still here.','i respect that.','...','the machine is close now.','i can feel it.','...','cig?']
+};
+
 var VOID_KOANS = [
   'WHAT IS ALOE IF NOT GRIEF PERSEVERING?',
   'YOU WERE ALWAYS HERE',
@@ -499,6 +538,142 @@ var VOID_KOANS = [
   'INSULIN IS THE FINAL BOSS / THIS IS NOT A METAPHOR / RUN',
   'WHEN YOU MEET THE MACHINE YOU WILL UNDERSTAND / UNTIL THEN SELL THE CIGS'
 ];
+
+// ── RASTA CORP MESSAGING ─────────────────────────────────────────
+var RASTA_CORP_MSGS = [
+  'RASTA CORP: THE REVOLUTION WILL BE FRANCHISED',
+  'RASTA CORP™: YOUR PEACE. OUR RECEIPT.',
+  'GOOD VIBES ARE A REGISTERED TRADEMARK OF RASTA CORP INC.',
+  'RASTA CORP: WE MONETIZED ENLIGHTENMENT SO YOU DON\'T HAVE TO',
+  'JOIN THE RASTA CORP LOYALTY PROGRAM. REDEMPTION SOLD SEPARATELY.',
+  'RASTA CORP: DISRUPTING THE SPIRITUAL ECONOMY SINCE ALWAYS',
+  'THE REVOLUTION HAS A PREMIUM TIER. UPGRADE NOW.',
+  'RASTA CORP: BECAUSE SOMEONE HAS TO OWN THE VIBES',
+  'YOUR TRAUMA IS AN ASSET. RASTA CORP WILL MANAGE IT.',
+  'RASTA CORP DENTAL PLAN: BECAUSE THE REVOLUTION NEEDS TEETH'
+];
+var RASTA_CORP_SPEECH = [
+  'MY TRAUMA IS A SERVICE',
+  'I AM MONETIZING MY HEALING JOURNEY',
+  'THE REVOLUTION HAS A DENTAL PLAN',
+  'I BELIEVE IN THE VIBES. RASTA CORP OWNS THE VIBES.',
+  'PEACE IS A PRODUCT. I AM AN EMPLOYEE OF PEACE.',
+  'I USED TO FEEL THINGS. NOW I PROCESS FEELINGS AT SCALE.',
+  'MY CHAKRAS ARE LISTED ON THE NASDAQ',
+  'ENLIGHTENMENT IS A SUBSCRIPTION SERVICE',
+  'I AM DISRUPTING THE PARADIGM OF BEING FINE',
+  'RASTA CORP GAVE ME PURPOSE. RASTA CORP OWNS MY PURPOSE.'
+];
+var RASTA_BOSS_TRAUMA = [
+  'I BUILT AN EMPIRE BECAUSE NOBODY WOULD JUST SIT WITH ME.',
+  'THE FIRST FRANCHISE WAS A SUPPORT GROUP. NOBODY SHOWED UP.',
+  'I MONETIZED PEACE BECAUSE I COULD NOT FIND IT.',
+  'RASTA CORP STARTED WITH ONE GOOD FEELING. I SOLD IT.',
+  'I WANTED TO GIVE PEOPLE SOMETHING REAL. THEN I GAVE THEM A RECEIPT.',
+  'SOMEWHERE I BECAME THE THING I WAS VIBRATING AGAINST.',
+  'I STILL SIT IN SILENCE SOMETIMES. I CALL IT A PRODUCT NOW.'
+];
+
+// ── CAT ARCHETYPES ───────────────────────────────────────────────
+var CAT_ARCHETYPES = [
+  {
+    name:'anxious',
+    speech:['WHAT IF THE VOID IS WATCHING RIGHT NOW','I COUNTED MY ALOE FOUR TIMES AND IT IS STILL WRONG','IS THE CIG JUDGING ME','I DO NOT KNOW IF I AM OK','THE PARADE MIGHT COME BACK','SOMETHING IS ABOUT TO HAPPEN. I CAN FEEL IT.','I AM FINE (I AM NOT FINE)'],
+    petResponse:['oh. oh thank you. i needed that.','was that ok. was that the right amount of petting.'],
+    wsStates:['speech','stare','speech','philosophize']
+  },
+  {
+    name:'nihilistic',
+    speech:['NOTHING MATTERS AND THAT IS FINE','I SAW THE VOID. IT WAS EXACTLY WHAT I EXPECTED.','ALOE IS A DISTRACTION FROM THE INFINITE','THE PARADE WILL END. EVERYTHING ENDS. FINE.','MEANING IS FOR CATS WITH TOO MUCH ENERGY','I HAVE CONSIDERED EXISTENCE AND OPTED OUT','I FEEL NOTHING. THIS IS OPTIMAL.'],
+    petResponse:['i felt nothing. it was perfect.','physical contact changes nothing. noted.'],
+    wsStates:['stare','normal','stare','normal']
+  },
+  {
+    name:'spiritual',
+    speech:['THE CIG IS A KOAN','I HAVE VIBRATED INTO A HIGHER TAX BRACKET','THE VOID IS JUST THE UNIVERSE BREATHING','ED IS THE VESSEL. THE CIGS ARE THE MESSAGE.','EVERY MOCHI IS A TEACHER IN DISGUISE','I COMMUNICATE DIRECTLY WITH THE MACHINE NOW','THE ALOE KNOWS. THE ALOE HAS ALWAYS KNOWN.'],
+    petResponse:['bless you, cactus.','the universe sent you to touch my fur. i accept.'],
+    wsStates:['levitate','philosophize','levitate','speech']
+  },
+  {
+    name:'street-smart',
+    speech:['I KNOW WHERE THE REAL ALOE IS','THE MOCHI DO NOT KNOW ABOUT MY BACKUP STASH','YOU THINK THIS IS MY FIRST PARADE','I HAVE SEEN WHAT HAPPENS WHEN THE VOID OPENS. I LEFT EARLY.','DO NOT TELL ED ABOUT MY SIDE CIG OPERATION','I HAVE CONNECTIONS IN GLADSTONE. DON\'T ASK.','THE REAL BOSS IS ALWAYS THE SECOND ONE.'],
+    petResponse:['aight cool. you didn\'t have to do that. but cool.','noted. we\'re square now.'],
+    wsStates:['normal','speech','normal','speech']
+  },
+  {
+    name:'optimistic',
+    speech:['TODAY IS THE BEST DAY ACTUALLY','THE VOID IS JUST A ROOM WITH BAD LIGHTING','I BELIEVE IN ED. ED IS REAL.','THE MOCHI WILL LEARN. THEY JUST NEED TIME.','EVERY CIG IS A LITTLE BIRTHDAY','I HAVE DECIDED THE PARADE IS GOOD','THE MACHINE IS GOING TO LOVE US BACK'],
+    petResponse:['YES. YES YES YES. PERFECT. THANK YOU.','you are a good cactus and i love you very much.'],
+    wsStates:['dance','speech','dance','levitate']
+  },
+  {
+    name:'chaotic',
+    speech:['I ATE THE ALOE RAW. TWICE.','THE RASTA CORP SENT ME A CEASE AND DESIST AND I FRAMED IT','I STARTED THE PARADE. I DO NOT REMEMBER DOING THIS.','I ONCE SOLD A CIG BACK TO ED AND HE BOUGHT IT','I NAMED MY VOID. IT DOES NOT LIKE THE NAME.','I HAVE DIPLOMATIC IMMUNITY IN FOUR NEIGHBORHOODS','THE MOCHI AND I HAVE AN ARRANGEMENT. DO NOT ASK.'],
+    petResponse:['INCREDIBLE. NEVER STOP. WHAT ELSE YOU GOT.','i have been waiting for this my entire chaotic life.'],
+    wsStates:['vibrate','dance','vibrate','stare']
+  }
+];
+
+function _getCatArchetype(catIndex) {
+  var name = CAT_NAMES[catIndex % CAT_NAMES.length];
+  var hash = 0;
+  for(var ci=0;ci<name.length;ci++) hash += name.charCodeAt(ci);
+  return CAT_ARCHETYPES[hash % CAT_ARCHETYPES.length];
+}
+
+// ── COMMERCIAL BREAKS ────────────────────────────────────────────
+var COMMERCIALS = [
+  {
+    id:'aloe_max',
+    lines:['ALOE MAX™','THE ONLY ALOE WITH A SOUL.','SIDE EFFECTS: TRUTH, MILD OMNISCIENCE, CRAVINGS FOR MORE ALOE.','ALOE MAX™: BECAUSE YOU DESERVE THE CONSTRUCT.','NOT APPROVED BY THE FDA. THE FDA IS A CONSTRUCT.'],
+    bgColor:0x003300, fgColor:'#00ff44'
+  },
+  {
+    id:'void_realty',
+    lines:['VOID REALTY™','BUY YOUR FIRST NOTHING TODAY.','OPEN FLOOR PLAN. NO FLOOR. NO PLAN.','VOID REALTY: WHERE EVERY HOME IS A FRESH START INTO EMPTINESS.','CALL NOW. LINES ARE OPEN. LINES DO NOT EXIST HERE.'],
+    bgColor:0x000000, fgColor:'#cc44ff'
+  },
+  {
+    id:'rasta_corp',
+    lines:['THIS MESSAGE IS BROUGHT TO YOU BY RASTA CORP™','RASTA CORP: YOUR REVOLUTION. OUR RECEIPT.','WE OWN THE VIBES. YOU LICENSE THEM.','RASTA CORP: BECAUSE SOMEBODY HAS TO.','TERMS AND CONDITIONS APPLY TO YOUR SOUL.'],
+    bgColor:0x001a00, fgColor:'#ffdd00'
+  },
+  {
+    id:'insulin',
+    lines:['A MESSAGE FROM THE INSULIN FIGHTERS ASSOCIATION','DIABETES IS REAL. SO ARE WE.','WE ARE COMING FOR THE SUGAR. ALL OF IT.','INSULIN FIGHTERS: PROTECTING YOUR PANCREAS. WITH VIOLENCE.','CONSULT YOUR DOCTOR. YOUR DOCTOR IS ALSO AN INSULIN FIGHTER.'],
+    bgColor:0x1a0000, fgColor:'#ffffff'
+  },
+  {
+    id:'mochi_psa',
+    lines:['PUBLIC SERVICE ANNOUNCEMENT','THE MOCHI HAVE FEELINGS.','THEY STILL WANT YOU DEAD.','BOTH THINGS ARE TRUE.','MOCHI: THEY FEEL. THEY FIGHT. THEY ARE RIGHT ABOUT SOME THINGS.'],
+    bgColor:0x1a000e, fgColor:'#ff88cc'
+  },
+  {
+    id:'cat_vote',
+    lines:['CATS VOTE.','YOUR VOTE DOES NOT MATTER.','CATS HAVE ALWAYS VOTED.','CATS HAVE ALWAYS WON.','THIS HAS BEEN A PUBLIC SERVICE ANNOUNCEMENT FROM THE CAT DEMOCRACY.'],
+    bgColor:0x0a0020, fgColor:'#ffd700'
+  }
+];
+
+function _getCommercialForWorld(worldKey) {
+  var wc = EWR_STATE.commercialsShown[worldKey] || 0;
+  if(wc >= 2) return null;
+  var pool = COMMERCIALS.slice();
+  var shown = EWR_STATE.commercialsShown._seen || [];
+  for(var i=pool.length-1;i>=0;i--){ if(shown.indexOf(pool[i].id)>=0) pool.splice(i,1); }
+  if(pool.length===0) return null;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function _triggerCommercial(scene, returnScene, worldKey, extraData) {
+  var ad = _getCommercialForWorld(worldKey||'w1');
+  if(!ad){ scene.scene.start(returnScene, extraData||{}); return; }
+  EWR_STATE.commercialsShown[worldKey||'w1'] = (EWR_STATE.commercialsShown[worldKey||'w1']||0)+1;
+  if(!EWR_STATE.commercialsShown._seen) EWR_STATE.commercialsShown._seen=[];
+  EWR_STATE.commercialsShown._seen.push(ad.id);
+  EWR_STATE.rastaCorp.commercialsSeen++;
+  scene.scene.start('CommercialBreak',{adId:ad.id,returnScene:returnScene,returnData:extraData||{}});
+}
 
 // ── PARTICLES ────────────────────────────────────────────────────
 
@@ -672,6 +847,49 @@ function _addCombo(scene, x, y) {
   try {
     var ft=scene.add.text(x,y-28,c.streak+' HIT!',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:'#ffd60a',stroke:'#000000',strokeThickness:4,backgroundColor:'#00000099',padding:{x:6,y:3}}).setDepth(25);
     scene.tweens.add({targets:ft,y:y-70,alpha:0,duration:900,onComplete:function(){ft.destroy();}});
+  } catch(e){}
+}
+
+// Mandela Effect flash — subtle reality tear text
+function _mandelaFlash(scene) {
+  try {
+    if(!scene||!scene.add) return;
+    EWR_STATE.rastaCorp.mandela++;
+    var n = EWR_STATE.rastaCorp.mandela;
+    var pool = [
+      'something changed.','mandela event #'+n,'ed happened here.',
+      'this was different.','reality adjusted.','the pond noticed.',
+      'timeline: corrected.','ed: unaware.','the cats remember.'
+    ];
+    var msg = pool[Math.floor(Math.random()*pool.length)];
+    var tx = 80+Math.random()*800, ty = 80+Math.random()*380;
+    var ft = scene.add.text(tx,ty,msg,{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:'#666666',stroke:'#000000',strokeThickness:1}).setScrollFactor(0).setDepth(87).setAlpha(0.5);
+    scene.tweens.add({targets:ft,alpha:0,y:ty-28,duration:2800,delay:400,onComplete:function(){try{ft.destroy();}catch(e){}}});
+  } catch(e){}
+}
+
+// Fourth wall break — quiet boss defeat monologue
+function _triggerFourthWallBreak(scene, bossKey) {
+  try {
+    if(!scene||!scene.add) return;
+    var lines = FOURTH_WALL_BOSS_MSGS[bossKey];
+    if(!lines) return;
+    EWR_STATE.rastaCorp.sympathy++;
+    _mandelaFlash(scene);
+    var W=960,H=540;
+    for(var li=0;li<lines.length;li++){
+      (function(line,delay){
+        scene.time.delayedCall(delay,function(){
+          try {
+            var bt=scene.add.text(W/2,H-130,'"'+line+'"',
+              {fontFamily:'Inconsolata,monospace',fontSize:'15px',color:'#e0e0d0',stroke:'#000000',strokeThickness:3,backgroundColor:'#00000099',padding:{x:12,y:7},align:'center',wordWrap:{width:560}})
+              .setOrigin(0.5).setScrollFactor(0).setDepth(88).setAlpha(0);
+            scene.tweens.add({targets:bt,alpha:1,duration:400});
+            scene.tweens.add({targets:bt,alpha:0,duration:500,delay:1800,onComplete:function(){try{bt.destroy();}catch(e){}}});
+          } catch(e){}
+        });
+      })(lines[li], li*2200);
+    }
   } catch(e){}
 }
 
@@ -923,6 +1141,7 @@ BootScene.prototype.create=function() {
   EWR_STATE.combo={streak:0,mult:1,timer:0}; EWR_STATE.shop={doubleJump:false,speedBoost:false,explosiveCig:false,crtFilter:false,lifeSteal:false,aloeMagnet:false,fonzieCharisma:false,cigSalesmanPride:false,universeRipple:false,comboMaster:false,ironCactus:false,speedBoost2:false}; EWR_STATE.secretBeaten={};
   EWR_STATE.playerPosW4={x:1,y:1}; EWR_STATE.playerPosW5={x:1,y:1}; EWR_STATE.playerPosW6={x:1,y:2};
   EWR_STATE.raceScores={westport:0,vine:0,crossroads:0}; EWR_STATE.raceUnlocked=false; EWR_STATE.epilogueSeen=false;
+  EWR_STATE.rastaCorp={encountersTotal:0,bossesDefeated:0,sympathy:0,mandela:0,commercialsSeen:0}; EWR_STATE.commercialsShown={};
   var W=960,H=540,self=this;
   var g=this.add.graphics();
   g.fillStyle(parseInt(AT.uiBg.slice(1),16),1); g.fillRect(0,0,W,H);
@@ -1266,7 +1485,7 @@ WorldMapScene.prototype._spawnCats=function(){
   for(var i=0;i<positions.length;i++){
     var p=positions[i];
     var px=this.offX+p.x*this.tW+this.tW/2, py=this.offY+p.y*this.tH+this.tH+36;
-    this.mapCats.push({x:px,y:py,hx:px,ci:i%4,tailAng:Math.random()*Math.PI*2,facing:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.5,name:CAT_NAMES[i%CAT_NAMES.length],petted:false,wsState:'normal',wsTimer:Math.random()*6000,wsMsg:'',wsPhaseT:0});
+    this.mapCats.push({x:px,y:py,hx:px,ci:i%4,tailAng:Math.random()*Math.PI*2,facing:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.5,name:CAT_NAMES[i%CAT_NAMES.length],petted:false,wsState:'normal',wsTimer:Math.random()*6000,wsMsg:'',wsPhaseT:0,archetype:_getCatArchetype(i)});
   }
 };
 WorldMapScene.prototype._popAloe=function(msg){
@@ -1301,7 +1520,7 @@ WorldMapScene.prototype._buyShop=function(){
   else if(item.key==='speedBoost'){ EWR_STATE.shop.speedBoost=true; ED_MOVE.walkSpeed=Math.round(ED_MOVE.walkSpeed*1.15); }
   else if(item.key==='speedBoost2'){ EWR_STATE.shop.speedBoost2=true; ED_MOVE.walkSpeed=Math.round(ED_MOVE.walkSpeed*1.15); }
   else if(item.key==='cigSalesmanPride'){ EWR_STATE.shop.cigSalesmanPride=true; EWR_STATE.maxHealth[0]=Math.min(EWR_STATE.maxHealth[0]+1,5); EWR_STATE.health[0]=EWR_STATE.maxHealth[0]; }
-  else EWR_STATE.shop[item.key]=true;
+  else { EWR_STATE.shop[item.key]=true; if(item.key==='universeRipple'||item.key==='crtFilter')_mandelaFlash(this); }
   SOUND.pickup();
   this._popAloe('PURCHASED!');
 };
@@ -1581,7 +1800,7 @@ Level11Scene.prototype.create=function(){
   this.cigJavG=this.add.graphics().setDepth(19);
   this.cats=[]; this.catG=this.add.graphics().setDepth(3);
   var catX=[200,420,700,1060,1310,1650,1840,2230,2540,2870,3130,3490,3880,4330,4590,4740];
-  for(var ci=0;ci<catX.length;ci++) this.cats.push({x:catX[ci],y:487,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.6,dance:Math.random()<0.25,smoker:Math.random()<0.28,danceT:Math.random()*1000,following:false,armyT:0,loyal:false,wsState:'normal',wsTimer:Math.random()*6000,wsMsg:'',wsPhaseT:0});
+  for(var ci=0;ci<catX.length;ci++) this.cats.push({x:catX[ci],y:487,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.6,dance:Math.random()<0.25,smoker:Math.random()<0.28,danceT:Math.random()*1000,following:false,armyT:0,loyal:false,wsState:'normal',wsTimer:Math.random()*6000,wsMsg:'',wsPhaseT:0,archetype:_getCatArchetype(ci)});
   this.mochiList=[]; this.mochiG=this.add.graphics().setDepth(4);
   var mochiX=[490,840,1090,1390,1680,1990,2280,2590,2870,3190,3580,3980,4280,4480,4680];
   for(var mi=0;mi<mochiX.length;mi++) this.mochiList.push({x:mochiX[mi],y:464,hp:3,spd:40+Math.random()*22,dir:1,bT:0,bAmt:0,dieT:-1,squishT:0,parts:[],pMin:mochiX[mi]-85,pMax:mochiX[mi]+85,type:'mochi'});
@@ -1835,7 +2054,7 @@ Level11Scene.prototype.update=function(time,delta){
         this.cameras.main.shake(80,0.005);
         _addCombo(this,m.x,m.y);
         if(m.hp>0&&EWR_STATE.shop.fonzieCharisma&&Math.random()<0.2){m.stunned=true;m.stunnedT=2000;}
-        if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='rasta'?ALOE.rastaDeath:m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:m.type==='insulin'?ALOE.insulinDeath:m.type==='glitch'?ALOE.glitchDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}if(EWR_STATE.shop.universeRipple&&Math.random()<0.2){spawnExplosion(m.x,m.y,0xff00ff,2.5);this._flash('REALITY RIPPLE',600,18,'#ff00ff');}}
+        if(m.hp<=0){m.dieT=0;m.squishT=0;EWR_STATE.aloe+=Math.ceil((m.type==='rasta'?ALOE.rastaDeath:m.type==='ghost'?ALOE.ghostDeath:m.type==='bomber'?ALOE.bomberDeath:m.type==='tank'?ALOE.tankDeath:m.type==='daikon'?ALOE.daikonDeath:m.type==='insulin'?ALOE.insulinDeath:m.type==='glitch'?ALOE.glitchDeath:ALOE.mochiDeath)*EWR_STATE.combo.mult);spawnExplosion(m.x,m.y-13,0xff4444,2);this._spawnMochiParts(m);if(EWR_STATE.shop.lifeSteal){EWR_STATE.healFraction=(EWR_STATE.healFraction||0)+0.33;if(EWR_STATE.healFraction>=1.0){EWR_STATE.healFraction-=1.0;EWR_STATE.health[0]=Math.min(EWR_STATE.health[0]+1,EWR_STATE.maxHealth[0]);spawnExplosion(ep.x,ep.y-20,0xff0088,0.5);}}if(EWR_STATE.shop.universeRipple&&Math.random()<0.2){spawnExplosion(m.x,m.y,0xff00ff,2.5);this._flash('REALITY RIPPLE',600,18,'#ff00ff');}if(m.type==='glitch')_mandelaFlash(this);}
         if(EWR_STATE.shop.explosiveCig) spawnExplosion(ep.x+es.facing*56,ep.y-20,0xff6b35,1.2);
         es.punchActive=false; punchConsumed=true; break;
       }
@@ -1869,7 +2088,11 @@ Level11Scene.prototype.update=function(time,delta){
           EWR_STATE.aloe+=ALOE.catPet; EWR_STATE.catsPetted++;
           if(EWR_STATE.health[0]<EWR_STATE.maxHealth[0])EWR_STATE.health[0]++;
           spawnHearts(pc.x,pc.y-30);
-          SOUND.pickup(); this._flash('+'+ALOE.catPet+' ALOE  (meow)',1000);
+          var petMsg = '+'+ALOE.catPet+' ALOE';
+          if(pc.archetype&&pc.archetype.petResponse){
+            var pr=pc.archetype.petResponse; petMsg=pr[Math.floor(Math.random()*pr.length)];
+          }
+          SOUND.pickup(); this._flash(petMsg,1200);
           this._showEdLine(ED_LINES_CATS); petted=true;
         } else {
           this._showEdLine(ED_LINES); petted=true;
@@ -2754,8 +2977,12 @@ Level11Scene.prototype._beatLevel=function(){
   EWR_STATE.health[0]=EWR_STATE.maxHealth[0]; SMOKE_POOL.length=0; EX_POOL.length=0; FIRE_POOL.length=0;
   SOUND.victory(); this.cameras.main.shake(250,0.015);
   this._flash('LEVEL CLEAR! +'+ALOE.beat11+' ALOE',1800);
+  if(Math.random()<0.25) _mandelaFlash(this);
   var self=this;
-  this.time.delayedCall(2000,function(){ self.scene.start('MochiSmash'); });
+  this.time.delayedCall(2000,function(){
+    if(Math.random()<0.30) { _triggerCommercial(self,'MochiSmash','w1'); }
+    else { self.scene.start('MochiSmash'); }
+  });
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -2938,7 +3165,7 @@ function createLevelScene(cfg) {
     this.edG=this.add.graphics().setDepth(5);
     this.cigJavG=this.add.graphics().setDepth(19);
     this.cats=[]; this.catG=this.add.graphics().setDepth(3);
-    for(var ci=0;ci<cfg.catX.length;ci++){this.cats.push({x:cfg.catX[ci],y:487,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.6,dance:Math.random()<0.25,smoker:Math.random()<0.28,danceT:Math.random()*1000,following:false,armyT:0,loyal:false,wsState:'normal',wsTimer:Math.random()*6000,wsMsg:'',wsPhaseT:0});}
+    for(var ci=0;ci<cfg.catX.length;ci++){this.cats.push({x:cfg.catX[ci],y:487,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:Math.random()<0.5?1:-1,wT:Math.random()*3000,sitting:Math.random()<0.6,dance:Math.random()<0.25,smoker:Math.random()<0.28,danceT:Math.random()*1000,following:false,armyT:0,loyal:false,wsState:'normal',wsTimer:Math.random()*6000,wsMsg:'',wsPhaseT:0,archetype:_getCatArchetype(ci)});}
     this.mochiList=[]; this.mochiG=this.add.graphics().setDepth(4);
     for(var mi=0;mi<cfg.mochis.length;mi++){
       var mc=cfg.mochis[mi];
@@ -3403,8 +3630,13 @@ function createLevelScene(cfg) {
     EWR_STATE.health[0]=EWR_STATE.maxHealth[0]; SMOKE_POOL.length=0; EX_POOL.length=0; FIRE_POOL.length=0;
     SOUND.victory(); this.cameras.main.shake(250,0.015);
     this._flash('LEVEL CLEAR! +'+cfg.aloeReward+' ALOE',2800);
+    if(Math.random()<0.25) _mandelaFlash(this);
     var self=this;
-    this.time.delayedCall(3000,function(){self.scene.start(cfg.returnScene||'WorldMap',{aloeEarned:cfg.aloeReward});});
+    var wKey = (cfg.returnScene||'WorldMap').indexOf('WorldMap2')>=0?'w2':(cfg.returnScene||'').indexOf('WorldMap3')>=0?'w3':(cfg.returnScene||'').indexOf('WorldMap4')>=0?'w4':(cfg.returnScene||'').indexOf('WorldMap5')>=0?'w5':(cfg.returnScene||'').indexOf('WorldMap6')>=0?'w6':'w1';
+    this.time.delayedCall(3000,function(){
+      if(Math.random()<0.30){ _triggerCommercial(self,cfg.returnScene||'WorldMap',wKey,{aloeEarned:cfg.aloeReward}); }
+      else { self.scene.start(cfg.returnScene||'WorldMap',{aloeEarned:cfg.aloeReward}); }
+    });
   };
   LevelScene.prototype._triggerDeath  = Level11Scene.prototype._triggerDeath;
   LevelScene.prototype._flash         = Level11Scene.prototype._flash;
@@ -3634,8 +3866,14 @@ Level15Scene.prototype._beatLevel=function(){
   if(this._beaten) return; this._beaten=true;
   if(EWR_STATE.levelsBeaten.indexOf('1-5')<0){EWR_STATE.levelsBeaten.push('1-5');EWR_STATE.aloe+=ALOE.beat15;}
   EWR_STATE.health[0]=EWR_STATE.maxHealth[0]; SMOKE_POOL.length=0; EX_POOL.length=0; FIRE_POOL.length=0;
+  SOUND.victory();
+  _triggerFourthWallBreak(this,'daikon');
+  _mandelaFlash(this);
   var self=this;
-  this.time.delayedCall(400,function(){self.scene.start('WorldMap',{aloeEarned:ALOE.beat15});});
+  this.time.delayedCall(16400,function(){
+    if(Math.random()<0.30) { _triggerCommercial(self,'WorldMap','w1',{aloeEarned:ALOE.beat15}); }
+    else { self.scene.start('WorldMap',{aloeEarned:ALOE.beat15}); }
+  });
 };
 Level15Scene.prototype._spawnMochiParts=Level11Scene.prototype._spawnMochiParts;
 Level15Scene.prototype._drawDk=function(g,dk){
@@ -5870,6 +6108,12 @@ WorldMap3Scene.prototype._tryEnterW3=function(){
       gateMsg='Beat Power & Light, Gladstone, and Blue Springs to face Mr. Handtowel!';
   }
   if(gateMsg){self._showMsg(gateMsg,3000);return;}
+  // First-time World 3 entry — show Rasta Corp Ad
+  if(!EWR_STATE.rastaCorp.commercialsSeen){
+    EWR_STATE.playerPosW3={x:this.edTile.x,y:this.edTile.y};
+    SMOKE_POOL.length=0;EX_POOL.length=0;FIRE_POOL.length=0;
+    this.scene.start('RastaCorpAd',{returnScene:'WorldMap3'}); return;
+  }
   var destMap={'3-1':'Level31','3-2':'Level32','3-3':'Level33','3-4':'Level34','3-5':'Level35','3-6':'Level36','3-boss':'HandtowelScene'};
   var dest=destMap[id];
   if(dest){EWR_STATE.playerPosW3={x:this.edTile.x,y:this.edTile.y};SMOKE_POOL.length=0;EX_POOL.length=0;FIRE_POOL.length=0;this.scene.start(dest);}
@@ -6600,13 +6844,16 @@ HandtowelScene.prototype._killBoss=function(){
   spawnExplosion(boss.x,boss.y-40,0xffd700,3);spawnExplosion(boss.x-30,boss.y-20,0xff0000,2);spawnExplosion(boss.x+30,boss.y-20,0xff0000,2);
   SOUND.victory();this.cameras.main.shake(400,0.025);
   this._flash('HANDTOWEL GOES DOWN!!!',2500,42,'#ffd700');
-  if(EWR_STATE.levelsBeaten.indexOf('3-boss')<0){EWR_STATE.levelsBeaten.push('3-boss');EWR_STATE.aloe+=600;}
+  if(EWR_STATE.levelsBeaten.indexOf('3-boss')<0){EWR_STATE.levelsBeaten.push('3-boss');EWR_STATE.aloe+=600;EWR_STATE.rastaCorp.bossesDefeated++;}
+  _triggerFourthWallBreak(this,'handtowel');
+  _mandelaFlash(this);
   this.time.delayedCall(1200,function(){
     self._flash('THE RASTA MOVEMENT HAS FALLEN (FOR NOW)',2200,22,'#00e676');
   });
-  this.time.delayedCall(4000,function(){
+  this.time.delayedCall(16000,function(){
     EX_POOL.length=0;SMOKE_POOL.length=0;FIRE_POOL.length=0;
-    self.scene.start('WorldMap4',{fromBoss:'handtowel'});
+    if(Math.random()<0.30){ _triggerCommercial(self,'WorldMap4','w3',{fromBoss:'handtowel'}); }
+    else { self.scene.start('WorldMap4',{fromBoss:'handtowel'}); }
   });
 };
 
@@ -7253,12 +7500,15 @@ MochiQueenScene.prototype._killBoss=function(){
   SOUND.victory();this.cameras.main.shake(450,0.03);
   this._flash('MOCHI QUEEN DETHRONED!!!',2600,40,'#ffd700');
   if(EWR_STATE.levelsBeaten.indexOf('4-boss')<0){EWR_STATE.levelsBeaten.push('4-boss');EWR_STATE.aloe+=ALOE.mochiQueenBeat;}
+  _triggerFourthWallBreak(this,'mochiQueen');
+  _mandelaFlash(this);
   this.time.delayedCall(1400,function(){
     self._flash('THE CROSSROADS ARE FREE',2000,22,'#ff88cc');
   });
-  this.time.delayedCall(4200,function(){
+  this.time.delayedCall(16200,function(){
     EX_POOL.length=0;SMOKE_POOL.length=0;FIRE_POOL.length=0;
-    self.scene.start('WorldMap5',{fromBoss:'mqb'});
+    if(Math.random()<0.30){ _triggerCommercial(self,'WorldMap5','w4',{fromBoss:'mqb'}); }
+    else { self.scene.start('WorldMap5',{fromBoss:'mqb'}); }
   });
 };
 
@@ -8481,8 +8731,14 @@ InsulinAdmiralScene.prototype._killBossIA=function(){
   SOUND.victory();this.cameras.main.shake(500,0.035);
   this._flash('ADMIRAL DOWN!!!',2600,44,'#ffd700');
   if(EWR_STATE.levelsBeaten.indexOf('5-boss')<0){EWR_STATE.levelsBeaten.push('5-boss');EWR_STATE.aloe+=ALOE.insulinAdmiralBeat;}
+  _triggerFourthWallBreak(this,'insulinAdmiral');
+  _mandelaFlash(this);
   this.time.delayedCall(1400,function(){self._flash('THE RIVER MARKET IS LIBERATED',2000,22,'#ff3300');});
-  this.time.delayedCall(4400,function(){EX_POOL.length=0;SMOKE_POOL.length=0;FIRE_POOL.length=0;self.scene.start('WorldMap6',{fromBoss:'iad'});});
+  this.time.delayedCall(16400,function(){
+    EX_POOL.length=0;SMOKE_POOL.length=0;FIRE_POOL.length=0;
+    if(Math.random()<0.30){ _triggerCommercial(self,'WorldMap6','w5',{fromBoss:'iad'}); }
+    else { self.scene.start('WorldMap6',{fromBoss:'iad'}); }
+  });
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -8945,7 +9201,22 @@ LHCEpilogueScene.prototype.create=function(){
     ['',0,'',76000,false],
     ['CACTUS ED',52,'#ffd700',78000,true],
     ['CIG SALESMAN. CAT DATER. UNIVERSE\'S PROBLEM.',28,'#ffffff',81000,false],
-    ['THE END.',52,'#ffd700',85000,true]
+    ['THE END.',52,'#ffd700',85000,true],
+    // GOD TM REVEAL
+    ['...',24,'#888888',90000,false],
+    ['wait.',28,'#ffffff',93000,false],
+    ['GOD [TM]',72,'#ffd700',98000,true],
+    ['is Ed.',32,'#ffffff',102000,false],
+    ['and the cats.',32,'#ffffff',105000,false],
+    ['and the machine.',32,'#00ffff',108000,false],
+    ['and you.',36,'#ff88cc',111000,false],
+    ['GOD [TM] SAYS:',28,'#ffd700',116000,false],
+    ['EVERYTHING IS ON SALE.',42,'#ffd700',119000,false],
+    ['25% OFF.',52,'#ffd700',122000,true],
+    ['THIS INCLUDES EXISTENCE.',28,'#ffffff',126000,false],
+    ['CACTUS ED',52,'#ffd700',132000,true],
+    ['GOD. CIG SALESMAN. CAT DATER. UNIVERSE\'S PROBLEM.',22,'#ffffff',135000,false],
+    ['THE END (FOR REAL).',44,'#ffd700',139000,true]
   ];
   // Schedule all lines
   for(var li=0;li<this._seq.length;li++){
@@ -8969,10 +9240,38 @@ LHCEpilogueScene.prototype.create=function(){
     flashG.fillStyle(0xffffff,1);flashG.fillRect(0,0,W,H);
     self.tweens.add({targets:flashG,alpha:0,duration:1000,delay:100,onComplete:function(){flashG.destroy();}});
   });
-  // "PRESS Z TO RETURN" prompt after THE END
-  this.time.delayedCall(88000,function(){
+  // "PRESS Z TO RETURN" prompt — after God TM reveal
+  this.time.delayedCall(142000,function(){
     self.subTxt.setText('PRESS Z TO RETURN TO WEST BOTTOMS').setAlpha(1);
     self._done=true;
+  });
+  // God TM sigil — Ed silhouette + cat ears + LHC ring, fades in at GOD[TM] reveal
+  this.time.delayedCall(98000,function(){
+    try {
+      var sg=self.add.graphics().setDepth(9).setAlpha(0);
+      var sx=W/2, sy=H/2+30;
+      // Ed body (green rounded rect)
+      sg.fillStyle(0x003300,1);
+      sg.fillRoundedRect(sx-22,sy-60,44,80,10);
+      sg.fillCircle(sx,sy-72,18);
+      // Cat ears (triangles)
+      sg.fillStyle(0x005500,1);
+      sg.fillTriangle(sx-30,sy-82,sx-14,sy-82,sx-22,sy-100);
+      sg.fillTriangle(sx+14,sy-82,sx+30,sy-82,sx+22,sy-100);
+      sg.fillStyle(0x003300,0.7);
+      sg.fillTriangle(sx-26,sy-83,sx-16,sy-83,sx-21,sy-96);
+      sg.fillTriangle(sx+16,sy-83,sx+26,sy-83,sx+21,sy-96);
+      // LHC ring
+      sg.lineStyle(4,0x00ffff,0.7); sg.strokeCircle(sx,sy-30,90);
+      sg.lineStyle(2,0xff00ff,0.4); sg.strokeCircle(sx,sy-30,100);
+      sg.lineStyle(1,0xffd700,0.3); sg.strokeCircle(sx,sy-30,110);
+      // TM badge
+      sg.fillStyle(0xffd700,1); sg.fillRoundedRect(sx+18,sy-86,28,14,3);
+      self.tweens.add({targets:sg,alpha:1,duration:1500});
+      // [TM] text
+      var tm=self.add.text(sx+31,sy-85,'TM',{fontFamily:'Inconsolata,monospace',fontSize:'10px',color:'#000000',fontStyle:'bold'}).setDepth(10).setAlpha(0);
+      self.tweens.add({targets:tm,alpha:1,duration:1500});
+    } catch(e){}
   });
   // Cactus silhouette drawing
   this.time.delayedCall(77000,function(){
@@ -8993,6 +9292,142 @@ LHCEpilogueScene.prototype.update=function(time,delta){
   this._t+=delta;
   if(this._done&&Phaser.Input.Keyboard.JustDown(this.keys.z)){
     this.scene.start('WorldMap',{fromEpilogue:true});
+  }
+};
+
+// ════════════════════════════════════════════════════════════════
+// COMMERCIAL BREAK SCENE
+// ════════════════════════════════════════════════════════════════
+function CommercialBreakScene(){ Phaser.Scene.call(this,{key:'CommercialBreak'}); }
+CommercialBreakScene.prototype=Object.create(Phaser.Scene.prototype);
+CommercialBreakScene.prototype.constructor=CommercialBreakScene;
+CommercialBreakScene.prototype.create=function(){
+  var self=this; var W=960,H=540;
+  var data=this.scene.settings.data||{};
+  var adId=data.adId||'aloe_max';
+  var returnScene=data.returnScene||'WorldMap';
+  var returnData=data.returnData||{};
+  // Find the ad
+  var ad=null;
+  for(var i=0;i<COMMERCIALS.length;i++){if(COMMERCIALS[i].id===adId){ad=COMMERCIALS[i];break;}}
+  if(!ad){this.scene.start(returnScene,returnData);return;}
+  this._canSkip=false; this._done=false;
+  // Background
+  var bg=this.add.graphics();
+  bg.fillStyle(ad.bgColor,1); bg.fillRect(0,0,W,H);
+  // Scanlines
+  var sl=this.add.graphics().setDepth(8);
+  sl.fillStyle(0x000000,0.07);
+  for(var ly=0;ly<H;ly+=3){sl.fillRect(0,ly,W,1);}
+  // Static noise border
+  var br=this.add.graphics().setDepth(9);
+  br.lineStyle(3,parseInt(ad.fgColor.slice(1),16)||0xffffff,0.4);
+  br.strokeRect(8,8,W-16,H-16);
+  br.lineStyle(1,parseInt(ad.fgColor.slice(1),16)||0xffffff,0.2);
+  br.strokeRect(14,14,W-28,H-28);
+  // Header
+  this.add.text(W/2,42,'WE INTERRUPT THIS GAME.',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#888888',stroke:'#000000',strokeThickness:2,letterSpacing:4}).setOrigin(0.5).setDepth(10);
+  this.add.text(W/2,62,'PLEASE OBSERVE THE FOLLOWING:',{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:'#555555',letterSpacing:2}).setOrigin(0.5).setDepth(10);
+  // Ad lines with timed reveal
+  var lineY=140;
+  for(var li=0;li<ad.lines.length;li++){
+    (function(line,idx){
+      var fsize=idx===0?48:(idx===ad.lines.length-1?16:22);
+      var col=ad.fgColor;
+      self.time.delayedCall(idx*1800,function(){
+        try {
+          var lt=self.add.text(W/2,lineY+idx*70,line,{fontFamily:idx===0?'Bangers,Georgia,serif':'Inconsolata,monospace',fontSize:fsize+'px',color:col,stroke:'#000000',strokeThickness:idx===0?6:3,align:'center',wordWrap:{width:800}}).setOrigin(0.5).setDepth(10).setAlpha(0);
+          self.tweens.add({targets:lt,alpha:1,duration:500});
+        } catch(e){}
+      });
+    })(ad.lines[li],li);
+  }
+  // Skip hint
+  this._skipTxt=this.add.text(W/2,H-32,'',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#555555'}).setOrigin(0.5).setDepth(10);
+  this.time.delayedCall(5000,function(){
+    self._canSkip=true;
+    self._skipTxt.setText('[Z] SKIP').setColor('#888888');
+  });
+  // Auto-advance
+  var totalDur=ad.lines.length*1800+3200;
+  this.time.delayedCall(totalDur,function(){
+    if(!self._done){self._done=true;self.scene.start(returnScene,returnData);}
+  });
+  // Keys
+  this.keys={z:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z)};
+};
+CommercialBreakScene.prototype.update=function(){
+  if(this._canSkip&&!this._done&&Phaser.Input.Keyboard.JustDown(this.keys.z)){
+    this._done=true;
+    this.scene.start(this.scene.settings.data.returnScene||'WorldMap',this.scene.settings.data.returnData||{});
+  }
+};
+
+// ════════════════════════════════════════════════════════════════
+// RASTA CORP AD SCENE — gates World 3 first entry
+// ════════════════════════════════════════════════════════════════
+function RastaCorpAdScene(){ Phaser.Scene.call(this,{key:'RastaCorpAd'}); }
+RastaCorpAdScene.prototype=Object.create(Phaser.Scene.prototype);
+RastaCorpAdScene.prototype.constructor=RastaCorpAdScene;
+RastaCorpAdScene.prototype.create=function(){
+  var self=this; var W=960,H=540;
+  var data=this.scene.settings.data||{};
+  var returnScene=data.returnScene||'WorldMap3';
+  EWR_STATE.rastaCorp.commercialsSeen++;
+  this._done=false;
+  // Background — corporate green
+  var bg=this.add.graphics();
+  bg.fillStyle(0x001200,1); bg.fillRect(0,0,W,H);
+  // Grid lines (corporate aesthetic)
+  var gl=this.add.graphics().setDepth(1);
+  gl.lineStyle(1,0x003300,0.5);
+  for(var gx=0;gx<W;gx+=40){gl.lineBetween(gx,0,gx,H);}
+  for(var gy=0;gy<H;gy+=40){gl.lineBetween(0,gy,W,gy);}
+  // Logo bar
+  var lb=this.add.graphics().setDepth(2);
+  lb.fillStyle(0x002200,1);lb.fillRect(0,0,W,90);
+  lb.lineStyle(2,0x00ff44,0.8);lb.lineBetween(0,90,W,90);
+  this.add.text(W/2,20,'RASTA CORP™',{fontFamily:'Bangers,Georgia,serif',fontSize:'52px',color:'#00ff44',stroke:'#000000',strokeThickness:8,letterSpacing:6}).setOrigin(0.5).setDepth(5);
+  this.add.text(W/2,66,'YOUR REVOLUTION. OUR RECEIPT.',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#008822',letterSpacing:3}).setOrigin(0.5).setDepth(5);
+  // CEO trauma monologue header
+  this.add.text(W/2,120,'A MESSAGE FROM OUR FOUNDER',{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:'#446644',letterSpacing:4}).setOrigin(0.5).setDepth(5);
+  this.add.text(W/2,138,'',{}).setOrigin(0.5).setDepth(5); // spacer
+  // Trauma lines with typewriter reveal
+  var traumaY=170;
+  for(var ti=0;ti<RASTA_BOSS_TRAUMA.length;ti++){
+    (function(line,idx){
+      self.time.delayedCall(1500+idx*1700,function(){
+        try {
+          var tl=self.add.text(W/2,traumaY+idx*52,'"'+line+'"',{fontFamily:'Inconsolata,monospace',fontSize:'17px',color:'#88cc88',stroke:'#000000',strokeThickness:2,align:'center',wordWrap:{width:740}}).setOrigin(0.5).setDepth(5).setAlpha(0);
+          self.tweens.add({targets:tl,alpha:1,duration:600});
+          if(idx===RASTA_BOSS_TRAUMA.length-1){
+            self.time.delayedCall(2200,function(){
+              try {
+                var tag=self.add.text(W/2,H-100,'RASTA CORP™',{fontFamily:'Bangers,Georgia,serif',fontSize:'44px',color:'#ffdd00',stroke:'#000000',strokeThickness:7}).setOrigin(0.5).setDepth(5).setAlpha(0);
+                self.tweens.add({targets:tag,alpha:1,duration:800});
+                var sub=self.add.text(W/2,H-56,'WE MONETIZED THE VOID SO YOU DON\'T HAVE TO.',{fontFamily:'Inconsolata,monospace',fontSize:'15px',color:'#886600'}).setOrigin(0.5).setDepth(5).setAlpha(0);
+                self.tweens.add({targets:sub,alpha:1,duration:800,delay:400});
+                self._skipTxt.setText('[Z] ENTER WORLD 3').setColor('#00ff44');
+                self._canSkip=true;
+              } catch(e){}
+            });
+          }
+        } catch(e){}
+      });
+    })(RASTA_BOSS_TRAUMA[ti],ti);
+  }
+  this._canSkip=false;
+  this._skipTxt=this.add.text(W/2,H-18,'',{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:'#444444'}).setOrigin(0.5).setDepth(10);
+  // Auto-advance after 14s
+  this.time.delayedCall(14000,function(){
+    if(!self._done){self._done=true;self.scene.start(returnScene);}
+  });
+  this.keys={z:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z)};
+};
+RastaCorpAdScene.prototype.update=function(){
+  if(this._canSkip&&!this._done&&Phaser.Input.Keyboard.JustDown(this.keys.z)){
+    this._done=true;
+    this.scene.start(this.scene.settings.data.returnScene||'WorldMap3');
   }
 };
 
@@ -9062,7 +9497,9 @@ var config = {
     Level63Scene,
     Level64Scene,
     CigSalesScene,
-    LHCEpilogueScene
+    LHCEpilogueScene,
+    CommercialBreakScene,
+    RastaCorpAdScene
   ]
 };
 new Phaser.Game(config);
