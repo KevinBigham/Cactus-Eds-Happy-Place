@@ -655,7 +655,7 @@ var SOUND = (function(){
 })();
 
 // Iron Cactus damage gating — 50% chance to block 1 damage when purchased
-function _takeDmg(){ if(!EWR_STATE.shop.ironCactus||Math.random()<0.5) _takeDmg(); }
+function _takeDmg(){ if(!EWR_STATE.shop.ironCactus||Math.random()<0.5) EWR_STATE.health[0]--; }
 
 // Combo helper — call after each hit
 function _addCombo(scene, x, y) {
