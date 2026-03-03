@@ -655,7 +655,7 @@ var SOUND = (function(){
 })();
 
 // Iron Cactus damage gating — 50% chance to block 1 damage when purchased
-function _takeDmg(){ if(!EWR_STATE.shop.ironCactus||Math.random()<0.5) _takeDmg(); }
+function _takeDmg(){ if(!EWR_STATE.shop.ironCactus||Math.random()<0.5) EWR_STATE.health[0]--; }
 
 // Combo helper — call after each hit
 function _addCombo(scene, x, y) {
@@ -1625,6 +1625,7 @@ Level11Scene.prototype.create=function(){
   this.levelT=0; this.checkpt=false;
   this.nukeG=this.add.graphics().setScrollFactor(0).setDepth(2);
   this._nukeT=0; this._nukeInterval=30000+Math.random()*20000; this._aloeRushT=0;
+  this._rbT=0; this._rbInterval=25000+Math.random()*20000;
   this._tickX=960; this._tickN=Math.floor(Math.random()*NEWS_TICKER.length);
   this.tickerTxt=this.add.text(960,526,'⚡ '+NEWS_TICKER[this._tickN]+'  ◆  ',
     {fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ff4444',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}})
@@ -2012,6 +2013,18 @@ Level11Scene.prototype.update=function(time,delta){
     SOUND.victory(); this.cameras.main.flash(600,255,220,100);
   }
   updateNukes(delta); this.nukeG.clear(); drawNukes(this.nukeG);
+  // Reality Break — periodic psychedelic screen rupture
+  this._rbT+=delta;
+  if(this._rbT>=this._rbInterval){
+    this._rbT=0; this._rbInterval=25000+Math.random()*20000;
+    var rbMsgs=['REALITY BREAK','ARE YOU REAL?','REALITY IS OPTIONAL','THIS IS FINE','YOU ARE PRODUCT','ED WAS RIGHT','LOOK AWAY'];
+    var rbCol=['#ff00ff','#00ffff','#ff4444','#ffd700','#ff00aa','#cc44ff'];
+    this._flash(rbMsgs[Math.floor(Math.random()*rbMsgs.length)],2200,30,rbCol[Math.floor(Math.random()*rbCol.length)]);
+    this.cameras.main.shake(900,0.028);
+    this.cameras.main.flash(350,200,0,255);
+    for(var rbi=0;rbi<this.mochiList.length;rbi++){spawnExplosion(this.mochiList[rbi].x,this.mochiList[rbi].y-15,0xff00ff,1.5);}
+    SOUND.hurt();
+  }
   // News ticker scroll
   this._tickX-=1.5*(delta/16);
   this.tickerTxt.setPosition(this._tickX,526);
