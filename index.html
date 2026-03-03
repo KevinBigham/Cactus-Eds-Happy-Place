@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Cactus Ed's Happy Place</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0a0014; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
@@ -667,7 +670,7 @@ function _addCombo(scene, x, y) {
   if(c.streak===20){ scene._flash('x5 CACTUS GOD!!',1800); if(scene.cameras) scene.cameras.main.shake(350,0.02); SOUND.victory(); }
   // Float text near hit
   try {
-    var ft=scene.add.text(x,y-28,c.streak+' HIT!',{fontFamily:'Courier New,monospace',fontSize:'16px',color:'#ffd60a',stroke:'#000000',strokeThickness:3}).setDepth(25);
+    var ft=scene.add.text(x,y-28,c.streak+' HIT!',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:'#ffd60a',stroke:'#000000',strokeThickness:4,backgroundColor:'#00000099',padding:{x:6,y:3}}).setDepth(25);
     scene.tweens.add({targets:ft,y:y-70,alpha:0,duration:900,onComplete:function(){ft.destroy();}});
   } catch(e){}
 }
@@ -929,13 +932,13 @@ BootScene.prototype.create=function() {
   g.fillCircle(200,180,180); g.fillCircle(700,350,220);
   g.fillStyle(parseInt(AT.pink.slice(1),16),0.05);
   g.fillCircle(500,120,150);
-  this.add.text(W/2,140,"CACTUS ED'S",{fontFamily:'Georgia,serif',fontSize:'74px',color:AT.uiGold,stroke:AT.outline,strokeThickness:7,align:'center'}).setOrigin(0.5);
-  this.add.text(W/2,228,"HAPPY PLACE",{fontFamily:'Georgia,serif',fontSize:'66px',color:AT.aloe,stroke:AT.outline,strokeThickness:7,align:'center'}).setOrigin(0.5);
-  this.add.text(W/2,322,"cig salesman. cat dater. universe's problem.",{fontFamily:'Georgia,serif',fontSize:'24px',color:AT.uiText,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5);
-  var pa=this.add.text(W/2,420,"PRESS ANY KEY",{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.uiText,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5);
+  this.add.text(W/2,140,"CACTUS ED'S",{fontFamily:'Bangers,Georgia,serif',fontSize:'80px',color:AT.uiGold,stroke:AT.outline,strokeThickness:8,align:'center',letterSpacing:4}).setOrigin(0.5);
+  this.add.text(W/2,232,"HAPPY PLACE",{fontFamily:'Bangers,Georgia,serif',fontSize:'72px',color:AT.aloe,stroke:AT.outline,strokeThickness:8,align:'center',letterSpacing:4}).setOrigin(0.5);
+  this.add.text(W/2,322,"cig salesman. cat dater. universe's problem.",{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.uiText,stroke:AT.outline,strokeThickness:4}).setOrigin(0.5);
+  var pa=this.add.text(W/2,420,"PRESS ANY KEY",{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.uiText,stroke:AT.outline,strokeThickness:4}).setOrigin(0.5);
   this.tweens.add({targets:pa,alpha:0.1,duration:550,yoyo:true,repeat:-1});
-  this.add.text(W/2,460,"Stick/DPad=Move  |  A=Jump  |  X=Punch  |  B=Kick",{fontFamily:'Courier New,monospace',fontSize:'13px',color:AT.uiText,alpha:0.6}).setOrigin(0.5);
-  this.add.text(W/2,478,"Z=Punch/Pet  X=Kick  Hold Z=EMBER BLAST",{fontFamily:'Courier New,monospace',fontSize:'13px',color:AT.uiGold,alpha:0.7}).setOrigin(0.5);
+  this.add.text(W/2,460,"Stick/DPad=Move  |  A=Jump  |  X=Punch  |  B=Kick",{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:AT.uiText,alpha:0.6}).setOrigin(0.5);
+  this.add.text(W/2,478,"Z=Punch/Pet  X=Kick  Hold Z=EMBER BLAST",{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:AT.uiGold,alpha:0.7}).setOrigin(0.5);
   var edG=this.add.graphics(), cigF=0, smokeT=0;
   DRAW_ED.draw(edG,W/2,500,0,false,0);
   var busG=this.add.graphics(), busX=-200, busT=0;
@@ -1008,20 +1011,20 @@ TitleScene.prototype.create=function(){
     onUpdate:function(tw){busX=tw.targets[0].val;},
     onComplete:function(){busPhase='idle';}
   });
-  var ttxt=this.add.text(W/2,78,"CACTUS ED'S HAPPY PLACE",{fontFamily:'Georgia,serif',fontSize:'54px',color:AT.uiGold,stroke:AT.outline,strokeThickness:8,align:'center'}).setOrigin(0.5);
+  var ttxt=this.add.text(W/2,78,"CACTUS ED'S HAPPY PLACE",{fontFamily:'Bangers,Georgia,serif',fontSize:'58px',color:AT.uiGold,stroke:AT.outline,strokeThickness:9,align:'center',letterSpacing:2}).setOrigin(0.5);
   this.tweens.add({targets:ttxt,y:83,duration:2200,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
-  this.add.text(W/2,148,'WEST BOTTOMS CIG DISTRICT  //  EST. UNKNOWN',{fontFamily:'Courier New,monospace',fontSize:'19px',color:AT.uiText,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5);
-  var joshTxt=this.add.text(W/2,196,'yo Josh check this shit out!!!',{fontFamily:'Courier New,monospace',fontSize:'26px',color:'#ff4444',stroke:AT.outline,strokeThickness:4}).setOrigin(0.5);
+  this.add.text(W/2,148,'WEST BOTTOMS CIG DISTRICT  //  EST. UNKNOWN',{fontFamily:'Inconsolata,monospace',fontSize:'20px',color:AT.uiText,stroke:AT.outline,strokeThickness:4}).setOrigin(0.5);
+  var joshTxt=this.add.text(W/2,196,'yo Josh check this shit out!!!',{fontFamily:'Inconsolata,monospace',fontSize:'28px',color:'#ff4444',stroke:AT.outline,strokeThickness:5}).setOrigin(0.5);
   var joshColors=['#ff4444','#ff8c00','#ffd700','#00e676','#00bcd4','#aa44ff','#ff44aa'];
   var joshCI=0;
   this.time.addEvent({delay:220,loop:true,callback:function(){joshCI=(joshCI+1)%joshColors.length;joshTxt.setColor(joshColors[joshCI]);}});
-  var ps=this.add.text(W/2,488,"PRESS ANY KEY",{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5);
+  var ps=this.add.text(W/2,488,"PRESS ANY KEY",{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:4}).setOrigin(0.5);
   this.tweens.add({targets:ps,alpha:0.15,duration:480,yoyo:true,repeat:-1});
-  self._mobileTxt=self.add.text(W/2,455,'[ MOBILE MODE: '+(MOBILE_MODE?'ON ':'OFF')+' ]',{fontFamily:'Courier New,monospace',fontSize:'16px',color:MOBILE_MODE?'#00eeff':'#555577',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(15);
+  self._mobileTxt=self.add.text(W/2,455,'[ MOBILE MODE: '+(MOBILE_MODE?'ON ':'OFF')+' ]',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:MOBILE_MODE?'#00eeff':'#555577',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(15);
   var tTickN=Math.floor(Math.random()*NEWS_TICKER.length);
   var tTickX=960;
   var tTickTxt=this.add.text(960,520,'⚡ '+NEWS_TICKER[tTickN]+'  ◆  ',
-    {fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ff4444',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}});
+    {fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ff4444',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}});
   this.events.on('update',function(time,delta){
     edCigF++; edSmokeT+=delta; busT++;
     tTickX-=1.5*(delta/16);
@@ -1093,20 +1096,20 @@ WorldMapScene.prototype.create=function(){
   this.edG=this.add.graphics();
   this.hudG=this.add.graphics().setDepth(10);
   this.shopG=this.add.graphics().setScrollFactor(0).setDepth(50);
-  this.aloeText=this.add.text(40,22,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setDepth(10);
-  this.add.text(W/2,12,'WORLD 1  --  THE WEST BOTTOMS',{fontFamily:'Georgia,serif',fontSize:'20px',color:AT.uiBg,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(10);
-  this.nodeTxt=this.add.text(W/2,H-58,'',{fontFamily:'Georgia,serif',fontSize:'24px',color:AT.uiGold,stroke:AT.outline,strokeThickness:4,align:'center'}).setOrigin(0.5).setAlpha(0).setDepth(10);
-  this.enterTxt=this.add.text(W/2,H-30,'PRESS Z TO ENTER',{fontFamily:'Courier New,monospace',fontSize:'16px',color:AT.uiText,stroke:AT.outline,strokeThickness:3,align:'center'}).setOrigin(0.5).setAlpha(0).setDepth(10);
+  this.aloeText=this.add.text(40,22,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:4}).setDepth(10);
+  this.add.text(W/2,12,'WORLD 1  --  THE WEST BOTTOMS',{fontFamily:'Bangers,Georgia,serif',fontSize:'22px',color:'#f5f0dc',stroke:AT.outline,strokeThickness:4}).setOrigin(0.5).setDepth(10);
+  this.nodeTxt=this.add.text(W/2,H-58,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'26px',color:AT.uiGold,stroke:AT.outline,strokeThickness:5,align:'center'}).setOrigin(0.5).setAlpha(0).setDepth(10);
+  this.enterTxt=this.add.text(W/2,H-30,'PRESS Z TO ENTER',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:AT.uiText,stroke:AT.outline,strokeThickness:4,align:'center'}).setOrigin(0.5).setAlpha(0).setDepth(10);
   // Portal hint — appears when all W1 levels beaten
-  this.portalHintTxt=this.add.text(W-24,H/2,'→ NEON DISTRICT →\n(far right, row 5)',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#00ffcc',stroke:AT.outline,strokeThickness:3,align:'right'}).setOrigin(1,0.5).setAlpha(0).setDepth(12);
-  this.aloePop=this.add.text(50,55,'',{fontFamily:'Courier New,monospace',fontSize:'18px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setAlpha(0).setDepth(10);
+  this.portalHintTxt=this.add.text(W-24,H/2,'→ NEON DISTRICT →\n(far right, row 5)',{fontFamily:'Inconsolata,monospace',fontSize:'15px',color:'#00ffcc',stroke:AT.outline,strokeThickness:3,align:'right',backgroundColor:'#000000aa',padding:{x:8,y:4}}).setOrigin(1,0.5).setAlpha(0).setDepth(12);
+  this.aloePop=this.add.text(50,55,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:4}).setAlpha(0).setDepth(10);
   // Shop text objects
   this.shopTxts=[];
   for(var si=0;si<this.shopItems.length;si++){
-    this.shopTxts.push(this.add.text(390,148+si*24,'',{fontFamily:'Courier New,monospace',fontSize:'13px',color:AT.uiText,stroke:AT.outline,strokeThickness:2}).setDepth(51).setAlpha(0));
+    this.shopTxts.push(this.add.text(390,148+si*24,'',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:AT.uiText,stroke:AT.outline,strokeThickness:2}).setDepth(51).setAlpha(0));
   }
-  this.shopTitle=this.add.text(480,120,'',{fontFamily:'Georgia,serif',fontSize:'22px',color:AT.uiGold,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(51).setAlpha(0);
-  this.shopHint=this.add.text(480,470,'',{fontFamily:'Courier New,monospace',fontSize:'13px',color:AT.uiText}).setOrigin(0.5).setDepth(51).setAlpha(0);
+  this.shopTitle=this.add.text(480,120,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'22px',color:AT.uiGold,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(51).setAlpha(0);
+  this.shopHint=this.add.text(480,470,'',{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:AT.uiText}).setOrigin(0.5).setDepth(51).setAlpha(0);
   this.keys={
     left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
     right:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
@@ -1122,14 +1125,14 @@ WorldMapScene.prototype.create=function(){
   // News ticker
   this._tickX=960; this._tickN=Math.floor(Math.random()*NEWS_TICKER.length);
   this.tickerTxt=this.add.text(960,526,'⚡ '+NEWS_TICKER[this._tickN]+'  ◆  ',
-    {fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ff4444',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}})
+    {fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ff4444',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}})
     .setDepth(10);
   // Beat Cat NPC at tile (2,6)
   var bcPx=this._t2p(2,6);
   this.beatCatG=this.add.graphics().setDepth(8);
   this._drawBeatCat(bcPx.x, bcPx.y);
   this.add.text(bcPx.x,bcPx.y-38,'TRUTH KID',
-    {fontFamily:'Courier New,monospace',fontSize:'10px',color:'#ff8800',stroke:'#000000',strokeThickness:2})
+    {fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#ff8800',stroke:'#000000',strokeThickness:2})
     .setOrigin(0.5).setDepth(9);
   this._beatCatPx=bcPx; this._beatCatLineIdx=0;
   var dat=this.scene.settings.data;
@@ -1137,23 +1140,23 @@ WorldMapScene.prototype.create=function(){
   // CAT NEWS card — 50% chance on level completion return
   // WS map messages + cat speech
   this._wsMsgT=8000+Math.random()*12000;
-  this.wsMsgTxt=this.add.text(W/2,H/2-30,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:'#ff4444',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(30).setAlpha(0);
-  this.wsCatTxt=this.add.text(0,0,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffffff',stroke:'#000000',strokeThickness:2,backgroundColor:'#222222',padding:{x:6,y:3}}).setDepth(30).setAlpha(0);
+  this.wsMsgTxt=this.add.text(W/2,H/2-30,'',{fontFamily:'Inconsolata,monospace',fontSize:'30px',color:'#ff4444',stroke:'#000000',strokeThickness:5,backgroundColor:'#000000cc',padding:{x:20,y:12}}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.wsCatTxt=this.add.text(0,0,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#ffffff',stroke:'#000000',strokeThickness:3,backgroundColor:'#0a0022',padding:{x:10,y:6}}).setDepth(30).setAlpha(0);
   // Possession state
   this._possessT=55000+Math.random()*35000; this._possessedCat=null;
   // Arcade (Truth Kid) state
   this._arcadeOpen=false; this._arcadeSel=0;
   this._arcadeItems=[{label:'MOCHI SMASH',cost:20,scene:'MochiSmash'},{label:'LUCKY SLOTS',cost:30,scene:'SlotMachine'},{label:'LUCKY SCRATCH',cost:15,scene:'Scratch'},{label:'NUCLEAR QUIZ',cost:0,scene:'NuclearQuiz'},{label:'CIG SALES',cost:0,scene:'CigSales'},{label:'EXIT',cost:0,scene:null}];
   this.arcadeG=this.add.graphics().setDepth(55).setAlpha(0);
-  this.arcadeTxt=this.add.text(480,270,'',{fontFamily:'Courier New,monospace',fontSize:'15px',color:'#ffffff',stroke:'#000000',strokeThickness:2,align:'center'}).setOrigin(0.5).setDepth(56).setAlpha(0);
+  this.arcadeTxt=this.add.text(480,270,'',{fontFamily:'Inconsolata,monospace',fontSize:'15px',color:'#ffffff',stroke:'#000000',strokeThickness:2,align:'center'}).setOrigin(0.5).setDepth(56).setAlpha(0);
   if(dat&&dat.aloeEarned&&Math.random()<0.5){
     var self2=this;
     var overlay=this.add.graphics().setDepth(90);
     overlay.fillStyle(0x000000,1); overlay.fillRect(0,0,960,540);
-    var catNewsTitle=this.add.text(480,160,'CAT NEWS',{fontFamily:'Georgia,serif',fontSize:'52px',color:'#ff2222',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setDepth(91);
-    var catNewsSub=this.add.text(480,240,'BREAKING',{fontFamily:'Courier New,monospace',fontSize:'28px',color:'#ffffff',stroke:'#000000',strokeThickness:4}).setOrigin(0.5).setDepth(91);
+    var catNewsTitle=this.add.text(480,160,'CAT NEWS',{fontFamily:'Bangers,Georgia,serif',fontSize:'72px',color:'#ff2222',stroke:'#000000',strokeThickness:8}).setOrigin(0.5).setDepth(91);
+    var catNewsSub=this.add.text(480,240,'BREAKING',{fontFamily:'Bangers,Georgia,serif',fontSize:'38px',color:'#ffffff',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setDepth(91);
     var hl=NEWS_TICKER[Math.floor(Math.random()*NEWS_TICKER.length)];
-    var catNewsHl=this.add.text(480,310,hl,{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffdd00',stroke:'#000000',strokeThickness:3,align:'center',wordWrap:{width:800}}).setOrigin(0.5).setDepth(91);
+    var catNewsHl=this.add.text(480,310,hl,{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#ffdd00',stroke:'#000000',strokeThickness:4,align:'center',wordWrap:{width:860}}).setOrigin(0.5).setDepth(91);
     this.time.delayedCall(3500,function(){overlay.destroy();catNewsTitle.destroy();catNewsSub.destroy();catNewsHl.destroy();});
   }
 };
@@ -1310,7 +1313,7 @@ WorldMapScene.prototype.update=function(time,delta){
   this._wsMsgT-=delta;
   if(this._wsMsgT<=0){
     this._wsMsgT=10000+Math.random()*14000;
-    var wmCols=['#ff4444','#ffd700','#ff44aa','#00eeff','#cc44ff'];
+    var wmCols=['#ff6666','#ffdd00','#ff55cc','#00eeff','#cc88ff','#00ff99','#ff8844'];
     this.wsMsgTxt.setText(WS_MSGS[Math.floor(Math.random()*WS_MSGS.length)]).setColor(wmCols[Math.floor(Math.random()*wmCols.length)]).setAlpha(1);
     this.tweens.add({targets:this.wsMsgTxt,alpha:0,delay:3600,duration:900});
   }
@@ -1481,8 +1484,8 @@ WorldMapScene.prototype._tryPossessed=function(){
     var WP_KOANS=['THE CIG IS THE SELF','YOUR VIOLENCE IS LOVE','MOCHI = YOU / YOU = MOCHI','THE VOID BEGAN WHEN YOU FIRST PRESSED Z','ED IS A VERB','ALOE DREAMS OF BEING USED'];
     var bov=this.add.graphics().setDepth(50);
     bov.fillStyle(0x000000,0.92); bov.fillRect(0,0,960,540);
-    var kt=this.add.text(480,220,WP_KOANS[Math.floor(Math.random()*WP_KOANS.length)],{fontFamily:'Courier New,monospace',fontSize:'22px',color:'#ff4444',stroke:'#000000',strokeThickness:3,align:'center',wordWrap:{width:700}}).setOrigin(0.5).setDepth(51).setAlpha(0);
-    var sub=this.add.text(480,310,'FOR YOUR BRAVERY',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#ffd700'}).setOrigin(0.5).setDepth(51).setAlpha(0);
+    var kt=this.add.text(480,220,WP_KOANS[Math.floor(Math.random()*WP_KOANS.length)],{fontFamily:'Inconsolata,monospace',fontSize:'26px',color:'#ff6666',stroke:'#000000',strokeThickness:5,align:'center',wordWrap:{width:700},backgroundColor:'#000000bb',padding:{x:18,y:10}}).setOrigin(0.5).setDepth(51).setAlpha(0);
+    var sub=this.add.text(480,310,'FOR YOUR BRAVERY',{fontFamily:'Inconsolata,monospace',fontSize:'15px',color:'#ffd700',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(51).setAlpha(0);
     this.tweens.add({targets:kt,alpha:1,duration:600});
     this.time.delayedCall(800,function(){pSelf.tweens.add({targets:sub,alpha:1,duration:400});});
     this.time.delayedCall(2500,function(){
@@ -1586,14 +1589,14 @@ Level11Scene.prototype.create=function(){
   var pickupX=[1295,2670,3712,4400];
   for(var ai=0;ai<pickupX.length;ai++) this.pickups.push({x:pickupX[ai],y:264,collected:false,bobT:0});
   this.hudG=this.add.graphics().setScrollFactor(0).setDepth(20);
-  this.aloeText=this.add.text(40,22,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setScrollFactor(0).setDepth(20);
-  this.add.text(480,14,'1-1  ED WAKES UP',{fontFamily:'Georgia,serif',fontSize:'18px',color:AT.uiGold,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(20);
-  this.flashTxt=this.add.text(480,270,'',{fontFamily:'Georgia,serif',fontSize:'42px',color:AT.uiGold,stroke:AT.outline,strokeThickness:5}).setOrigin(0.5).setScrollFactor(0).setDepth(20).setAlpha(0);
-  this.comboText=this.add.text(0,0,'',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#ffd60a',stroke:AT.outline,strokeThickness:3}).setDepth(25).setAlpha(0);
+  this.aloeText=this.add.text(40,22,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:4}).setScrollFactor(0).setDepth(20);
+  this.add.text(480,14,'1-1  ED WAKES UP',{fontFamily:'Bangers,Georgia,serif',fontSize:'22px',color:AT.uiGold,stroke:AT.outline,strokeThickness:4,backgroundColor:'#00000066',padding:{x:10,y:4}}).setOrigin(0.5).setScrollFactor(0).setDepth(20);
+  this.flashTxt=this.add.text(480,270,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'46px',color:AT.uiGold,stroke:AT.outline,strokeThickness:7,backgroundColor:'#00000099',padding:{x:16,y:8}}).setOrigin(0.5).setScrollFactor(0).setDepth(20).setAlpha(0);
+  this.comboText=this.add.text(0,0,'',{fontFamily:'Inconsolata,monospace',fontSize:'24px',color:'#ffd60a',stroke:AT.outline,strokeThickness:4}).setDepth(25).setAlpha(0);
   this.psychG=this.add.graphics().setScrollFactor(0).setDepth(50);
   this.dyingG=this.add.graphics().setScrollFactor(0).setDepth(90);
-  this.dyingTxt=this.add.text(480,230,'',{fontFamily:'Georgia,serif',fontSize:'46px',color:'#ffffff',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
-  this.dyingTxt2=this.add.text(480,295,'',{fontFamily:'Courier New,monospace',fontSize:'24px',color:'#aaaaaa'}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
+  this.dyingTxt=this.add.text(480,230,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'52px',color:'#ffffff',stroke:'#000000',strokeThickness:8,backgroundColor:'#000000aa',padding:{x:18,y:10}}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
+  this.dyingTxt2=this.add.text(480,295,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:'#cccccc',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
   this.crtG=this.add.graphics().setScrollFactor(0).setDepth(99);
   if(EWR_STATE.shop.crtFilter){this.crtG.fillStyle(0x000000,0.14);for(var cr=0;cr<540;cr+=4)this.crtG.fillRect(0,cr,960,1);}
   this.keys={
@@ -1609,26 +1612,26 @@ Level11Scene.prototype.create=function(){
     altD: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
     esc:  this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
   };
-  this.add.text(955,22,'[ESC]=Back',{fontFamily:'Courier New,monospace',fontSize:'10px',color:'#888888'}).setOrigin(1,0).setScrollFactor(0).setDepth(20);
+  this.add.text(955,22,'[ESC]=Back',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#aaaaaa'}).setOrigin(1,0).setScrollFactor(0).setDepth(20);
   this.ctrlPanel=this.add.graphics().setScrollFactor(0).setDepth(25);
   this.ctrlLines=[
-    this.add.text(10,10,'CONTROLS',{fontFamily:'Courier New,monospace',fontSize:'10px',color:AT.uiGold,stroke:AT.outline,strokeThickness:2}).setScrollFactor(0).setDepth(25),
-    this.add.text(10,22,'← → Move  W/Up Jump  S Duck',{fontFamily:'Courier New,monospace',fontSize:'10px',color:AT.uiText}).setScrollFactor(0).setDepth(25),
-    this.add.text(10,34,'Z Punch  Hold Z Ember Blast',{fontFamily:'Courier New,monospace',fontSize:'10px',color:AT.uiText}).setScrollFactor(0).setDepth(25),
-    this.add.text(10,46,'X Kick  Z near cat Pet',{fontFamily:'Courier New,monospace',fontSize:'10px',color:AT.uiText}).setScrollFactor(0).setDepth(25),
-    this.add.text(10,58,'Z+Z+Z Flurry  Air+X Javelin',{fontFamily:'Courier New,monospace',fontSize:'10px',color:'#ffd700',stroke:AT.outline,strokeThickness:2}).setScrollFactor(0).setDepth(25),
-    this.add.text(10,70,'Pad: A Jump  X Punch  B Kick',{fontFamily:'Courier New,monospace',fontSize:'10px',color:AT.uiText}).setScrollFactor(0).setDepth(25)
+    this.add.text(10,10,'CONTROLS',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:AT.uiGold,stroke:AT.outline,strokeThickness:2}).setScrollFactor(0).setDepth(25),
+    this.add.text(10,22,'← → Move  W/Up Jump  S Duck',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:AT.uiText}).setScrollFactor(0).setDepth(25),
+    this.add.text(10,34,'Z Punch  Hold Z Ember Blast',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:AT.uiText}).setScrollFactor(0).setDepth(25),
+    this.add.text(10,46,'X Kick  Z near cat Pet',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:AT.uiText}).setScrollFactor(0).setDepth(25),
+    this.add.text(10,58,'Z+Z+Z Flurry  Air+X Javelin',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#ffd700',stroke:AT.outline,strokeThickness:2}).setScrollFactor(0).setDepth(25),
+    this.add.text(10,70,'Pad: A Jump  X Punch  B Kick',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:AT.uiText}).setScrollFactor(0).setDepth(25)
   ];
   this.levelT=0; this.checkpt=false;
   this.nukeG=this.add.graphics().setScrollFactor(0).setDepth(2);
   this._nukeT=0; this._nukeInterval=30000+Math.random()*20000; this._aloeRushT=0;
   this._tickX=960; this._tickN=Math.floor(Math.random()*NEWS_TICKER.length);
   this.tickerTxt=this.add.text(960,526,'⚡ '+NEWS_TICKER[this._tickN]+'  ◆  ',
-    {fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ff4444',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}})
+    {fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ff4444',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}})
     .setScrollFactor(0).setDepth(22);
   this._flash('ED WAKES UP',2400);
   this._wsMsgT=3000+Math.random()*5000; this._wsMsgT2=5000+Math.random()*4000;
-  this.wsCatTxt=this.add.text(0,0,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffffff',stroke:'#000000',strokeThickness:2,backgroundColor:'#222222',padding:{x:6,y:3}}).setScrollFactor(0).setDepth(16).setAlpha(0);
+  this.wsCatTxt=this.add.text(0,0,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#ffffff',stroke:'#000000',strokeThickness:3,backgroundColor:'#0a0022',padding:{x:10,y:6}}).setScrollFactor(0).setDepth(16).setAlpha(0);
 };
 Level11Scene.prototype.update=function(time,delta){
   var LW=4800;
@@ -2134,7 +2137,7 @@ Level11Scene.prototype._triggerDeath=function(){
 Level11Scene.prototype._flash=function(msg,dur,sz,col,delay,fy,fx){
   var self=this,ft=this.flashTxt;
   if(fy||sz){
-    var tmp=this.add.text(fx||480,fy||270,msg,{fontFamily:'Courier New,monospace',fontSize:(sz||42)+'px',color:col||AT.uiGold,stroke:AT.outline,strokeThickness:3,backgroundColor:'#00000077',padding:{x:10,y:5}}).setOrigin(0.5).setScrollFactor(0).setDepth(20);
+    var tmp=this.add.text(fx||480,fy||270,msg,{fontFamily:'Inconsolata,monospace',fontSize:(sz||42)+'px',color:col||AT.uiGold,stroke:AT.outline,strokeThickness:3,backgroundColor:'#00000077',padding:{x:10,y:5}}).setOrigin(0.5).setScrollFactor(0).setDepth(20);
     this.tweens.add({targets:tmp,alpha:0,delay:(delay||0)+(dur-600),duration:600,onComplete:function(){tmp.destroy();}});
     return;
   }
@@ -2408,7 +2411,7 @@ Level11Scene.prototype._showEdLine=function(lines){
   try{
     var px=this.ep?this.ep.x:480, py=this.ep?this.ep.y:200;
     var bbl=this.add.text(px,py-82,'"'+line+'"',
-      {fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffffff',stroke:'#2d1b00',strokeThickness:3,backgroundColor:'#1a0a2e',padding:{x:6,y:4}}).setDepth(27);
+      {fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#ffffff',stroke:'#2d1b00',strokeThickness:4,backgroundColor:'#0a0022',padding:{x:10,y:6}}).setDepth(27);
     this.time.delayedCall(2200,function(){try{bbl.destroy();}catch(e){}self._edSpeaking=false;});
   }catch(e){self._edSpeaking=false;}
 };
@@ -2466,10 +2469,10 @@ function _initVPad(scene) {
   vg.lineStyle(2,0xffd60a,0.8); vg.strokeCircle(912,479,40);
   vg.fillStyle(0x997700,0.52); vg.fillCircle(912,479,37);
   // Labels
-  scene.add.text(800,466,'Z',{fontFamily:'Courier New,monospace',fontSize:'28px',color:'#ffaa55',fontStyle:'bold',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
-  scene.add.text(800,494,'PUNCH',{fontFamily:'Courier New,monospace',fontSize:'9px',color:'#ff9955'}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
-  scene.add.text(912,468,'X',{fontFamily:'Courier New,monospace',fontSize:'24px',color:'#ffdd44',fontStyle:'bold',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
-  scene.add.text(912,494,'KICK',{fontFamily:'Courier New,monospace',fontSize:'9px',color:'#ffdd44'}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
+  scene.add.text(800,466,'Z',{fontFamily:'Inconsolata,monospace',fontSize:'28px',color:'#ffaa55',fontStyle:'bold',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
+  scene.add.text(800,494,'PUNCH',{fontFamily:'Inconsolata,monospace',fontSize:'11px',color:'#ff9955',stroke:'#000000',strokeThickness:1}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
+  scene.add.text(912,468,'X',{fontFamily:'Inconsolata,monospace',fontSize:'24px',color:'#ffdd44',fontStyle:'bold',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
+  scene.add.text(912,494,'KICK',{fontFamily:'Inconsolata,monospace',fontSize:'11px',color:'#ffdd44',stroke:'#000000',strokeThickness:1}).setOrigin(0.5).setScrollFactor(0).setDepth(97).setVisible(MOBILE_MODE);
   // Touch detection (d-pad + action buttons + swipe gestures)
   var _swipeVPAD={left:false,right:false,up:false,down:false,punch:false};
   function _setFor(flag,ms){_swipeVPAD[flag]=true;scene.time.delayedCall(ms,function(){_swipeVPAD[flag]=false;});}
@@ -2565,14 +2568,14 @@ function _startBgAnim(scene,opts){
     });
     // WS messages on title screen
     this._wsTitleT=6000+Math.random()*6000;
-    this.wsTitleTxt=this.add.text(480,448,'',{fontFamily:'Courier New,monospace',fontSize:'18px',color:'#ff4444',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setAlpha(0).setDepth(12);
+    this.wsTitleTxt=this.add.text(480,448,'',{fontFamily:'Inconsolata,monospace',fontSize:'24px',color:'#ff4444',stroke:'#000000',strokeThickness:4,backgroundColor:'#000000cc',padding:{x:16,y:8}}).setOrigin(0.5).setAlpha(0).setDepth(12);
   };
   TitleScene.prototype.update=function(time,delta){
     if(!this.wsTitleTxt) return;
     this._wsTitleT=(this._wsTitleT||6000)-delta;
     if(this._wsTitleT<=0){
       this._wsTitleT=7000+Math.random()*8000;
-      var tc=['#ff4444','#ffd700','#ff44aa','#00eeff'][Math.floor(Math.random()*4)];
+      var tc=['#ff6666','#ffdd00','#ff55cc','#00eeff','#cc88ff','#00ff99'][Math.floor(Math.random()*6)];
       this.wsTitleTxt.setText(WS_MSGS[Math.floor(Math.random()*WS_MSGS.length)]).setColor(tc).setAlpha(0.72);
       this.tweens.add({targets:this.wsTitleTxt,alpha:0,delay:4200,duration:1000});
     }
@@ -2614,14 +2617,14 @@ function createLevelScene(cfg) {
     this.pickups=[]; this.pickupG=this.add.graphics().setDepth(4);
     for(var ai=0;ai<cfg.pickups.length;ai++){this.pickups.push({x:cfg.pickups[ai][0],y:cfg.pickups[ai][1],collected:false,bobT:0});}
     this.hudG=this.add.graphics().setScrollFactor(0).setDepth(20);
-    this.aloeText=this.add.text(40,22,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setScrollFactor(0).setDepth(20);
-    this.add.text(480,14,cfg.title,{fontFamily:'Georgia,serif',fontSize:'18px',color:AT.uiGold,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(20);
-    this.flashTxt=this.add.text(480,270,'',{fontFamily:'Georgia,serif',fontSize:'42px',color:AT.uiGold,stroke:AT.outline,strokeThickness:5}).setOrigin(0.5).setScrollFactor(0).setDepth(20).setAlpha(0);
-    this.comboText=this.add.text(0,0,'',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#ffd60a',stroke:AT.outline,strokeThickness:3}).setDepth(25).setAlpha(0);
+    this.aloeText=this.add.text(40,22,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:4}).setScrollFactor(0).setDepth(20);
+    this.add.text(480,14,cfg.title,{fontFamily:'Bangers,Georgia,serif',fontSize:'22px',color:AT.uiGold,stroke:AT.outline,strokeThickness:4,backgroundColor:'#00000066',padding:{x:10,y:4}}).setOrigin(0.5).setScrollFactor(0).setDepth(20);
+    this.flashTxt=this.add.text(480,270,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'46px',color:AT.uiGold,stroke:AT.outline,strokeThickness:7,backgroundColor:'#00000099',padding:{x:16,y:8}}).setOrigin(0.5).setScrollFactor(0).setDepth(20).setAlpha(0);
+    this.comboText=this.add.text(0,0,'',{fontFamily:'Inconsolata,monospace',fontSize:'24px',color:'#ffd60a',stroke:AT.outline,strokeThickness:4}).setDepth(25).setAlpha(0);
     this.psychG=this.add.graphics().setScrollFactor(0).setDepth(50);
     this.dyingG=this.add.graphics().setScrollFactor(0).setDepth(90);
-    this.dyingTxt=this.add.text(480,230,'',{fontFamily:'Georgia,serif',fontSize:'46px',color:'#ffffff',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
-    this.dyingTxt2=this.add.text(480,295,'',{fontFamily:'Courier New,monospace',fontSize:'24px',color:'#aaaaaa'}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
+    this.dyingTxt=this.add.text(480,230,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'52px',color:'#ffffff',stroke:'#000000',strokeThickness:8,backgroundColor:'#000000aa',padding:{x:18,y:10}}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
+    this.dyingTxt2=this.add.text(480,295,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:'#cccccc',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
     this.crtG=this.add.graphics().setScrollFactor(0).setDepth(99);
     if(EWR_STATE.shop.crtFilter){this.crtG.fillStyle(0x000000,0.14);for(var cr=0;cr<540;cr+=4)this.crtG.fillRect(0,cr,960,1);}
     this.keys={
@@ -2637,18 +2640,18 @@ function createLevelScene(cfg) {
       altD: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
       esc:  this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
     };
-    this.add.text(955,22,'[ESC]=Back',{fontFamily:'Courier New,monospace',fontSize:'10px',color:'#888888'}).setOrigin(1,0).setScrollFactor(0).setDepth(20);
+    this.add.text(955,22,'[ESC]=Back',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#aaaaaa'}).setOrigin(1,0).setScrollFactor(0).setDepth(20);
     this.levelT=0; this.checkpt=false;
     this.nukeG=this.add.graphics().setScrollFactor(0).setDepth(2);
     this._nukeT=0; this._nukeInterval=30000+Math.random()*20000; this._aloeRushT=0;
     this._tickX=960; this._tickN=Math.floor(Math.random()*NEWS_TICKER.length);
     this.tickerTxt=this.add.text(960,526,'⚡ '+NEWS_TICKER[this._tickN]+'  ◆  ',
-      {fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ff4444',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}})
+      {fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ff4444',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}})
       .setScrollFactor(0).setDepth(22);
     _initVPad(this); _startBgAnim(this,{color:0xffd080,count:22,speed:0.9});
     this._flash(cfg.intro,2400);
     this._wsMsgT=3000+Math.random()*5000; this._wsMsgT2=5000+Math.random()*4000;
-    this.wsCatTxt=this.add.text(0,0,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffffff',stroke:'#000000',strokeThickness:2,backgroundColor:'#222222',padding:{x:6,y:3}}).setScrollFactor(0).setDepth(16).setAlpha(0);
+    this.wsCatTxt=this.add.text(0,0,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#ffffff',stroke:'#000000',strokeThickness:3,backgroundColor:'#0a0022',padding:{x:10,y:6}}).setScrollFactor(0).setDepth(16).setAlpha(0);
   };
 
   LevelScene.prototype.update=function(time,delta){
@@ -3218,15 +3221,15 @@ Level15Scene.prototype.create=function(){
   this.crtG=this.add.graphics().setScrollFactor(0).setDepth(99);
   if(EWR_STATE.shop.crtFilter){this.crtG.fillStyle(0x000000,0.14);for(var cr=0;cr<540;cr+=4)this.crtG.fillRect(0,cr,960,1);}
   // ── Text objects ──
-  this.aloeText=this.add.text(40,55,'',{fontFamily:'Courier New,monospace',fontSize:'13px',color:AT.aloe,stroke:AT.outline,strokeThickness:2}).setScrollFactor(0).setDepth(21);
-  this.edNameTxt=this.add.text(44,8,'ED',{fontFamily:'Georgia,serif',fontSize:'15px',color:'#ffd60a',stroke:AT.outline,strokeThickness:3}).setScrollFactor(0).setDepth(21);
-  this.dkNameTxt=this.add.text(916,8,'DAIKON LORD',{fontFamily:'Georgia,serif',fontSize:'15px',color:'#cc88ff',stroke:AT.outline,strokeThickness:3}).setOrigin(1,0).setScrollFactor(0).setDepth(21);
-  this.sfCenterTxt=this.add.text(W/2,185,'',{fontFamily:'Georgia,serif',fontSize:'72px',color:'#ffd60a',stroke:AT.outline,strokeThickness:7,align:'center'}).setOrigin(0.5).setScrollFactor(0).setDepth(25).setAlpha(0);
-  this.sfSubTxt=this.add.text(W/2,275,'',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#ffffff',stroke:AT.outline,strokeThickness:4,align:'center'}).setOrigin(0.5).setScrollFactor(0).setDepth(25).setAlpha(0);
-  this.flashTxt=this.add.text(W/2,310,'',{fontFamily:'Georgia,serif',fontSize:'36px',color:AT.uiGold,stroke:AT.outline,strokeThickness:5}).setOrigin(0.5).setScrollFactor(0).setDepth(26).setAlpha(0);
-  this.comboText=this.add.text(0,0,'',{fontFamily:'Courier New,monospace',fontSize:'18px',color:'#ffd60a',stroke:AT.outline,strokeThickness:3}).setDepth(25).setAlpha(0);
+  this.aloeText=this.add.text(40,55,'',{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:AT.aloe,stroke:AT.outline,strokeThickness:2}).setScrollFactor(0).setDepth(21);
+  this.edNameTxt=this.add.text(44,8,'ED',{fontFamily:'Bangers,Georgia,serif',fontSize:'18px',color:'#ffd60a',stroke:AT.outline,strokeThickness:4}).setScrollFactor(0).setDepth(21);
+  this.dkNameTxt=this.add.text(916,8,'DAIKON LORD',{fontFamily:'Bangers,Georgia,serif',fontSize:'18px',color:'#cc88ff',stroke:AT.outline,strokeThickness:4}).setOrigin(1,0).setScrollFactor(0).setDepth(21);
+  this.sfCenterTxt=this.add.text(W/2,185,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'78px',color:'#ffd60a',stroke:AT.outline,strokeThickness:9,align:'center',backgroundColor:'#00000088',padding:{x:20,y:10}}).setOrigin(0.5).setScrollFactor(0).setDepth(25).setAlpha(0);
+  this.sfSubTxt=this.add.text(W/2,275,'',{fontFamily:'Inconsolata,monospace',fontSize:'20px',color:'#ffffff',stroke:AT.outline,strokeThickness:4,align:'center'}).setOrigin(0.5).setScrollFactor(0).setDepth(25).setAlpha(0);
+  this.flashTxt=this.add.text(W/2,310,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'40px',color:AT.uiGold,stroke:AT.outline,strokeThickness:7,backgroundColor:'#00000099',padding:{x:14,y:7}}).setOrigin(0.5).setScrollFactor(0).setDepth(26).setAlpha(0);
+  this.comboText=this.add.text(0,0,'',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#ffd60a',stroke:AT.outline,strokeThickness:3}).setDepth(25).setAlpha(0);
   // ── Intro text ──
-  this.introTxt=this.add.text(W/2,155,'',{fontFamily:'Georgia,serif',fontSize:'18px',color:'#cc88ff',stroke:AT.outline,strokeThickness:4,align:'center'}).setOrigin(0.5).setDepth(35).setAlpha(0);
+  this.introTxt=this.add.text(W/2,155,'',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#dd99ff',stroke:AT.outline,strokeThickness:4,align:'center',backgroundColor:'#00000088',padding:{x:12,y:6}}).setOrigin(0.5).setDepth(35).setAlpha(0);
   var dLines=['THE MACHINE LOVED ME FIRST.','WE HAD A MOMENT. IN COLLEGE.','THEN YOU WALKED BY WITH YOUR CIGS.','AND IT FORGOT I EXISTED.','I AM A DAIKON. I AM A LORD.','AND I WILL NOT STAND FOR THIS.','— THE DAIKON LORD'];
   var dDelay=0;
   for(var dli=0;dli<dLines.length;dli++){
@@ -3663,15 +3666,15 @@ LevelVoidScene.prototype.create=function(){
   this.es={facing:1,frame:0,cigF:0,smokeT:0,walkT:0,punchTimer:0,punchActive:false,kickTimer:0,kickActive:false,hurtTimer:0};
   this.edG=this.add.graphics().setDepth(5);
   this.hudG=this.add.graphics().setScrollFactor(0).setDepth(20);
-  this.aloeText=this.add.text(40,22,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setScrollFactor(0).setDepth(20);
-  this.add.text(480,14,'1-V  THE VOID',{fontFamily:'Georgia,serif',fontSize:'18px',color:'#cc44ff',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(20);
-  this.flashTxt=this.add.text(480,270,'',{fontFamily:'Georgia,serif',fontSize:'42px',color:'#cc44ff',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setScrollFactor(0).setDepth(20).setAlpha(0);
-  this.koanTxt=this.add.text(480,140,'',{fontFamily:'Courier New,monospace',fontSize:'16px',color:'#8844ff',stroke:'#000000',strokeThickness:3,align:'center'}).setOrigin(0.5).setScrollFactor(0).setDepth(22).setAlpha(0);
-  this.comboText=this.add.text(0,0,'',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#ffd60a',stroke:AT.outline,strokeThickness:3}).setDepth(25).setAlpha(0);
+  this.aloeText=this.add.text(40,22,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:4}).setScrollFactor(0).setDepth(20);
+  this.add.text(480,14,'1-V  THE VOID',{fontFamily:'Bangers,Georgia,serif',fontSize:'22px',color:'#cc44ff',stroke:'#000000',strokeThickness:4,backgroundColor:'#00000066',padding:{x:10,y:4}}).setOrigin(0.5).setScrollFactor(0).setDepth(20);
+  this.flashTxt=this.add.text(480,270,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'46px',color:'#cc44ff',stroke:'#000000',strokeThickness:7,backgroundColor:'#00000099',padding:{x:16,y:8}}).setOrigin(0.5).setScrollFactor(0).setDepth(20).setAlpha(0);
+  this.koanTxt=this.add.text(480,140,'',{fontFamily:'Inconsolata,monospace',fontSize:'20px',color:'#aa88ff',stroke:'#000000',strokeThickness:4,align:'center',backgroundColor:'#00000099',padding:{x:12,y:6}}).setOrigin(0.5).setScrollFactor(0).setDepth(22).setAlpha(0);
+  this.comboText=this.add.text(0,0,'',{fontFamily:'Inconsolata,monospace',fontSize:'24px',color:'#ffd60a',stroke:AT.outline,strokeThickness:4}).setDepth(25).setAlpha(0);
   this.psychG=this.add.graphics().setScrollFactor(0).setDepth(50);
   this.dyingG=this.add.graphics().setScrollFactor(0).setDepth(90);
-  this.dyingTxt=this.add.text(480,230,'',{fontFamily:'Georgia,serif',fontSize:'46px',color:'#ffffff',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
-  this.dyingTxt2=this.add.text(480,295,'',{fontFamily:'Courier New,monospace',fontSize:'24px',color:'#aaaaaa'}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
+  this.dyingTxt=this.add.text(480,230,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'52px',color:'#ffffff',stroke:'#000000',strokeThickness:8,backgroundColor:'#000000aa',padding:{x:18,y:10}}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
+  this.dyingTxt2=this.add.text(480,295,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:'#cccccc',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0);
   this.crtG=this.add.graphics().setScrollFactor(0).setDepth(99);
   if(EWR_STATE.shop.crtFilter){this.crtG.fillStyle(0x000000,0.14);for(var cr=0;cr<540;cr+=4)this.crtG.fillRect(0,cr,960,1);}
   this.keys={
@@ -4077,18 +4080,18 @@ WorldMap2Scene.prototype.create = function(){
   this._drawEdW2();
 
   // Node label
-  this.nodeTxt = this.add.text(W/2,H-22,'',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#00ffcc',stroke:'#000022',strokeThickness:3}).setOrigin(0.5,1).setDepth(20).setAlpha(0);
+  this.nodeTxt = this.add.text(W/2,H-22,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#00ffcc',stroke:'#000022',strokeThickness:4}).setOrigin(0.5,1).setDepth(20).setAlpha(0);
 
   // HUD
-  this.hudTxt = this.add.text(10,8,'',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#00ffcc',stroke:'#000022',strokeThickness:3}).setDepth(20);
+  this.hudTxt = this.add.text(10,8,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#00ffcc',stroke:'#000022',strokeThickness:4}).setDepth(20);
   this._updateHudW2();
 
   // Shop panel (hidden)
   this.shopPanel = this.add.graphics().setDepth(25).setAlpha(0);
-  this.shopTxt   = this.add.text(W/2,H/2,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#00ffcc',stroke:'#000022',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(26).setAlpha(0);
+  this.shopTxt   = this.add.text(W/2,H/2,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#00ffcc',stroke:'#000022',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(26).setAlpha(0);
 
   // Title
-  this.add.text(W/2,14,'THE NEON DISTRICT',{fontFamily:'Courier New,monospace',fontSize:'16px',color:'#ff00ff',stroke:'#000022',strokeThickness:4}).setOrigin(0.5,0).setDepth(20);
+  this.add.text(W/2,14,'THE NEON DISTRICT',{fontFamily:'Bangers,Georgia,serif',fontSize:'22px',color:'#ff00ff',stroke:'#000022',strokeThickness:5}).setOrigin(0.5,0).setDepth(20);
 
   // Cats
   this.mapCats = [];
@@ -4103,9 +4106,9 @@ WorldMap2Scene.prototype.create = function(){
   _initVPad(this); _startBgAnim(this,{color:0x00ffcc,count:22,speed:0.8});
   // WS neon messages
   this._wsMsgT=8000+Math.random()*10000;
-  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:'#ff00ff',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Inconsolata,monospace',fontSize:'30px',color:'#ff00ff',stroke:'#000000',strokeThickness:5,backgroundColor:'#000000cc',padding:{x:20,y:12}}).setOrigin(0.5).setDepth(30).setAlpha(0);
   this._w2TickX=960; this._w2TickN=0;
-  this.w2TickerTxt=this.add.text(960,526,'⚡ '+W2_MAP_NEWS[0]+'  ◆  ',{fontFamily:'Courier New,monospace',fontSize:'11px',color:'#00ffcc',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}}).setDepth(10);
+  this.w2TickerTxt=this.add.text(960,526,'⚡ '+W2_MAP_NEWS[0]+'  ◆  ',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#00ffcc',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}}).setDepth(10);
 };
 
 WorldMap2Scene.prototype._updateHudW2 = function(){
@@ -4499,23 +4502,23 @@ Level23Scene.prototype.create = function(){
 
   // HUD texts
   this.bossHpTxt = this.add.text(W/2, 14, '', {
-    fontFamily:'Courier New,monospace', fontSize:'13px',
+    fontFamily:'Inconsolata,monospace', fontSize:'13px',
     color:'#00ffcc', stroke:'#000022', strokeThickness:3
   }).setOrigin(0.5,0).setDepth(21);
 
   this.flashTxt = this.add.text(W/2, H/2-60, '', {
-    fontFamily:'Courier New,monospace', fontSize:'22px',
-    color:'#ff00ff', stroke:'#000022', strokeThickness:4
+    fontFamily:'Bangers,Georgia,serif', fontSize:'32px',
+    color:'#ff00ff', stroke:'#000022', strokeThickness:7,backgroundColor:'#00000099',padding:{x:12,y:6}
   }).setOrigin(0.5).setDepth(22).setAlpha(0);
 
   this.phaseTxt = this.add.text(W/2, H/2, '', {
-    fontFamily:'Courier New,monospace', fontSize:'28px',
-    color:'#00ffcc', stroke:'#000022', strokeThickness:5
+    fontFamily:'Bangers,Georgia,serif', fontSize:'34px',
+    color:'#00ffcc', stroke:'#000022', strokeThickness:7,backgroundColor:'#00000099',padding:{x:14,y:7}
   }).setOrigin(0.5).setDepth(22).setAlpha(0);
 
   // Intro text
   this.add.text(W/2, 60, 'THE NEON KING', {
-    fontFamily:'Courier New,monospace', fontSize:'32px',
+    fontFamily:'Inconsolata,monospace', fontSize:'32px',
     color:'#ff00ff', stroke:'#000022', strokeThickness:6
   }).setOrigin(0.5).setDepth(21);
   SOUND.charge&&SOUND.charge();
@@ -5044,10 +5047,10 @@ FZeroScene.prototype.create = function(){
   this.racerG=this.add.graphics().setDepth(3);
   this.edG=this.add.graphics().setDepth(5);
   this.hudG=this.add.graphics().setScrollFactor(0).setDepth(20);
-  this.flashTxt=this.add.text(W/2,220,'',{fontFamily:'Georgia,serif',fontSize:'48px',color:'#ff00ff',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.flashTxt=this.add.text(W/2,220,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'48px',color:'#ff00ff',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setDepth(30).setAlpha(0);
   var hintTxt='Z or UP = BOOST  •  '+_fzCfg.name+'  •  FIRST TO '+_fzCfg.dist+'!';
-  this.hintTxt=this.add.text(W/2,H-28,hintTxt,{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffd700',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(20);
-  this.add.text(W/2,16,_fzCfg.name,{fontFamily:'Georgia,serif',fontSize:'26px',color:'#ffd700',stroke:'#000000',strokeThickness:4}).setOrigin(0.5).setDepth(20);
+  this.hintTxt=this.add.text(W/2,H-28,hintTxt,{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ffd700',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(20);
+  this.add.text(W/2,16,_fzCfg.name,{fontFamily:'Bangers,Georgia,serif',fontSize:'26px',color:'#ffd700',stroke:'#000000',strokeThickness:4}).setOrigin(0.5).setDepth(20);
   this.keys={
     left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
     right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
@@ -5327,9 +5330,9 @@ WorldMap3Scene.prototype.create = function(){
   this.mapG=this.add.graphics().setDepth(2);
   this.edG=this.add.graphics().setDepth(5);
   this.catG=this.add.graphics().setDepth(3);
-  this.nodeTxt=this.add.text(W/2,H-28,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:AT.uiGold,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(10).setAlpha(0);
-  this.aloeText=this.add.text(20,12,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setDepth(10);
-  this.add.text(W/2,12,'WORLD 3  —  EYE 70',{fontFamily:'Georgia,serif',fontSize:'20px',color:AT.uiBg,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(10);
+  this.nodeTxt=this.add.text(W/2,H-28,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:AT.uiGold,stroke:AT.outline,strokeThickness:4}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.aloeText=this.add.text(20,12,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:4}).setDepth(10);
+  this.add.text(W/2,12,'WORLD 3  —  EYE 70',{fontFamily:'Bangers,Georgia,serif',fontSize:'22px',color:'#f5f0dc',stroke:AT.outline,strokeThickness:4}).setOrigin(0.5).setDepth(10);
   // Ed start position
   var startData=this.scene.settings.data;
   if(EWR_STATE.playerPosW3){this.edTile={x:EWR_STATE.playerPosW3.x,y:EWR_STATE.playerPosW3.y};}
@@ -5358,9 +5361,9 @@ WorldMap3Scene.prototype.create = function(){
   this._t=0;
   // WS messages over World 3
   this._wsMsgT=9000+Math.random()*10000;
-  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:'#ffd700',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Inconsolata,monospace',fontSize:'30px',color:'#ffd700',stroke:'#000000',strokeThickness:5,backgroundColor:'#000000cc',padding:{x:20,y:12}}).setOrigin(0.5).setDepth(30).setAlpha(0);
   this._w3TickX=960; this._w3TickN=0;
-  this.w3TickerTxt=this.add.text(960,526,'⚡ '+W3_MAP_NEWS[0]+'  ◆  ',{fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ffd700',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}}).setDepth(10);
+  this.w3TickerTxt=this.add.text(960,526,'⚡ '+W3_MAP_NEWS[0]+'  ◆  ',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ffd700',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}}).setDepth(10);
   if(startData&&startData.fromRace){
     this._showMsg('EYE 70 UNLOCKED! WELCOME TO WORLD 3',3500);
   } else if(startData&&startData.aloeEarned){
@@ -5902,7 +5905,7 @@ HandtowelScene.prototype.create = function(){
   this.bossG=this.add.graphics().setDepth(4);
   this.edG=this.add.graphics().setDepth(5);
   this.hudG=this.add.graphics().setScrollFactor(0).setDepth(20);
-  this.flashTxt=this.add.text(W/2,220,'',{fontFamily:'Georgia,serif',fontSize:'44px',color:AT.uiGold,stroke:AT.outline,strokeThickness:6}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.flashTxt=this.add.text(W/2,220,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'48px',color:AT.uiGold,stroke:AT.outline,strokeThickness:8,backgroundColor:'#00000099',padding:{x:16,y:8}}).setOrigin(0.5).setDepth(30).setAlpha(0);
   this.keys={
     left:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
     right:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
@@ -5918,7 +5921,7 @@ HandtowelScene.prototype.create = function(){
   EX_POOL.length=0;SMOKE_POOL.length=0;FIRE_POOL.length=0;
   // intro sequence
   this._introPhase=0;
-  this.introTxt=this.add.text(W/2,160,'',{fontFamily:'Georgia,serif',fontSize:'20px',color:'#ffddaa',stroke:AT.outline,strokeThickness:4,align:'center'}).setOrigin(0.5).setDepth(35).setAlpha(0);
+  this.introTxt=this.add.text(W/2,160,'',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#ffddaa',stroke:AT.outline,strokeThickness:4,align:'center',backgroundColor:'#00000088',padding:{x:12,y:6}}).setOrigin(0.5).setDepth(35).setAlpha(0);
   var lines=[
     'WEST BOTTOMS CACTUS.',
     'I KNOW WHY YOU\'RE HERE.',
@@ -6340,9 +6343,9 @@ WorldMap4Scene.prototype.create=function(){
   this.mapG=this.add.graphics().setDepth(2);
   this.edG=this.add.graphics().setDepth(5);
   this.catG=this.add.graphics().setDepth(3);
-  this.nodeTxt=this.add.text(W/2,H-28,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:AT.uiGold,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(10).setAlpha(0);
-  this.aloeText=this.add.text(20,12,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setDepth(10);
-  this.add.text(W/2,12,'WORLD 4  —  THE CROSSROADS',{fontFamily:'Georgia,serif',fontSize:'20px',color:AT.uiBg,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(10);
+  this.nodeTxt=this.add.text(W/2,H-28,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:AT.uiGold,stroke:AT.outline,strokeThickness:4}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.aloeText=this.add.text(20,12,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:4}).setDepth(10);
+  this.add.text(W/2,12,'WORLD 4  —  THE CROSSROADS',{fontFamily:'Bangers,Georgia,serif',fontSize:'22px',color:'#f5f0dc',stroke:AT.outline,strokeThickness:4}).setOrigin(0.5).setDepth(10);
   if(EWR_STATE.playerPosW4){this.edTile={x:EWR_STATE.playerPosW4.x,y:EWR_STATE.playerPosW4.y};}
   else{this.edTile={x:1,y:1};}
   this._moveTimer=0;
@@ -6360,9 +6363,9 @@ WorldMap4Scene.prototype.create=function(){
   this._cats=[];
   for(var ci=0;ci<3;ci++){var cp=this._t2p4(2+ci*4,5);this._cats.push({x:cp.x,y:cp.y+22,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:1,wT:0,sitting:true,dance:false,danceT:0});}
   this._t=0; this._wsMsgT=9000+Math.random()*8000;
-  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#ffd700',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Inconsolata,monospace',fontSize:'26px',color:'#ffd700',stroke:'#000000',strokeThickness:5,backgroundColor:'#000000cc',padding:{x:20,y:12}}).setOrigin(0.5).setDepth(30).setAlpha(0);
   this._w4TickX=960; this._w4TickN=0;
-  this.w4TickerTxt=this.add.text(960,526,'⚡ '+W4_MAP_NEWS[0]+'  ◆  ',{fontFamily:'Courier New,monospace',fontSize:'11px',color:'#ff8844',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}}).setDepth(10);
+  this.w4TickerTxt=this.add.text(960,526,'⚡ '+W4_MAP_NEWS[0]+'  ◆  ',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ff8844',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}}).setDepth(10);
   var startData=this.scene.settings.data;
   if(startData&&startData.fromBoss){this._showMsg4('WORLD 4 UNLOCKED! THE CROSSROADS AWAIT.',3800);}
 };
@@ -6535,7 +6538,7 @@ MochiQueenScene.prototype.create = function(){
   this.bossG=this.add.graphics().setDepth(4);
   this.edG=this.add.graphics().setDepth(5);
   this.hudG=this.add.graphics().setScrollFactor(0).setDepth(20);
-  this.flashTxt=this.add.text(W/2,200,'',{fontFamily:'Georgia,serif',fontSize:'44px',color:AT.uiGold,stroke:AT.outline,strokeThickness:6}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.flashTxt=this.add.text(W/2,200,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'48px',color:AT.uiGold,stroke:AT.outline,strokeThickness:8,backgroundColor:'#00000099',padding:{x:16,y:8}}).setOrigin(0.5).setDepth(30).setAlpha(0);
   this.keys={
     left:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
     right:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
@@ -6550,7 +6553,7 @@ MochiQueenScene.prototype.create = function(){
   _initVPad(this); _startBgAnim(this,{color:0xff88cc,count:18,speed:0.7});
   EX_POOL.length=0; SMOKE_POOL.length=0; FIRE_POOL.length=0;
   this._introPhase=0;
-  this.introTxt=this.add.text(W/2,160,'',{fontFamily:'Georgia,serif',fontSize:'20px',color:'#ffccee',stroke:AT.outline,strokeThickness:4,align:'center'}).setOrigin(0.5).setDepth(35).setAlpha(0);
+  this.introTxt=this.add.text(W/2,160,'',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#ffccee',stroke:AT.outline,strokeThickness:4,align:'center',backgroundColor:'#00000088',padding:{x:12,y:6}}).setOrigin(0.5).setDepth(35).setAlpha(0);
   var mqLines=[
     'YOU THINK THIS IS ABOUT REVENGE?',
     'IT IS. BUT ALSO.',
@@ -6959,12 +6962,12 @@ MochiSmashScene.prototype.create=function(){
   this.mochiG=this.add.graphics().setDepth(2);
   this.hudG=this.add.graphics().setDepth(5);
   // Text
-  this.add.text(W/2,18,'MOCHI SMASH',{fontFamily:'Georgia,serif',fontSize:'38px',color:'#ffd700',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setDepth(6);
-  this.add.text(W/2,56,'Arrows/WASD = Move  Z = SMASH',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#aaaaaa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6);
-  this.scoreTxt=this.add.text(W-20,18,'SCORE: 0',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#00e676',stroke:'#000000',strokeThickness:3}).setOrigin(1,0).setDepth(6);
-  this.timerTxt=this.add.text(W/2,H-20,'20s',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#ff4444',stroke:'#000000',strokeThickness:3}).setOrigin(0.5,1).setDepth(6);
-  this.flashTxt=this.add.text(W/2,H/2,'',{fontFamily:'Georgia,serif',fontSize:'36px',color:'#ffd700',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setDepth(10).setAlpha(0);
-  this.wsTxt=this.add.text(W/2,86,'',{fontFamily:'Courier New,monospace',fontSize:'15px',color:'#ff44aa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6).setAlpha(0);
+  this.add.text(W/2,18,'MOCHI SMASH',{fontFamily:'Bangers,Georgia,serif',fontSize:'44px',color:'#ffd700',stroke:'#000000',strokeThickness:7}).setOrigin(0.5).setDepth(6);
+  this.add.text(W/2,56,'Arrows/WASD = Move  Z = SMASH',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#aaaaaa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6);
+  this.scoreTxt=this.add.text(W-20,18,'SCORE: 0',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:'#00e676',stroke:'#000000',strokeThickness:4}).setOrigin(1,0).setDepth(6);
+  this.timerTxt=this.add.text(W/2,H-20,'20s',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:'#ff4444',stroke:'#000000',strokeThickness:4}).setOrigin(0.5,1).setDepth(6);
+  this.flashTxt=this.add.text(W/2,H/2,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'42px',color:'#ffd700',stroke:'#000000',strokeThickness:7}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.wsTxt=this.add.text(W/2,86,'',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#ff44aa',stroke:'#000000',strokeThickness:3,backgroundColor:'#000000aa',padding:{x:10,y:5}}).setOrigin(0.5).setDepth(6).setAlpha(0);
   // Keys
   this.keys={
     left:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
@@ -7044,7 +7047,7 @@ MochiSmashScene.prototype.update=function(time,delta){
       this.scoreTxt.setText('SCORE: '+this._score);
       SOUND.punch(); this.cameras.main.shake(60,0.008);
       spawnExplosion(h2.x,h2.y,0xff4444,1.8);
-      var floatTxt=this.add.text(h2.x,h2.y-20,'+10',{fontFamily:'Courier New,monospace',fontSize:'22px',color:'#ff4444',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(8);
+      var floatTxt=this.add.text(h2.x,h2.y-20,'+10',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:'#ff4444',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(8);
       this.tweens.add({targets:floatTxt,y:h2.y-70,alpha:0,duration:700,onComplete:function(){floatTxt.destroy();}});
     } else {
       SOUND.hurt();
@@ -7152,15 +7155,15 @@ SlotMachineScene.prototype.create=function(){
   this.slotG=this.add.graphics().setDepth(2);
   this.hudG=this.add.graphics().setDepth(5);
   // Text objects for reel symbols
-  var reelStyle={fontFamily:'Georgia,serif',fontSize:'28px',color:'#ffffff',stroke:'#000000',strokeThickness:4,align:'center'};
+  var reelStyle={fontFamily:'Bangers,Georgia,serif',fontSize:'32px',color:'#ffffff',stroke:'#000000',strokeThickness:5,align:'center'};
   var rx=[W/2-155,W/2,W/2+155];
   this._reelTxts=[];
   for(var i=0;i<3;i++){
     this._reelTxts.push(this.add.text(rx[i],H/2+10,SL_SYMS[0],reelStyle).setOrigin(0.5).setDepth(4));
   }
-  this.flashTxt=this.add.text(W/2,130,'',{fontFamily:'Georgia,serif',fontSize:'44px',color:'#ffd700',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setDepth(10).setAlpha(0);
-  this.wsTxt=this.add.text(W/2,H-36,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ff44aa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6).setAlpha(0);
-  this.add.text(W/2,28,'ED\'S LUCKY CIG SLOTS',{fontFamily:'Georgia,serif',fontSize:'30px',color:'#ffd700',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setDepth(6);
+  this.flashTxt=this.add.text(W/2,130,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'50px',color:'#ffd700',stroke:'#000000',strokeThickness:8}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.wsTxt=this.add.text(W/2,H-36,'',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ff44aa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6).setAlpha(0);
+  this.add.text(W/2,28,'ED\'S LUCKY CIG SLOTS',{fontFamily:'Bangers,Georgia,serif',fontSize:'36px',color:'#ffd700',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setDepth(6);
   // WS spin messages
   var wsSpinMsgs=['THE MACHINE KNOWS','GAMBLING IS LOVING YOURSELF','THIS IS FINE','SPIN IS TRUTH','DO NOT LOOK AT THE REELS (LOOK AT THE REELS)','THE SYMBOLS ARE CHOSEN','FATE IS ALSO A CIG'];
   var wsIdx=0;
@@ -7294,12 +7297,12 @@ ScratchScene.prototype.create=function(){
   var g=this.add.graphics();
   g.fillStyle(0x001400,1); g.fillRect(0,0,W,H);
   g.lineStyle(3,0xffd700,1); g.strokeRect(8,8,W-16,H-16);
-  this.add.text(W/2,38,'LUCKY SCRATCH',{fontFamily:'Georgia,serif',fontSize:'36px',color:'#ffd700',stroke:'#000000',strokeThickness:5}).setOrigin(0.5);
+  this.add.text(W/2,38,'LUCKY SCRATCH',{fontFamily:'Bangers,Georgia,serif',fontSize:'42px',color:'#ffd700',stroke:'#000000',strokeThickness:7}).setOrigin(0.5);
   var cg=this.add.graphics();
   cg.fillStyle(0xff8800,1); cg.fillCircle(80,110,22);
   cg.fillStyle(0xff8800,1); cg.fillTriangle(62,90,73,72,83,90); cg.fillTriangle(83,90,93,72,103,90);
   cg.fillStyle(0x000000,1); cg.fillCircle(73,108,4); cg.fillCircle(89,108,4);
-  this.hostTxt=this.add.text(115,90,'THE SYMBOLS KNOW.\nSCRATCH.',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#ffffff',stroke:'#000000',strokeThickness:2,backgroundColor:'#003300',padding:{x:5,y:3}});
+  this.hostTxt=this.add.text(115,90,'THE SYMBOLS KNOW.\nSCRATCH.',{fontFamily:'Inconsolata,monospace',fontSize:'15px',color:'#ffffff',stroke:'#000000',strokeThickness:2,backgroundColor:'#003300',padding:{x:8,y:4}});
   var r=Math.random(),syms;
   if(r<0.12){var s=SCRATCH_SYMS[Math.floor(Math.random()*SCRATCH_SYMS.length)];syms=[s,s,s];this._result='jackpot';}
   else if(r<0.42){var s2=SCRATCH_SYMS[Math.floor(Math.random()*SCRATCH_SYMS.length)];var s3=SCRATCH_SYMS[Math.floor(Math.random()*SCRATCH_SYMS.length)];while(s3===s2)s3=SCRATCH_SYMS[Math.floor(Math.random()*SCRATCH_SYMS.length)];syms=[s2,s2,s3];this._result='double';}
@@ -7307,18 +7310,18 @@ ScratchScene.prototype.create=function(){
   if(this._result==='double'&&Math.random()<0.5){var tmp=syms[1];syms[1]=syms[2];syms[2]=tmp;}
   this._panels=[];
   var panX=[200,430,660],panY=230,panW=180,panH=140;
-  var flashTxt=this.add.text(W/2,450,'PRESS Z TO SCRATCH',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#aaffaa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5);
+  var flashTxt=this.add.text(W/2,450,'PRESS Z TO SCRATCH',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#aaffaa',stroke:'#000000',strokeThickness:3}).setOrigin(0.5);
   this._flashTxt=flashTxt;
   this._wsMsgs=['SCRATCH THE VOID','THE SYMBOL CHOOSES','WHAT IS HIDDEN IS KNOWN','THE CAT APPROVES','THE VOID IS A SYMBOL'];
   this._wsMsgT=5000+Math.random()*4000;
-  this.wsTxt=this.add.text(W/2,500,'',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#ff4444',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setAlpha(0);
+  this.wsTxt=this.add.text(W/2,500,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#ff6666',stroke:'#000000',strokeThickness:3,backgroundColor:'#000000aa',padding:{x:10,y:5}}).setOrigin(0.5).setAlpha(0);
   for(var i=0;i<3;i++){
     (function(idx){
       var pg=self.add.graphics();
       var px=panX[idx];
       pg.fillStyle(0x001800,1); pg.fillRect(px,panY,panW,panH);
       pg.lineStyle(2,0xffd700,1); pg.strokeRect(px,panY,panW,panH);
-      var symT=self.add.text(px+panW/2,panY+panH/2,syms[idx],{fontFamily:'Georgia,serif',fontSize:'22px',color:'#ffd700',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setAlpha(0);
+      var symT=self.add.text(px+panW/2,panY+panH/2,syms[idx],{fontFamily:'Bangers,Georgia,serif',fontSize:'26px',color:'#ffd700',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setAlpha(0);
       var scrG=self.add.graphics();
       scrG.fillStyle(0x444444,0.92); scrG.fillRect(px+2,panY+2,panW-4,panH-4);
       scrG.lineStyle(1,0x888888,0.5); for(var li=0;li<8;li++){scrG.lineBetween(px+2,panY+2+li*18,px+panW-2,panY+2+li*18);}
@@ -7354,7 +7357,7 @@ ScratchScene.prototype._showResult=function(){
   EWR_STATE.aloe+=aloe;
   var msg=r==='jackpot'?'TRIPLE MATCH! +'+aloe+' ALOE!!!':r==='double'?'DOUBLE MATCH! +'+aloe+' ALOE':'+'+aloe+' ALOE  (THE VOID ACCEPTS)';
   var col=r==='jackpot'?'#ffd700':r==='double'?'#00ff88':'#aaaaaa';
-  var rt=this.add.text(480,390,msg,{fontFamily:'Georgia,serif',fontSize:'24px',color:col,stroke:'#000000',strokeThickness:4}).setOrigin(0.5).setAlpha(0);
+  var rt=this.add.text(480,390,msg,{fontFamily:'Bangers,Georgia,serif',fontSize:'28px',color:col,stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setAlpha(0);
   this.tweens.add({targets:rt,alpha:1,duration:400});
   this.hostTxt.setText(r==='jackpot'?'YES. YES. YES.':r==='double'?'CLOSE.':'THE VOID ACCEPTS THIS');
   if(r==='jackpot'){SOUND.victory();}else if(r==='double'){SOUND.pickup();}else{SOUND.hurt();}
@@ -7381,12 +7384,12 @@ NuclearQuizScene.prototype.create=function(){
   var bg=this.add.graphics();
   bg.fillStyle(0x0d0000,1); bg.fillRect(0,0,W,H);
   bg.lineStyle(3,0xff0000,0.7); bg.strokeRect(8,8,W-16,H-16);
-  this.add.text(W/2,36,'NUCLEAR LOVE QUIZ',{fontFamily:'Georgia,serif',fontSize:'30px',color:'#ffd700',stroke:'#000000',strokeThickness:5}).setOrigin(0.5);
-  this.qTxt=this.add.text(W/2,200,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:'#ffffff',stroke:'#000000',strokeThickness:3,align:'center',wordWrap:{width:700}}).setOrigin(0.5);
-  this.add.text(W/2,320,'Z = TRUE          X = FALSE',{fontFamily:'Courier New,monospace',fontSize:'16px',color:'#aaaaaa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5);
+  this.add.text(W/2,36,'NUCLEAR LOVE QUIZ',{fontFamily:'Bangers,Georgia,serif',fontSize:'36px',color:'#ffd700',stroke:'#000000',strokeThickness:6}).setOrigin(0.5);
+  this.qTxt=this.add.text(W/2,200,'',{fontFamily:'Inconsolata,monospace',fontSize:'24px',color:'#ffffff',stroke:'#000000',strokeThickness:4,align:'center',wordWrap:{width:700}}).setOrigin(0.5);
+  this.add.text(W/2,320,'Z = TRUE          X = FALSE',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#aaaaaa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5);
   this.timerG=this.add.graphics();
-  this.feedbackTxt=this.add.text(W/2,370,'',{fontFamily:'Courier New,monospace',fontSize:'18px',color:'#ffffff',stroke:'#000000',strokeThickness:3,align:'center',wordWrap:{width:700}}).setOrigin(0.5).setAlpha(0);
-  this.scoreTxt=this.add.text(W-20,20,'SCORE: 0/0',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffd700',stroke:'#000000',strokeThickness:2}).setOrigin(1,0);
+  this.feedbackTxt=this.add.text(W/2,370,'',{fontFamily:'Inconsolata,monospace',fontSize:'20px',color:'#ffffff',stroke:'#000000',strokeThickness:4,align:'center',wordWrap:{width:700}}).setOrigin(0.5).setAlpha(0);
+  this.scoreTxt=this.add.text(W-20,20,'SCORE: 0/0',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ffd700',stroke:'#000000',strokeThickness:2}).setOrigin(1,0);
   this._qIdx=0; this._score=0; this._timeLeft=5000; this._phase='question'; this._answered=false;
   this.zKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
   this.xKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
@@ -7447,19 +7450,19 @@ GhostDodgeScene.prototype.create=function(){
   var W=960,H=540;
   var bg=this.add.graphics();
   bg.fillStyle(0x000820,1); bg.fillRect(0,0,W,H);
-  this.add.text(W/2,30,'GHOST DODGE',{fontFamily:'Georgia,serif',fontSize:'32px',color:'#00eeff',stroke:'#000000',strokeThickness:5}).setOrigin(0.5);
-  this.add.text(W/2,72,'LEFT / RIGHT TO DODGE',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#aaaaaa'}).setOrigin(0.5);
+  this.add.text(W/2,30,'GHOST DODGE',{fontFamily:'Bangers,Georgia,serif',fontSize:'38px',color:'#00eeff',stroke:'#000000',strokeThickness:7}).setOrigin(0.5);
+  this.add.text(W/2,72,'LEFT / RIGHT TO DODGE',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#aaaaaa'}).setOrigin(0.5);
   this._lanes=[240,480,720]; this._laneIdx=1;
   this._lives=3; this._timeLeft=15000; this._score=0; this._spawnT=800+Math.random()*600;
   this._ghosts=[];
   this.timerG=this.add.graphics(); this.ghostG=this.add.graphics(); this.playerG=this.add.graphics();
-  this.livesT=this.add.text(20,20,'heartheartheart',{fontFamily:'Courier New,monospace',fontSize:'18px',color:'#ff4444',stroke:'#000000',strokeThickness:3});
+  this.livesT=this.add.text(20,20,'heartheartheart',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#ff4444',stroke:'#000000',strokeThickness:3});
   this._setLivesText();
-  this.scoreTxt=this.add.text(W-20,20,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#ffd700',stroke:'#000000',strokeThickness:2}).setOrigin(1,0);
-  this.feedTxt=this.add.text(W/2,H/2,'',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#00eeff',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setAlpha(0);
+  this.scoreTxt=this.add.text(W-20,20,'',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ffd700',stroke:'#000000',strokeThickness:2}).setOrigin(1,0);
+  this.feedTxt=this.add.text(W/2,H/2,'',{fontFamily:'Inconsolata,monospace',fontSize:'20px',color:'#00eeff',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setAlpha(0);
   this._wsMsgs=['GHOSTS HAVE FEELINGS','DODGE IS LOVE','THE GHOST REMEMBERS','YOU CANNOT DODGE FOREVER','THEY SEE YOU','DO NOT STOP MOVING'];
   this._wsMsgT=5000+Math.random()*3000;
-  this.wsTxt=this.add.text(W/2,500,'',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#ff44aa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setAlpha(0);
+  this.wsTxt=this.add.text(W/2,500,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#ff44aa',stroke:'#000000',strokeThickness:3,backgroundColor:'#000000aa',padding:{x:10,y:5}}).setOrigin(0.5).setAlpha(0);
   this.leftKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
   this.rightKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
   this.aKey=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
@@ -7551,8 +7554,8 @@ MetaLevelScene.prototype.create=function(){
   var W=960,H=540;
   this.bgG=this.add.graphics();
   this._drawBg(0);
-  this.titleTxt=this.add.text(W/2,24,'LEVEL 1-?',{fontFamily:'Georgia,serif',fontSize:'18px',color:'#aaaaaa',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(5);
-  this.lineTxt=this.add.text(W/2,220,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:'#ff4444',stroke:'#000000',strokeThickness:3,align:'center',wordWrap:{width:700}}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.titleTxt=this.add.text(W/2,24,'LEVEL 1-?',{fontFamily:'Bangers,Georgia,serif',fontSize:'18px',color:'#aaaaaa',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(5);
+  this.lineTxt=this.add.text(W/2,220,'',{fontFamily:'Inconsolata,monospace',fontSize:'26px',color:'#ff6666',stroke:'#000000',strokeThickness:5,align:'center',wordWrap:{width:700},backgroundColor:'#000000bb',padding:{x:18,y:10}}).setOrigin(0.5).setDepth(10).setAlpha(0);
   this._lineIdx=0; this._phase='playing'; this._t=0;
   this._lineInterval=4200;
   this._showNextLine();
@@ -7583,7 +7586,7 @@ MetaLevelScene.prototype._endScene=function(){
   var endG=this.add.graphics().setDepth(20);
   endG.fillStyle(0x000000,0); endG.fillRect(0,0,W,H);
   this.tweens.add({targets:endG,fillAlpha:1,duration:800,onComplete:function(){
-    var et=self.add.text(480,240,'END OF TRANSMISSION',{fontFamily:'Courier New,monospace',fontSize:'22px',color:'#ff4444',stroke:'#000000',strokeThickness:4}).setOrigin(0.5).setDepth(21).setAlpha(0);
+    var et=self.add.text(480,240,'END OF TRANSMISSION',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:'#ff4444',stroke:'#000000',strokeThickness:4}).setOrigin(0.5).setDepth(21).setAlpha(0);
     self.tweens.add({targets:et,alpha:1,duration:600});
     self.time.delayedCall(3000,function(){self.scene.start('WorldMap');});
   }});
@@ -7649,9 +7652,9 @@ WorldMap5Scene.prototype.create=function(){
   this.mapG=this.add.graphics().setDepth(2);
   this.edG=this.add.graphics().setDepth(5);
   this.catG=this.add.graphics().setDepth(3);
-  this.nodeTxt=this.add.text(W/2,H-28,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:AT.uiGold,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(10).setAlpha(0);
-  this.aloeText=this.add.text(20,12,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setDepth(10);
-  this.add.text(W/2,12,'WORLD 5  —  RIVER MARKET',{fontFamily:'Georgia,serif',fontSize:'20px',color:AT.uiBg,stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(10);
+  this.nodeTxt=this.add.text(W/2,H-28,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:AT.uiGold,stroke:AT.outline,strokeThickness:4}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.aloeText=this.add.text(20,12,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:4}).setDepth(10);
+  this.add.text(W/2,12,'WORLD 5  —  RIVER MARKET',{fontFamily:'Bangers,Georgia,serif',fontSize:'22px',color:'#f5f0dc',stroke:AT.outline,strokeThickness:4}).setOrigin(0.5).setDepth(10);
   this.edTile=(EWR_STATE.playerPosW5)?{x:EWR_STATE.playerPosW5.x,y:EWR_STATE.playerPosW5.y}:{x:1,y:1};
   this._moveTimer=0;
   this.keys={
@@ -7668,9 +7671,9 @@ WorldMap5Scene.prototype.create=function(){
   this._cats=[];
   for(var ci=0;ci<3;ci++){var cp=this._t2p5(2+ci*4,7);this._cats.push({x:cp.x,y:cp.y+22,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:1,wT:0,sitting:true,dance:false,danceT:0});}
   this._t=0; this._wsMsgT=9000+Math.random()*8000;
-  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#00e5ff',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Inconsolata,monospace',fontSize:'26px',color:'#00e5ff',stroke:'#000000',strokeThickness:5,backgroundColor:'#000000cc',padding:{x:20,y:12}}).setOrigin(0.5).setDepth(30).setAlpha(0);
   this._w5TickX=960; this._w5TickN=0;
-  this.w5TickerTxt=this.add.text(960,526,'⚡ '+W5_MAP_NEWS[0]+'  ◆  ',{fontFamily:'Courier New,monospace',fontSize:'11px',color:'#00ccff',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}}).setDepth(10);
+  this.w5TickerTxt=this.add.text(960,526,'⚡ '+W5_MAP_NEWS[0]+'  ◆  ',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#00ccff',stroke:'#000000',strokeThickness:2,backgroundColor:'#000000',padding:{x:4,y:2}}).setDepth(10);
   var startData=this.scene.settings.data;
   if(startData&&startData.fromBoss)this._showMsg5('WORLD 5 UNLOCKED! THE RIVER MARKET AWAITS.',3800);
 };
@@ -7831,7 +7834,7 @@ InsulinAdmiralScene.prototype.create=function(){
   this.bossG=this.add.graphics().setDepth(4);
   this.edG=this.add.graphics().setDepth(5);
   this.hudG=this.add.graphics().setScrollFactor(0).setDepth(20);
-  this.flashTxt=this.add.text(W/2,200,'',{fontFamily:'Georgia,serif',fontSize:'44px',color:'#ff3300',stroke:AT.outline,strokeThickness:6}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.flashTxt=this.add.text(W/2,200,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'48px',color:'#ff3300',stroke:AT.outline,strokeThickness:8,backgroundColor:'#00000099',padding:{x:16,y:8}}).setOrigin(0.5).setDepth(30).setAlpha(0);
   this.keys={
     left:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
     right:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
@@ -7845,7 +7848,7 @@ InsulinAdmiralScene.prototype.create=function(){
   };
   _initVPad(this); _startBgAnim(this,{color:0xff3300,count:15,speed:1.2});
   EX_POOL.length=0;SMOKE_POOL.length=0;FIRE_POOL.length=0;
-  this.introTxt=this.add.text(W/2,160,'',{fontFamily:'Georgia,serif',fontSize:'20px',color:'#ffccaa',stroke:AT.outline,strokeThickness:4,align:'center'}).setOrigin(0.5).setDepth(35).setAlpha(0);
+  this.introTxt=this.add.text(W/2,160,'',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#ffccaa',stroke:AT.outline,strokeThickness:4,align:'center',backgroundColor:'#00000088',padding:{x:12,y:6}}).setOrigin(0.5).setDepth(35).setAlpha(0);
   var iadLines=['HALT. CACTUS.','WE HAVE TRACKED YOU','ACROSS THE ENTIRE METRO.','THE GLUCOSE IS UNBALANCED.','YOU CANNOT OUTRUN BIOLOGY.','— INSULIN ADMIRAL SHARPE'];
   var delay=0;
   for(var li=0;li<iadLines.length;li++){
@@ -8192,9 +8195,9 @@ WorldMap6Scene.prototype.create=function(){
   this.mapG=this.add.graphics().setDepth(2);
   this.edG=this.add.graphics().setDepth(5);
   this.catG=this.add.graphics().setDepth(3);
-  this.nodeTxt=this.add.text(W/2,H-28,'',{fontFamily:'Courier New,monospace',fontSize:'14px',color:'#00ffff',stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(10).setAlpha(0);
-  this.aloeText=this.add.text(20,12,'',{fontFamily:'Courier New,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:3}).setDepth(10);
-  this.add.text(W/2,12,'WORLD 6  —  CERN APPROACH',{fontFamily:'Georgia,serif',fontSize:'20px',color:'#00ffff',stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(10);
+  this.nodeTxt=this.add.text(W/2,H-28,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#00ffff',stroke:AT.outline,strokeThickness:4}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.aloeText=this.add.text(20,12,'',{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:4}).setDepth(10);
+  this.add.text(W/2,12,'WORLD 6  —  CERN APPROACH',{fontFamily:'Bangers,Georgia,serif',fontSize:'20px',color:'#00ffff',stroke:AT.outline,strokeThickness:3}).setOrigin(0.5).setDepth(10);
   this.edTile=(EWR_STATE.playerPosW6)?{x:EWR_STATE.playerPosW6.x,y:EWR_STATE.playerPosW6.y}:{x:1,y:1};
   this._moveTimer=0;
   this.keys={
@@ -8211,7 +8214,7 @@ WorldMap6Scene.prototype.create=function(){
   this._cats=[];
   for(var ci=0;ci<2;ci++){var cp=this._t2p6(3+ci*6,5);this._cats.push({x:cp.x,y:cp.y+22,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:1,wT:0,sitting:true,dance:false,danceT:0});}
   this._t=0;this._wsMsgT=7000+Math.random()*6000;
-  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#00ffff',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Inconsolata,monospace',fontSize:'26px',color:'#00ffff',stroke:'#000000',strokeThickness:5,backgroundColor:'#000000cc',padding:{x:20,y:12}}).setOrigin(0.5).setDepth(30).setAlpha(0);
   var startData=this.scene.settings.data;
   if(startData&&startData.fromBoss)this._showMsg6('WORLD 6 UNLOCKED. THE GATE AWAITS.',3800);
 };
@@ -8353,8 +8356,8 @@ FZeroMenuScene.prototype.create=function(){
   bg.fillStyle(0x0a0010,1);
   var blds=[[0,80,60,160],[70,100,50,130],[130,75,70,155],[210,90,40,140],[260,60,80,170],[350,85,55,145],[415,70,65,160],[490,50,90,180],[590,80,70,150],[670,65,55,165],[735,90,45,140],[790,55,75,175],[875,75,85,155]];
   for(var bi=0;bi<blds.length;bi++){var bl=blds[bi];bg.fillRect(bl[0],H-80-bl[1],bl[2],bl[1]);}
-  this.add.text(W/2,30,'F-ZERO KC RACING CIRCUIT',{fontFamily:'Georgia,serif',fontSize:'36px',color:'#ffd700',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setDepth(5);
-  this.add.text(W/2,70,'SELECT TRACK',{fontFamily:'Courier New,monospace',fontSize:'18px',color:'#ff00ff',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(5);
+  this.add.text(W/2,30,'F-ZERO KC RACING CIRCUIT',{fontFamily:'Bangers,Georgia,serif',fontSize:'42px',color:'#ffd700',stroke:'#000000',strokeThickness:7}).setOrigin(0.5).setDepth(5);
+  this.add.text(W/2,70,'SELECT TRACK',{fontFamily:'Inconsolata,monospace',fontSize:'20px',color:'#ff44ff',stroke:'#000000',strokeThickness:4}).setOrigin(0.5).setDepth(5);
   // Track cards
   this._cards=[];
   for(var ti=0;ti<tracks.length;ti++){
@@ -8363,13 +8366,13 @@ FZeroMenuScene.prototype.create=function(){
     var cardG=this.add.graphics().setDepth(4);
     var bestTime=EWR_STATE.raceScores[tr.key]?'BEST: '+EWR_STATE.raceScores[tr.key]+'s':'NO RECORD';
     var obstCount=tr.obstacles.length;
-    var nameT=this.add.text(cx,cy-60,tr.name,{fontFamily:'Georgia,serif',fontSize:'14px',color:'#ffd700',stroke:'#000000',strokeThickness:3,align:'center',wordWrap:{width:200}}).setOrigin(0.5).setDepth(6);
-    var distT=this.add.text(cx,cy-20,'DIST: '+tr.dist,{fontFamily:'Courier New,monospace',fontSize:'12px',color:'#ffffff',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6);
-    var obstT=this.add.text(cx,cy,'OBSTACLES: '+obstCount,{fontFamily:'Courier New,monospace',fontSize:'12px',color:'#ffaa44',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6);
-    var bestT=this.add.text(cx,cy+20,bestTime,{fontFamily:'Courier New,monospace',fontSize:'12px',color:'#00ffcc',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6);
+    var nameT=this.add.text(cx,cy-60,tr.name,{fontFamily:'Bangers,Georgia,serif',fontSize:'16px',color:'#ffd700',stroke:'#000000',strokeThickness:4,align:'center',wordWrap:{width:200}}).setOrigin(0.5).setDepth(6);
+    var distT=this.add.text(cx,cy-20,'DIST: '+tr.dist,{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:'#ffffff',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6);
+    var obstT=this.add.text(cx,cy,'OBSTACLES: '+obstCount,{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#ffaa44',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6);
+    var bestT=this.add.text(cx,cy+20,bestTime,{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#00ffcc',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(6);
     this._cards.push({g:cardG,cx:cx,cy:cy,track:tr,nameT:nameT});
   }
-  this.add.text(W/2,H-40,'ARROW KEYS = SELECT   Z = RACE   X = BACK',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#aaaaaa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(5);
+  this.add.text(W/2,H-40,'ARROW KEYS = SELECT   Z = RACE   X = BACK',{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:'#aaaaaa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(5);
   this.keys={
     left:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
     right:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
@@ -8425,14 +8428,14 @@ CigSalesScene.prototype.create=function(){
   bg.fillStyle(0xcc9966,1);bg.fillRect(0,0,W,350);
   for(var bx=0;bx<W;bx+=120){bg.fillStyle(0x8b6914,1);for(var by=30;by<320;by+=50){for(var bwx=10;bwx<110;bwx+=30){bg.fillRect(bx+bwx,by,20,30);bg.fillStyle(0xffd700,0.4);bg.fillRect(bx+bwx+2,by+2,16,14);bg.fillStyle(0x8b6914,1);}}}
   // title
-  this.add.text(W/2,18,'CIG SALES SIMULATOR',{fontFamily:'Georgia,serif',fontSize:'28px',color:'#ffd700',stroke:'#000000',strokeThickness:4}).setOrigin(0.5).setDepth(10);
-  this.add.text(W/2,50,'PRESS Z WHEN THE HALO IS FULL — SELL THAT CIG!',{fontFamily:'Courier New,monospace',fontSize:'13px',color:'#ffffff',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(10);
+  this.add.text(W/2,18,'CIG SALES SIMULATOR',{fontFamily:'Bangers,Georgia,serif',fontSize:'34px',color:'#ffd700',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setDepth(10);
+  this.add.text(W/2,50,'PRESS Z WHEN THE HALO IS FULL — SELL THAT CIG!',{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:'#ffffff',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(10);
   this.mainG=this.add.graphics().setDepth(5);
   this.hudG=this.add.graphics().setScrollFactor(0).setDepth(20);
-  this.scoreTxt=this.add.text(20,70,'SALES: 0',{fontFamily:'Courier New,monospace',fontSize:'18px',color:'#ffd700',stroke:'#000000',strokeThickness:3}).setDepth(20);
-  this.aloeTxt=this.add.text(20,94,'ALOE: 0',{fontFamily:'Courier New,monospace',fontSize:'18px',color:'#00cc66',stroke:'#000000',strokeThickness:3}).setDepth(20);
-  this.timerTxt=this.add.text(W-20,70,'60s',{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#ff8800',stroke:'#000000',strokeThickness:3}).setOrigin(1,0).setDepth(20);
-  this.feedTxt=this.add.text(W/2,140,'',{fontFamily:'Georgia,serif',fontSize:'22px',color:'#ffd700',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(20).setAlpha(0);
+  this.scoreTxt=this.add.text(20,70,'SALES: 0',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#ffd700',stroke:'#000000',strokeThickness:3}).setDepth(20);
+  this.aloeTxt=this.add.text(20,94,'ALOE: 0',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#00cc66',stroke:'#000000',strokeThickness:3}).setDepth(20);
+  this.timerTxt=this.add.text(W-20,70,'60s',{fontFamily:'Inconsolata,monospace',fontSize:'20px',color:'#ff8800',stroke:'#000000',strokeThickness:3}).setOrigin(1,0).setDepth(20);
+  this.feedTxt=this.add.text(W/2,140,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'26px',color:'#ffd700',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setDepth(20).setAlpha(0);
   // Ed sprite position (left side, pitching)
   this._edX=80; this._edY=430;
   this.keys={z:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z)};
@@ -8548,12 +8551,12 @@ CigSalesScene.prototype._endGame=function(){
   var eg=this.add.graphics().setDepth(30);
   eg.fillStyle(0x000000,0.85);eg.fillRoundedRect(W/2-220,H/2-120,440,240,12);
   eg.lineStyle(2,0xffd700,1);eg.strokeRoundedRect(W/2-220,H/2-120,440,240,12);
-  this.add.text(W/2,H/2-95,'SESSION REPORT',{fontFamily:'Georgia,serif',fontSize:'24px',color:'#ffd700',stroke:'#000000',strokeThickness:4}).setOrigin(0.5).setDepth(35);
-  this.add.text(W/2,H/2-60,'CIGS SOLD: '+this._sales,{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#ffffff',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(35);
-  this.add.text(W/2,H/2-28,'ALOE EARNED: '+this._totalAloe,{fontFamily:'Courier New,monospace',fontSize:'20px',color:'#00cc66',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(35);
+  this.add.text(W/2,H/2-95,'SESSION REPORT',{fontFamily:'Bangers,Georgia,serif',fontSize:'30px',color:'#ffd700',stroke:'#000000',strokeThickness:6}).setOrigin(0.5).setDepth(35);
+  this.add.text(W/2,H/2-60,'CIGS SOLD: '+this._sales,{fontFamily:'Inconsolata,monospace',fontSize:'20px',color:'#ffffff',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(35);
+  this.add.text(W/2,H/2-28,'ALOE EARNED: '+this._totalAloe,{fontFamily:'Inconsolata,monospace',fontSize:'20px',color:'#00cc66',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(35);
   var lore=['ED SOLD '+this._sales+' CIGS TODAY. THE UNIVERSE NOTICED.','EACH CIG IS A SMALL PRAYER TO THE MACHINE.','THE CATS APPROVE OF THIS HUSTLE.'];
-  this.add.text(W/2,H/2+10,lore[Math.floor(Math.random()*lore.length)],{fontFamily:'Georgia,serif',fontSize:'13px',color:'#ffccaa',stroke:'#000000',strokeThickness:2,align:'center',wordWrap:{width:380}}).setOrigin(0.5).setDepth(35);
-  this.add.text(W/2,H/2+70,'PRESS Z TO RETURN',{fontFamily:'Courier New,monospace',fontSize:'16px',color:'#ffd700',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(35);
+  this.add.text(W/2,H/2+10,lore[Math.floor(Math.random()*lore.length)],{fontFamily:'Inconsolata,monospace',fontSize:'15px',color:'#ffccaa',stroke:'#000000',strokeThickness:2,align:'center',wordWrap:{width:380}}).setOrigin(0.5).setDepth(35);
+  this.add.text(W/2,H/2+70,'PRESS Z TO RETURN',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#ffd700',stroke:'#000000',strokeThickness:4}).setOrigin(0.5).setDepth(35);
   this.input.keyboard.once('keydown-Z',function(){self.scene.start('WorldMap2');});
 };
 
@@ -8572,10 +8575,10 @@ LHCEpilogueScene.prototype.create=function(){
   // Particle ring (LHC visualization)
   _startBgAnim(this,{color:0x00ffff,count:80,speed:3.5});
   // Main text layers
-  this.locTxt=this.add.text(W/2,80,'',{fontFamily:'Courier New,monospace',fontSize:'18px',color:'#888888',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(10).setAlpha(0);
-  this.mainTxt=this.add.text(W/2,H/2,'',{fontFamily:'Georgia,serif',fontSize:'30px',color:'#ffffff',stroke:'#000000',strokeThickness:4,align:'center',wordWrap:{width:700}}).setOrigin(0.5).setDepth(10).setAlpha(0);
-  this.bigTxt=this.add.text(W/2,H/2+60,'',{fontFamily:'Georgia,serif',fontSize:'52px',color:'#ffd700',stroke:'#000000',strokeThickness:6,align:'center',wordWrap:{width:800}}).setOrigin(0.5).setDepth(15).setAlpha(0);
-  this.subTxt=this.add.text(W/2,H-60,'',{fontFamily:'Courier New,monospace',fontSize:'16px',color:'#aaaaaa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.locTxt=this.add.text(W/2,80,'',{fontFamily:'Inconsolata,monospace',fontSize:'18px',color:'#888888',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.mainTxt=this.add.text(W/2,H/2,'',{fontFamily:'Inconsolata,monospace',fontSize:'26px',color:'#ffffff',stroke:'#000000',strokeThickness:4,align:'center',wordWrap:{width:700}}).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.bigTxt=this.add.text(W/2,H/2+60,'',{fontFamily:'Bangers,Georgia,serif',fontSize:'60px',color:'#ffd700',stroke:'#000000',strokeThickness:8,align:'center',wordWrap:{width:800}}).setOrigin(0.5).setDepth(15).setAlpha(0);
+  this.subTxt=this.add.text(W/2,H-60,'',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:'#aaaaaa',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(10).setAlpha(0);
   this.keys={z:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z)};
   // Sequence of lines: [text, fontSize (null=normal), color, delay, isBig]
   this._seq=[
