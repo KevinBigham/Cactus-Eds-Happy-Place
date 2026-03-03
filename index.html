@@ -384,6 +384,18 @@ var WS_KID_QUOTES = [
   '"my friend says mochi is right. i don\'t know."',
   '"do you ever just. stop."'
 ];
+var BEAT_CAT_LINES = WS_KID_QUOTES; // alias — used for beat-cat interaction dialogue
+
+var ANOMALY_MSGS = [
+  'THIS WAS NOT THE MAP.',
+  'YOU ARE IN THE WRONG WORLD.',
+  'ED CHANGED THIS. ED IS UNAWARE.',
+  'THE TILES REMEMBER THE OLD ARRANGEMENT.',
+  'SOMETHING MOVED WHILE YOU WERE LOOKING AWAY.',
+  'THIS IS NOT WHERE YOU WERE.',
+  'MANDELA SAYS HI.',
+  'THE GRID SHIFTED. IGNORE IT.'
+];
 
 function updateCatWsState(cat, delta) {
   if(!cat.wsState){cat.wsState='normal';cat.wsTimer=2000+Math.random()*5000;cat.wsMsg='';cat.wsPhaseT=0;}
@@ -865,6 +877,38 @@ function _mandelaFlash(scene) {
     var tx = 80+Math.random()*800, ty = 80+Math.random()*380;
     var ft = scene.add.text(tx,ty,msg,{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:'#666666',stroke:'#000000',strokeThickness:1}).setScrollFactor(0).setDepth(87).setAlpha(0.5);
     scene.tweens.add({targets:ft,alpha:0,y:ty-28,duration:2800,delay:400,onComplete:function(){try{ft.destroy();}catch(e){}}});
+  } catch(e){}
+}
+
+// Anomaly overlay — world map glitch visuals when mandela count is high
+function _drawAnomalyOverlay(scene) {
+  try {
+    var m = EWR_STATE.rastaCorp.mandela;
+    if(m < 5) return;
+    if(!scene.anomalyG) return;
+    scene._anomalyTimer = (scene._anomalyTimer||0) - 16;
+    if(scene._anomalyTimer <= 0) {
+      scene._anomalyTimer = 5500 + Math.random()*4000;
+      var msg = ANOMALY_MSGS[Math.floor(Math.random()*ANOMALY_MSGS.length)];
+      var tx = 80+Math.random()*800, ty = 60+Math.random()*400;
+      var at = scene.add.text(tx,ty,msg,{
+        fontFamily:'Inconsolata,monospace',fontSize:'14px',
+        color: m>=10 ? '#ff00ff' : '#444466',
+        stroke:'#000000',strokeThickness:1
+      }).setScrollFactor(0).setDepth(88).setAlpha(0.8);
+      scene.tweens.add({targets:at,alpha:0,y:ty-20,duration:3200,delay:600,
+        onComplete:function(){try{at.destroy();}catch(e){}}});
+    }
+    if(m >= 10) {
+      // Tile-flash: random magenta/cyan rect shimmer over map
+      var g = scene.anomalyG; g.clear();
+      if(Math.random() < 0.04) {
+        var fx = scene.mapOffX + Math.floor(Math.random()*8)*scene.tW;
+        var fy = scene.mapOffY + Math.floor(Math.random()*6)*scene.tH;
+        g.fillStyle(Math.random()<0.5?0xff00ff:0x00ffff, 0.18);
+        g.fillRect(fx,fy,scene.tW,scene.tH);
+      }
+    }
   } catch(e){}
 }
 
@@ -8804,6 +8848,8 @@ WorldMap6Scene.prototype.create=function(){
   for(var ci=0;ci<2;ci++){var cp=this._t2p6(3+ci*6,5);this._cats.push({x:cp.x,y:cp.y+22,ci:ci%4,tailAng:Math.random()*Math.PI*2,wDir:1,wT:0,sitting:true,dance:false,danceT:0});}
   this._t=0;this._wsMsgT=7000+Math.random()*6000;
   this.wsMsgTxt=this.add.text(W/2,H/2-20,'',{fontFamily:'Inconsolata,monospace',fontSize:'26px',color:'#00ffff',stroke:'#000000',strokeThickness:5,backgroundColor:'#000000cc',padding:{x:20,y:12}}).setOrigin(0.5).setDepth(30).setAlpha(0);
+  this.anomalyG=this.add.graphics().setDepth(25).setScrollFactor(0);
+  this._anomalyTimer=0;
   var startData=this.scene.settings.data;
   if(startData&&startData.fromBoss)this._showMsg6('WORLD 6 UNLOCKED. THE GATE AWAITS.',3800);
 };
@@ -8835,7 +8881,7 @@ WorldMap6Scene.prototype.update=function(time,delta){
   }
   if(Phaser.Input.Keyboard.JustDown(this.keys.z))this._tryEnter6();
   for(var ci=0;ci<this._cats.length;ci++){var cat=this._cats[ci];cat.tailAng+=0.04;cat.wT+=delta;if(!cat.sitting&&cat.wT>2000){cat.wDir*=-1;cat.wT=0;}if(!cat.sitting)cat.x+=cat.wDir*0.4;}
-  this._drawMap6();this._drawEd6();this._drawCats6();
+  this._drawMap6();this._drawEd6();this._drawCats6();_drawAnomalyOverlay(this);
 };
 WorldMap6Scene.prototype._drawMap6=function(){
   var g=this.mapG,self=this;g.clear();
@@ -8913,7 +8959,14 @@ var Level63Scene=createLevelScene({key:'Level63',LW:5000,beatX:4880,beatKey:'6-3
     {x:500,y:90,type:'insulin',baseY:90,pMin:200,pMax:900,dir:1},{x:1400,y:90,type:'insulin',baseY:90,pMin:900,pMax:1800,dir:-1},{x:2300,y:90,type:'insulin',baseY:90,pMin:1800,pMax:2700,dir:1},{x:3200,y:90,type:'insulin',baseY:90,pMin:2700,pMax:3700,dir:-1},{x:4100,y:90,type:'insulin',baseY:90,pMin:3600,pMax:4600,dir:1},
     {x:1300,y:415,type:'glitch',baseY:415,pMin:1150,pMax:1600,spd:50},{x:1700,y:365,type:'glitch',baseY:365,pMin:1550,pMax:2000,spd:55},{x:2100,y:320,type:'glitch',baseY:320,pMin:1950,pMax:2400,spd:52},{x:2500,y:390,type:'glitch',baseY:390,pMin:2350,pMax:2800,spd:58},
     {x:2900,y:350,type:'glitch',baseY:350,pMin:2750,pMax:3200,spd:55},{x:3300,y:305,type:'glitch',baseY:305,pMin:3150,pMax:3600,spd:60},{x:3700,y:380,type:'glitch',baseY:380,pMin:3550,pMax:4000,spd:52},{x:4100,y:420,type:'glitch',baseY:420,pMin:3950,pMax:4400,spd:56},{x:4500,y:365,type:'glitch',baseY:365,pMin:4350,pMax:4800,spd:48}],
-  pickups:[[900,315],[1800,280],[2800,268],[3700,258],[4600,275]]
+  pickups:[[900,315],[1800,280],[2800,268],[3700,258],[4600,275]],
+  onUpdate:function(scene,time,delta){
+    if(!scene._rbFlags)scene._rbFlags={};
+    var px=scene.edPx?scene.edPx.x:0;
+    if(px>1000&&!scene._rbFlags.rb1){scene._rbFlags.rb1=true;scene._flash('REALITY IS UNSTABLE HERE.',2200,22,'#ff00ff');_mandelaFlash(scene);}
+    if(px>2800&&!scene._rbFlags.rb2){scene._rbFlags.rb2=true;scene._flash('YOU ARE PASSING THROUGH THE WALL.',2200,22,'#00ffff');}
+    if(px>4500&&!scene._rbFlags.rb3){scene._rbFlags.rb3=true;scene._flash('THE MACHINE SEES YOU NOW.',2200,24,'#ffd700');_mandelaFlash(scene);}
+  }
 });
 var Level64Scene=createLevelScene({key:'Level64',LW:4400,beatX:4280,beatKey:'6-4',returnScene:'LHCEpilogue',aloeReward:ALOE.beat64,
   title:'6-4  LHC THRESHOLD',intro:'THIS IS IT.',
@@ -8923,7 +8976,14 @@ var Level64Scene=createLevelScene({key:'Level64',LW:4400,beatX:4280,beatKey:'6-4
     {x:400,y:90,type:'insulin',baseY:90,pMin:100,pMax:800,dir:1},{x:1100,y:90,type:'insulin',baseY:90,pMin:700,pMax:1500,dir:-1},{x:1800,y:90,type:'insulin',baseY:90,pMin:1400,pMax:2200,dir:1},{x:2500,y:90,type:'insulin',baseY:90,pMin:2100,pMax:2900,dir:-1},{x:3200,y:90,type:'insulin',baseY:90,pMin:2800,pMax:3700,dir:1},{x:3900,y:90,type:'insulin',baseY:90,pMin:3500,pMax:4200,dir:-1},
     {x:1250,y:410,type:'glitch',baseY:410,pMin:1100,pMax:1550,spd:60},{x:1650,y:360,type:'glitch',baseY:360,pMin:1500,pMax:1950,spd:56},{x:2050,y:315,type:'glitch',baseY:315,pMin:1900,pMax:2350,spd:64},{x:2450,y:385,type:'glitch',baseY:385,pMin:2300,pMax:2750,spd:58},
     {x:2850,y:345,type:'glitch',baseY:345,pMin:2700,pMax:3150,spd:66},{x:3250,y:300,type:'glitch',baseY:300,pMin:3100,pMax:3550,spd:62},{x:3650,y:370,type:'glitch',baseY:370,pMin:3500,pMax:3950,spd:60},{x:4050,y:410,type:'glitch',baseY:410,pMin:3900,pMax:4250,spd:56}],
-  pickups:[[850,310],[1750,272],[2700,260],[3550,252],[4200,265]]
+  pickups:[[850,310],[1750,272],[2700,260],[3550,252],[4200,265]],
+  onUpdate:function(scene,time,delta){
+    if(!scene._rbFlags)scene._rbFlags={};
+    var px=scene.edPx?scene.edPx.x:0;
+    if(px>900&&!scene._rbFlags.rb1){scene._rbFlags.rb1=true;scene._flash('THIS IS THE LAST ONE.',2200,26,'#ffffff');_mandelaFlash(scene);}
+    if(px>2200&&!scene._rbFlags.rb2){scene._rbFlags.rb2=true;scene._flash('THE MACHINE IS ALREADY AWAKE.',2400,22,'#00ffff');_mandelaFlash(scene);}
+    if(px>3800&&!scene._rbFlags.rb3){scene._rbFlags.rb3=true;scene._flash('ED.',2800,64,'#ffd700');}
+  }
 });
 
 // ════════════════════════════════════════════════════════════════
@@ -9291,6 +9351,99 @@ LHCEpilogueScene.prototype.create=function(){
 LHCEpilogueScene.prototype.update=function(time,delta){
   this._t+=delta;
   if(this._done&&Phaser.Input.Keyboard.JustDown(this.keys.z)){
+    SMOKE_POOL.length=0;EX_POOL.length=0;
+    if(EWR_STATE.rastaCorp.sympathy>=4){
+      this.scene.start('DarkEpilogue');
+    } else {
+      this.scene.start('WorldMap',{fromEpilogue:true});
+    }
+  }
+};
+
+// ════════════════════════════════════════════════════════════════
+// DARK EPILOGUE SCENE — alternate ending when sympathy >= 4
+// Triggers: player showed mercy to all 4 bosses
+// ════════════════════════════════════════════════════════════════
+function DarkEpilogueScene(){ Phaser.Scene.call(this,{key:'DarkEpilogue'}); }
+DarkEpilogueScene.prototype=Object.create(Phaser.Scene.prototype);
+DarkEpilogueScene.prototype.constructor=DarkEpilogueScene;
+DarkEpilogueScene.prototype.create=function(){
+  var self=this; var W=960,H=540;
+  this._t=0; this._done=false;
+  // Deep void background
+  var bg=this.add.graphics();
+  bg.fillStyle(0x000000,1);bg.fillRect(0,0,W,H);
+  // Faint star field
+  var sg=this.add.graphics().setDepth(1);
+  for(var si=0;si<60;si++){sg.fillStyle(0xffffff,Math.random()*0.3+0.05);sg.fillCircle(Math.random()*W,Math.random()*H,0.8);}
+  // Ed silhouette — sitting, cigarette in mouth
+  var eg=this.add.graphics().setDepth(5);
+  var ex=W/2, ey=H-80;
+  eg.fillStyle(0x002200,1);
+  eg.fillRoundedRect(ex-9,ey-55,18,55,4);    // body
+  eg.fillCircle(ex,ey-65,12);                 // head
+  eg.fillRoundedRect(ex-22,ey-40,16,8,3);    // left arm out
+  eg.fillStyle(0xd4c8a0,1);
+  eg.fillRect(ex-38,ey-38,14,4);             // cigarette body
+  eg.fillStyle(0xff6b35,1);
+  eg.fillCircle(ex-43,ey-36,3);              // ember
+  // Smoke rising from cig (static wisps)
+  eg.fillStyle(0x333333,0.25);
+  eg.fillEllipse(ex-44,ey-52,6,14);
+  eg.fillEllipse(ex-46,ey-68,5,12);
+  eg.fillEllipse(ex-42,ey-82,4,10);
+  // Main text
+  this.mainTxt=this.add.text(W/2,H/2-80,'',{
+    fontFamily:'Inconsolata,monospace',fontSize:'24px',color:'#aaaaaa',
+    stroke:'#000000',strokeThickness:3,align:'center',wordWrap:{width:680}
+  }).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.bigTxt=this.add.text(W/2,H/2-20,'',{
+    fontFamily:'Bangers,Georgia,serif',fontSize:'52px',color:'#ffffff',
+    stroke:'#000000',strokeThickness:7,align:'center'
+  }).setOrigin(0.5).setDepth(15).setAlpha(0);
+  this.subTxt=this.add.text(W/2,H-50,'',{
+    fontFamily:'Inconsolata,monospace',fontSize:'15px',color:'#555555',
+    stroke:'#000000',strokeThickness:2
+  }).setOrigin(0.5).setDepth(10).setAlpha(0);
+  this.keys={z:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z)};
+  // Sequence: [text, isBig, color, delay, dur]
+  var seq=[
+    ['YOU SHOWED THEM MERCY.',false,'#888888',1000,2000],
+    ['YOU SAT WITH THE CEO.',false,'#888888',4200,2000],
+    ['HE CRIED. YOU LISTENED.',false,'#aaaaaa',7800,2000],
+    ['IT WAS A BEAUTIFUL, HUMAN MOMENT.',false,'#ffffff',11500,2400],
+    ['...THE ECONOMY COLLAPSED ANYWAY.',false,'#888888',16000,2200],
+    ['THE CATS STILL NEED CIGS.',false,'#aaaaaa',20500,2000],
+    ['THE VOID IS STILL EXACTLY THE SAME SIZE.',false,'#666666',24800,2200],
+    ['ED WAS RIGHT.',true,'#ffd700',30000,3000],
+    ['he always is.',false,'#888888',35000,2000]
+  ];
+  for(var li=0;li<seq.length;li++){
+    (function(item){
+      var txt=item[0],isBig=item[1],col=item[2],delay=item[3],dur=item[4];
+      self.time.delayedCall(delay,function(){
+        if(isBig){
+          self.bigTxt.setText(txt).setColor(col).setAlpha(1);
+          self.tweens.add({targets:self.bigTxt,alpha:0,duration:1400,delay:dur});
+        } else {
+          self.mainTxt.setText(txt).setColor(col).setAlpha(1);
+          self.tweens.add({targets:self.mainTxt,alpha:0,duration:1000,delay:dur});
+        }
+      });
+    })(seq[li]);
+  }
+  // Prompt at end
+  this.time.delayedCall(40000,function(){
+    self.subTxt.setText('PRESS Z TO RETURN TO THE WEST BOTTOMS').setAlpha(1);
+    self._done=true;
+  });
+  // Subtle mandela flash after mercy reveal
+  this.time.delayedCall(12000,function(){ _mandelaFlash(self); });
+};
+DarkEpilogueScene.prototype.update=function(time,delta){
+  this._t+=delta;
+  if(this._done&&Phaser.Input.Keyboard.JustDown(this.keys.z)){
+    SMOKE_POOL.length=0;EX_POOL.length=0;
     this.scene.start('WorldMap',{fromEpilogue:true});
   }
 };
@@ -9498,6 +9651,7 @@ var config = {
     Level64Scene,
     CigSalesScene,
     LHCEpilogueScene,
+    DarkEpilogueScene,
     CommercialBreakScene,
     RastaCorpAdScene
   ]
