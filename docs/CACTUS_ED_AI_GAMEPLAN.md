@@ -15,9 +15,16 @@
 
 **The Stack:**
 - Single-file Phaser 3.70.0 browser platformer (`index.html`)
-- ~9,500 lines. ES5. Procedural graphics. No build system.
-- 6 worlds, 30+ levels, 4 boss fights, 6 mini-games, full shop system
-- **Just shipped (Session 1):** Rasta Corp narrative, Cat Personalities, Commercial Breaks, Mandela Effect, Fourth Wall Breaks, God [TM] Ending
+- ~9,662 lines. ES5. Procedural graphics. No build system.
+- 6 worlds, 30+ levels, 5 boss fights, 6 mini-games, full shop system
+- **Shipped (Session 1):** Rasta Corp narrative, Cat Personalities, Commercial Breaks, Mandela Effect, Fourth Wall Breaks, God [TM] Ending
+- **Shipped (v1.3 — AI Collab Round 1):**
+  - ✅ BEAT_CAT_LINES crash bug fixed
+  - ✅ DarkEpilogueScene — alternate nihilistic ending (sympathy >= 4)
+  - ✅ LHCEpilogue sympathy branch added
+  - ✅ World Map Anomaly System (ANOMALY_MSGS + _drawAnomalyOverlay, wired to WorldMap6)
+  - ✅ Level 6-3 "Hadron Highway" reality-break flavor triggers
+  - ✅ Level 6-4 "LHC Threshold" escalating "ED." climax triggers
 
 **What makes this game great already:**
 - Wonder Showzen aesthetic: everything is satire + love + chaos
@@ -40,37 +47,38 @@ Not because it has 4K graphics. Because it made them feel something weird and tr
 ## THE REMAINING WORK (prioritized)
 
 ### TIER 1 — MUST SHIP (Game-complete features)
-1. **Rasta Corp CEO Boss Fight** — Full boss scene. He's sympathetic. He's corporate. He has dental. He cries when you beat him. He says "I just wanted someone to sit with me."
-2. **Dark Nihilistic Ending** — If `EWR_STATE.rastaCorp.sympathy >= 4` (player showed mercy to all 4 bosses), the epilogue branches to a quiet, devastating alternate ending
-3. **World 6 Full Completion** — Levels 6-3 and 6-4 need full content passes (enemies, cats, mochis, aloe, narrative flavor)
-4. **Mobile D-Pad Polish** — Current VPAD is functional but rough. Needs better touch response and visual feedback
-5. **RASTA_CORP_MSGS integration** — The corp data exists but Rasta Corp NPCs don't use it yet in-level
+1. **Rasta Corp CEO Boss Fight** — ⏳ IN PROGRESS (DeepSeek Round 2) — Cat in a suit. He cries. He has dental.
+2. **Dark Nihilistic Ending** — ✅ DONE — DarkEpilogueScene ships when sympathy >= 4
+3. **World 6 Full Completion** — ✅ DONE — Levels 6-3/6-4 enriched with reality-break flavor triggers
+4. **Mobile D-Pad Polish** — ⏳ IN PROGRESS (Meta AI Round 2 design) — VPAD exists, needs refinement
+5. **RASTA_CORP_MSGS integration** — ⏳ IN PROGRESS (Mistral Round 2) — Arrays defined, now being wired into World 3
 
 ### TIER 2 — MAKES IT LEGENDARY
-6. **Puppet Theater Boss Intros** — Before each boss fight, a 6-8 second puppet theater cutscene using flat cardboard-aesthetic Ed + Boss silhouettes
-7. **More Commercial Ads** — Currently 6. Need 4 more: "Ed's Cig Emporium" ad, "Cat College" ad, "The Void (Now Open Downtown)" ad, "Nuclear Love Bomb Insurance" ad
-8. **Cat Democracy Mini-Game** — Cats vote on something absurd. Your job is to campaign. Wins unlock a secret level.
-9. **Secret Level: The Infinite Bus** — A level on a bus that never stops. Platforms are bus seats. Goes forever (procedurally). Hidden in World 2.
-10. **World Map Anomaly Counter** — When mandela count >= 5, the world maps start subtly glitching (tiles shift, cat names change, the map border has errors)
+6. **Puppet Theater Boss Intros** — ⏳ IN PROGRESS (Gemini Round 2) — Cardboard silhouette cutscene before each boss
+7. **More Commercial Ads** — ⏳ IN PROGRESS (ChatGPT Round 2) — 4 new: Cig Emporium, Cat College, Void Downtown, Nuclear Love Bomb Insurance
+8. **Cat Democracy Mini-Game** — ⏳ IN PROGRESS (Codex Round 2) — Meta designed it R1, Codex implementing
+9. **Secret Level: The Infinite Bus** — ⏳ IN PROGRESS (Mistral Round 2) — 60-second survival inside the hippie bus
+10. **World Map Anomaly Counter** — ✅ PARTIAL — WorldMap6 done; WorldMap1-5 being added (Gemini Round 2)
 
 ### TIER 3 — THE LEGENDARY POLISH
-11. **Ed's Cig Trail** — When Ed walks, tiny glowing cig particle trail based on combo streak
-12. **Boss HP % Quotes** — At 75%, 50%, 25% HP, bosses say archetype-specific things
-13. **Combo Kill Feed** — When combo streak >= 10, a kill-feed style log appears: "DESTINY (SPIRITUAL) APPROVED OF THIS"
-14. **Post-Game New Game+** — After God [TM] ending, New Game+ unlocks where all cats know who Ed is
-15. **Title Screen Lore** — Random lore tidbits appear on the title screen after first playthrough
+11. **Ed's Cig Trail** — ⏳ IN PROGRESS (Meta AI Round 2 design) — Particle trail when combo >= 5
+12. **Boss HP % Quotes** — ⏳ IN PROGRESS (ChatGPT Round 2) — 75/50/25% quotes for all bosses
+13. **Combo Kill Feed** — ⏳ IN PROGRESS (Meta AI Round 2 design) — Scrolling approval log at streak >= 10
+14. **Post-Game New Game+** — ⏳ IN PROGRESS (Meta AI Round 2 design) — Cats know Ed is God [TM]
+15. **Title Screen Lore** — ⏳ IN PROGRESS (ChatGPT Round 2) — 15 tidbits across Ed/cats/machine
 
 ---
 
 ## THE AI ROSTER & THEIR ROLES
 
-| AI | Role | Strengths They Bring |
-|----|------|---------------------|
-| **Codex** | The Implementer | Lives in the codebase, writes functions precisely, autocomplete-level accuracy |
-| **Gemini** | The Architect | 1M+ token context — reads the WHOLE file, finds bugs, writes specs |
-| **ChatGPT** | The Writer | Narrative, flavor text, WS_MSGS, boss dialogue, game design docs |
-| **Mistral** | The Builder | Fast precise coding, new scenes, boss fights, focused implementations |
-| **Meta AI** | The Creative Director | New mechanics, visual design, mobile UX, puppet theater aesthetic |
+| AI | Codename | Role | Round 1 Result | Round 2 Assignment |
+|----|----------|------|----------------|-------------------|
+| **ChatGPT** | The Voice | Content writer — WS_MSGS, dialogue, flavor text | ⚠️ Delivered generic game research instead of content. Fixed in R2 with hyper-specific format constraints. | 4 commercial scripts, 25 WS_MSGS, boss HP quotes, title lore |
+| **Codex** | The Implementer | Code implementer — full scenes from specs | ⚠️ Referenced wrong line numbers (different file version). Fixed in R2 with embedded template. | Cat Democracy Mini-Game (full implementation) |
+| **Gemini** | The Architect | 1M+ context — audits, bugs, architectural systems | ✅ Best performer. Found real crash bug, delivered real code templates. | v1.3 audit + Puppet Theater boss intros + anomaly overlay for WorldMap1-5 |
+| **Meta AI** | The Visionary | Creative director — design docs, UX, new systems | ✅ Excellent. Cat Democracy design so good Codex is implementing it this round. | New Game+ design, Ed Cig Trail, Combo Kill Feed, mobile D-pad polish |
+| **Mistral** | The Constructor | Scene builder — fast precise code from patterns | ✅ Good on level configs. | Infinite Bus secret level + RASTA_CORP_MSGS integration |
+| **DeepSeek** | The Debugger | NEW — strong technical reasoning + complex codebase comprehension | 🆕 First round. | Rasta Corp CEO Boss Fight (highest-stakes TIER 1 task) |
 
 ---
 
