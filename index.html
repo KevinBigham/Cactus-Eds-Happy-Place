@@ -145,6 +145,11 @@ var FEATURE_FLAGS = {
   mapFastTravel:true,
   journalCore:true,
   achievementsMeta:true,
+  visualOverhaulV1:true,
+  useWebGLPostFX:false,
+  useDitherPass:true,
+  pixelSnapStrict:true,
+  parallaxDebug:false,
   lowEffects:false,
   reducedFlash:false,
   achievements:false,
@@ -264,8 +269,233 @@ var BALANCE = {
     encounter:{arenaClearRewardFrames:180,targetCountDefault:6,telegraphFrames:{light:18,heavy:28}},
     juice:{hitstopFrames:{light:2,heavy:4,limbHit:3},lowFxScale:0.45},
     determinism:{snapshotEveryNFrames:0,snapshotRingSize:240}
+  },
+  visual:{
+    internalResolution:{w:240,h:160,authentic:true,compatW:320,compatH:180},
+    parallaxSpeeds:{far:0.08,mid:0.38,play:1.0,front:1.28},
+    grade:{
+      enabled:true,
+      blackLiftColor:0x0e0a18,
+      blackLiftAlpha:0.16,
+      midSatBoost:0.22,
+      highlightWarmColor:0x2a1305,
+      highlightWarmAlpha:0.08
+    },
+    dither:{
+      enabled:true,
+      alphaA:0.05,
+      alphaB:0.025,
+      step:2
+    },
+    uiMetrics:{safeMargin:4,micro:2,std:4,major:8},
+    perfBudgets:{canvasDynamicOps:2600,webglDrawCalls:80}
   }
 };
+
+var VISUAL_PROFILE = {
+  default:{
+    key:'default',
+    palette:['#2D6B2C','#4EA83D','#88C94A','#C8DA63','#7C4F2A','#312E2B'],
+    shadowTint:0x0e0a18,
+    shadowAlpha:0.16,
+    warmTint:0x2a1305,
+    warmAlpha:0.08,
+    fogTint:0x111122,
+    fogAlpha:0.06,
+    layerTints:{far:0x1f2a3e,mid:0x36504a,play:0x5f7a52,front:0x89aa62}
+  },
+  jungle:{
+    key:'jungle',
+    palette:['#2D6B2C','#4EA83D','#88C94A','#C8DA63','#7C4F2A','#312E2B'],
+    shadowTint:0x102010,
+    shadowAlpha:0.14,
+    warmTint:0x39200a,
+    warmAlpha:0.09,
+    fogTint:0x204015,
+    fogAlpha:0.05,
+    layerTints:{far:0x1c3b2f,mid:0x2d5c3f,play:0x4f8049,front:0x7fb44f}
+  },
+  cave:{
+    key:'cave',
+    palette:['#2A1B63','#4B2F8C','#7362C9','#63B7E8','#DDF5FF','#1C1D34'],
+    shadowTint:0x120a26,
+    shadowAlpha:0.20,
+    warmTint:0x10183d,
+    warmAlpha:0.04,
+    fogTint:0x262052,
+    fogAlpha:0.08,
+    layerTints:{far:0x1a1f3d,mid:0x2b3665,play:0x44589a,front:0x6a7ec2}
+  },
+  factory:{
+    key:'factory',
+    palette:['#6B2C26','#A0432B','#D57A35','#8E8C8A','#4C4A4A','#E6BE6C'],
+    shadowTint:0x22140f,
+    shadowAlpha:0.18,
+    warmTint:0x3d1e08,
+    warmAlpha:0.10,
+    fogTint:0x2a241d,
+    fogAlpha:0.07,
+    layerTints:{far:0x3c3029,mid:0x5a4333,play:0x876145,front:0xb37c52}
+  },
+  sunset:{
+    key:'sunset',
+    palette:['#3C2559','#6B3A7F','#B95B6A','#E08D56','#F6CB74','#2A2D43'],
+    shadowTint:0x1a0f28,
+    shadowAlpha:0.14,
+    warmTint:0x4b210e,
+    warmAlpha:0.12,
+    fogTint:0x3d1f3d,
+    fogAlpha:0.06,
+    layerTints:{far:0x392a57,mid:0x634271,play:0xa05c67,front:0xde8f57}
+  },
+  storm:{
+    key:'storm',
+    palette:['#1E263B','#2E3B58','#4E6A8F','#6E95AE','#A7C8D8','#141821'],
+    shadowTint:0x090d18,
+    shadowAlpha:0.21,
+    warmTint:0x0d1f3f,
+    warmAlpha:0.03,
+    fogTint:0x1a2b3e,
+    fogAlpha:0.09,
+    layerTints:{far:0x1a2438,mid:0x314563,play:0x4f6f93,front:0x6f97b0}
+  }
+};
+
+var GFX_STATE = {
+  captureQueue:[],
+  lastCaptureTs:0
+};
+
+function _gfxProfileForSceneKey(sceneKey){
+  var k=(sceneKey||'').toLowerCase();
+  if(k.indexOf('level1')===0||k.indexOf('worldmap')===0||k.indexOf('mainmode')===0) return 'jungle';
+  if(k.indexOf('level2')===0||k.indexOf('void')>=0||k.indexOf('meta')>=0) return 'cave';
+  if(k.indexOf('level3')===0||k.indexOf('rasta')>=0||k.indexOf('commercial')>=0) return 'factory';
+  if(k.indexOf('level4')===0||k.indexOf('catdemocracy')>=0) return 'sunset';
+  if(k.indexOf('level5')===0||k.indexOf('level6')===0||k.indexOf('epilogue')>=0) return 'storm';
+  return 'default';
+}
+
+function _gfxResolveProfile(scene){
+  var key=(scene&&scene._gfxProfileKey)?scene._gfxProfileKey:_gfxProfileForSceneKey(scene&&scene.scene?scene.scene.key:'');
+  return VISUAL_PROFILE[key]||VISUAL_PROFILE.default;
+}
+
+function _gfxHexToInt(hex){
+  if(typeof hex==='number') return hex;
+  var h=String(hex||'#000000').replace('#','');
+  return parseInt(h,16)||0;
+}
+
+function _gfxLerpColor(a,b,t){
+  t=Math.max(0,Math.min(1,t||0));
+  var ar=(a>>16)&255, ag=(a>>8)&255, ab=a&255;
+  var br=(b>>16)&255, bg=(b>>8)&255, bb=b&255;
+  var rr=Math.round(Phaser.Math.Linear(ar,br,t));
+  var rg=Math.round(Phaser.Math.Linear(ag,bg,t));
+  var rb=Math.round(Phaser.Math.Linear(ab,bb,t));
+  return (rr<<16)|(rg<<8)|rb;
+}
+
+function _gfxSnapToVirtual(scene,value,axis){
+  var v=(BALANCE.visual&&BALANCE.visual.internalResolution)||{compatW:320,compatH:180};
+  var sw=(scene&&scene.scale&&scene.scale.width)||960;
+  var sh=(scene&&scene.scale&&scene.scale.height)||540;
+  var iw=Math.max(1,v.compatW||320);
+  var ih=Math.max(1,v.compatH||180);
+  var step=(axis==='y')?(sh/ih):(sw/iw);
+  if(!isFinite(step)||step<=0) step=1;
+  return Math.round(value/step)*step;
+}
+
+function _gfxAttachScene(scene,profileKey){
+  if(!scene||scene._gfxAttached||!scene.add||!scene.events) return;
+  scene._gfxAttached=true;
+  scene._gfxProfileKey=profileKey||_gfxProfileForSceneKey(scene.scene&&scene.scene.key?scene.scene.key:'');
+  scene._gfxOverlayG=scene.add.graphics().setScrollFactor(0).setDepth(9950);
+  var postFn=function(){ _gfxRenderSceneOverlay(scene); };
+  scene.events.on('postupdate',postFn);
+  scene.events.once('shutdown',function(){
+    if(scene.events) scene.events.off('postupdate',postFn);
+    if(scene._gfxOverlayG){ try{scene._gfxOverlayG.destroy();}catch(e){} }
+    scene._gfxOverlayG=null;
+    scene._gfxAttached=false;
+  });
+}
+
+function _gfxRenderSceneOverlay(scene){
+  if(!scene||!scene._gfxOverlayG) return;
+  var g=scene._gfxOverlayG;
+  g.clear();
+  if(!FEATURE_FLAGS.visualOverhaulV1) return;
+  if(FEATURE_FLAGS.pixelSnapStrict&&scene.cameras&&scene.cameras.main){
+    var cam=scene.cameras.main;
+    cam.scrollX=_gfxSnapToVirtual(scene,cam.scrollX,'x');
+    cam.scrollY=_gfxSnapToVirtual(scene,cam.scrollY,'y');
+  }
+  var prof=_gfxResolveProfile(scene);
+  var grad=(BALANCE.visual&&BALANCE.visual.grade)||{};
+  var dith=(BALANCE.visual&&BALANCE.visual.dither)||{};
+  var W=(scene.scale&&scene.scale.width)||960;
+  var H=(scene.scale&&scene.scale.height)||540;
+  if(grad.enabled!==false){
+    g.fillStyle(prof.shadowTint||grad.blackLiftColor||0x0e0a18,(prof.shadowAlpha!==undefined)?prof.shadowAlpha:(grad.blackLiftAlpha||0.16));
+    g.fillRect(0,0,W,H);
+    g.fillStyle(prof.warmTint||grad.highlightWarmColor||0x2a1305,(prof.warmAlpha!==undefined)?prof.warmAlpha:(grad.highlightWarmAlpha||0.08));
+    g.fillRect(0,0,W,Math.floor(H*0.42));
+    g.fillStyle(prof.fogTint||0x111122,(prof.fogAlpha!==undefined)?prof.fogAlpha:0.06);
+    g.fillRect(0,Math.floor(H*0.68),W,Math.ceil(H*0.32));
+  }
+  if(FEATURE_FLAGS.useDitherPass&&dith.enabled!==false){
+    var step=Math.max(2,dith.step||2);
+    var frame=(scene.game&&scene.game.loop)?scene.game.loop.frame:0;
+    var yStart=frame%step;
+    for(var y=yStart;y<H;y+=step){
+      var alt=(Math.floor((y-yStart)/step)%2===0);
+      g.fillStyle(0x000000,alt?(dith.alphaA||0.05):(dith.alphaB||0.025));
+      g.fillRect(0,y,W,1);
+    }
+  }
+}
+
+function _gfxToggle(mode){
+  var m=(mode||'').toLowerCase();
+  if(m==='dither'){ FEATURE_FLAGS.useDitherPass=!FEATURE_FLAGS.useDitherPass; return FEATURE_FLAGS.useDitherPass; }
+  if(m==='grade'){ FEATURE_FLAGS.visualOverhaulV1=!FEATURE_FLAGS.visualOverhaulV1; return FEATURE_FLAGS.visualOverhaulV1; }
+  if(m==='pixelsnap'){ FEATURE_FLAGS.pixelSnapStrict=!FEATURE_FLAGS.pixelSnapStrict; return FEATURE_FLAGS.pixelSnapStrict; }
+  if(m==='parallaxdebug'){ FEATURE_FLAGS.parallaxDebug=!FEATURE_FLAGS.parallaxDebug; return FEATURE_FLAGS.parallaxDebug; }
+  return false;
+}
+
+function _gfxCaptureBaselineSet(){
+  var game=(typeof window!=='undefined')?window.__CEHP_GAME:null;
+  if(!game||!game.renderer||!game.renderer.snapshot) return {ok:false,error:'snapshot-unavailable'};
+  var shotNames=[
+    'title_full','idle_backdrop','apex_jump','dash_occluder','cave_lightshaft',
+    'water_strip','hit_confirm','parallax_vista','hud_overlay','notification_event'
+  ];
+  var out=[];
+  var idx=0;
+  var startedTs=_nowTs();
+  var captureNext=function(){
+    if(idx>=shotNames.length){
+      GFX_STATE.captureQueue=out;
+      GFX_STATE.lastCaptureTs=startedTs;
+      return;
+    }
+    var nm=shotNames[idx++];
+    game.renderer.snapshot(function(image){
+      try{
+        out.push({name:nm,data:image&&image.src?image.src:'',ts:_nowTs()});
+      }catch(e){
+        out.push({name:nm,data:'',ts:_nowTs(),error:String(e&&e.message||e)});
+      }
+      captureNext();
+    });
+  };
+  captureNext();
+  return {ok:true,queued:shotNames.length};
+}
 
 var DEV_SANITY = false;
 var SAVE_VERSION = 8;
@@ -281,7 +511,7 @@ var SCENE_KEYS = {
   level61:'Level61', level62:'Level62', level63:'Level63', level64:'Level64',
   handtowel:'HandtowelScene', mochiQueen:'MochiQueenScene', insulin:'InsulinAdmiralScene', rasta:'RastaCorpBossScene',
   catDemocracy:'CatDemocracy', fzero:'FZero', infiniteBus:'InfiniteBus',
-  mainModeFeelLab:'MainModeFeelLab', mainModeSlice:'MainModeSlice',
+  mainModeFeelLab:'MainModeFeelLab', mainModeSlice:'MainModeSlice', visualLab:'VisualLab',
   mochiSmash:'MochiSmash', slotMachine:'SlotMachine', scratch:'Scratch', nuclearQuiz:'NuclearQuiz', ghostDodge:'GhostDodge',
   cigSales:'CigSales', epilogue:'LHCEpilogue', darkEpilogue:'DarkEpilogue',
   commercial:'CommercialBreak', rastaAd:'RastaCorpAd',
@@ -3232,7 +3462,7 @@ TitleScene.prototype.create=function(){
   this.time.addEvent({delay:220,loop:true,callback:function(){joshCI=(joshCI+1)%joshColors.length;joshTxt.setColor(joshColors[joshCI]);}});
   var ps=this.add.text(W/2,488,"PRESS ANY KEY",{fontFamily:'Inconsolata,monospace',fontSize:'22px',color:AT.aloe,stroke:AT.outline,strokeThickness:4}).setOrigin(0.5);
   this.tweens.add({targets:ps,alpha:0.15,duration:480,yoyo:true,repeat:-1});
-  this.add.text(W/2,514,'J=JOURNAL   K=ACHIEVEMENTS   L=SAVE MANAGER   M=FEEL LAB   N=MICRO SLICE',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#ccffee',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(15);
+  this.add.text(W/2,514,'J=JOURNAL   K=ACHIEVEMENTS   L=SAVE MANAGER   M=FEEL LAB   N=MICRO SLICE   V=VISUAL LAB',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#ccffee',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(15);
   self._mobileTxt=self.add.text(W/2,455,'[ MOBILE MODE: '+(MOBILE_MODE?'ON ':'OFF')+' ]',{fontFamily:'Inconsolata,monospace',fontSize:'16px',color:MOBILE_MODE?'#00eeff':'#555577',stroke:'#000000',strokeThickness:2}).setOrigin(0.5).setDepth(15);
   var tTickN=Math.floor(Math.random()*NEWS_TICKER.length);
   var tTickX=960;
@@ -3287,9 +3517,212 @@ TitleScene.prototype.create=function(){
       _sceneTransitionSafe(self,SCENE_KEYS.mainModeSlice);
       return;
     }
+    if(kc===Phaser.Input.Keyboard.KeyCodes.V){
+      _sceneTransitionSafe(self,SCENE_KEYS.visualLab);
+      return;
+    }
     _sceneTransitionSafe(self,SCENE_KEYS.worldMap);
   });
 };
+
+// ── VISUAL LAB SCENE (graphics stack calibration) ───────────────
+function VisualLabScene(){ Phaser.Scene.call(this,{key:'VisualLab'}); }
+VisualLabScene.prototype=Object.create(Phaser.Scene.prototype);
+VisualLabScene.prototype.constructor=VisualLabScene;
+VisualLabScene.prototype.create=function(){
+  _resetPools();
+  var W=960,H=540;
+  this._vlab={W:240,H:160,S:3,OX:Math.floor((W-(240*3))/2),OY:Math.floor((H-(160*3))/2)};
+  this._camX=0;
+  this._camV=0;
+  this._runnerT=0;
+  this._profiles=['jungle','cave','factory','sunset','storm','default'];
+  this._profileIdx=0;
+  this._gfxProfileKey=this._profiles[this._profileIdx];
+
+  this.bgG=this.add.graphics().setDepth(1);
+  this.frameG=this.add.graphics().setDepth(4);
+  this.labC=this.add.container(this._vlab.OX,this._vlab.OY).setDepth(5);
+  this.labC.setScale(this._vlab.S);
+  this.farG=this.add.graphics();
+  this.midG=this.add.graphics();
+  this.playG=this.add.graphics();
+  this.frontG=this.add.graphics();
+  this.actorG=this.add.graphics();
+  this.debugG=this.add.graphics();
+  this.labC.add([this.farG,this.midG,this.playG,this.frontG,this.actorG,this.debugG]);
+
+  this.infoTxt=this.add.text(480,20,'VISUAL LAB // 1-6 PROFILE  D DITHER  G GRADE  P PIXEL SNAP  O PARALLAX DEBUG  ESC EXIT',
+    {fontFamily:'Inconsolata,monospace',fontSize:'13px',color:'#e6f7ff',stroke:'#000000',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(20);
+  this.statusTxt=this.add.text(480,46,'',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#99ddff',stroke:'#000000',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(20);
+  this.legendTxt=this.add.text(480,522,'PARALLAX: FAR 0.08x | MID 0.38x | PLAY 1.00x | FRONT 1.28x',
+    {fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#88ffaa',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setDepth(20);
+
+  this.keys={
+    left:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT),
+    right:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
+    shift:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT),
+    one:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE),
+    two:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO),
+    three:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE),
+    four:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR),
+    five:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FIVE),
+    six:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SIX),
+    d:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+    g:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.G),
+    p:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P),
+    o:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.O),
+    esc:this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
+  };
+
+  _gfxAttachScene(this,this._gfxProfileKey);
+  this._drawVisualLab();
+};
+VisualLabScene.prototype._setProfileIdx=function(idx){
+  if(idx<0||idx>=this._profiles.length) return;
+  this._profileIdx=idx;
+  this._gfxProfileKey=this._profiles[this._profileIdx];
+  _showToast(this,'PROFILE: '+this._gfxProfileKey.toUpperCase(),'#66ddff',800);
+};
+VisualLabScene.prototype._drawVisualLab=function(){
+  var lab=this._vlab;
+  var w=lab.W, h=lab.H;
+  var ps=(BALANCE.visual&&BALANCE.visual.parallaxSpeeds)||{far:0.08,mid:0.38,play:1.0,front:1.28};
+  var prof=_gfxResolveProfile(this);
+  var p0=_gfxHexToInt(prof.palette[0]), p1=_gfxHexToInt(prof.palette[1]), p2=_gfxHexToInt(prof.palette[2]), p4=_gfxHexToInt(prof.palette[4]), p5=_gfxHexToInt(prof.palette[5]);
+
+  this.bgG.clear();
+  this.bgG.fillStyle(0x02040a,1);
+  this.bgG.fillRect(0,0,960,540);
+
+  this.frameG.clear();
+  this.frameG.fillStyle(0x000000,0.52);
+  this.frameG.fillRect(lab.OX-8,lab.OY-8,(w*lab.S)+16,(h*lab.S)+16);
+  this.frameG.lineStyle(4,0xb7d7ff,0.45);
+  this.frameG.strokeRect(lab.OX-8,lab.OY-8,(w*lab.S)+16,(h*lab.S)+16);
+  this.frameG.lineStyle(2,0x224466,0.65);
+  this.frameG.strokeRect(lab.OX-2,lab.OY-2,(w*lab.S)+4,(h*lab.S)+4);
+
+  this.farG.clear();
+  for(var y=0;y<h;y++){
+    var t=y/h;
+    this.farG.fillStyle(_gfxLerpColor(p4,p2,t),1);
+    this.farG.fillRect(0,y,w,1);
+  }
+  var farTile=60;
+  var farOff=((this._camX*ps.far)%farTile+farTile)%farTile;
+  this.farG.fillStyle(prof.layerTints&&prof.layerTints.far?prof.layerTints.far:p0,0.65);
+  for(var fx=-2;fx<8;fx++){
+    var hx=Math.floor((fx*farTile)-farOff);
+    var hy=92+Math.floor(Math.sin((fx*31)+this._runnerT*0.02)*5);
+    this.farG.fillEllipse(hx+30,hy,86,28);
+  }
+  this.farG.fillStyle(0xffffff,0.08);
+  for(var s=0;s<34;s++){
+    var sx=((s*17)+Math.floor(this._camX*ps.far*0.15))%w;
+    var sy=(s*29)%80;
+    this.farG.fillRect(sx,sy,(s%7===0)?2:1,1);
+  }
+
+  this.midG.clear();
+  var midTile=42;
+  var midOff=((this._camX*ps.mid)%midTile+midTile)%midTile;
+  this.midG.fillStyle(prof.layerTints&&prof.layerTints.mid?prof.layerTints.mid:p1,0.92);
+  for(var mx=-3;mx<11;mx++){
+    var tx=Math.floor((mx*midTile)-midOff);
+    var tw=8+((mx%3+3)%3)*2;
+    var th=56+((mx%4+4)%4)*8;
+    this.midG.fillRect(tx,102-th,tw,th);
+    this.midG.fillStyle(0x000000,0.22);
+    this.midG.fillRect(tx+tw-2,102-th,2,th);
+    this.midG.fillStyle(prof.layerTints&&prof.layerTints.mid?prof.layerTints.mid:p1,0.92);
+  }
+  this.midG.fillStyle(prof.layerTints&&prof.layerTints.mid?prof.layerTints.mid:p1,0.4);
+  this.midG.fillRect(0,100,w,8);
+
+  this.playG.clear();
+  this.playG.fillStyle(prof.layerTints&&prof.layerTints.play?prof.layerTints.play:p2,1);
+  this.playG.fillRect(0,112,w,48);
+  this.playG.fillStyle(p5,0.48);
+  for(var gx=0;gx<w;gx+=8){
+    this.playG.fillRect(gx,112+((gx/8)%2===0?0:1),8,2);
+  }
+  var playOff=((this._camX*ps.play)%48+48)%48;
+  this.playG.fillStyle(p0,0.95);
+  for(var px=-2;px<8;px++){
+    var bx=Math.floor((px*48)-playOff);
+    var by=88+(((px%2+2)%2)*10);
+    this.playG.fillRect(bx,by,24,8);
+  }
+  this.playG.fillStyle(0x000000,0.25);
+  this.playG.fillRect(0,112,w,3);
+
+  this.frontG.clear();
+  var frontTile=34;
+  var frontOff=((this._camX*ps.front)%frontTile+frontTile)%frontTile;
+  this.frontG.fillStyle(prof.layerTints&&prof.layerTints.front?prof.layerTints.front:p4,0.38);
+  for(var vx=-3;vx<12;vx++){
+    var xx=Math.floor((vx*frontTile)-frontOff);
+    var hh=44+(((vx%5+5)%5)*7);
+    this.frontG.fillRect(xx,0,6,hh);
+  }
+  this.frontG.fillStyle(0x000000,0.12);
+  this.frontG.fillRect(0,0,w,18);
+
+  this.actorG.clear();
+  var rx=120, ry=111;
+  var step=Math.sin(this._runnerT*0.45)*3;
+  var arm=Math.cos(this._runnerT*0.45)*3;
+  this.actorG.fillStyle(0x000000,0.26); this.actorG.fillEllipse(rx,116,22,6);
+  this.actorG.fillStyle(0x8ed35a,1); this.actorG.fillRect(rx-6,95,12,14);
+  this.actorG.fillStyle(0xa3e26f,1); this.actorG.fillCircle(rx,91,5);
+  this.actorG.lineStyle(2,0x6da445,1); this.actorG.lineBetween(rx-4,103,rx-7,110+step); this.actorG.lineBetween(rx+4,103,rx+7,110-step);
+  this.actorG.lineStyle(2,0x4f7339,1); this.actorG.lineBetween(rx-3,109,rx-7,115-step); this.actorG.lineBetween(rx+3,109,rx+7,115+step);
+  this.actorG.lineStyle(1,0xd5f9a3,0.9); this.actorG.lineBetween(rx+2,88,rx+6,86);
+  this.actorG.fillStyle(0xffc46a,1); this.actorG.fillRect(rx+7,98+arm,7,3);
+
+  this.debugG.clear();
+  if(FEATURE_FLAGS.parallaxDebug){
+    this.debugG.lineStyle(1,0xffffff,0.2);
+    for(var dx=0;dx<=w;dx+=16) this.debugG.lineBetween(dx,0,dx,h);
+    for(var dy=0;dy<=h;dy+=16) this.debugG.lineBetween(0,dy,w,dy);
+    this.debugG.lineStyle(1,0xff4444,0.5);
+    this.debugG.lineBetween(rx,0,rx,h);
+  }
+};
+VisualLabScene.prototype.update=(function(cfg){
+  return function(time,delta){
+    var LW = cfg.LW;
+    if(Phaser.Input.Keyboard.JustDown(this.keys.esc)){ _sceneTransitionSafe(this,SCENE_KEYS.title); return; }
+    if(Phaser.Input.Keyboard.JustDown(this.keys.one)) this._setProfileIdx(0);
+    if(Phaser.Input.Keyboard.JustDown(this.keys.two)) this._setProfileIdx(1);
+    if(Phaser.Input.Keyboard.JustDown(this.keys.three)) this._setProfileIdx(2);
+    if(Phaser.Input.Keyboard.JustDown(this.keys.four)) this._setProfileIdx(3);
+    if(Phaser.Input.Keyboard.JustDown(this.keys.five)) this._setProfileIdx(4);
+    if(Phaser.Input.Keyboard.JustDown(this.keys.six)) this._setProfileIdx(5);
+    if(Phaser.Input.Keyboard.JustDown(this.keys.d)) _showToast(this,'DITHER '+(_gfxToggle('dither')?'ON':'OFF'),'#99ffdd',700);
+    if(Phaser.Input.Keyboard.JustDown(this.keys.g)) _showToast(this,'GRADE '+(_gfxToggle('grade')?'ON':'OFF'),'#99ffdd',700);
+    if(Phaser.Input.Keyboard.JustDown(this.keys.p)) _showToast(this,'PIXEL SNAP '+(_gfxToggle('pixelsnap')?'ON':'OFF'),'#99ffdd',700);
+    if(Phaser.Input.Keyboard.JustDown(this.keys.o)) _showToast(this,'PARALLAX DEBUG '+(_gfxToggle('parallaxdebug')?'ON':'OFF'),'#99ffdd',700);
+    delta=_clampDelta(delta);
+    var dir=0;
+    if(this.keys.left.isDown) dir-=1;
+    if(this.keys.right.isDown) dir+=1;
+    var baseSpeed=this.keys.shift.isDown?2.8:1.5;
+    this._camV=dir*baseSpeed;
+    this._camX+=this._camV*(delta/16.6667);
+    this._camX=Math.max(0,this._camX);
+    this._runnerT+=delta/16.6667;
+    this._drawVisualLab();
+    this.statusTxt.setText(
+      'PROFILE: '+this._gfxProfileKey.toUpperCase()+
+      '  CAM_X: '+Math.floor(this._camX)+
+      '  DITHER: '+(FEATURE_FLAGS.useDitherPass?'ON':'OFF')+
+      '  GRADE: '+(FEATURE_FLAGS.visualOverhaulV1?'ON':'OFF')+
+      '  SNAP: '+(FEATURE_FLAGS.pixelSnapStrict?'ON':'OFF')
+    );
+  };
+})({LW:960});
 
 // ── WORLD MAP SCENE ─────────────────────────────────────────────
 function WorldMapScene() { Phaser.Scene.call(this,{key:'WorldMap'}); }
@@ -16347,13 +16780,16 @@ function _wrapSceneCreateInit(sceneCtor,includeAux){
       this._devHotkeysBound=true;
     }
     if(FEATURE_FLAGS.profiler) _startProfiler();
-    return origCreate.apply(this,arguments);
+    var ret=origCreate.apply(this,arguments);
+    if(this.scene&&this.scene.key!=='Boot') _gfxAttachScene(this);
+    return ret;
   };
   sceneCtor.prototype._createWrapped=true;
 }
 
 _wrapSceneCreateInit(BootScene,true);
 _wrapSceneCreateInit(TitleScene,true);
+_wrapSceneCreateInit(VisualLabScene,true);
 _wrapSceneCreateInit(WorldMapScene,true);
 _wrapSceneCreateInit(Level11Scene,true);
 _wrapSceneCreateInit(MochiSmashScene,true);
@@ -16434,6 +16870,7 @@ var config = {
   scene: [
     BootScene,
     TitleScene,
+    VisualLabScene,
     WorldMapScene,
     Level11Scene,
     MochiSmashScene,
