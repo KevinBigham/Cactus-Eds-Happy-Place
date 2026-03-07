@@ -413,13 +413,13 @@
     ),
     guardRecover: makeClip(
       { lean: -8, torsoTilt: 14, headTilt: 5, torsoShiftX: -5, headShiftX: -5, headShiftY: -1, shoulderTwist: -4, hipTwist: -1, frontShoulderLift: -6, rearShoulderLift: -1, frontHand: { x: 12, y: -34 }, rearHand: { x: 0, y: -26 }, frontFoot: { x: 4, y: 0 }, rearFoot: { x: -11, y: 0 } },
-      { lean: -5, torsoTilt: 9, headTilt: 2, torsoShiftX: -3, headShiftX: -3, shoulderTwist: -2, hipTwist: -1, frontShoulderLift: -3, rearShoulderLift: 1, frontHand: { x: 10, y: -30 }, rearHand: { x: -1, y: -24 }, frontFoot: { x: 5, y: 0 }, rearFoot: { x: -10, y: 0 } },
-      { lean: -2, torsoTilt: 4, headTilt: 1, torsoShiftX: -1, headShiftX: -1, shoulderTwist: -1, hipTwist: 0, frontShoulderLift: -1, rearShoulderLift: 1, frontHand: { x: 10, y: -27 }, rearHand: { x: -2, y: -23 }, frontFoot: { x: 6, y: 0 }, rearFoot: { x: -9, y: 0 } }
+      { lean: -6, torsoTilt: 10, headTilt: 3, torsoShiftX: -4, headShiftX: -4, headShiftY: -1, shoulderTwist: -3, hipTwist: -2, frontShoulderLift: -4, rearShoulderLift: 2, frontHand: { x: 11, y: -31 }, rearHand: { x: -3, y: -26 }, frontFoot: { x: 4, y: 0 }, rearFoot: { x: -11, y: 0 } },
+      { lean: -3, torsoTilt: 5, headTilt: 1, torsoShiftX: -2, headShiftX: -2, shoulderTwist: -2, hipTwist: -1, frontShoulderLift: -2, rearShoulderLift: 2, frontHand: { x: 10, y: -28 }, rearHand: { x: -4, y: -25 }, frontFoot: { x: 5, y: 0 }, rearFoot: { x: -10, y: 0 } }
     ),
     hitRecover: makeClip(
       { lean: -14, torsoTilt: 18, headTilt: 12, torsoShiftX: -6, torsoShiftY: 1, headShiftX: -7, headShiftY: -2, shoulderTwist: -5, hipTwist: 2, frontShoulderLift: 2, rearShoulderLift: -4, frontHand: { x: -5, y: -18 }, rearHand: { x: -18, y: -13 }, frontFoot: { x: 1, y: 0 }, rearFoot: { x: -13, y: 0 } },
-      { lean: -10, torsoTilt: 11, headTilt: 7, torsoShiftX: -4, headShiftX: -5, headShiftY: -1, shoulderTwist: -3, hipTwist: 1, frontShoulderLift: 1, rearShoulderLift: -2, frontHand: { x: -1, y: -18 }, rearHand: { x: -14, y: -14 }, frontFoot: { x: 2, y: 0 }, rearFoot: { x: -11, y: 0 } },
-      { lean: -5, torsoTilt: 5, headTilt: 2, torsoShiftX: -2, headShiftX: -2, shoulderTwist: -1, hipTwist: 0, frontShoulderLift: 0, rearShoulderLift: 1, frontHand: { x: 3, y: -21 }, rearHand: { x: -11, y: -19 }, frontFoot: { x: 4, y: 0 }, rearFoot: { x: -10, y: 0 } }
+      { lean: -11, torsoTilt: 13, headTilt: 8, torsoShiftX: -5, torsoShiftY: 1, headShiftX: -6, headShiftY: -2, shoulderTwist: -4, hipTwist: 2, frontShoulderLift: 1, rearShoulderLift: -3, frontHand: { x: -2, y: -19 }, rearHand: { x: -16, y: -15 }, frontFoot: { x: 1, y: 0 }, rearFoot: { x: -12, y: 0 } },
+      { lean: -6, torsoTilt: 7, headTilt: 3, torsoShiftX: -3, headShiftX: -3, headShiftY: -1, shoulderTwist: -2, hipTwist: 1, frontShoulderLift: 0, rearShoulderLift: -1, frontHand: { x: 1, y: -21 }, rearHand: { x: -13, y: -18 }, frontFoot: { x: 3, y: 0 }, rearFoot: { x: -11, y: 0 } }
     ),
     attackerSettleArm: makeClip(
       { lean: 10, torsoTilt: -9, headTilt: -3, torsoShiftX: 5, headShiftX: 3, shoulderTwist: 6, hipTwist: 2, frontShoulderLift: -3, rearShoulderLift: 1, frontHand: { x: 24, y: -24 }, rearHand: { x: -5, y: -22 }, frontFoot: { x: 12, y: 0 }, rearFoot: { x: -8, y: 0 } },
@@ -433,8 +433,8 @@
     ),
     throwBreakRecover: makeClip(
       { lean: -2, torsoTilt: 7, headTilt: 3, torsoShiftX: -1, headShiftX: -1, shoulderTwist: 6, hipTwist: -2, frontShoulderLift: -7, rearShoulderLift: -5, frontHand: { x: 14, y: -35 }, rearHand: { x: -14, y: -31 }, frontFoot: { x: 5, y: 0 }, rearFoot: { x: -11, y: 0 } },
-      { lean: 2, torsoTilt: 1, headTilt: 0, torsoShiftX: 2, headShiftX: 1, shoulderTwist: 1, hipTwist: -1, frontShoulderLift: -2, rearShoulderLift: -1, frontHand: { x: 10, y: -28 }, rearHand: { x: -9, y: -27 }, frontFoot: { x: 8, y: 0 }, rearFoot: { x: -8, y: 0 } },
-      { lean: 0, torsoTilt: -1, headTilt: 0, torsoShiftX: 1, shoulderTwist: 0, hipTwist: 0, frontShoulderLift: -1, rearShoulderLift: 1, frontHand: { x: 10, y: -25 }, rearHand: { x: -9, y: -25 }, frontFoot: { x: 8, y: 0 }, rearFoot: { x: -8, y: 0 } }
+      { lean: 1, torsoTilt: 2, headTilt: 1, torsoShiftX: 1, headShiftX: 0, shoulderTwist: 2, hipTwist: -1, frontShoulderLift: -3, rearShoulderLift: -2, frontHand: { x: 11, y: -29 }, rearHand: { x: -11, y: -28 }, frontFoot: { x: 7, y: 0 }, rearFoot: { x: -9, y: 0 } },
+      { lean: -1, torsoTilt: 0, headTilt: 0, torsoShiftX: 0, shoulderTwist: 1, hipTwist: 0, frontShoulderLift: -1, rearShoulderLift: 0, frontHand: { x: 10, y: -26 }, rearHand: { x: -10, y: -26 }, frontFoot: { x: 7, y: 0 }, rearFoot: { x: -9, y: 0 } }
     ),
     throwAftermath: makeClip(
       { lean: 9, torsoTilt: -7, headTilt: -2, torsoShiftX: 5, headShiftX: 2, shoulderTwist: 6, hipTwist: 2, frontShoulderLift: -4, rearShoulderLift: -2, frontHand: { x: 17, y: -23 }, rearHand: { x: 10, y: -21 }, frontFoot: { x: 10, y: 0 }, rearFoot: { x: -9, y: 0 } },
