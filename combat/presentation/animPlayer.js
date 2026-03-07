@@ -265,15 +265,15 @@
     }
     if (state === 'blockstun') {
       reactionPhase = (exchangeInfo.recent && exchangeInfo.exchange && exchangeInfo.exchange.hitType === 'block') ?
-        impactPhase(poseLib, exchangeInfo.age, 8) :
-        sequencePhase(poseLib, fighter.stateFrame, 7);
+        impactPhase(poseLib, exchangeInfo.age, 9) :
+        sequencePhase(poseLib, fighter.stateFrame, 8);
       pose = applyClipWeighted(poseLib, pose, 'blockBrace', reactionPhase, 0.72 + (contactIntensity * 0.18));
-      pose = applyClipWeighted(poseLib, pose, 'guardRecover', reactionPhase, 0.28 + (contactIntensity * 0.08));
+      pose = applyClipWeighted(poseLib, pose, 'guardRecover', reactionPhase, 0.34 + (contactIntensity * 0.12));
     } else if (state === 'hitstun') {
-      reactionPhase = exchangeInfo.recent ? impactPhase(poseLib, exchangeInfo.age, 9) : sequencePhase(poseLib, fighter.stateFrame, 8);
+      reactionPhase = exchangeInfo.recent ? impactPhase(poseLib, exchangeInfo.age, 10) : sequencePhase(poseLib, fighter.stateFrame, 9);
       pose = applyClipWeighted(poseLib, pose, 'hitRecoil', reactionPhase, 0.78 + (contactIntensity * 0.16));
       pose = applyClipWeighted(poseLib, pose, 'confirmReceive', reactionPhase, 0.36 + (contactIntensity * 0.12));
-      pose = applyClipWeighted(poseLib, pose, 'hitRecover', reactionPhase, 0.22 + (contactIntensity * 0.1));
+      pose = applyClipWeighted(poseLib, pose, 'hitRecover', reactionPhase, 0.28 + (contactIntensity * 0.14));
     } else if (state === 'wakeup') {
       reactionPhase = sequencePhase(poseLib, fighter.stateFrame, 12);
       pose = applyClipWeighted(poseLib, pose, 'wakeRise', reactionPhase, 0.7 + (contactIntensity * 0.12));
@@ -305,13 +305,13 @@
       }
     }
     if (recentDefender) {
-      reactionPhase = impactPhase(poseLib, exchangeInfo.age, exchangeHitType === 'throw' ? 10 : 9);
+      reactionPhase = impactPhase(poseLib, exchangeInfo.age, exchangeHitType === 'throw' ? 11 : 10);
       if (exchangeHitType === 'block' && state !== 'blockstun') {
-        pose = applyClipWeighted(poseLib, pose, 'guardRecover', reactionPhase, 0.42 + (contactIntensity * 0.12));
+        pose = applyClipWeighted(poseLib, pose, 'guardRecover', reactionPhase, 0.48 + (contactIntensity * 0.14));
       } else if (exchangeHitType === 'hit' && state !== 'hitstun') {
-        pose = applyClipWeighted(poseLib, pose, 'hitRecover', reactionPhase, 0.5 + (contactIntensity * 0.12));
+        pose = applyClipWeighted(poseLib, pose, 'hitRecover', reactionPhase, 0.56 + (contactIntensity * 0.14));
       } else if (exchangeHitType === 'throw' && (state === 'knockdown' || state === 'wakeup' || state === 'hitstun')) {
-        pose = applyClipWeighted(poseLib, pose, 'throwDump', reactionPhase, 0.6 + (contactIntensity * 0.12));
+        pose = applyClipWeighted(poseLib, pose, 'throwDump', reactionPhase, 0.64 + (contactIntensity * 0.14));
       }
     }
     return pose;

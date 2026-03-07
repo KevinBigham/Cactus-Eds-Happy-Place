@@ -137,13 +137,13 @@
         headShiftX: -7,
         headShiftY: -3,
         shoulderTwist: -7,
-        hipTwist: -2,
+        hipTwist: -3,
         frontShoulderLift: -8,
-        rearShoulderLift: -3,
+        rearShoulderLift: -4,
         frontHand: { x: 12, y: -35 },
-        rearHand: { x: -2, y: -27 },
+        rearHand: { x: -4, y: -28 },
         frontFoot: { x: 2, y: 0 },
-        rearFoot: { x: -12, y: 0 }
+        rearFoot: { x: -13, y: 0 }
       },
       hit: {
         lean: -14,
@@ -154,11 +154,11 @@
         headShiftX: -9,
         headShiftY: -3,
         shoulderTwist: -7,
-        hipTwist: 2,
+        hipTwist: 3,
         frontHand: { x: -7, y: -17 },
-        rearHand: { x: -20, y: -13 },
-        frontFoot: { x: 0, y: 0 },
-        rearFoot: { x: -13, y: 0 }
+        rearHand: { x: -22, y: -14 },
+        frontFoot: { x: -1, y: 0 },
+        rearFoot: { x: -14, y: 0 }
       },
       tech: {
         lean: -5,

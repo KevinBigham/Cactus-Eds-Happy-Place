@@ -231,13 +231,18 @@
         scaledPose.headShiftX -= 5.2 * scale * contactIntensity;
         scaledPose.headShiftY -= 1.5 * scale * contactIntensity;
         scaledPose.shoulderTwist -= 3.2 * scale * contactIntensity;
-        scaledPose.hipTwist -= 1.1 * scale * contactIntensity;
+        scaledPose.hipTwist -= 1.6 * scale * contactIntensity;
         scaledPose.frontShoulderLift -= 3.1 * scale * contactIntensity;
-        scaledPose.rearShoulderLift += 1.3 * scale * contactIntensity;
+        scaledPose.rearShoulderLift += 2.1 * scale * contactIntensity;
         scaledPose.frontHand.x -= 3.6 * scale * contactIntensity;
         scaledPose.frontHand.y -= 4.6 * scale * contactIntensity;
-        scaledPose.rearHand.x += 1.4 * scale * contactIntensity;
-        scaledPose.rearHand.y -= 1.1 * scale * contactIntensity;
+        scaledPose.rearHand.x += 2.2 * scale * contactIntensity;
+        scaledPose.rearHand.y -= 1.8 * scale * contactIntensity;
+        if (phaseName === 'recovery') {
+          scaledPose.rearHand.x += 1.4 * scale * contactIntensity;
+          scaledPose.rearShoulderLift += 0.8 * scale * contactIntensity;
+          scaledPose.hipTwist -= 0.6 * scale * contactIntensity;
+        }
       } else if (contactRole === 'hit') {
         scaledPose.lean -= 2.1 * scale * contactIntensity;
         scaledPose.torsoShiftX -= 4.8 * scale * contactIntensity;
@@ -245,24 +250,30 @@
         scaledPose.headShiftX -= 6.2 * scale * contactIntensity;
         scaledPose.headShiftY -= 2.3 * scale * contactIntensity;
         scaledPose.shoulderTwist -= 4 * scale * contactIntensity;
-        scaledPose.hipTwist += 2.1 * scale * contactIntensity;
+        scaledPose.hipTwist += 2.6 * scale * contactIntensity;
         scaledPose.frontShoulderLift += 2.6 * scale * contactIntensity;
-        scaledPose.rearShoulderLift -= 2.4 * scale * contactIntensity;
+        scaledPose.rearShoulderLift -= 3.2 * scale * contactIntensity;
         scaledPose.frontHand.x -= 4.8 * scale * contactIntensity;
         scaledPose.frontHand.y += 2.2 * scale * contactIntensity;
-        scaledPose.rearHand.x -= 4.1 * scale * contactIntensity;
-        scaledPose.rearHand.y += 2.8 * scale * contactIntensity;
+        scaledPose.rearHand.x -= 5.2 * scale * contactIntensity;
+        scaledPose.rearHand.y += 3.4 * scale * contactIntensity;
+        scaledPose.rearHipLift += 1.4 * scale * contactIntensity;
+        if (phaseName === 'recovery') {
+          scaledPose.rearHand.x -= 1.6 * scale * contactIntensity;
+          scaledPose.rearShoulderLift -= 0.9 * scale * contactIntensity;
+          scaledPose.hipTwist += 0.8 * scale * contactIntensity;
+        }
       } else if (contactRole === 'tech') {
         scaledPose.torsoShiftX -= 1.8 * scale * contactIntensity;
         scaledPose.headShiftY -= 1.8 * scale * contactIntensity;
         scaledPose.shoulderTwist += 5.1 * scale * contactIntensity;
-        scaledPose.hipTwist -= 1.8 * scale * contactIntensity;
+        scaledPose.hipTwist -= 2.2 * scale * contactIntensity;
         scaledPose.frontShoulderLift -= 2.4 * scale * contactIntensity;
-        scaledPose.rearShoulderLift -= 1.9 * scale * contactIntensity;
-        scaledPose.frontHand.x += 2.3 * scale * contactIntensity;
-        scaledPose.frontHand.y -= 2.3 * scale * contactIntensity;
-        scaledPose.rearHand.x -= 2.3 * scale * contactIntensity;
-        scaledPose.rearHand.y -= 1.9 * scale * contactIntensity;
+        scaledPose.rearShoulderLift -= 2.4 * scale * contactIntensity;
+        scaledPose.frontHand.x += 2.8 * scale * contactIntensity;
+        scaledPose.frontHand.y -= 2.8 * scale * contactIntensity;
+        scaledPose.rearHand.x -= 2.8 * scale * contactIntensity;
+        scaledPose.rearHand.y -= 2.4 * scale * contactIntensity;
       } else if (contactRole === 'wakeup') {
         scaledPose.torsoShiftX += 2.1 * scale * contactIntensity;
         scaledPose.torsoShiftY -= 1.8 * scale * contactIntensity;

@@ -208,8 +208,8 @@
     var role = contact ? String(contact.role || '') : '';
     var alpha;
     var col;
-    if (!contact || (contact.intensity || 0) < 0.18 || !cache.rig) return;
-    alpha = clamp(0.14 + (contact.intensity * 0.28), 0.14, 0.42);
+    if (!contact || (contact.intensity || 0) < 0.16 || !cache.rig) return;
+    alpha = clamp(0.16 + (contact.intensity * 0.30), 0.16, 0.46);
     col = cache.visual && cache.visual.palette ? (cache.visual.palette.accent || 0xffcf7a) : 0xffcf7a;
     if (role === 'block') col = 0x7ab6ff;
     else if (role === 'hit') col = 0xff9a64;
@@ -221,9 +221,13 @@
     g.lineStyle(1, col, alpha * 0.92);
     g.strokeCircle(cache.rig.head.x, cache.rig.head.y, cache.rig.headR + 2);
     if (role === 'block' || role === 'hit' || role === 'tech') {
-      g.lineStyle(1, q(opts, 0x050505), 0.16 + (contact.intensity * 0.12));
+      g.lineStyle(1, q(opts, 0x050505), 0.18 + (contact.intensity * 0.14));
       g.lineBetween(cache.rig.frontShoulder.x, cache.rig.frontShoulder.y, cache.rig.rearHip.x, cache.rig.rearHip.y);
       g.lineBetween(cache.rig.rearShoulder.x, cache.rig.rearShoulder.y, cache.rig.frontHip.x, cache.rig.frontHip.y);
+      if (contact.intensity > 0.4 && (role === 'block' || role === 'hit')) {
+        g.lineStyle(1, col, alpha * 0.5);
+        g.lineBetween(cache.rig.rearHip.x, cache.rig.rearHip.y, cache.rig.rearKnee.x, cache.rig.rearKnee.y);
+      }
     } else if (role === 'attacker' || role === 'throw') {
       g.lineStyle(1, col, alpha * 0.65);
       g.lineBetween(cache.rig.frontShoulder.x, cache.rig.frontShoulder.y, cache.rig.frontHip.x, cache.rig.frontHip.y);
@@ -243,32 +247,40 @@
         { x: cache.rig.frontHand.x + (cache.rig.facing * 3), y: cache.rig.frontHand.y - 2 },
         { x: cache.rig.frontHand.x + (cache.rig.facing * -1), y: cache.rig.frontHand.y + 7 },
         { x: cache.rig.torsoCenter.x + (cache.rig.facing * 2), y: cache.rig.torsoCenter.y + 5 }
-      ], q(opts, 0x0d1622), 0.26 + (intensity * 0.08));
+      ], q(opts, 0x0d1622), 0.28 + (intensity * 0.10));
       fillPoly(g, [
         { x: cache.rig.frontShoulder.x + (cache.rig.facing * 2), y: cache.rig.frontShoulder.y - 2 },
         { x: cache.rig.frontHand.x + (cache.rig.facing * 2), y: cache.rig.frontHand.y - 1 },
         { x: cache.rig.frontHand.x + (cache.rig.facing * -2), y: cache.rig.frontHand.y + 6 },
         { x: cache.rig.torsoCenter.x + (cache.rig.facing * 4), y: cache.rig.torsoCenter.y + 2 }
-      ], q(opts, 0x7ab6ff), 0.16 + (intensity * 0.08));
-      g.lineStyle(1, q(opts, 0x7ab6ff), 0.44 + (intensity * 0.12));
+      ], q(opts, 0x7ab6ff), 0.18 + (intensity * 0.10));
+      g.lineStyle(1, q(opts, 0x7ab6ff), 0.46 + (intensity * 0.14));
       g.lineBetween(cache.rig.frontShoulder.x, cache.rig.frontShoulder.y, cache.rig.frontHand.x, cache.rig.frontHand.y);
       g.lineBetween(cache.rig.frontHand.x, cache.rig.frontHand.y, cache.rig.torsoCenter.x + (cache.rig.facing * 3), cache.rig.torsoCenter.y + 2);
+      if (intensity > 0.35) {
+        g.lineStyle(1, q(opts, 0x7ab6ff), 0.22 + (intensity * 0.08));
+        g.lineBetween(cache.rig.rearShoulder.x, cache.rig.rearShoulder.y, cache.rig.rearHand.x, cache.rig.rearHand.y);
+      }
     } else if (stateKey === 'hit') {
       fillPoly(g, [
         { x: cache.rig.torsoCenter.x - (cache.rig.facing * 6), y: cache.rig.torsoCenter.y - 8 },
         { x: cache.rig.torsoCenter.x - (cache.rig.facing * 14), y: cache.rig.torsoCenter.y - 1 },
         { x: cache.rig.torsoCenter.x - (cache.rig.facing * 8), y: cache.rig.torsoCenter.y + 10 },
         { x: cache.rig.torsoCenter.x - (cache.rig.facing * 1), y: cache.rig.torsoCenter.y + 5 }
-      ], q(opts, 0x1a0d08), 0.22);
+      ], q(opts, 0x1a0d08), 0.24);
       fillPoly(g, [
         { x: cache.rig.head.x - (cache.rig.facing * 2), y: cache.rig.head.y + 2 },
         { x: cache.rig.torsoCenter.x - (cache.rig.facing * 9), y: cache.rig.torsoCenter.y - 5 },
         { x: cache.rig.torsoCenter.x - (cache.rig.facing * 6), y: cache.rig.torsoCenter.y + 7 },
         { x: cache.rig.head.x - (cache.rig.facing * 6), y: cache.rig.head.y + 7 }
-      ], q(opts, 0x3d180a), 0.18 + (intensity * 0.08));
-      g.lineStyle(1, q(opts, 0xff9a64), 0.42 + (intensity * 0.12));
+      ], q(opts, 0x3d180a), 0.20 + (intensity * 0.10));
+      g.lineStyle(1, q(opts, 0xff9a64), 0.44 + (intensity * 0.14));
       g.lineBetween(cache.rig.head.x - (cache.rig.facing * 4), cache.rig.head.y + 1, cache.rig.torsoCenter.x - (cache.rig.facing * 8), cache.rig.torsoCenter.y - 3);
       g.lineBetween(cache.rig.torsoCenter.x - (cache.rig.facing * 4), cache.rig.torsoCenter.y + 2, cache.rig.rearHip.x, cache.rig.rearHip.y + 1);
+      if (intensity > 0.35) {
+        g.lineStyle(1, q(opts, 0xff9a64), 0.2 + (intensity * 0.08));
+        g.lineBetween(cache.rig.rearHip.x, cache.rig.rearHip.y, cache.rig.rearShoulder.x, cache.rig.rearShoulder.y);
+      }
     } else if (role === 'tech') {
       g.lineStyle(1, q(opts, 0x96dfff), 0.48 + (intensity * 0.1));
       g.lineBetween(cache.rig.frontShoulder.x, cache.rig.frontShoulder.y, cache.rig.rearHand.x, cache.rig.rearHand.y);
