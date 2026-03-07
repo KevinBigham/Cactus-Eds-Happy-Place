@@ -5,6 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Cactus Ed's Happy Place</title>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+  <script src="combat/index.js"></script>
+  <script src="combat/core/constants.js"></script>
+  <script src="combat/core/input/socd.js"></script>
+  <script src="combat/core/input/historyBuffer.js"></script>
+  <script src="combat/core/input/motionParser.js"></script>
+  <script src="combat/core/input/chargeParser.js"></script>
+  <script src="combat/core/world/createFighter.js"></script>
+  <script src="combat/core/world/resetRound.js"></script>
+  <script src="combat/core/world/lifecycle.js"></script>
+  <script src="combat/core/world/createWorld.js"></script>
+  <script src="combat/core/world/snapshot.js"></script>
+  <script src="combat/core/world/hash.js"></script>
+  <script src="combat/core/spatial/geometry.js"></script>
+  <script src="combat/core/move/bridge.js"></script>
+  <script src="combat/core/consequence/helpers.js"></script>
+  <script src="combat/core/hitstop/bridge.js"></script>
+  <script src="combat/core/throw/bridge.js"></script>
+  <script src="combat/core/exchange/bridge.js"></script>
+  <script src="combat/core/strike/bridge.js"></script>
+  <script src="combat/core/fighter/tick.js"></script>
+  <script src="combat/core/sim/step.js"></script>
+  <script src="combat/api/CombatEngine.js"></script>
+  <script src="combat/adapters/phaser/FightShellAdapter.js"></script>
+  <script src="combat/tools/determinism/runDeterminism.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
@@ -6855,10 +6879,26 @@ function _fightMkCalloutFrames(){
   }
   return Math.max(1,Math.floor((BALANCE.fight&&BALANCE.fight.ui&&BALANCE.fight.ui.calloutFrames)||60));
 }
-function _fightMkSetCallout(world,msg){
+function _fightLifecycleModule(){
+  return (window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.world&&window.CEHP_COMBAT.core.world.lifecycle)?
+    window.CEHP_COMBAT.core.world.lifecycle:null;
+}
+function _fightLifecycleUseModule(world){
+  if(!world) return true;
+  return world.__lifecycleOwner!=='legacy';
+}
+function _fightMkSetCalloutLegacy(world,msg){
   if(!world||!world.mkGba||!world.mkGba.enabled) return;
   world.mkGba.callout.text=String(msg||'');
   world.mkGba.callout.framesLeft=_fightMkCalloutFrames();
+}
+function _fightMkSetCallout(world,msg){
+  var lc=_fightLifecycleModule();
+  if(_fightLifecycleUseModule(world)&&lc&&typeof lc.setCallout==='function'){
+    lc.setCallout(world,msg);
+    return;
+  }
+  _fightMkSetCalloutLegacy(world,msg);
 }
 function _fightMkCombosFor(rosterKey){
   var table=(BALANCE.fight&&BALANCE.fight.mkGbaTargetCombos)||{};
@@ -6879,133 +6919,39 @@ function _fightMkAirHitsKey(fid){
   return fid==='p1'?'p1AirHitsTaken':'p2AirHitsTaken';
 }
 
+function _fightHashModule(){
+  return (window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.world&&window.CEHP_COMBAT.core.world.hash)?
+    window.CEHP_COMBAT.core.world.hash:null;
+}
 function _fightStableStringify(obj){
-  if(obj===null) return 'null';
-  var t=typeof obj;
-  if(t==='number'||t==='boolean') return String(obj);
-  if(t==='string') return JSON.stringify(obj);
-  if(Array.isArray(obj)){
-    var ai=[]; for(var i=0;i<obj.length;i++) ai.push(_fightStableStringify(obj[i]));
-    return '['+ai.join(',')+']';
-  }
-  var keys=[]; for(var k in obj){if(obj.hasOwnProperty(k)) keys.push(k);}
-  keys.sort();
-  var parts=[];
-  for(var ki=0;ki<keys.length;ki++){
-    var kk=keys[ki];
-    parts.push(JSON.stringify(kk)+':'+_fightStableStringify(obj[kk]));
-  }
-  return '{'+parts.join(',')+'}';
+  var hm=_fightHashModule();
+  if(hm&&typeof hm.stableStringify==='function') return hm.stableStringify(obj);
+  return JSON.stringify(obj);
 }
 function _fightFNV1a32(str){
+  var hm=_fightHashModule();
+  if(hm&&typeof hm.fnv1a32==='function') return hm.fnv1a32(String(str||''));
   var h=0x811c9dc5;
-  for(var i=0;i<str.length;i++){
-    h^=str.charCodeAt(i);
+  for(var i=0;i<String(str||'').length;i++){
+    h^=String(str||'').charCodeAt(i);
     h=(h+((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24)))>>>0;
   }
   return h>>>0;
 }
 function _fightStateDigest(world){
-  return {
-    frame:world.frame,phase:world.phase,phaseTimer:world.phaseTimer,round:world.round,
-    score:{p1:world.score.p1,p2:world.score.p2},
-    rng:{seed:world.rng.seed,cursor:world.rng.cursor,enabled:world.rng.enabled},
-    aiProfile:world.aiProfile||'aggroGremlin',
-    p1:{
-      x:world.fighters.p1.x,y:world.fighters.p1.y,vx:world.fighters.p1.vx,vy:world.fighters.p1.vy,facing:world.fighters.p1.facing,
-      state:world.fighters.p1.state,moveId:world.fighters.p1.moveId,moveFrame:world.fighters.p1.moveFrame,
-      hp:world.fighters.p1.health,stun:world.fighters.p1.stunMeter,dizzy:world.fighters.p1.dizzyFramesLeft,
-      hs:world.fighters.p1.hitstunFramesLeft,bs:world.fighters.p1.blockstunFramesLeft,kd:world.fighters.p1.knockdownFramesLeft,
-      throwInvul:world.fighters.p1.wakeupThrowInvulFramesLeft||0,
-      parser:world.fighters.p1.lastParserDecision||{motionType:'none',moveId:'',rejected:[]}
-    },
-    p2:{
-      x:world.fighters.p2.x,y:world.fighters.p2.y,vx:world.fighters.p2.vx,vy:world.fighters.p2.vy,facing:world.fighters.p2.facing,
-      state:world.fighters.p2.state,moveId:world.fighters.p2.moveId,moveFrame:world.fighters.p2.moveFrame,
-      hp:world.fighters.p2.health,stun:world.fighters.p2.stunMeter,dizzy:world.fighters.p2.dizzyFramesLeft,
-      hs:world.fighters.p2.hitstunFramesLeft,bs:world.fighters.p2.blockstunFramesLeft,kd:world.fighters.p2.knockdownFramesLeft,
-      throwInvul:world.fighters.p2.wakeupThrowInvulFramesLeft||0,
-      parser:world.fighters.p2.lastParserDecision||{motionType:'none',moveId:'',rejected:[]}
-    },
-    interaction:{
-      hitstop:world.interaction.hitstop,
-      lastExchange:world.interaction.lastExchange
-    },
-    l15:{
-      matchMaxCombo:{
-        p1:world.l15Stats&&world.l15Stats.match&&world.l15Stats.match.maxCombo?world.l15Stats.match.maxCombo.p1:0,
-        p2:world.l15Stats&&world.l15Stats.match&&world.l15Stats.match.maxCombo?world.l15Stats.match.maxCombo.p2:0
-      },
-      roundCombo:{
-        p1:world.l15Stats&&world.l15Stats.round&&world.l15Stats.round.currentCombo?world.l15Stats.round.currentCombo.p1:0,
-        p2:world.l15Stats&&world.l15Stats.round&&world.l15Stats.round.currentCombo?world.l15Stats.round.currentCombo.p2:0
-      },
-      dizzyWarned:{
-        p1:world.l15Stats&&world.l15Stats.flags&&world.l15Stats.flags.dizzyWarned?!!world.l15Stats.flags.dizzyWarned.p1:false,
-        p2:world.l15Stats&&world.l15Stats.flags&&world.l15Stats.flags.dizzyWarned?!!world.l15Stats.flags.dizzyWarned.p2:false
-      }
-    },
-    mkGba:{
-      enabled:!!(world.mkGba&&world.mkGba.enabled),
-      timer:world.mkGba&&world.mkGba.roundTimerFrames?world.mkGba.roundTimerFrames:0,
-      callout:world.mkGba&&world.mkGba.callout?world.mkGba.callout.text:'',
-      calloutFrames:world.mkGba&&world.mkGba.callout?world.mkGba.callout.framesLeft:0,
-      heavyFlash:world.mkGba&&world.mkGba.vfx?world.mkGba.vfx.heavyFlashFrames:0,
-      invert:world.mkGba&&world.mkGba.vfx?world.mkGba.vfx.koInvertFrames:0,
-      dial:{
-        p1:world.mkGba&&world.mkGba.comboDial&&world.mkGba.comboDial.p1?world.mkGba.comboDial.p1:{chainId:'',step:0,window:0},
-        p2:world.mkGba&&world.mkGba.comboDial&&world.mkGba.comboDial.p2?world.mkGba.comboDial.p2:{chainId:'',step:0,window:0}
-      },
-      juggle:{
-        p1:world.mkGba&&world.mkGba.juggle?world.mkGba.juggle.p1AirHitsTaken:0,
-        p2:world.mkGba&&world.mkGba.juggle?world.mkGba.juggle.p2AirHitsTaken:0
-      }
-    },
-    sf:{
-      enabled:!!(world.sf&&world.sf.enabled),
-      parserMode:world.sf&&world.sf.parserMode?world.sf.parserMode:''
-    }
-  };
+  var hm=_fightHashModule();
+  if(hm&&typeof hm.stateDigest==='function') return hm.stateDigest(world);
+  return {frame:world&&world.frame?world.frame:0};
 }
 function _fightHashWorld(world){
+  var hm=_fightHashModule();
+  if(hm&&typeof hm.stateHash==='function') return hm.stateHash(world);
   var s=_fightStableStringify(_fightStateDigest(world));
   return ('00000000'+_fightFNV1a32(s).toString(16)).slice(-8);
 }
 function _fightDiff(a,b){
-  var keys=['frame','phase','phaseTimer','round'];
-  for(var i=0;i<keys.length;i++){if(a[keys[i]]!==b[keys[i]])return{path:keys[i],a:a[keys[i]],b:b[keys[i]]};}
-  if(a.aiProfile!==b.aiProfile) return {path:'aiProfile',a:a.aiProfile,b:b.aiProfile};
-  var sub=['x','y','vx','vy','facing','state','moveId','moveFrame','hp','stun','dizzy','hs','bs','kd','throwInvul'];
-  var p=['p1','p2'];
-  for(var pi=0;pi<p.length;pi++){
-    for(var si=0;si<sub.length;si++){
-      if(a[p[pi]][sub[si]]!==b[p[pi]][sub[si]]) return {path:p[pi]+'.'+sub[si],a:a[p[pi]][sub[si]],b:b[p[pi]][sub[si]]};
-    }
-    if(a[p[pi]].parser&&b[p[pi]].parser){
-      if(a[p[pi]].parser.motionType!==b[p[pi]].parser.motionType) return {path:p[pi]+'.parser.motionType',a:a[p[pi]].parser.motionType,b:b[p[pi]].parser.motionType};
-      if(a[p[pi]].parser.moveId!==b[p[pi]].parser.moveId) return {path:p[pi]+'.parser.moveId',a:a[p[pi]].parser.moveId,b:b[p[pi]].parser.moveId};
-    }
-  }
-  if(a.l15&&b.l15){
-    if(a.l15.roundCombo&&b.l15.roundCombo){
-      if(a.l15.roundCombo.p1!==b.l15.roundCombo.p1) return {path:'l15.roundCombo.p1',a:a.l15.roundCombo.p1,b:b.l15.roundCombo.p1};
-      if(a.l15.roundCombo.p2!==b.l15.roundCombo.p2) return {path:'l15.roundCombo.p2',a:a.l15.roundCombo.p2,b:b.l15.roundCombo.p2};
-    }
-  }
-  if(a.mkGba&&b.mkGba){
-    if(a.mkGba.timer!==b.mkGba.timer) return {path:'mkGba.timer',a:a.mkGba.timer,b:b.mkGba.timer};
-    if(a.mkGba.calloutFrames!==b.mkGba.calloutFrames) return {path:'mkGba.calloutFrames',a:a.mkGba.calloutFrames,b:b.mkGba.calloutFrames};
-    if(a.mkGba.heavyFlash!==b.mkGba.heavyFlash) return {path:'mkGba.heavyFlash',a:a.mkGba.heavyFlash,b:b.mkGba.heavyFlash};
-    if(a.mkGba.invert!==b.mkGba.invert) return {path:'mkGba.invert',a:a.mkGba.invert,b:b.mkGba.invert};
-    if(a.mkGba.juggle&&b.mkGba.juggle){
-      if(a.mkGba.juggle.p1!==b.mkGba.juggle.p1) return {path:'mkGba.juggle.p1',a:a.mkGba.juggle.p1,b:b.mkGba.juggle.p1};
-      if(a.mkGba.juggle.p2!==b.mkGba.juggle.p2) return {path:'mkGba.juggle.p2',a:a.mkGba.juggle.p2,b:b.mkGba.juggle.p2};
-    }
-  }
-  if(a.sf&&b.sf){
-    if(a.sf.enabled!==b.sf.enabled) return {path:'sf.enabled',a:a.sf.enabled,b:b.sf.enabled};
-    if(a.sf.parserMode!==b.sf.parserMode) return {path:'sf.parserMode',a:a.sf.parserMode,b:b.sf.parserMode};
-  }
+  var hm=_fightHashModule();
+  if(hm&&typeof hm.diffDigest==='function') return hm.diffDigest(a,b);
   return null;
 }
 
@@ -7052,7 +6998,7 @@ function _fightL15WarnThreshold(world){
   var warnPct=(cfg&&cfg.juice&&cfg.juice.warnStunPct)||0.82;
   return Math.floor((stunCfg.threshold||100)*warnPct);
 }
-function _fightAccumulateL15Round(world,winner){
+function _fightAccumulateL15RoundLegacy(world,winner){
   var m=world.l15Stats.match, r=world.l15Stats.round;
   var keys=['hitsLanded','blocks','throws','throwWhiffs','jumps','heavies','dizziesCaused','cornerKos','punishHits','throwDamage','strikeDamage','roundsWon'];
   var i,k,sides=['p1','p2'],s;
@@ -7070,7 +7016,15 @@ function _fightAccumulateL15Round(world,winner){
     if(r.maxBlockStreak[sd]>m.maxBlockStreak[sd]) m.maxBlockStreak[sd]=r.maxBlockStreak[sd];
   }
 }
-function _fightBuildL15Summary(world,winner,isMatch){
+function _fightAccumulateL15Round(world,winner){
+  var lc=_fightLifecycleModule();
+  if(_fightLifecycleUseModule(world)&&lc&&typeof lc.accumulateL15Round==='function'){
+    lc.accumulateL15Round(world,winner);
+    return;
+  }
+  _fightAccumulateL15RoundLegacy(world,winner);
+}
+function _fightBuildL15SummaryLegacy(world,winner,isMatch){
   var src=isMatch?world.l15Stats.match:world.l15Stats.round;
   var tag=isMatch?'match':'round';
   return {
@@ -7092,10 +7046,25 @@ function _fightBuildL15Summary(world,winner,isMatch){
     }
   };
 }
-function _fightResetL15Round(world){
+function _fightBuildL15Summary(world,winner,isMatch){
+  var lc=_fightLifecycleModule();
+  if(_fightLifecycleUseModule(world)&&lc&&typeof lc.buildL15Summary==='function'){
+    return lc.buildL15Summary(world,winner,isMatch);
+  }
+  return _fightBuildL15SummaryLegacy(world,winner,isMatch);
+}
+function _fightResetL15RoundLegacy(world){
   world.l15Stats.round=_fightL15StatBlock();
   world.l15Stats.flags.dizzyWarned={p1:false,p2:false};
   world.l15Stats.flags.cornerToastUntilFrame=0;
+}
+function _fightResetL15Round(world){
+  var lc=_fightLifecycleModule();
+  if(_fightLifecycleUseModule(world)&&lc&&typeof lc.resetL15Round==='function'){
+    lc.resetL15Round(world);
+    return;
+  }
+  _fightResetL15RoundLegacy(world);
 }
 
 function _fightMove(def){
@@ -7128,6 +7097,9 @@ var FIGHT_ROSTER = (function(){
     ed:{
       id:'ed',
       name:'Cactus Ed',
+      archetype:'all-rounder',
+      matchupRole:'anchor',
+      trainingFocus:['anti-air timing','jab confirms','throw/strike cycling','whiff punish spacing'],
       maxHealth:100,
       walkSpeed:_fightFromPx(3.2),
       airSpeed:_fightFromPx(2.2),
@@ -7136,19 +7108,22 @@ var FIGHT_ROSTER = (function(){
       maxFall:_fightFromPx(8.2),
       baseBoxes:{stand:{hurt:baseStandHurt,push:baseStandPush},crouch:{hurt:baseCrouchHurt,push:baseCrouchPush},jump:{hurt:baseJumpHurt,push:baseJumpPush}},
       moves:[
-        _fightMove({id:'front_throw',name:'Receipt Toss',type:'throw',button:FIGHT_BTN.THROW,startup:throwCfg.startup,active:throwCfg.active,recovery:throwCfg.recovery,onHit:{damage:14,stun:12,knockdown:42},onBlock:{blockstun:0},hitstop:'medium'}),
-        _fightMove({id:'dragon_palm',name:'Aloe Upper',type:'special',button:FIGHT_BTN.PUNCH,motion:[6,2,3],startup:11,active:4,recovery:19,hit:[{x:8,y:-88,w:34,h:52}],invuln:[1,4],onHit:{damage:13,hitstun:21,stun:24,knockdown:26},onBlock:{blockstun:11,chip:2},hitstop:'heavy'}),
-        _fightMove({id:'cactus_wave',name:'Cactus Wave',type:'special',button:FIGHT_BTN.PUNCH,motion:[2,3,6],startup:8,active:3,recovery:11,hit:[{x:20,y:-58,w:56,h:20}],onHit:{damage:11,hitstun:18,stun:20,pushback:16},onBlock:{blockstun:12,chip:2},hitstop:'medium'}),
-        _fightMove({id:'debt_lariat',name:'Debt Lariat',type:'special',button:FIGHT_BTN.KICK,charge:{hold:'back',release:'forward'},startup:10,active:4,recovery:20,hit:[{x:12,y:-62,w:52,h:28}],onHit:{damage:15,hitstun:22,stun:26,knockdown:24},onBlock:{blockstun:10,chip:1},hitstop:'heavy'}),
-        _fightMove({id:'standing_kick',name:'Kick',type:'normal',button:FIGHT_BTN.KICK,startup:7,active:3,recovery:11,hit:[{x:16,y:-48,w:40,h:18}],onHit:{damage:10,hitstun:15,stun:16},onBlock:{blockstun:9},hitstop:'medium'}),
-        _fightMove({id:'jab',name:'Jab',type:'normal',button:FIGHT_BTN.PUNCH,startup:3,active:2,recovery:5,hit:[{x:14,y:-62,w:30,h:15}],cancelWindow:{start:4,end:6,to:['special']},onHit:{damage:7,hitstun:13,stun:14},onBlock:{blockstun:8},hitstop:'light'}),
-        _fightMove({id:'low_kick',name:'Low Kick',type:'normal',button:FIGHT_BTN.KICK,requireCrouch:true,startup:6,active:3,recovery:10,hit:[{x:12,y:-30,w:38,h:14}],onHit:{damage:8,hitstun:14,stun:12},onBlock:{blockstun:8},hitstop:'light'}),
-        _fightMove({id:'jump_kick',name:'Jump Kick',type:'normal',button:FIGHT_BTN.KICK,airOnly:true,startup:4,active:3,recovery:8,hit:[{x:10,y:-56,w:42,h:20}],onHit:{damage:9,hitstun:14,stun:14},onBlock:{blockstun:8},hitstop:'light'})
+        _fightMove({id:'front_throw',name:'Receipt Toss',type:'throw',button:FIGHT_BTN.THROW,primaryRole:'throw-game',secondaryRole:'corner carry',startup:throwCfg.startup,active:throwCfg.active,recovery:throwCfg.recovery,onHit:{damage:14,stun:12,knockdown:42},onBlock:{blockstun:0},hitstop:'medium'}),
+        _fightMove({id:'dragon_palm',name:'Aloe Upper',type:'special',button:FIGHT_BTN.PUNCH,primaryRole:'anti-air',secondaryRole:'reversal',motion:[6,2,3],startup:10,active:4,recovery:21,hit:[{x:8,y:-88,w:34,h:52}],invuln:[1,5],onHit:{damage:13,hitstun:21,stun:23,knockdown:26},onBlock:{blockstun:10,chip:2},hitstop:'heavy'}),
+        _fightMove({id:'cactus_wave',name:'Cactus Wave',type:'special',button:FIGHT_BTN.PUNCH,primaryRole:'space-control',secondaryRole:'walk-behind check',motion:[2,3,6],startup:9,active:3,recovery:14,hit:[{x:20,y:-58,w:56,h:20}],onHit:{damage:10,hitstun:17,stun:18,pushback:20},onBlock:{blockstun:10,chip:1},hitstop:'medium'}),
+        _fightMove({id:'debt_lariat',name:'Debt Lariat',type:'special',button:FIGHT_BTN.KICK,primaryRole:'whiff-punish',secondaryRole:'corner carry',charge:{hold:'back',release:'forward'},startup:12,active:4,recovery:22,hit:[{x:12,y:-62,w:52,h:28}],onHit:{damage:14,hitstun:21,stun:24,knockdown:28},onBlock:{blockstun:8,chip:1},hitstop:'heavy'}),
+        _fightMove({id:'standing_kick',name:'Kick',type:'normal',button:FIGHT_BTN.KICK,primaryRole:'mid poke',secondaryRole:'combo filler',startup:6,active:3,recovery:10,hit:[{x:16,y:-48,w:40,h:18}],onHit:{damage:9,hitstun:15,stun:16},onBlock:{blockstun:8},hitstop:'medium'}),
+        _fightMove({id:'jab',name:'Jab',type:'normal',button:FIGHT_BTN.PUNCH,primaryRole:'light check',secondaryRole:'hit confirm',startup:3,active:2,recovery:5,hit:[{x:14,y:-62,w:30,h:15}],cancelWindow:{start:4,end:6,to:['special']},onHit:{damage:7,hitstun:13,stun:14},onBlock:{blockstun:8},hitstop:'light'}),
+        _fightMove({id:'low_kick',name:'Low Kick',type:'normal',button:FIGHT_BTN.KICK,primaryRole:'low check',secondaryRole:'pressure reset',requireCrouch:true,startup:6,active:3,recovery:11,hit:[{x:12,y:-30,w:38,h:14}],onHit:{damage:7,hitstun:13,stun:11},onBlock:{blockstun:7},hitstop:'light'}),
+        _fightMove({id:'jump_kick',name:'Jump Kick',type:'normal',button:FIGHT_BTN.KICK,primaryRole:'jump-in',secondaryRole:'air-to-air',airOnly:true,startup:5,active:4,recovery:8,hit:[{x:10,y:-56,w:42,h:20}],onHit:{damage:9,hitstun:14,stun:14},onBlock:{blockstun:8},hitstop:'light'})
       ]
     },
     daikon:{
       id:'daikon',
       name:'Daikon Lord',
+      archetype:'space-control bruiser',
+      matchupRole:'pressure foil',
+      trainingFocus:['corner pressure','commitment discipline','reversal bait','whiff punish timing'],
       maxHealth:100,
       walkSpeed:_fightFromPx(3.0),
       airSpeed:_fightFromPx(2.0),
@@ -7157,14 +7132,14 @@ var FIGHT_ROSTER = (function(){
       maxFall:_fightFromPx(7.8),
       baseBoxes:{stand:{hurt:[{x:-18,y:-80,w:36,h:80}],push:[{x:-13,y:-60,w:26,h:60}]},crouch:{hurt:[{x:-18,y:-57,w:36,h:57}],push:[{x:-13,y:-45,w:26,h:45}]},jump:{hurt:[{x:-18,y:-70,w:36,h:70}],push:[{x:-13,y:-54,w:26,h:54}]}},
       moves:[
-        _fightMove({id:'vine_throw',name:'Vine Grab',type:'throw',button:FIGHT_BTN.THROW,startup:throwCfg.startup,active:throwCfg.active,recovery:throwCfg.recovery,onHit:{damage:13,stun:11,knockdown:40},onBlock:{blockstun:0},hitstop:'medium'}),
-        _fightMove({id:'insulin_upper',name:'Insulin Upper',type:'special',button:FIGHT_BTN.PUNCH,motion:[6,2,3],startup:11,active:4,recovery:19,hit:[{x:4,y:-86,w:36,h:54}],invuln:[1,3],onHit:{damage:12,hitstun:20,stun:22,knockdown:22},onBlock:{blockstun:10,chip:2},hitstop:'heavy'}),
-        _fightMove({id:'memo_burst',name:'Memo Burst',type:'special',button:FIGHT_BTN.PUNCH,motion:[2,3,6],startup:8,active:3,recovery:11,hit:[{x:18,y:-60,w:58,h:22}],onHit:{damage:10,hitstun:17,stun:18},onBlock:{blockstun:11,chip:2},hitstop:'medium'}),
-        _fightMove({id:'brand_shoulder',name:'Brand Shoulder',type:'special',button:FIGHT_BTN.KICK,charge:{hold:'back',release:'forward'},startup:10,active:4,recovery:20,hit:[{x:10,y:-58,w:48,h:24}],onHit:{damage:14,hitstun:21,stun:24,knockdown:20},onBlock:{blockstun:10,chip:1},hitstop:'heavy'}),
-        _fightMove({id:'axe_kick',name:'Axe Kick',type:'normal',button:FIGHT_BTN.KICK,startup:7,active:3,recovery:11,hit:[{x:12,y:-52,w:40,h:24}],onHit:{damage:10,hitstun:14,stun:16},onBlock:{blockstun:8},hitstop:'medium'}),
-        _fightMove({id:'thorn_jab',name:'Thorn Jab',type:'normal',button:FIGHT_BTN.PUNCH,startup:3,active:2,recovery:5,hit:[{x:12,y:-64,w:30,h:16}],cancelWindow:{start:4,end:6,to:['special']},onHit:{damage:7,hitstun:12,stun:14},onBlock:{blockstun:8},hitstop:'light'}),
-        _fightMove({id:'root_sweep',name:'Root Sweep',type:'normal',button:FIGHT_BTN.KICK,requireCrouch:true,startup:6,active:3,recovery:10,hit:[{x:12,y:-28,w:42,h:15}],onHit:{damage:8,hitstun:13,stun:12,knockdown:12},onBlock:{blockstun:8},hitstop:'light'}),
-        _fightMove({id:'jump_drop',name:'Jump Drop',type:'normal',button:FIGHT_BTN.KICK,airOnly:true,startup:4,active:3,recovery:8,hit:[{x:8,y:-56,w:40,h:22}],onHit:{damage:9,hitstun:14,stun:14},onBlock:{blockstun:8},hitstop:'light'})
+        _fightMove({id:'vine_throw',name:'Vine Grab',type:'throw',button:FIGHT_BTN.THROW,primaryRole:'throw-game',secondaryRole:'position reset',startup:throwCfg.startup,active:throwCfg.active,recovery:throwCfg.recovery,onHit:{damage:13,stun:11,knockdown:40},onBlock:{blockstun:0},hitstop:'medium'}),
+        _fightMove({id:'insulin_upper',name:'Insulin Upper',type:'special',button:FIGHT_BTN.PUNCH,primaryRole:'anti-air',secondaryRole:'reversal',motion:[6,2,3],startup:12,active:4,recovery:21,hit:[{x:4,y:-86,w:36,h:54}],invuln:[1,4],onHit:{damage:12,hitstun:20,stun:22,knockdown:22},onBlock:{blockstun:9,chip:2},hitstop:'heavy'}),
+        _fightMove({id:'memo_burst',name:'Memo Burst',type:'special',button:FIGHT_BTN.PUNCH,primaryRole:'space-control',secondaryRole:'approach tax',motion:[2,3,6],startup:10,active:3,recovery:14,hit:[{x:18,y:-60,w:58,h:22}],onHit:{damage:9,hitstun:16,stun:18,pushback:18},onBlock:{blockstun:10,chip:1},hitstop:'medium'}),
+        _fightMove({id:'brand_shoulder',name:'Brand Shoulder',type:'special',button:FIGHT_BTN.KICK,primaryRole:'whiff-punish',secondaryRole:'corner carry',charge:{hold:'back',release:'forward'},startup:13,active:4,recovery:23,hit:[{x:10,y:-58,w:48,h:24}],onHit:{damage:15,hitstun:21,stun:24,knockdown:26},onBlock:{blockstun:8,chip:1},hitstop:'heavy'}),
+        _fightMove({id:'axe_kick',name:'Axe Kick',type:'normal',button:FIGHT_BTN.KICK,primaryRole:'pressure reset',secondaryRole:'mid poke',startup:8,active:4,recovery:12,hit:[{x:12,y:-52,w:40,h:24}],onHit:{damage:11,hitstun:15,stun:16},onBlock:{blockstun:9},hitstop:'medium'}),
+        _fightMove({id:'thorn_jab',name:'Thorn Jab',type:'normal',button:FIGHT_BTN.PUNCH,primaryRole:'light check',secondaryRole:'hit confirm',startup:3,active:2,recovery:5,hit:[{x:12,y:-64,w:30,h:16}],cancelWindow:{start:4,end:6,to:['special']},onHit:{damage:7,hitstun:12,stun:14},onBlock:{blockstun:8},hitstop:'light'}),
+        _fightMove({id:'root_sweep',name:'Root Sweep',type:'normal',button:FIGHT_BTN.KICK,primaryRole:'low check',secondaryRole:'trip threat',requireCrouch:true,startup:7,active:3,recovery:12,hit:[{x:12,y:-28,w:42,h:15}],onHit:{damage:7,hitstun:12,stun:11,knockdown:14},onBlock:{blockstun:7},hitstop:'light'}),
+        _fightMove({id:'jump_drop',name:'Jump Drop',type:'normal',button:FIGHT_BTN.KICK,primaryRole:'jump-in',secondaryRole:'air approach',airOnly:true,startup:5,active:4,recovery:8,hit:[{x:8,y:-56,w:40,h:22}],onHit:{damage:10,hitstun:14,stun:14},onBlock:{blockstun:8},hitstop:'light'})
       ]
     }
   };
@@ -7194,6 +7169,11 @@ function _fightMoveOrder(rosterKey){
   return order;
 }
 function _fightCreateFighter(id,rosterKey,xPx,facing){
+  var wf=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.world&&window.CEHP_COMBAT.core.world.createFighter)?
+    window.CEHP_COMBAT.core.world.createFighter:null;
+  if(wf&&typeof wf.createFighter==='function'){
+    return wf.createFighter(id,rosterKey,xPx,facing);
+  }
   var roster=FIGHT_ROSTER[rosterKey];
   return {
     id:id,
@@ -7218,6 +7198,12 @@ function _fightCreateFighter(id,rosterKey,xPx,facing){
   };
 }
 function _fightResetFighterRound(f,xPx,facing){
+  var wr=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.world&&window.CEHP_COMBAT.core.world.resetRound)?
+    window.CEHP_COMBAT.core.world.resetRound:null;
+  if(wr&&typeof wr.resetFighterRound==='function'){
+    wr.resetFighterRound(f,xPx,facing);
+    return;
+  }
   var roster=FIGHT_ROSTER[f.rosterKey];
   f.x=_fightFromPx(xPx); f.y=_fightFromPx(472); f.vx=0; f.vy=0;
   f.facing=facing;
@@ -7245,12 +7231,24 @@ function _fightDirToWorldHorizontal(dir,facing){
   return facing===1?rel:-rel;
 }
 function _fightPushInputHistory(f,input,edge,limit,frame){
+  var hb=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.input&&window.CEHP_COMBAT.core.input.historyBuffer)?
+    window.CEHP_COMBAT.core.input.historyBuffer:null;
+  if(hb&&typeof hb.pushHistory==='function'){
+    hb.pushHistory(f,input,edge,limit,frame);
+    return;
+  }
   f.inputHistory.push({frame:frame,dir:input.dir,buttons:input.buttons});
   f.inputEdgeHistory.push({frame:frame,dir:edge.dir,buttons:edge.buttons});
   while(f.inputHistory.length>limit) f.inputHistory.shift();
   while(f.inputEdgeHistory.length>limit) f.inputEdgeHistory.shift();
 }
 function _fightUpdateCharge(world,f,input){
+  var cp=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.input&&window.CEHP_COMBAT.core.input.chargeParser)?
+    window.CEHP_COMBAT.core.input.chargeParser:null;
+  if(cp&&typeof cp.updateChargeForLegacy==='function'){
+    cp.updateChargeForLegacy(world,f,input);
+    return;
+  }
   var cfg=_fightConfigFor(world);
   var c=(cfg&&cfg.charge)||{backFrames:45,downFrames:40,releaseWindowFrames:8};
   var backHeld=_fightDirIsBack(input.dir);
@@ -7278,6 +7276,11 @@ function _fightDirMatch(actual,target,len){
   return false;
 }
 function _fightParseMotion(history,motion,window,len){
+  var mp=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.input&&window.CEHP_COMBAT.core.input.motionParser)?
+    window.CEHP_COMBAT.core.input.motionParser:null;
+  if(mp&&typeof mp.parseMotionLegacy==='function'){
+    return mp.parseMotionLegacy(history,motion,window,len);
+  }
   var start=Math.max(0,history.length-window);
   var idx=motion.length-1;
   var i;
@@ -7290,6 +7293,11 @@ function _fightParseMotion(history,motion,window,len){
   return false;
 }
 function _fightCanDoChargeMove(world,f,move,input){
+  var cp=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.input&&window.CEHP_COMBAT.core.input.chargeParser)?
+    window.CEHP_COMBAT.core.input.chargeParser:null;
+  if(cp&&typeof cp.canDoChargeMoveForLegacy==='function'){
+    return cp.canDoChargeMoveForLegacy(world,f,move,input);
+  }
   var c=move.charge||{};
   var cfg=_fightConfigFor(world);
   if(c.hold==='back'){
@@ -7358,21 +7366,36 @@ function _fightCreateWorld(seed,config){
   return world;
 }
 function _fightSnapshotCore(world){
+  var snapMod=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.world&&window.CEHP_COMBAT.core.world.snapshot)?
+    window.CEHP_COMBAT.core.world.snapshot:null;
+  if(snapMod&&typeof snapMod.snapshot==='function') return snapMod.snapshot(world);
   var snap=_fightClone(world);
   if(snap&&snap.debug&&snap.debug.snapshots) snap.debug.snapshots=[];
   return snap;
 }
 function _fightRestoreCore(world,snap){
+  var snapMod=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.world&&window.CEHP_COMBAT.core.world.snapshot)?
+    window.CEHP_COMBAT.core.world.snapshot:null;
+  if(snapMod&&typeof snapMod.restore==='function') return snapMod.restore(world,snap);
   var k;
   for(k in world){if(world.hasOwnProperty(k)) delete world[k];}
   for(k in snap){if(snap.hasOwnProperty(k)) world[k]=_fightClone(snap[k]);}
   if(world&&world.debug&&world.debug.snapshots) world.debug.snapshots=[];
   return world;
 }
-function _fightSerializeCore(world){return _fightStableStringify(world);}
-function _fightStateHashCore(world){return _fightHashWorld(world);}
+function _fightSerializeCore(world){
+  var snapMod=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.world&&window.CEHP_COMBAT.core.world.snapshot)?
+    window.CEHP_COMBAT.core.world.snapshot:null;
+  if(snapMod&&typeof snapMod.serialize==='function') return snapMod.serialize(world);
+  return _fightStableStringify(world);
+}
+function _fightStateHashCore(world){
+  var hm=_fightHashModule();
+  if(hm&&typeof hm.stateHash==='function') return hm.stateHash(world);
+  return _fightHashWorld(world);
+}
 
-function _fightSetPhase(world,phase,events){
+function _fightSetPhaseLegacy(world,phase,events){
   world.phase=phase;
   world.phaseTimer=0;
   if(world.mkGba&&world.mkGba.enabled){
@@ -7381,7 +7404,21 @@ function _fightSetPhase(world,phase,events){
   }
   if(events) events.push({type:'phase',phase:phase,round:world.round,score:{p1:world.score.p1,p2:world.score.p2}});
 }
+function _fightSetPhase(world,phase,events){
+  var lc=_fightLifecycleModule();
+  if(_fightLifecycleUseModule(world)&&lc&&typeof lc.setPhase==='function'){
+    lc.setPhase(world,phase,events);
+    return;
+  }
+  _fightSetPhaseLegacy(world,phase,events);
+}
 function _fightResetRound(world){
+  var wr=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.world&&window.CEHP_COMBAT.core.world.resetRound)?
+    window.CEHP_COMBAT.core.world.resetRound:null;
+  if(wr&&typeof wr.resetRound==='function'){
+    wr.resetRound(world);
+    return;
+  }
   var cfg=_fightConfigFor(world);
   _fightResetFighterRound(world.fighters.p1,220,1);
   _fightResetFighterRound(world.fighters.p2,740,-1);
@@ -7400,14 +7437,22 @@ function _fightResetRound(world){
     _fightMkSetCallout(world,'ENGAGE');
   }
 }
-function _fightFinalizeRound(world,events){
+function _fightFinalizeRoundLegacy(world,events){
   var winner=world.winner||'';
   var rsum=_fightBuildL15Summary(world,winner,false);
   world.l15Stats.lastRoundRecap=_fightClone(rsum);
   if(events) events.push({type:'roundRecap',summary:_fightClone(rsum)});
   _fightAccumulateL15Round(world,winner);
 }
-function _fightPhaseAdvance(world,events){
+function _fightFinalizeRound(world,events){
+  var lc=_fightLifecycleModule();
+  if(_fightLifecycleUseModule(world)&&lc&&typeof lc.finalizeRound==='function'){
+    lc.finalizeRound(world,events);
+    return;
+  }
+  _fightFinalizeRoundLegacy(world,events);
+}
+function _fightPhaseAdvanceLegacy(world,events){
   world.phaseTimer++;
   if(world.phase===FIGHT_PHASES.INTRO&&world.phaseTimer>=120){_fightSetPhase(world,FIGHT_PHASES.ROUND_ANNOUNCE,events);return true;}
   if(world.phase===FIGHT_PHASES.ROUND_ANNOUNCE&&world.phaseTimer>=36){_fightSetPhase(world,FIGHT_PHASES.FIGHT_START,events);return true;}
@@ -7433,6 +7478,13 @@ function _fightPhaseAdvance(world,events){
     return true;
   }
   return false;
+}
+function _fightPhaseAdvance(world,events){
+  var lc=_fightLifecycleModule();
+  if(_fightLifecycleUseModule(world)&&lc&&typeof lc.phaseAdvance==='function'){
+    return lc.phaseAdvance(world,events);
+  }
+  return _fightPhaseAdvanceLegacy(world,events);
 }
 
 // CHUNK: FIGHT COLLISION/RESOLUTION PIPELINE
@@ -7509,7 +7561,8 @@ function _fightResolvePush(world){
 function _fightHoldingBack(f,input){
   return _fightDirIsBack(input.dir);
 }
-function _fightApplyHitstop(world,key){
+var __fightApplyHitstopCompatDepth=0;
+function _fightApplyHitstopLegacyBody(world,key){
   var cfg=_fightConfigFor(world);
   var hs=(cfg&&cfg.hitstop)||{};
   var v=hs.light||6;
@@ -7517,6 +7570,23 @@ function _fightApplyHitstop(world,key){
   else if(key==='heavy') v=hs.heavy||10;
   else if(key==='block') v=hs.block||5;
   world.interaction.hitstop=Math.max(world.interaction.hitstop,v);
+}
+function _fightApplyHitstop(world,key){
+  var mod=window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.hitstop&&window.CEHP_COMBAT.core.hitstop.bridge;
+  var forceLegacy=!!window.__fightForceLegacyHitstop||!!(world&&world.__hitstopOwner==='legacy');
+  if(mod&&typeof mod.applyHitstop==='function'&&__fightApplyHitstopCompatDepth===0){
+    __fightApplyHitstopCompatDepth++;
+    try{
+      mod.applyHitstop(world,key,{
+        caller:String(window.__fightHitstopCallerHint||'legacy-symbol'),
+        forceLegacyHitstop:forceLegacy
+      });
+      return;
+    }finally{
+      __fightApplyHitstopCompatDepth--;
+    }
+  }
+  _fightApplyHitstopLegacyBody(world,key);
 }
 function _fightApplyExchange(world,att,def,move,hitType,inputDef,events,contact){
   var isBlock=(hitType===true||hitType==='block');
@@ -8036,13 +8106,32 @@ function _fightResolveThrows(world,inputP1,inputP2,events){
   }
 }
 
-function _fightMkResolveTimerWinner(world){
+function _fightMkResolveTimerWinnerLegacy(world){
   var p1=world.fighters.p1,p2=world.fighters.p2;
   if(p1.health>p2.health) return 'p1';
   if(p2.health>p1.health) return 'p2';
   if(p1.stunMeter<p2.stunMeter) return 'p1';
   if(p2.stunMeter<p1.stunMeter) return 'p2';
   return ((((world.rng.seed+world.frame)>>>0)&1)===0)?'p1':'p2';
+}
+function _fightMkResolveTimerWinner(world){
+  var lc=_fightLifecycleModule();
+  if(_fightLifecycleUseModule(world)&&lc&&typeof lc.resolveTimerWinner==='function'){
+    return lc.resolveTimerWinner(world);
+  }
+  return _fightMkResolveTimerWinnerLegacy(world);
+}
+
+function _fightLegacyCombatBody(world,p1,p2,i1,i2,e1,e2,events){
+  _fightTickFighter(world,p1,p2,i1,e1,events);
+  _fightTickFighter(world,p2,p1,i2,e2,events);
+  _fightResolveFacing(world);
+  _fightRefreshBoxes(world,p1,i1);
+  _fightRefreshBoxes(world,p2,i2);
+  _fightResolvePush(world);
+  _fightTryStrike(world,p1,p2,i2,events);
+  _fightTryStrike(world,p2,p1,i1,events);
+  _fightResolveThrows(world,i1,i2,events);
 }
 
 function _fightEngineStep(world,frameInputs){
@@ -8088,15 +8177,7 @@ function _fightEngineStep(world,frameInputs){
     return events;
   }
 
-  _fightTickFighter(world,p1,p2,i1,e1,events);
-  _fightTickFighter(world,p2,p1,i2,e2,events);
-  _fightResolveFacing(world);
-  _fightRefreshBoxes(world,p1,i1);
-  _fightRefreshBoxes(world,p2,i2);
-  _fightResolvePush(world);
-  _fightTryStrike(world,p1,p2,i2,events);
-  _fightTryStrike(world,p2,p1,i1,events);
-  _fightResolveThrows(world,i1,i2,events);
+  _fightLegacyCombatBody(world,p1,p2,i1,i2,e1,e2,events);
   if(world.mkGba&&world.mkGba.enabled&&world.phase===FIGHT_PHASES.FIGHT){
     if(world.mkGba.roundTimerFrames>0){
       world.mkGba.roundTimerFrames--;
@@ -8205,7 +8286,7 @@ function _fightBuildTestLog(){
   return log;
 }
 
-FIGHT_ENGINE = {
+var FIGHT_ENGINE_LEGACY = {
   createWorld:function(seed,config){return _fightCreateWorld(seed,config);},
   step:function(world,frameInputs){return _fightEngineStep(world,frameInputs);},
   snapshot:function(world){return _fightSnapshotCore(world);},
@@ -8223,6 +8304,11 @@ FIGHT_ENGINE = {
     return {frames:frames,events:events,hashes:hashes,finalHash:_fightStateHashCore(world)};
   },
   buildDirection:function(rawInput,facing,socdConfig){
+    var socdMod=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.input&&window.CEHP_COMBAT.core.input.socd)?
+      window.CEHP_COMBAT.core.input.socd:null;
+    if(socdMod&&typeof socdMod.buildDirection==='function'){
+      return socdMod.buildDirection(rawInput,facing,socdConfig);
+    }
     var l=!!(rawInput&&rawInput.left), r=!!(rawInput&&rawInput.right), u=!!(rawInput&&rawInput.up), d=!!(rawInput&&rawInput.down);
     var h=0, relH=0, v=0;
     var socd=socdConfig||((BALANCE.fight&&BALANCE.fight.socd)||{});
@@ -8244,6 +8330,11 @@ FIGHT_ENGINE = {
     if(relH<0)return 4;if(relH>0)return 6;return 5;
   },
   parseMotion:function(history,moveDef,nowFrame){
+    var mp=(window.CEHP_COMBAT&&window.CEHP_COMBAT.core&&window.CEHP_COMBAT.core.input&&window.CEHP_COMBAT.core.input.motionParser)?
+      window.CEHP_COMBAT.core.input.motionParser:null;
+    if(mp&&typeof mp.parseWithShortcuts==='function'){
+      return mp.parseWithShortcuts(history,moveDef,_fightResolveModeBalance());
+    }
     var cfg=_fightResolveModeBalance();
     var windowFrames=(moveDef&&moveDef.motionWindowFrames)||((cfg&&cfg.motionWindowFrames)||12);
     var len=(cfg&&cfg.leniency)||{};
@@ -8256,6 +8347,26 @@ FIGHT_ENGINE = {
   }
 };
 
+if(typeof window!=='undefined'){
+  window.__FIGHT_ENGINE_LEGACY=FIGHT_ENGINE_LEGACY;
+}
+if(
+  typeof window!=='undefined' &&
+  window.CEHP_COMBAT &&
+  window.CEHP_COMBAT.adapters &&
+  window.CEHP_COMBAT.adapters.phaser &&
+  typeof window.CEHP_COMBAT.adapters.phaser.createFightShellAdapter==='function'
+){
+  FIGHT_ENGINE=window.CEHP_COMBAT.adapters.phaser.createFightShellAdapter({
+    engine:FIGHT_ENGINE_LEGACY
+  });
+  if(window.CEHP_COMBAT&&window.CEHP_COMBAT.tools&&window.CEHP_COMBAT.tools.determinism){
+    window.CEHP_COMBAT.tools.determinism.activeEngine=FIGHT_ENGINE;
+  }
+}else{
+  FIGHT_ENGINE=FIGHT_ENGINE_LEGACY;
+}
+
 var FIGHT_TEST_LOG = _fightBuildTestLog();
 if(typeof window!=='undefined'){
   window.FIGHT_TEST_LOG = FIGHT_TEST_LOG;
@@ -8266,6 +8377,7 @@ if(typeof window!=='undefined'){
     var w1=FIGHT_ENGINE.createWorld(seed||1337,{});
     var w2=FIGHT_ENGINE.createWorld(seed||1337,{});
     var i,fi,h1,h2,d1,d2,diff=null;
+    var hm=_fightHashModule();
     for(i=0;i<max;i++){
       fi=l[i]||_fightNeutralFrameInput();
       FIGHT_ENGINE.step(w1,fi);
@@ -8274,10 +8386,44 @@ if(typeof window!=='undefined'){
       if(o.assertPerFrame&&h1!==h2){
         d1=_fightStateDigest(w1); d2=_fightStateDigest(w2);
         diff=_fightDiff(d1,d2);
-        return {ok:false,frame:i+1,hashA:h1,hashB:h2,diff:diff,finalA:_fightStateHashCore(w1),finalB:_fightStateHashCore(w2)};
+        return {
+          ok:false,
+          frame:i+1,
+          firstDivergentFrame:i+1,
+          hashA:h1,
+          hashB:h2,
+          diff:diff,
+          subsystem:(hm&&hm.classifyDiffPath)?hm.classifyDiffPath(diff&&diff.path?diff.path:''):'resolution-or-phase',
+          finalA:_fightStateHashCore(w1),
+          finalB:_fightStateHashCore(w2)
+        };
       }
     }
-    return {ok:true,frame:max,finalA:_fightStateHashCore(w1),finalB:_fightStateHashCore(w2)};
+    return {ok:true,frame:max,firstDivergentFrame:0,finalA:_fightStateHashCore(w1),finalB:_fightStateHashCore(w2)};
+  };
+  window._fightAdapterParityAssert=function(log,seed,frames,opts){
+    var o=opts||{};
+    var res=null;
+    if(window.CEHP_COMBAT&&window.CEHP_COMBAT.tools&&window.CEHP_COMBAT.tools.determinism&&window.CEHP_COMBAT.tools.determinism.runAdapterParityAgainstLegacy){
+      res=window.CEHP_COMBAT.tools.determinism.runAdapterParityAgainstLegacy(log,seed,frames,o);
+    }else if(window._fightAdapterParityAgainstLegacy){
+      res=window._fightAdapterParityAgainstLegacy(log,seed,frames,o);
+    }else{
+      res={ok:false,error:'adapter-parity-tool-unavailable'};
+    }
+    if(o.verbose){
+      if(res&&res.ok){
+        console.log('[fight adapter parity ok]',{frames:res.frames||res.frame||0,snapshotParityOk:res.snapshotParityOk!==false,legacyFinal:res.legacyFinal,adapterFinal:res.adapterFinal});
+      }else{
+        console.warn('[fight adapter parity fail]',{
+          firstDivergentFrame:res&&res.firstDivergentFrame?res.firstDivergentFrame:(res&&res.frame?res.frame:0),
+          subsystem:res&&res.subsystem?res.subsystem:'unknown',
+          diffPath:res&&res.diff&&res.diff.path?res.diff.path:'',
+          result:res
+        });
+      }
+    }
+    return res;
   };
   window._fightStateHash=function(){
     if(window.__fightLevel15Scene&&window.__fightLevel15Scene._fightWorld){
@@ -10797,15 +10943,13 @@ Level15Scene.prototype.update=(function(cfg){
   };
 })({LW:960});
 
-// CHUNK: LEVEL15 COMBAT LAB SCENE (SF MODE DRILLS)
+// CHUNK: LEVEL15 COMBAT LAB SCENE (MATCHUP TRAINING)
 function Level15CombatLabScene(){ Phaser.Scene.call(this,{key:'Level15CombatLab'}); }
 Level15CombatLabScene.prototype=Object.create(Level15Scene.prototype);
 Level15CombatLabScene.prototype.constructor=Level15CombatLabScene;
 Level15CombatLabScene.prototype.create=function(){
   this._labPrevSf=FEATURE_FLAGS.sfCombatMode;
   this._labPrevMk=FEATURE_FLAGS.fightMkGbaMode;
-  FEATURE_FLAGS.sfCombatMode=true;
-  FEATURE_FLAGS.fightMkGbaMode=false;
   Level15Scene.prototype.create.call(this);
   this._combatLab=true;
   this._l15AwaitChoice=false;
@@ -10817,25 +10961,44 @@ Level15CombatLabScene.prototype.create=function(){
   this._fightWorld.round=1;
   this._fightWorld.score={p1:0,p2:0};
   this._fightWorld.winner='';
-  this._fightWorld.sf.enabled=true;
   _fightResetRound(this._fightWorld);
   this._fightWorld.phase=FIGHT_PHASES.FIGHT;
   this._fightWorld.phaseTimer=0;
   this._labDrills=[
-    {id:'spacing',title:'SPACING TEST',hint:'Practice walk-in / walk-out and whiff punishes.'},
-    {id:'antiair',title:'ANTI-AIR TEST',hint:'Dummy jumps in on fixed cadence.'},
-    {id:'punish',title:'PUNISH TEST',hint:'Dummy throws punishable heavies on timer.'},
-    {id:'combo',title:'COMBO TIMING TEST',hint:'Dummy blocks then leaves link windows.'}
+    {id:'anti-air',title:'ANTI-AIR CHECK',hint:'Ed upper vs Daikon jump arc. Make jump-ins feel honest.',defaultDummy:'jump'},
+    {id:'whiff-punish',title:'WHIFF PUNISH',hint:'Let Daikon swing first, then take the recovery.',defaultDummy:'scripted'},
+    {id:'throw-tech',title:'THROW / TECH',hint:'Practice tick throw timing and late-tech discipline.',defaultDummy:'throw-tech'},
+    {id:'wakeup-pressure',title:'WAKEUP PRESSURE',hint:'Run one meaty, then bait the reversal.',defaultDummy:'reversal'},
+    {id:'corner-pressure',title:'CORNER PRESSURE',hint:'Keep pressure tight without making escape fake.',defaultDummy:'block'},
+    {id:'combo-confirm',title:'COMBO CONFIRM',hint:'Convert light hits cleanly and stop autopilot.',defaultDummy:'scripted'},
+    {id:'defensive-timing',title:'DEFENSIVE TIMING',hint:'Block honestly, challenge gaps, and mash on purpose.',defaultDummy:'mash'}
+  ];
+  this._labDummyModes=[
+    {id:'scripted',title:'SCRIPTED'},
+    {id:'block',title:'BLOCK'},
+    {id:'jump',title:'JUMP'},
+    {id:'mash',title:'MASH'},
+    {id:'throw-tech',title:'THROW TECH'},
+    {id:'reversal',title:'REVERSAL'}
   ];
   this._labDrillIndex=0;
+  this._labDummyIndex=0;
   this._labStatusTxt=this.add.text(480,18,'',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ccffee',stroke:'#000000',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(40);
-  this._labHintTxt=this.add.text(480,36,'1-4 DRILL  |  F3 HITBOX  F4 PAUSE  F5 STEP  F6 SLOW  F7 CHECK  ESC EXIT',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#99ccff',stroke:'#000000',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(40);
+  this._labHintTxt=this.add.text(480,36,'1-7 SCENARIO  G DUMMY  Q SMOKE  E COMBAT  R SNAP  T REPLAY  F3 HITBOX  F4 PAUSE  F5 STEP  F6 SLOW  ESC EXIT',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#99ccff',stroke:'#000000',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(40);
   this.keys.lab1=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
   this.keys.lab2=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
   this.keys.lab3=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
   this.keys.lab4=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR);
+  this.keys.lab5=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FIVE);
+  this.keys.lab6=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SIX);
+  this.keys.lab7=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SEVEN);
+  this.keys.labDummy=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.G);
+  this.keys.labQuick=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+  this.keys.labCombat=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+  this.keys.labSnapshot=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+  this.keys.labReplay=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.T);
   this.keys.labEsc=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-  this._labSetDrill(0);
+  this._labSetDrill(0,false);
   var self=this;
   var restoreFlags=function(){
     FEATURE_FLAGS.sfCombatMode=self._labPrevSf;
@@ -10844,43 +11007,229 @@ Level15CombatLabScene.prototype.create=function(){
   this.events.once('shutdown',restoreFlags);
   this.events.once('destroy',restoreFlags);
 };
-Level15CombatLabScene.prototype._labSetDrill=function(idx){
+Level15CombatLabScene.prototype._labScenario=function(){
+  return this._labDrills[this._labDrillIndex]||this._labDrills[0];
+};
+Level15CombatLabScene.prototype._labDummyMode=function(){
+  return this._labDummyModes[this._labDummyIndex]||this._labDummyModes[0];
+};
+Level15CombatLabScene.prototype._labSetDummyById=function(id){
+  var i;
+  for(i=0;i<this._labDummyModes.length;i++){
+    if(this._labDummyModes[i].id===id){
+      this._labDummyIndex=i;
+      return;
+    }
+  }
+  this._labDummyIndex=0;
+};
+Level15CombatLabScene.prototype._labCycleDummy=function(step){
+  var dir=(step===undefined||step===null)?1:step;
+  var mode;
+  this._labDummyIndex=(this._labDummyIndex+dir+this._labDummyModes.length)%this._labDummyModes.length;
+  mode=this._labDummyMode();
+  _showToast(this,'DUMMY '+mode.title,'#99ffdd',850);
+};
+Level15CombatLabScene.prototype._labPressBack=function(raw,fighter){
+  if(!raw||!fighter) return;
+  if(fighter.facing===1) raw.left=true;
+  else raw.right=true;
+};
+Level15CombatLabScene.prototype._labPressForward=function(raw,fighter){
+  if(!raw||!fighter) return;
+  if(fighter.facing===1) raw.right=true;
+  else raw.left=true;
+};
+Level15CombatLabScene.prototype._labApplyDpStep=function(raw,fighter,step){
+  if(step===0) this._labPressForward(raw,fighter);
+  else if(step===1) raw.down=true;
+  else if(step===2){ raw.down=true; this._labPressForward(raw,fighter); raw.punch=true; }
+};
+Level15CombatLabScene.prototype._labPlaceFighter=function(fighter,xPx,facing){
+  if(!fighter) return;
+  _fightResetFighterRound(fighter,xPx,facing);
+  fighter.health=fighter.maxHealth;
+  fighter.grounded=true;
+};
+Level15CombatLabScene.prototype._labSetupScenario=function(world,scenario){
+  var p1=world&&world.fighters?world.fighters.p1:null;
+  var p2=world&&world.fighters?world.fighters.p2:null;
+  var s=scenario||this._labScenario();
+  if(!p1||!p2) return;
+  this._labPlaceFighter(p1,332,1);
+  this._labPlaceFighter(p2,628,-1);
+  if(s.id==='whiff-punish'){
+    this._labPlaceFighter(p1,346,1);
+    this._labPlaceFighter(p2,612,-1);
+  }else if(s.id==='throw-tech'){
+    this._labPlaceFighter(p1,430,1);
+    this._labPlaceFighter(p2,514,-1);
+  }else if(s.id==='wakeup-pressure'){
+    this._labPlaceFighter(p1,430,1);
+    this._labPlaceFighter(p2,566,-1);
+    p2.state=FIGHT_STATES.KNOCKDOWN;
+    p2.stateFrame=0;
+    p2.knockdownFramesLeft=26;
+    p2.hitstunFramesLeft=0;
+    p2.blockstunFramesLeft=0;
+    p2.vx=0;
+    p2.vy=0;
+    p2.grounded=true;
+    p2.moveId=null;
+    p2.moveFrame=0;
+    p2.moveHitRegistered=false;
+  }else if(s.id==='corner-pressure'){
+    this._labPlaceFighter(p1,706,1);
+    this._labPlaceFighter(p2,842,-1);
+  }else if(s.id==='combo-confirm'){
+    this._labPlaceFighter(p1,404,1);
+    this._labPlaceFighter(p2,566,-1);
+  }else if(s.id==='defensive-timing'){
+    this._labPlaceFighter(p1,418,1);
+    this._labPlaceFighter(p2,572,-1);
+  }
+};
+Level15CombatLabScene.prototype._labSetDrill=function(idx,preserveDummy){
   this._labDrillIndex=_fightClamp(Math.floor(idx||0),0,this._labDrills.length-1);
+  var scenario=this._labScenario();
   _fightResetRound(this._fightWorld);
   this._fightWorld.phase=FIGHT_PHASES.FIGHT;
   this._fightWorld.phaseTimer=0;
   this._fightWorld.score={p1:0,p2:0};
   this._fightWorld.round=1;
-  this._fightWorld.fighters.p1.health=130;
-  this._fightWorld.fighters.p2.health=130;
-  this._fightWorld.fighters.p1.maxHealth=130;
-  this._fightWorld.fighters.p2.maxHealth=130;
+  this._fightWorld.winner='';
   this._l15Sparks.length=0;
   this._l15MkParticles.length=0;
+  if(!preserveDummy) this._labSetDummyById(scenario.defaultDummy||'scripted');
+  this._labSetupScenario(this._fightWorld,scenario);
+};
+Level15CombatLabScene.prototype._labBuildBlockRaw=function(ctx){
+  var raw={left:false,right:false,up:false,down:false,punch:false,kick:false,throwBtn:false};
+  if(!ctx||!ctx.p2) return raw;
+  if(ctx.distance<110) raw.down=true;
+  this._labPressBack(raw,ctx.p2);
+  return raw;
+};
+Level15CombatLabScene.prototype._labBuildJumpRaw=function(ctx){
+  var raw={left:false,right:false,up:false,down:false,punch:false,kick:false,throwBtn:false};
+  var cycle=ctx&&ctx.cycle?ctx.cycle:0;
+  if(cycle===24||cycle===136){ raw.up=true; raw.kick=true; }
+  if((cycle>24&&cycle<62)||(cycle>136&&cycle<174)) this._labPressForward(raw,ctx.p2);
+  return raw;
+};
+Level15CombatLabScene.prototype._labBuildMashRaw=function(ctx){
+  var raw={left:false,right:false,up:false,down:false,punch:false,kick:false,throwBtn:false};
+  var cycle=ctx&&ctx.cycle?ctx.cycle:0;
+  if(ctx.distance>78){
+    this._labPressForward(raw,ctx.p2);
+    return raw;
+  }
+  this._labPressBack(raw,ctx.p2);
+  if(cycle%40===8||cycle%40===12) raw.punch=true;
+  return raw;
+};
+Level15CombatLabScene.prototype._labBuildThrowTechRaw=function(ctx){
+  var raw={left:false,right:false,up:false,down:false,punch:false,kick:false,throwBtn:false};
+  var cycle=ctx&&ctx.cycle?ctx.cycle:0;
+  if(ctx.distance>38){
+    this._labPressForward(raw,ctx.p2);
+    return raw;
+  }
+  this._labPressBack(raw,ctx.p2);
+  if(cycle%54===16||cycle%54===17) raw.throwBtn=true;
+  return raw;
+};
+Level15CombatLabScene.prototype._labBuildReversalRaw=function(ctx){
+  var raw={left:false,right:false,up:false,down:false,punch:false,kick:false,throwBtn:false};
+  var fighter=ctx&&ctx.p2?ctx.p2:null;
+  if(!fighter) return raw;
+  if(fighter.state===FIGHT_STATES.WAKEUP){
+    this._labApplyDpStep(raw,fighter,(fighter.stateFrame||0)%3);
+    return raw;
+  }
+  if(fighter.state===FIGHT_STATES.KNOCKDOWN){
+    this._labPressBack(raw,fighter);
+    return raw;
+  }
+  if(ctx.distance<82) this._labPressBack(raw,fighter);
+  return raw;
+};
+Level15CombatLabScene.prototype._labBuildScriptedRaw=function(scenario,ctx){
+  var raw={left:false,right:false,up:false,down:false,punch:false,kick:false,throwBtn:false};
+  var cycle=ctx&&ctx.cycle?ctx.cycle:0;
+  if(!scenario) return raw;
+  if(scenario.id==='anti-air'){
+    return this._labBuildJumpRaw(ctx);
+  }
+  if(scenario.id==='whiff-punish'){
+    if(cycle<18) this._labPressForward(raw,ctx.p2);
+    if(cycle===34||cycle===126||cycle===198) raw.kick=true;
+    if(cycle>82&&cycle<116) this._labPressBack(raw,ctx.p2);
+    return raw;
+  }
+  if(scenario.id==='throw-tech'){
+    return this._labBuildThrowTechRaw(ctx);
+  }
+  if(scenario.id==='wakeup-pressure'){
+    if(ctx.p2.state===FIGHT_STATES.WAKEUP){
+      this._labApplyDpStep(raw,ctx.p2,(ctx.p2.stateFrame||0)%3);
+      return raw;
+    }
+    if(ctx.p2.state===FIGHT_STATES.KNOCKDOWN){
+      this._labPressBack(raw,ctx.p2);
+      return raw;
+    }
+    if(cycle<42) this._labPressBack(raw,ctx.p2);
+    if(cycle===68||cycle===132) raw.punch=true;
+    return raw;
+  }
+  if(scenario.id==='corner-pressure'){
+    this._labPressBack(raw,ctx.p2);
+    if(cycle===70) raw.up=true;
+    if(cycle>70&&cycle<86) this._labPressForward(raw,ctx.p2);
+    if(cycle===132||cycle===188) raw.punch=true;
+    return raw;
+  }
+  if(scenario.id==='combo-confirm'){
+    if(cycle<72){
+      raw.down=true;
+      this._labPressBack(raw,ctx.p2);
+      return raw;
+    }
+    if(cycle===136||cycle===140) raw.punch=true;
+    return raw;
+  }
+  if(scenario.id==='defensive-timing'){
+    if(cycle<48||(cycle>96&&cycle<140)){
+      raw.down=true;
+      this._labPressBack(raw,ctx.p2);
+      return raw;
+    }
+    if(cycle===58||cycle===62||cycle===146) raw.punch=true;
+    return raw;
+  }
+  return raw;
 };
 Level15CombatLabScene.prototype._labBuildP2Input=function(world){
   var f=world.frame||0;
   var p1=world.fighters.p1,p2=world.fighters.p2;
-  var dx=_fightToPx(p1.x-p2.x);
-  var cycle=f%240;
+  var scenario=this._labScenario();
+  var mode=this._labDummyMode();
+  var ctx={
+    frame:f,
+    cycle:f%240,
+    dx:_fightToPx(p1.x-p2.x),
+    distance:_fightAbs(_fightToPx(p1.x-p2.x)),
+    p1:p1,
+    p2:p2
+  };
   var raw={left:false,right:false,up:false,down:false,punch:false,kick:false,throwBtn:false};
-  if(this._labDrillIndex===0){
-    if(cycle<70){ if(dx<0) raw.left=true; else raw.right=true; }
-    else if(cycle<140){ if(dx<0) raw.right=true; else raw.left=true; }
-    if(cycle===72||cycle===148) raw.punch=true;
-  }else if(this._labDrillIndex===1){
-    if(cycle===20||cycle===120){ raw.up=true; raw.kick=true; }
-    if(cycle>20&&cycle<56){ if(dx<0) raw.left=true; else raw.right=true; }
-    if(cycle>120&&cycle<156){ if(dx<0) raw.left=true; else raw.right=true; }
-  }else if(this._labDrillIndex===2){
-    if(cycle<38){ if(dx<0) raw.right=true; else raw.left=true; }
-    if(cycle===44||cycle===132||cycle===196) raw.kick=true;
-    if(cycle>170&&cycle<220) raw.down=true;
-  }else{
-    if(cycle<72){ raw.down=true; if(dx<0) raw.right=true; else raw.left=true; }
-    if(cycle===80||cycle===88||cycle===168) raw.punch=true;
-    if(cycle>110&&cycle<140){ if(dx<0) raw.left=true; else raw.right=true; }
-  }
+  if(mode.id==='block') raw=this._labBuildBlockRaw(ctx);
+  else if(mode.id==='jump') raw=this._labBuildJumpRaw(ctx);
+  else if(mode.id==='mash') raw=this._labBuildMashRaw(ctx);
+  else if(mode.id==='throw-tech') raw=this._labBuildThrowTechRaw(ctx);
+  else if(mode.id==='reversal') raw=this._labBuildReversalRaw(ctx);
+  else raw=this._labBuildScriptedRaw(scenario,ctx);
   var socd=(world&&world.cfg&&world.cfg.socd)?world.cfg.socd:((BALANCE.fight&&BALANCE.fight.socd)||{});
   return {
     dir:FIGHT_ENGINE.buildDirection(raw,p2.facing,socd),
@@ -10903,15 +11252,52 @@ Level15CombatLabScene.prototype._processFightEvents=function(events){
     }
   }
 };
+Level15CombatLabScene.prototype._labRunQuickSmoke=function(){
+  var res=(window._fightQuickSmoke?window._fightQuickSmoke({frames:300,snapshotFrame:150}):(FIGHT_ENGINE&&FIGHT_ENGINE.debug&&FIGHT_ENGINE.debug.runQuickSmoke?FIGHT_ENGINE.debug.runQuickSmoke({frames:300,snapshotFrame:150}):{summary:{ok:false},error:'quick-smoke-unavailable'}));
+  window.__fightCombatLabLastQuickSmoke=res;
+  _showToast(this,'QUICK SMOKE '+((res&&res.summary&&res.summary.ok)?'PASS':'FAIL'),(res&&res.summary&&res.summary.ok)?'#66ffcc':'#ff6666',1100);
+  console.log('[combat lab quick smoke]',res);
+};
+Level15CombatLabScene.prototype._labRunCombatFocusAudit=function(){
+  var res=(window._fightCombatFocusAudit?window._fightCombatFocusAudit({frames:600,snapshotFrame:300,verbose:true}):(FIGHT_ENGINE&&FIGHT_ENGINE.debug&&FIGHT_ENGINE.debug.runCombatFocusAudit?FIGHT_ENGINE.debug.runCombatFocusAudit({frames:600,snapshotFrame:300,verbose:true}):{summary:{ok:false},error:'combat-focus-audit-unavailable'}));
+  window.__fightCombatLabLastCombatAudit=res;
+  _showToast(this,'COMBAT AUDIT '+((res&&res.summary&&res.summary.ok)?'PASS':'FAIL'),(res&&res.summary&&res.summary.ok)?'#66ffcc':'#ff6666',1200);
+  console.log('[combat lab combat audit]',res);
+};
+Level15CombatLabScene.prototype._labExportBalanceSnapshot=function(){
+  var res=(window._fightExportBalanceSnapshot?window._fightExportBalanceSnapshot({world:this._fightWorld,includeAudit:true,includeMoves:true}):(FIGHT_ENGINE&&FIGHT_ENGINE.debug&&FIGHT_ENGINE.debug.exportBalanceSnapshot?FIGHT_ENGINE.debug.exportBalanceSnapshot({world:this._fightWorld,includeAudit:true,includeMoves:true}):{summary:{ok:false},error:'balance-snapshot-unavailable'}));
+  window.__fightCombatLabLastBalanceSnapshot=res;
+  _showToast(this,'BALANCE SNAPSHOT READY','#99ddff',1200);
+  console.log('[combat lab balance snapshot]',res);
+};
+Level15CombatLabScene.prototype._labRunReplayReview=function(){
+  var log=this._fightInputLog.length?this._fightInputLog:(window.FIGHT_TEST_LOG||[]);
+  var frames=Math.min(600,log.length||600);
+  var res=(FIGHT_ENGINE&&typeof FIGHT_ENGINE.runInputLog==='function')?
+    FIGHT_ENGINE.runInputLog(null,log,frames,{snapshotFrame:Math.max(1,Math.floor(frames*0.5))}):
+    {ok:false,error:'runInputLog-unavailable'};
+  window.__fightCombatLabLastReplayReview=res;
+  _showToast(this,'REPLAY REVIEW '+((res&&res.ok!==false)?'READY':'FAIL'),(res&&res.ok!==false)?'#ffd60a':'#ff6666',1200);
+  console.log('[combat lab replay review]',res);
+};
 Level15CombatLabScene.prototype.update=(function(cfg){
   return function(time,delta){
     var LW = cfg.LW;
+    var d, mode;
     if(!this._fightWorld) return;
     if(Phaser.Input.Keyboard.JustDown(this.keys.labEsc)){ _sceneTransitionSafe(this,SCENE_KEYS.title); return; }
-    if(Phaser.Input.Keyboard.JustDown(this.keys.lab1)) this._labSetDrill(0);
-    if(Phaser.Input.Keyboard.JustDown(this.keys.lab2)) this._labSetDrill(1);
-    if(Phaser.Input.Keyboard.JustDown(this.keys.lab3)) this._labSetDrill(2);
-    if(Phaser.Input.Keyboard.JustDown(this.keys.lab4)) this._labSetDrill(3);
+    if(Phaser.Input.Keyboard.JustDown(this.keys.lab1)){ this._labSetDrill(0,false); _showToast(this,'SCENARIO 1: '+this._labScenario().title,'#ccffee',850); }
+    if(Phaser.Input.Keyboard.JustDown(this.keys.lab2)){ this._labSetDrill(1,false); _showToast(this,'SCENARIO 2: '+this._labScenario().title,'#ccffee',850); }
+    if(Phaser.Input.Keyboard.JustDown(this.keys.lab3)){ this._labSetDrill(2,false); _showToast(this,'SCENARIO 3: '+this._labScenario().title,'#ccffee',850); }
+    if(Phaser.Input.Keyboard.JustDown(this.keys.lab4)){ this._labSetDrill(3,false); _showToast(this,'SCENARIO 4: '+this._labScenario().title,'#ccffee',850); }
+    if(Phaser.Input.Keyboard.JustDown(this.keys.lab5)){ this._labSetDrill(4,false); _showToast(this,'SCENARIO 5: '+this._labScenario().title,'#ccffee',850); }
+    if(Phaser.Input.Keyboard.JustDown(this.keys.lab6)){ this._labSetDrill(5,false); _showToast(this,'SCENARIO 6: '+this._labScenario().title,'#ccffee',850); }
+    if(Phaser.Input.Keyboard.JustDown(this.keys.lab7)){ this._labSetDrill(6,false); _showToast(this,'SCENARIO 7: '+this._labScenario().title,'#ccffee',850); }
+    if(Phaser.Input.Keyboard.JustDown(this.keys.labDummy)) this._labCycleDummy(1);
+    if(Phaser.Input.Keyboard.JustDown(this.keys.labQuick)) this._labRunQuickSmoke();
+    if(Phaser.Input.Keyboard.JustDown(this.keys.labCombat)) this._labRunCombatFocusAudit();
+    if(Phaser.Input.Keyboard.JustDown(this.keys.labSnapshot)) this._labExportBalanceSnapshot();
+    if(Phaser.Input.Keyboard.JustDown(this.keys.labReplay)) this._labRunReplayReview();
     var world=this._fightWorld;
     var slowArr=(BALANCE.fight&&BALANCE.fight.slowMoScales)||[1,0.5,0.25];
     var slow=slowArr[world.debug.slowMoIndex||0]||1;
@@ -10938,10 +11324,11 @@ Level15CombatLabScene.prototype.update=(function(cfg){
       }
     }
     if(world.phase===FIGHT_PHASES.KO||world.phase===FIGHT_PHASES.WIN||world.phase===FIGHT_PHASES.LOSE){
-      this._labSetDrill(this._labDrillIndex);
+      this._labSetDrill(this._labDrillIndex,true);
     }
-    var d=this._labDrills[this._labDrillIndex]||this._labDrills[0];
-    this._labStatusTxt.setText('COMBAT LAB // '+d.title+' // '+d.hint);
+    d=this._labScenario();
+    mode=this._labDummyMode();
+    this._labStatusTxt.setText('COMBAT LAB // '+d.title+' // DUMMY '+mode.title+' // '+d.hint);
     this._renderFight();
   };
 })({LW:960});
@@ -14052,7 +14439,25 @@ function _mmPlaceVectorCheck(arr,x,y){ arr.push({kind:'wall_crawler',x:x,y:y,pat
 function _mmPlacePacingBlocker(arr,x,y){ arr.push({kind:'shield_turtle',x:x,y:y,patrol:[x-70,x+70]}); }
 
 MM_STAGE_TEMPLATES.createBase=function(key,width,height){
-  return {key:key,width:width,height:height,spawn:{x:90,y:500},mode:'flow',solids:[],slopes:[],hazards:[],enemies:[],switches:[],cameraLocks:[],cameraModes:[],checkpoints:[]};
+  return {
+    key:key,
+    width:width,
+    height:height,
+    spawn:{x:90,y:500},
+    mode:'flow',
+    solids:[],
+    slopes:[],
+    hazards:[],
+    enemies:[],
+    switches:[],
+    cameraLocks:[],
+    cameraModes:[],
+    checkpoints:[],
+    raySwitches:[],
+    grapplePoints:[],
+    swingRings:[],
+    collectibleTrails:[]
+  };
 };
 MM_STAGE_TEMPLATES.addTeachingSegment=function(st,startX){
   st.solids.push({x:startX,y:520,w:780,h:200});
