@@ -29,6 +29,15 @@
   <script src="combat/api/CombatEngine.js"></script>
   <script src="combat/adapters/phaser/FightShellAdapter.js"></script>
   <script src="combat/tools/determinism/runDeterminism.js"></script>
+  <script src="combat/data/fighters/ed.visual.js"></script>
+  <script src="combat/data/fighters/daikon.visual.js"></script>
+  <script src="combat/data/stages/tournamentFlat.visual.js"></script>
+  <script src="combat/presentation/poseLibrary.js"></script>
+  <script src="combat/presentation/fxRenderer.js"></script>
+  <script src="combat/presentation/animPlayer.js"></script>
+  <script src="combat/presentation/fighterRig.js"></script>
+  <script src="combat/presentation/stageRenderer.js"></script>
+  <script src="combat/presentation/fighterRenderer.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
@@ -6782,6 +6791,22 @@ var FIGHT_STATES = {
 };
 var FIGHT_ENGINE = null;
 
+function _fightPresentationNs(){
+  return (window.CEHP_COMBAT&&window.CEHP_COMBAT.presentation)?window.CEHP_COMBAT.presentation:null;
+}
+function _fightPresentationFighterRenderer(){
+  var p=_fightPresentationNs();
+  return (p&&p.fighterRenderer)?p.fighterRenderer:null;
+}
+function _fightPresentationStageRenderer(){
+  var p=_fightPresentationNs();
+  return (p&&p.stageRenderer)?p.stageRenderer:null;
+}
+function _fightPresentationFxRenderer(){
+  var p=_fightPresentationNs();
+  return (p&&p.fxRenderer)?p.fxRenderer:null;
+}
+
 function _fightClamp(v,min,max){return v<min?min:(v>max?max:v);}
 function _fightSign(v){return v<0?-1:(v>0?1:0);}
 function _fightToPx(v){return v/FIGHT_FP;}
@@ -9598,16 +9623,24 @@ Level15Scene.prototype._showCenter=function(txt,sub,dur){
 Level15Scene.prototype._l15MkBuildViewport=function(){
   var sw=960, sh=540;
   var vCfg=(BALANCE.fight&&BALANCE.fight.visualV3&&BALANCE.fight.visualV3.virtualRes)||{w:240,h:160};
+  var fCfg=(BALANCE.fight&&BALANCE.fight.visualV3&&BALANCE.fight.visualV3.framing)||{};
   var vw=Math.max(160,Math.floor(vCfg.w||240));
   var vh=Math.max(120,Math.floor(vCfg.h||160));
   var sc=Math.max(1,Math.floor(Math.min(sw/vw,sh/vh)));
   var ox=Math.floor((sw-(vw*sc))*0.5), oy=Math.floor((sh-(vh*sc))*0.5);
+  var arenaLeftPct=(fCfg.arenaLeft!==undefined)?fCfg.arenaLeft:0.07;
+  var arenaRightPct=(fCfg.arenaRight!==undefined)?fCfg.arenaRight:0.93;
+  var topY=(fCfg.topY!==undefined)?Math.floor(fCfg.topY):Math.floor(vh*0.2375);
+  var floorY=(fCfg.floorY!==undefined)?Math.floor(fCfg.floorY):Math.floor(vh*0.88125);
   return {
     vw:vw,vh:vh,scale:sc,ox:ox,oy:oy,
-    arenaLeft:Math.floor(vw*0.0667),arenaRight:Math.floor(vw*0.9333),
-    worldLeft:72,worldRight:888,
-    worldTop:292,worldBottom:472,
-    floorY:Math.floor(vh*0.8625)
+    arenaLeft:Math.floor(vw*arenaLeftPct),arenaRight:Math.floor(vw*arenaRightPct),
+    worldLeft:(fCfg.worldLeft!==undefined)?Math.floor(fCfg.worldLeft):96,
+    worldRight:(fCfg.worldRight!==undefined)?Math.floor(fCfg.worldRight):864,
+    worldTop:(fCfg.worldTop!==undefined)?Math.floor(fCfg.worldTop):302,
+    worldBottom:(fCfg.worldBottom!==undefined)?Math.floor(fCfg.worldBottom):468,
+    topY:topY,
+    floorY:floorY
   };
 };
 Level15Scene.prototype._l15V3InitStyle=function(){
@@ -10010,7 +10043,7 @@ Level15Scene.prototype._l15MkWorldToVirtualY=function(yFx){
   var y=_fightToPx(yFx);
   var t=(y-v.worldTop)/(v.worldBottom-v.worldTop);
   if(t<0) t=0; if(t>1) t=1;
-  return Math.round(44+t*(v.floorY-44));
+  return Math.round((v.topY!==undefined?v.topY:44)+t*(v.floorY-(v.topY!==undefined?v.topY:44)));
 };
 Level15Scene.prototype._l15MkQ=function(col){
   if(FEATURE_FLAGS.fightVisualRevampV3&&FEATURE_FLAGS.fightV3Quantize555){
@@ -10024,10 +10057,22 @@ Level15Scene.prototype._l15MkQ=function(col){
 };
 Level15Scene.prototype._l15V3DrawFighter=function(fighter,poseTag){
   var g=(fighter.id==='p1')?this.edG:this.bossG;
-  var cfg=(this._l15V3&&this._l15V3.fighters)||{outlinePx:1,shadowMul:0.62,highlightMul:1.18};
+  var fr=_fightPresentationFighterRenderer();
   var x=this._l15MkWorldToVirtualX(fighter.x), y=this._l15MkWorldToVirtualY(fighter.y);
   x+=(this._mkJx||0);
   y+=(this._mkJy||0);
+  if(fr&&typeof fr.renderFighter==='function'&&this._mkViewport){
+    if(this._l15V3&&this._l15V3.pixelSnap&&this._l15V3.pixelSnap.roundFighter){ x=Math.round(x); y=Math.round(y); }
+    return fr.renderFighter(this,fighter,{
+      graphics:g,
+      poseTag:poseTag,
+      viewport:this._mkViewport,
+      rootX:x,
+      rootY:y,
+      quantizeFn:this._l15MkQ.bind(this)
+    });
+  }
+  var cfg=(this._l15V3&&this._l15V3.fighters)||{outlinePx:1,shadowMul:0.62,highlightMul:1.18};
   if(this._l15V3&&this._l15V3.pixelSnap&&this._l15V3.pixelSnap.roundFighter){ x=Math.round(x); y=Math.round(y); }
   var crouch=(fighter.state===FIGHT_STATES.CROUCH||fighter.state===FIGHT_STATES.BLOCKSTUN);
   var jump=(!fighter.grounded&&fighter.state!==FIGHT_STATES.KNOCKDOWN);
@@ -10072,6 +10117,7 @@ Level15Scene.prototype._l15V3DrawFighter=function(fighter,poseTag){
     g.fillStyle(mcol,pulse?1:0.7); g.fillRect(x-6,markerY,12,2);
     g.fillStyle(accent,0.7); g.fillRect(x-2,markerY+3,4,1);
   }
+  return null;
 };
 Level15Scene.prototype._l15V3DrawHud=function(){
   var w=this._fightWorld;
@@ -10079,9 +10125,10 @@ Level15Scene.prototype._l15V3DrawHud=function(){
   var p1=w.fighters.p1,p2=w.fighters.p2;
   var v=this._mkViewport, g=this.hudG;
   var cfg=(this._l15V3&&this._l15V3.hud)||{barH:8,barW:92,timerGlyphPx:16};
-  var barW=Math.max(48,Math.floor(cfg.barW||92));
-  var barH=Math.max(6,Math.floor(cfg.barH||8));
-  var y=4;
+  var isLab=!!this._combatLab;
+  var barW=Math.max(42,Math.floor(isLab?78:(cfg.barW||92)));
+  var barH=Math.max(4,Math.floor(isLab?5:(cfg.barH||8)));
+  var y=isLab?2:4;
   var centerX=Math.floor(v.vw*0.5);
   var leftX=centerX-4-barW;
   var rightX=centerX+4;
@@ -10089,8 +10136,8 @@ Level15Scene.prototype._l15V3DrawHud=function(){
   var tTxt=(tSec<10?'0':'')+tSec;
   var p1Pct=_fightClamp(p1.health/p1.maxHealth,0,1), p2Pct=_fightClamp(p2.health/p2.maxHealth,0,1);
   var danger=this._l15MkQ((this._l15V3&&this._l15V3.palette&&this._l15V3.palette.dangerColor)||0xe8d65a);
-  g.fillStyle(this._l15MkQ(0x0a0a0a),1); g.fillRect(0,0,v.vw,20);
-  if(FEATURE_FLAGS.fightV3DitherOverlay) this._l15V3DitherRect(g,0,0,v.vw,20,0x0d0d0d,0x121212,2);
+  g.fillStyle(this._l15MkQ(0x0a0a0a),isLab?0.88:1); g.fillRect(0,0,v.vw,isLab?16:20);
+  if(FEATURE_FLAGS.fightV3DitherOverlay) this._l15V3DitherRect(g,0,0,v.vw,isLab?16:20,0x0d0d0d,0x121212,2);
   g.fillStyle(this._l15MkQ(0x272727),1); g.fillRect(leftX,y,barW,barH);
   g.fillStyle(this._l15MkQ(p1Pct>0.5?0x7fda72:(p1Pct>0.25?0xd1b04b:0xba5346)),1); g.fillRect(leftX,y,Math.floor(barW*p1Pct),barH);
   g.lineStyle(1,this._l15MkQ(0x040404),1); g.strokeRect(leftX,y,barW,barH);
@@ -10098,15 +10145,16 @@ Level15Scene.prototype._l15V3DrawHud=function(){
   var rw=Math.floor(barW*p2Pct);
   g.fillStyle(this._l15MkQ(p2Pct>0.5?0x96a9df:(p2Pct>0.25?0xd1b04b:0xba5346)),1); g.fillRect(rightX+(barW-rw),y,rw,barH);
   g.lineStyle(1,this._l15MkQ(0x040404),1); g.strokeRect(rightX,y,barW,barH);
-  g.fillStyle(this._l15MkQ(0x0a0a0a),1); g.fillRect(centerX-10,2,20,12);
-  g.lineStyle(1,danger,1); g.strokeRect(centerX-10,2,20,12);
+  g.fillStyle(this._l15MkQ(0x0a0a0a),1); g.fillRect(centerX-(isLab?8:10),isLab?1:2,isLab?16:20,isLab?10:12);
+  g.lineStyle(1,danger,1); g.strokeRect(centerX-(isLab?8:10),isLab?1:2,isLab?16:20,isLab?10:12);
   if(!this._mkTimerGlyph){
-    this._mkTimerGlyph=_sceneDisposableAdd(this,'text',this.add.text(v.ox+(centerX*v.scale),v.oy+(8*v.scale),tTxt,{fontFamily:'Inconsolata,monospace',fontSize:Math.max(14,Math.floor((cfg.timerGlyphPx||16)*v.scale*0.9))+'px',color:'#f2f2f2',stroke:'#050505',strokeThickness:6}).setOrigin(0.5).setDepth(31));
+    this._mkTimerGlyph=_sceneDisposableAdd(this,'text',this.add.text(v.ox+(centerX*v.scale),v.oy+((isLab?6:8)*v.scale),tTxt,{fontFamily:'Inconsolata,monospace',fontSize:Math.max(isLab?11:14,Math.floor((isLab?12:(cfg.timerGlyphPx||16))*v.scale*0.8))+'px',color:'#f2f2f2',stroke:'#050505',strokeThickness:isLab?4:6}).setOrigin(0.5).setDepth(31));
   }
   this._mkTimerText=tTxt;
   this._mkTimerGlyph.setText(tTxt);
   var r;
   for(r=0;r<2;r++){
+    if(isLab) continue;
     g.fillStyle(r<w.score.p1?danger:this._l15MkQ(0x2b2b2b),1); g.fillRect(leftX+barW-7+r*4,14,3,3);
     g.fillStyle(r<w.score.p2?danger:this._l15MkQ(0x2b2b2b),1); g.fillRect(rightX+1+r*4,14,3,3);
   }
@@ -10120,8 +10168,7 @@ Level15Scene.prototype._l15V3DrawHud=function(){
 };
 Level15Scene.prototype._l15MkDrawFighter=function(fighter,frameTag){
   if(FEATURE_FLAGS.fightVisualRevampV3){
-    this._l15V3DrawFighter(fighter,frameTag);
-    return;
+    return this._l15V3DrawFighter(fighter,frameTag);
   }
   var g=(fighter.id==='p1')?this.edG:this.bossG;
   var x=this._l15MkWorldToVirtualX(fighter.x), y=this._l15MkWorldToVirtualY(fighter.y);
@@ -10157,6 +10204,7 @@ Level15Scene.prototype._l15MkDrawFighter=function(fighter,frameTag){
   var legY=cy-2;
   g.fillStyle(outline,1); g.fillRect(x-4,legY,3,6); g.fillRect(x+1,legY,3,6);
   g.fillStyle(shade,1); g.fillRect(x-3,legY+1,2,4); g.fillRect(x+1,legY+1,2,4);
+  return null;
 };
 Level15Scene.prototype._l15MkSpawnParticles=function(ev){
   var w=this._fightWorld;
@@ -10335,7 +10383,9 @@ Level15Scene.prototype._l15SparkPush=function(evType,x,y){
   if(this._l15Sparks.length>120) this._l15Sparks.shift();
 };
 Level15Scene.prototype._l15ApplyJuiceEvent=function(ev){
+  var pfx=_fightPresentationFxRenderer();
   if(!ev) return;
+  if(pfx&&typeof pfx.applyEvent==='function') pfx.applyEvent(this,ev);
   if(this._mkEnabled) this._l15MkApplyEventFx(ev);
   if(ev.type==='cornerPressure'){
     this._l15CornerToastT=(BALANCE.fight&&BALANCE.fight.juice&&BALANCE.fight.juice.cornerToastFrames)||42;
@@ -10688,6 +10738,9 @@ Level15Scene.prototype._drawHitboxes=function(){
 };
 Level15Scene.prototype._renderFightMk=function(){
   var w=this._fightWorld,p1=w.fighters.p1,p2=w.fighters.p2,v=this._mkViewport;
+  var stageRenderer=_fightPresentationStageRenderer();
+  var pfx=_fightPresentationFxRenderer();
+  var p1Cache=null,p2Cache=null;
   var jx=0,jy=0;
   if(this._l15Jolt.framesLeft>0){
     var patt=[0,1,-1,1,-1,0];
@@ -10698,6 +10751,8 @@ Level15Scene.prototype._renderFightMk=function(){
   }
   this._mkJx=jx;
   this._mkJy=jy;
+  this._fightPresentationCache={};
+  if(pfx&&typeof pfx.beginFrame==='function') pfx.beginFrame(this);
   var v3Snap=(FEATURE_FLAGS.fightVisualRevampV3&&this._l15V3&&this._l15V3.pixelSnap)?this._l15V3.pixelSnap.roundCamera:true;
   if(this.cameras&&this.cameras.main&&(FEATURE_FLAGS.dkcBackgroundMode||FEATURE_FLAGS.metroidAtmosphereMode||FEATURE_FLAGS.fightMkGbaLock240||v3Snap)){
     this.cameras.main.roundPixels=(v3Snap!==false);
@@ -10717,7 +10772,24 @@ Level15Scene.prototype._renderFightMk=function(){
   this._mkLetterboxG.strokeRect(v.ox-1,v.oy-1,v.vw*v.scale+2,v.vh*v.scale+2);
 
   this._mkBgG.clear();
-  if(this._dkcBgEnabled&&this._dkcBgState){
+  if(this._atmL1G) this._atmL1G.clear();
+  if(this._atmL2G) this._atmL2G.clear();
+  if(this._atmL3G) this._atmL3G.clear();
+  if(this._atmL4PropsG) this._atmL4PropsG.clear();
+  if(this._atmL5G) this._atmL5G.clear();
+  if(this._dkcL5G) this._dkcL5G.clear();
+  if(FEATURE_FLAGS.fightVisualRevampV3&&stageRenderer&&typeof stageRenderer.renderStage==='function'){
+    stageRenderer.renderStage(this,{
+      graphics:this._mkBgG,
+      viewport:v,
+      quantizeFn:this._l15MkQ.bind(this),
+      jitterX:jx,
+      jitterY:jy
+    });
+    this._dkcDrawCallsEst=0;
+    this._atmDrawCallsEst=12;
+    this._atmFrameHash='tflat';
+  }else if(this._dkcBgEnabled&&this._dkcBgState){
     if(this._dkcL5G) this._dkcL5G.clear();
     _dkcBgStep(this._dkcBgState,w.frame);
     this._dkcDrawCallsEst=_dkcBgRender(this,this._dkcBgState,camPx,0,{
@@ -10775,8 +10847,12 @@ Level15Scene.prototype._renderFightMk=function(){
 
   var tag1=(p1.state===FIGHT_STATES.ACTIVE)?'strike':(p1.state===FIGHT_STATES.JUMP?'jump':'idle');
   var tag2=(p2.state===FIGHT_STATES.ACTIVE)?'strike':(p2.state===FIGHT_STATES.JUMP?'jump':'idle');
-  this._l15MkDrawFighter(p1,tag1);
-  this._l15MkDrawFighter(p2,tag2);
+  p1Cache=this._l15MkDrawFighter(p1,tag1);
+  p2Cache=this._l15MkDrawFighter(p2,tag2);
+  if(pfx&&typeof pfx.renderFighterFx==='function'){
+    pfx.renderFighterFx(this,this.fxG,p1Cache,{viewport:v,quantizeFn:this._l15MkQ.bind(this)});
+    pfx.renderFighterFx(this,this.fxG,p2Cache,{viewport:v,quantizeFn:this._l15MkQ.bind(this)});
+  }
 
   for(var pi=this._l15MkParticles.length-1;pi>=0;pi--){
     var pr=this._l15MkParticles[pi];
@@ -10786,6 +10862,9 @@ Level15Scene.prototype._renderFightMk=function(){
     var fxX=Math.round(pr.x+jx), fxY=Math.round(pr.y+jy);
     if(FEATURE_FLAGS.fightVisualRevampV3&&this._l15V3&&this._l15V3.pixelSnap&&this._l15V3.pixelSnap.roundFx){ fxX=Math.floor(fxX); fxY=Math.floor(fxY); }
     this.fxG.fillRect(fxX,fxY,Math.max(1,pr.size),Math.max(1,pr.size));
+  }
+  if(pfx&&typeof pfx.renderTransientFx==='function'){
+    pfx.renderTransientFx(this,this.fxG,{viewport:v,quantizeFn:this._l15MkQ.bind(this)});
   }
 
   if(w.mkGba&&w.mkGba.vfx&&w.mkGba.vfx.heavyFlashFrames>0&&!_lowEffectsOn()){
@@ -10983,8 +11062,10 @@ Level15CombatLabScene.prototype.create=function(){
   ];
   this._labDrillIndex=0;
   this._labDummyIndex=0;
-  this._labStatusTxt=this.add.text(480,18,'',{fontFamily:'Inconsolata,monospace',fontSize:'14px',color:'#ccffee',stroke:'#000000',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(40);
-  this._labHintTxt=this.add.text(480,36,'1-7 SCENARIO  G DUMMY  Q SMOKE  E COMBAT  R SNAP  T REPLAY  F3 HITBOX  F4 PAUSE  F5 STEP  F6 SLOW  ESC EXIT',{fontFamily:'Inconsolata,monospace',fontSize:'12px',color:'#99ccff',stroke:'#000000',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(40);
+  this._labHintLegend='1-7 SCENARIO  G DUMMY  Q SMOKE  E COMBAT  R SNAP  T REPLAY  F3 HITBOX  F4 PAUSE  F5 STEP  F6 SLOW  ESC EXIT';
+  this._labStatusTxt=this.add.text(480,16,'',{fontFamily:'Inconsolata,monospace',fontSize:'13px',color:'#ccffee',stroke:'#000000',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(40);
+  this._labHintTxt=this.add.text(480,31,this._labHintLegend,{fontFamily:'Inconsolata,monospace',fontSize:'10px',color:'#99ccff',stroke:'#000000',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(40);
+  this._labReadoutTxt=this.add.text(480,45,'',{fontFamily:'Inconsolata,monospace',fontSize:'10px',color:'#ffe7a6',stroke:'#000000',strokeThickness:3,align:'center'}).setOrigin(0.5).setDepth(40);
   this.keys.lab1=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
   this.keys.lab2=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
   this.keys.lab3=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
@@ -11102,6 +11183,46 @@ Level15CombatLabScene.prototype._labSetDrill=function(idx,preserveDummy){
   this._l15MkParticles.length=0;
   if(!preserveDummy) this._labSetDummyById(scenario.defaultDummy||'scripted');
   this._labSetupScenario(this._fightWorld,scenario);
+};
+Level15CombatLabScene.prototype._labPrettyState=function(fighter){
+  var state=String(fighter&&fighter.state||'idle');
+  if(state===FIGHT_STATES.STARTUP) return 'START';
+  if(state===FIGHT_STATES.ACTIVE) return 'ACTIVE';
+  if(state===FIGHT_STATES.RECOVERY) return 'RECOV';
+  if(state===FIGHT_STATES.BLOCKSTUN) return 'BLOCK';
+  if(state===FIGHT_STATES.HITSTUN) return 'HIT';
+  if(state===FIGHT_STATES.KNOCKDOWN) return 'DOWN';
+  if(state===FIGHT_STATES.WAKEUP) return 'WAKE';
+  if(state===FIGHT_STATES.THROW) return 'THROW';
+  if(state===FIGHT_STATES.CROUCH) return 'CROUCH';
+  if(state===FIGHT_STATES.JUMP) return 'JUMP';
+  return state.toUpperCase();
+};
+Level15CombatLabScene.prototype._labPrettyMove=function(fighter){
+  var move;
+  if(!fighter||!fighter.moveId) return '';
+  move=_fightRosterMoveById(fighter.rosterKey,fighter.moveId);
+  return String((move&&move.name)||fighter.moveId||'').toUpperCase();
+};
+Level15CombatLabScene.prototype._labUpdateReadout=function(){
+  var w=this._fightWorld;
+  var p1,p2,lx,lastMove,lastMoveLabel,lastType,advText,parts,p1Move,p2Move;
+  if(!w||!this._labReadoutTxt) return;
+  p1=w.fighters.p1; p2=w.fighters.p2; lx=w.interaction&&w.interaction.lastExchange?w.interaction.lastExchange:{};
+  lastMove=(lx.moveId?(_fightRosterMoveById('ed',lx.moveId)||_fightRosterMoveById('daikon',lx.moveId)):null);
+  lastMoveLabel=String((lastMove&&lastMove.name)||lx.moveId||'none').toUpperCase();
+  lastType=String(lx.hitType||'none').toUpperCase();
+  advText=(lx.advantage!==undefined&&lx.advantage!==null)?('  ADV '+lx.advantage):'';
+  p1Move=this._labPrettyMove(p1);
+  p2Move=this._labPrettyMove(p2);
+  parts=[
+    'ED '+this._labPrettyState(p1)+(p1Move?(' / '+p1Move):''),
+    'DAIKON '+this._labPrettyState(p2)+(p2Move?(' / '+p2Move):'')
+  ];
+  if(lastType!=='NONE'||lastMoveLabel!=='NONE'||advText){
+    parts.push('LAST '+lastType+(lastMoveLabel!=='NONE'?(' '+lastMoveLabel):'')+advText);
+  }
+  this._labReadoutTxt.setText(parts.join('   |   '));
 };
 Level15CombatLabScene.prototype._labBuildBlockRaw=function(ctx){
   var raw={left:false,right:false,up:false,down:false,punch:false,kick:false,throwBtn:false};
@@ -11328,7 +11449,9 @@ Level15CombatLabScene.prototype.update=(function(cfg){
     }
     d=this._labScenario();
     mode=this._labDummyMode();
-    this._labStatusTxt.setText('COMBAT LAB // '+d.title+' // DUMMY '+mode.title+' // '+d.hint);
+    this._labStatusTxt.setText('COMBAT LAB // '+d.title+' // DUMMY '+mode.title);
+    this._labHintTxt.setText(d.hint+'   |   '+this._labHintLegend);
+    this._labUpdateReadout();
     this._renderFight();
   };
 })({LW:960});

@@ -22,6 +22,10 @@ ns.version = 'extract-pass22';
   ns.adapters.phaser = ns.adapters.phaser || {};
   ns.tools = ns.tools || {};
   ns.tools.determinism = ns.tools.determinism || {};
+  ns.data = ns.data || {};
+  ns.data.fighters = ns.data.fighters || {};
+  ns.data.stages = ns.data.stages || {};
+  ns.presentation = ns.presentation || {};
 
   ns.createEngine = function createEngine(opts){
     if(!ns.api || !ns.api.CombatEngine || !ns.api.CombatEngine.create){
