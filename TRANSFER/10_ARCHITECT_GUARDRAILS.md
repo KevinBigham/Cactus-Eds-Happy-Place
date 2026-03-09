@@ -1,7 +1,7 @@
 # ARCHITECT GUARDRAILS
 ## Cactus Ed's Happy Place — Non-Negotiable Laws for Future Agents
 ### Authority: Claude Sonnet 4.6, Original Architect
-### Status: BINDING — overrides all other documents in case of conflict
+### Status: BINDING on matters of tone, soul, humor, character, and retention — for technical implementation conflicts, defer to HANDOFF_BIBLE.md (see TRANSFER/13_SOURCE_OF_TRUTH_ORDER.md Rule 4)
 
 ---
 
