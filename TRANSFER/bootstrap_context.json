@@ -20,12 +20,13 @@
   },
 
   "technical_stack": {
-    "renderer": "Phaser.CANVAS — forced, non-negotiable. No WebGL ever.",
+    "scope_note": "[OLD REPO — index.html] The constraints below apply unconditionally to the existing codebase. For the new repo, the runtime is Kevin's decision. See TRANSFER/15_RUNTIME_CANON_DECISION.md before making any new-repo architectural decisions.",
+    "renderer": "[OLD REPO] Phaser.CANVAS — forced for index.html. No WebGL in the existing file. New repo: Kevin decides.",
     "phaser_version": "3.70.0",
-    "language": "ES5 only — var, function(){}, prototype OOP. No const, let, =>, class. Ever.",
+    "language": "[OLD REPO] ES5 only for index.html — var, function(){}, prototype OOP. No const, let, =>, class. New repo: Kevin decides.",
     "file_count": 1,
     "primary_file": "index.html",
-    "deployment": "GitHub Pages — index.html at root, no build step, no package.json",
+    "deployment": "GitHub Pages — index.html at root, no build step, no package.json (old repo). New repo deployment model is Kevin's decision.",
     "line_count_expected": "~9662",
     "file_write_strategy": "Never write index.html in one tool call (32k token limit). Use Python append strategy (5-chunk). See HANDOFF_BIBLE.md for exact pattern."
   },
@@ -33,7 +34,7 @@
   "character_laws": {
     "ed": {
       "personality": "Aloof. Deadpan. Continues regardless of context. Never surprised. Never excited. Never alarmed.",
-      "dialogue_rule": "Maximum 8 words per line. No exclamation marks. Ever.",
+      "dialogue_rule": "Short lines are the default — target 8 words or fewer. Exceptions are allowed when the longer version is materially stronger, not merely acceptable. No exclamation marks in Ed's own voice, ever. This rule applies to Ed only — institutional/system/menu text is NOT Ed's voice and may be loud.",
       "weapon": "Cigarette lance (extends for punch/kick)",
       "visual": "Cactus. Sunglasses. Chain-smoking. Adventure Time outline (#2d1b00) on all drawn elements.",
       "if_ed_is_excited": "Fix it immediately. This is drift."
@@ -176,15 +177,36 @@
 
   "drift_kill_switches": {
     "if_ed_is_excited_or_surprised": "Remove the expression. Ed continues.",
-    "if_ed_says_more_than_8_words": "Cut the dialogue.",
+    "if_ed_says_more_than_8_words": "Cut the dialogue — unless the longer version is materially stronger. Short is default. Exceptions require genuine improvement.",
+    "if_ed_dialogue_has_exclamation_mark": "Remove it. Ed's voice has no exclamation marks. Ever.",
+    "if_institutional_language_is_too_flat": "Add formal emphasis. Signs and Rasta Corp copy should sound aggressively bureaucratic — exclamation marks are correct here.",
     "if_new_text_sounds_like_a_joke": "Rewrite as municipal announcement.",
     "if_ED_MOVE_constant_changed": "Revert immediately, no exceptions.",
     "if_aloe_reward_reduced": "Revert or compensate equivalently.",
     "if_level_id_not_hyphen_format": "Fix all instances before other work.",
     "if_particle_pools_not_cleared": "Add 3-line clear to create() immediately.",
-    "if_es6_syntax_appears": "Rewrite in ES5 before committing.",
-    "if_webgl_used": "Force Phaser.CANVAS or remove the scene.",
-    "if_new_file_created_outside_index_html": "Delete unless human explicitly authorized."
+    "if_es6_syntax_appears_in_index_html": "[OLD REPO] Rewrite in ES5 before committing to index.html. New repo syntax is Kevin's decision.",
+    "if_webgl_used_in_index_html": "[OLD REPO] Force Phaser.CANVAS or remove the scene from index.html.",
+    "if_new_file_created_outside_index_html": "[OLD REPO] Delete unless human explicitly authorized. New repo file structure is Kevin's decision.",
+    "if_combat_folder_treated_as_production": "Stop. combat/ is experimental/secondary. See TRANSFER/16_COMBAT_RACING_STATUS_DECISION.md.",
+    "if_world_2_plus_worked_on_before_world_1_validates": "Stop. Validate World 1 first. See TRANSFER/16_COMBAT_RACING_STATUS_DECISION.md."
+  },
+
+  "runtime_canon": {
+    "summary": "ES5 + Canvas + One File is the OLD REPO's technical identity. It is NOT automatically mandated for the new repo.",
+    "old_repo_law": "index.html must remain ES5, Canvas-only, one file. No exceptions. These constraints are real and active.",
+    "new_repo_decision": "Kevin decides the new repo's architecture. Options: retain ES5+Canvas+One File, or modernize. Must be decided explicitly before migration.",
+    "what_always_transfers": "Ed's character, the humor engine (institutional language applied to chaos), the retention model (generous, not punishing), World 1 specs, Rasta Corp soul. These have no expiration date.",
+    "authoritative_doc": "TRANSFER/15_RUNTIME_CANON_DECISION.md"
+  },
+
+  "combat_scope": {
+    "summary": "World 1 is the primary scope. combat/ is experimental and secondary. Racing is secondary.",
+    "world_1_gate": "World 1 must be validated (all 5 levels, boss, map) before any other system is promoted.",
+    "combat_status": "Experimental. Not production-ready. Do not migrate as first-class. Do not treat as coequal with World 1.",
+    "racing_status": "Secondary. Same rules as combat. World 1 first.",
+    "promotion_path": "Kevin explicitly says so + World 1 is stable + system playtested without breaking World 1.",
+    "authoritative_doc": "TRANSFER/16_COMBAT_RACING_STATUS_DECISION.md"
   },
 
   "first_action_for_new_repo": {

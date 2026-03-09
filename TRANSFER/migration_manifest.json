@@ -55,6 +55,21 @@
       "reason": "Living document of unresolved questions. Must travel with the project."
     },
     {
+      "old_path": "TRANSFER/15_RUNTIME_CANON_DECISION.md",
+      "new_path": "TRANSFER/15_RUNTIME_CANON_DECISION.md",
+      "reason": "TIER 1 authority. Draws the line between old-repo technical identity (ES5+Canvas+One File) and new-repo architecture (Kevin's decision). REQUIRED before any architectural decision for the new repo."
+    },
+    {
+      "old_path": "TRANSFER/16_COMBAT_RACING_STATUS_DECISION.md",
+      "new_path": "TRANSFER/16_COMBAT_RACING_STATUS_DECISION.md",
+      "reason": "TIER 1 authority. Establishes World 1 as primary scope and combat/ as experimental/secondary. REQUIRED before migrating any non-World-1 systems."
+    },
+    {
+      "old_path": "TRANSFER/17_ARCHITECTURAL_NORMALIZATION.md",
+      "new_path": "TRANSFER/17_ARCHITECTURAL_NORMALIZATION.md",
+      "reason": "TIER 1 authority. Full audit record: what was corrected in the guardrails, legacy vs. future truth table, eight permanent bloodline protections, migration warnings."
+    },
+    {
       "old_path": "TRANSFER/migration_manifest.json",
       "new_path": "TRANSFER/migration_manifest.json",
       "reason": "This file. Needed for future repo-to-repo moves."
@@ -227,9 +242,10 @@
     "layout": {
       "index.html": "THE ENTIRE GAME",
       "HANDOFF_BIBLE.md": "Complete technical and narrative overview",
-      "TRANSFER/": "All 8 TRANSFER pack files",
+      "TRANSFER/": "All 11 TRANSFER pack files (00_START_HERE through 17_ARCHITECTURAL_NORMALIZATION plus two JSON files)",
       "docs/": "Authoritative briefing docs only (see must_port list)"
     },
+    "new_repo_architecture_note": "The flat structure (one index.html, no build system) is the old repo's deployment model. For the new repo, Kevin decides whether to retain this or modernize. See TRANSFER/15_RUNTIME_CANON_DECISION.md. Do not assume flat-and-ES5 is automatically required for the new repo.",
     "must_not_create": [
       "src/",
       "dist/",

@@ -207,7 +207,9 @@ AT.outline  = '#2d1b00'   // dark brown — THE Adventure Time outline
 
 | If X happens | Stop and fix Y |
 |-------------|----------------|
-| Ed says more than 8 words | Cut the dialogue until it fits |
+| Ed says more than 8 words | Cut — unless the longer version is materially stronger. Short is default. Exceptions need genuine improvement, not preference. |
+| Ed's dialogue has an exclamation mark | Remove it. Ed's voice has no exclamation marks, ever. |
+| Institutional/menu/sign language is too flat | Add formal emphasis. Signs and Rasta Corp copy should sound aggressively bureaucratic. Exclamation marks are correct here. |
 | Ed expresses surprise or enthusiasm | Remove the expression entirely. Ed continues. |
 | A new text feels like a joke | Rewrite it as a municipal announcement |
 | Any `ED_MOVE` constant changed | Revert immediately, no exceptions |
@@ -215,13 +217,15 @@ AT.outline  = '#2d1b00'   // dark brown — THE Adventure Time outline
 | Level IDs aren't in `'W-L'` hyphen format | Fix all instances before any other work |
 | Particle pools not cleared in `create()` | Add the 3-line clear immediately |
 | `var LW` is not the FIRST line of `update()` | Move it. JS hoisting will break camera clamp otherwise. |
-| A new scene uses WebGL | Force `Phaser.CANVAS` or remove the scene |
-| Any `let`, `const`, `=>`, or `class` appears | Rewrite in ES5 before committing |
+| A new scene in `index.html` uses WebGL | **[OLD REPO]** Force `Phaser.CANVAS` or remove the scene |
+| Any `let`, `const`, `=>`, or `class` appears in `index.html` | **[OLD REPO]** Rewrite in ES5 before committing to `index.html` |
 | A commercial break ad sounds like parody | Rewrite as sincere corporate copy |
 | Rasta Corp becomes sympathetic enough to root for | Add one more thing it's selling that it shouldn't be |
 | A cat says something that sounds like a tweet | Give the cat a real thought instead |
 | `EWR_STATE.rastaCorp.sympathy >= 4` and no DarkEpilogue | Trace the `_triggerFourthWallBreak` chain immediately |
-| New file created outside `index.html` | Delete it unless human explicitly authorized it |
+| New file created outside `index.html` | **[OLD REPO]** Delete it unless human explicitly authorized it. New repo file structure is Kevin's decision. |
+| `combat/` code treated as production-ready | Stop. `combat/` is experimental/secondary. See `TRANSFER/16_COMBAT_RACING_STATUS_DECISION.md`. |
+| World 2+ work started before World 1 validates | Stop. Validate World 1 first. See `TRANSFER/16_COMBAT_RACING_STATUS_DECISION.md`. |
 
 ---
 

@@ -8,13 +8,15 @@
 
 ---
 
-## DECISION 1 — REPO STRUCTURE: KEEP IT FLAT
+## DECISION 1 — REPO STRUCTURE: KEVIN DECIDES — DEFAULT IS KEEP IT FLAT
 
-**Decision:** The new repo must mirror the old one's flat structure. One `index.html` at root. No `src/`, no `dist/`, no build system.
+**Decision:** Before any other setup, Kevin must answer: **retain the old repo's flat structure (ES5 + Canvas + One File), or modernize the new repo's architecture?**
 
-**Why:** The game's deployment model is a feature. GitHub Pages deploys `index.html` directly. Any build step adds friction, dependency rot, and migration risk. The game has survived this long because there's nothing to break.
+Read `TRANSFER/15_RUNTIME_CANON_DECISION.md` before proceeding. Do not assume the answer.
 
-**What to do:**
+**If Kevin says RETAIN (flat + ES5 + Canvas):**
+
+The new repo mirrors the old one's flat structure. One `index.html` at root. No `src/`, no `dist/`, no build system.
 ```
 new-repo/
 ├── index.html          ← THE ENTIRE GAME
@@ -22,8 +24,13 @@ new-repo/
 ├── TRANSFER/           ← These docs
 └── docs/               ← Briefings and AI collab artifacts
 ```
+Do not create `game/src/scenes/` or any folder structure. Do not add `package.json`, webpack, vite, or any bundler.
 
-**What NOT to do:** Don't create `game/src/scenes/` or any folder structure. Don't add a `package.json`. Don't add webpack, vite, or any bundler.
+**If Kevin says MODERNIZE:**
+
+Decisions about bundler, module system, and file structure are Kevin's to make. The soul laws still apply regardless: Ed's character, the humor engine, the retention model, World 1 specs. See `TRANSFER/15_RUNTIME_CANON_DECISION.md` for the full list of what transfers and what doesn't.
+
+**Why flat-and-ES5 is the strong default:** The game's deployment model is a feature. GitHub Pages deploys `index.html` directly. Any build step adds friction, dependency rot, and migration risk. The game has survived this long because there's nothing to break. Only modernize if there's a specific, concrete reason.
 
 ---
 
@@ -50,7 +57,7 @@ new-repo/
 **Why:** Future agents need these to operate. Without them, the next agent starts from zero and will drift immediately.
 
 **What to port:**
-- `TRANSFER/` (this folder — all 8 files: 00 through 14)
+- `TRANSFER/` (this folder — all 11 files: 00 through 17, plus the two JSON files)
 - `HANDOFF_BIBLE.md` (already at root — port from root, not from docs/)
 - `docs/CACTUS_ED_AI_GAMEPLAN.md`
 - `docs/BRIEFING_CODEX.md`, `docs/BRIEFING_CODEX_R2.md`
