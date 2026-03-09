@@ -19,18 +19,21 @@ Ed is a slow-moving, chain-smoking cactus. He does not react to absurdity. He is
 
 ## THE TRANSFER PACK (this folder)
 
-These 8 files are your operating system. Read them in order.
+These 11 files are your operating system. Read them in order.
 
 ```
 TRANSFER/
-├── 00_START_HERE.md                      ← YOU ARE HERE
-├── 10_ARCHITECT_GUARDRAILS.md            ← 21 non-negotiable laws
-├── 11_DRIFT_WARNINGS_AND_KILL_SWITCHES.md ← 7 drift types + kill switches
-├── 12_FIRST_10_DECISIONS_FOR_NEW_REPO.md  ← ordered setup sequence
-├── 13_SOURCE_OF_TRUTH_ORDER.md           ← which docs win conflicts
-├── 14_GAPS_AND_OPEN_QUESTIONS.md         ← what is NOT decided
-├── bootstrap_context.json                ← compressed context for cold starts
-└── migration_manifest.json               ← exact paths for new repo setup
+├── 00_START_HERE.md                        ← YOU ARE HERE
+├── 10_ARCHITECT_GUARDRAILS.md              ← guardrails for soul, tone, and old-repo technical identity
+├── 11_DRIFT_WARNINGS_AND_KILL_SWITCHES.md  ← 7 drift types + kill switches
+├── 12_FIRST_10_DECISIONS_FOR_NEW_REPO.md   ← ordered setup sequence
+├── 13_SOURCE_OF_TRUTH_ORDER.md             ← which docs win conflicts
+├── 14_GAPS_AND_OPEN_QUESTIONS.md           ← what is NOT decided
+├── 15_RUNTIME_CANON_DECISION.md            ← old-repo runtime vs. new-repo architecture ← READ BEFORE MIGRATING
+├── 16_COMBAT_RACING_STATUS_DECISION.md     ← World 1 primary; combat/ experimental ← READ BEFORE MIGRATING
+├── 17_ARCHITECTURAL_NORMALIZATION.md       ← what was corrected in the guardrails and why
+├── bootstrap_context.json                  ← compressed context for cold starts
+└── migration_manifest.json                 ← exact paths for new repo setup
 ```
 
 ---
@@ -54,7 +57,16 @@ If you are setting up the new repo, follow these 10 decisions in order. Do not s
 ### Step 5 — `TRANSFER/13_SOURCE_OF_TRUTH_ORDER.md`
 Consult this whenever two documents conflict. It decides which wins.
 
-### Step 6 — `TRANSFER/14_GAPS_AND_OPEN_QUESTIONS.md`
+### Step 6a — `TRANSFER/15_RUNTIME_CANON_DECISION.md` ← REQUIRED BEFORE ANY NEW-REPO ARCHITECTURAL DECISION
+Read this before making any decisions about the new repo's technical architecture. It draws the line between old-repo technical identity (ES5 + Canvas + One File) and future architectural choices. Without this, you will misread the guardrail laws as universal mandates.
+
+### Step 6b — `TRANSFER/16_COMBAT_RACING_STATUS_DECISION.md` ← REQUIRED BEFORE MIGRATING NON-WORLD-1 SYSTEMS
+Read this before migrating `combat/`, racing, or any system outside World 1. World 1 is primary scope. `combat/` is experimental until Kevin explicitly promotes it.
+
+### Step 6c — `TRANSFER/17_ARCHITECTURAL_NORMALIZATION.md`
+Read this to understand what changed in the guardrail pack and why. Contains the full audit record: what was too rigid, what was corrected, legacy vs. future truth, bloodline protections, and migration warnings.
+
+### Step 7 — `TRANSFER/14_GAPS_AND_OPEN_QUESTIONS.md`
 Read this before starting any new feature work. If a question is here, do not guess — surface it to Kevin.
 
 ---
@@ -87,13 +99,15 @@ TIER 4 — HISTORICAL (read-only, never override):
 
 ---
 
-## THE THREE LAWS YOU MUST NEVER BREAK
+## THE THREE LAWS YOU MUST NEVER BREAK (OLD REPO — `index.html`)
 
 1. **One file.** `index.html` is the entire game. No new files without Kevin's explicit sign-off.
 2. **ES5 only.** `var`, `function(){}`, prototype OOP. No `const`, `let`, `=>`, `class`. Ever.
 3. **Canvas only.** `Phaser.CANVAS` forced. No WebGL. No exceptions.
 
 Violating any of these breaks the deployment model and the aesthetic. If you feel tempted to break one, re-read `TRANSFER/10_ARCHITECT_GUARDRAILS.md` before acting.
+
+**Note for new-repo work:** These three laws describe the old repo's technical identity. For the new repo, they are Kevin's decision — not automatic mandates. Read `TRANSFER/15_RUNTIME_CANON_DECISION.md` before making new-repo architectural decisions.
 
 ---
 
@@ -102,6 +116,8 @@ Violating any of these breaks the deployment model and the aesthetic. If you fee
 - [ ] Read `HANDOFF_BIBLE.md` in full
 - [ ] Read `TRANSFER/10_ARCHITECT_GUARDRAILS.md` in full
 - [ ] Read `TRANSFER/11_DRIFT_WARNINGS_AND_KILL_SWITCHES.md` in full
+- [ ] Read `TRANSFER/15_RUNTIME_CANON_DECISION.md` before making any new-repo decisions
+- [ ] Read `TRANSFER/16_COMBAT_RACING_STATUS_DECISION.md` before migrating non-World-1 systems
 - [ ] Confirm `index.html` line count (`wc -l index.html` — expect ~9,662 lines)
 - [ ] Confirm first line is a `<script>` tag loading Phaser CDN
 - [ ] Confirm last line contains `new Phaser.Game(config)`

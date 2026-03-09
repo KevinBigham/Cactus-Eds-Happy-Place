@@ -93,7 +93,53 @@
 
 ---
 
-### STEP 7 — THE AI BRIEFING DOCS (reference only, as needed)
+### STEP 7 — THE RUNTIME CANON DECISION (read before any new-repo architectural decisions)
+
+**File:** `TRANSFER/15_RUNTIME_CANON_DECISION.md`
+**What it is:** The explicit ruling on what is old-repo technical identity (ES5 + Canvas + One File) versus what is future architectural law for the new repo.
+**Why seventh:** Without this, agents will read Law 20 and the Vibe Checklist in `10_ARCHITECT_GUARDRAILS.md` and treat ES5/Canvas/One File as a permanent mandate for all future code. This doc draws the line.
+**Authority level:** AUTHORITATIVE — overrides any reading of the guardrail docs that treats old-repo technical identity as universal future law
+
+**After reading, you will know:**
+- ES5 + Canvas + One File applies to `index.html` unconditionally
+- For the new repo, these are Kevin's decision — not automatic mandates
+- Which soul laws transfer regardless of architecture (Ed's character, humor engine, retention model)
+- The migration protocol for making the runtime decision explicit
+
+---
+
+### STEP 8 — THE COMBAT/RACING SCOPE DECISION (read before migrating any non-World-1 systems)
+
+**File:** `TRANSFER/16_COMBAT_RACING_STATUS_DECISION.md`
+**What it is:** The explicit ruling that World 1 is primary scope and `combat/` (and any racing system) is experimental and secondary.
+**Why eighth:** Prevents a migration agent from treating `combat/` as production-ready and allocating resources to it before World 1 is validated.
+**Authority level:** AUTHORITATIVE for scope prioritization
+
+**After reading, you will know:**
+- World 1 must validate before anything else is promoted
+- `combat/` is experimental until Kevin explicitly promotes it
+- The World 1 checklist (what "validated" means)
+- The promotion path for secondary systems
+
+---
+
+### STEP 9 — THE ARCHITECTURAL NORMALIZATION (read to understand what changed and why)
+
+**File:** `TRANSFER/17_ARCHITECTURAL_NORMALIZATION.md`
+**What it is:** The audit record from the normalization pass — what was too rigid, what was corrected, legacy vs. future truth, new bloodline protections, migration warnings.
+**Why ninth:** Gives you the full picture of why the guardrails look the way they do now, and what the remaining open decisions are.
+**Authority level:** AUTHORITATIVE for understanding what was changed; ADVISORY for decisions that remain open (those still require Kevin)
+
+**After reading, you will know:**
+- The five things that were too rigid in the original pack
+- What each correction changed and what stayed the same
+- The legacy-vs-future truth table
+- The eight permanent bloodline protections
+- Six migration warnings to watch for
+
+---
+
+### STEP 10 — THE AI BRIEFING DOCS (reference only, as needed)
 
 **Files:** `docs/BRIEFING_CODEX.md`, `docs/BRIEFING_CODEX_R2.md`, `docs/BRIEFING_GEMINI_R2.md`, etc.
 **What these are:** Task specifications given to specific AI agents during the multi-AI collaboration rounds.
@@ -109,7 +155,10 @@ TIER 1 — AUTHORITATIVE (these win)
 ├── HANDOFF_BIBLE.md (root)
 ├── TRANSFER/10_ARCHITECT_GUARDRAILS.md
 ├── TRANSFER/11_DRIFT_WARNINGS_AND_KILL_SWITCHES.md
-└── TRANSFER/12_FIRST_10_DECISIONS_FOR_NEW_REPO.md
+├── TRANSFER/12_FIRST_10_DECISIONS_FOR_NEW_REPO.md
+├── TRANSFER/15_RUNTIME_CANON_DECISION.md       (runtime scope ruling — new repo vs old repo)
+├── TRANSFER/16_COMBAT_RACING_STATUS_DECISION.md (scope priority ruling — World 1 first)
+└── TRANSFER/17_ARCHITECTURAL_NORMALIZATION.md  (normalization audit — what changed and why)
 
 TIER 2 — AUTHORITATIVE FOR THEIR DOMAIN
 ├── docs/GAME_STATE.md (current technical state)
@@ -147,6 +196,10 @@ TIER 4 — HISTORICAL (read-only context, never overrides)
 
 **Rule 5:** When you are genuinely uncertain which doc to trust, surface the conflict in `TRANSFER/14_GAPS_AND_OPEN_QUESTIONS.md` and ask Kevin before acting.
 
+**Rule 6:** When `10_ARCHITECT_GUARDRAILS.md` language about ES5/Canvas/One File appears to mandate a specific technical architecture for the new repo, `15_RUNTIME_CANON_DECISION.md` supersedes that reading. The guardrail doc was written for the old repo; file 15 draws the scope boundary explicitly.
+
+**Rule 7:** When scope or priority is ambiguous between World 1 content and `combat/` or racing systems, `16_COMBAT_RACING_STATUS_DECISION.md` is the tiebreaker. World 1 wins.
+
 ---
 
 ## WHAT EACH DOC IS AUTHORITATIVE FOR
@@ -174,6 +227,9 @@ HANDOFF_BIBLE.md             → How the game works
 12_FIRST_10_DECISIONS.md     → What to do first in the new repo
 13_SOURCE_OF_TRUTH_ORDER.md  → Which docs to trust (this doc)
 14_GAPS_AND_QUESTIONS.md     → What still needs human judgment
+15_RUNTIME_CANON_DECISION.md → Old-repo runtime vs. new-repo architecture
+16_COMBAT_RACING_STATUS.md   → World 1 is primary; combat/ is experimental
+17_ARCHITECTURAL_NORMALIZATION.md → What was corrected and why
 GAME_STATE.md                → Where the codebase is right now
 ```
 
