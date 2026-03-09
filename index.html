@@ -2685,6 +2685,14 @@ var FOURTH_WALL_BOSS_MSGS = {
   rastaCorpCeo:['...','i built this.','you took it apart.','...','good.','i think that was good.','...cig?']
 };
 
+var PUPPET_DIALOGUE = {
+  daikon:   { edLine:'so.',      bossLine:'I HAVE BEEN WAITING FOR YOU, CACTUS.', lines:['...','he was waiting.','...alright.'] },
+  handtowel:{ edLine:'huh.',     bossLine:'I AM THE HANDTOWEL. I KNOW THINGS.',  lines:['...','ok.','...sure.'] },
+  mochiQueen:{ edLine:'...',     bossLine:'DO YOU KNOW WHAT IT IS TO RULE IN PINK?', lines:['...','she seems sad.','...well.'] },
+  insulinAdmiral:{ edLine:'thats a big syringe.', bossLine:'HALT. CACTUS. THE GLUCOSE IS UNBALANCED.', lines:['he has a ship.','...a syringe ship.','ok.'] },
+  rastaCorpCeo:{ edLine:'...',   bossLine:'I JUST WANTED SOMEONE TO SIT WITH ME.', lines:['...','...','oh.'] }
+};
+
 var VOID_KOANS = [
   'WHAT IS ALOE IF NOT GRIEF PERSEVERING?',
   'YOU WERE ALWAYS HERE',
@@ -3601,6 +3609,109 @@ function _triggerFourthWallBreak(scene, bossKey) {
         });
       })(lines[li], li*2200);
     }
+  } catch(e){}
+}
+
+// Puppet Theater boss intro — theatrical silhouette curtain before each boss fight
+function _startPuppetIntro(scene, bossKey) {
+  try {
+    var W=960,H=540;
+    var d=PUPPET_DIALOGUE[bossKey];
+    if(!d||!scene||!scene.add) return;
+    // Overlay graphics (depth 90 — covers entire arena)
+    var og=scene.add.graphics().setScrollFactor(0).setDepth(90);
+    // Collect all text objects for cleanup
+    var toDestroy=[og];
+    function _cleanup(){
+      for(var i=0;i<toDestroy.length;i++){try{toDestroy[i].destroy();}catch(e){}}
+    }
+    // Draw theater backdrop: dark mahogany + warm center spotlight
+    og.fillStyle(0x0d0500,1); og.fillRect(0,0,W,H);
+    // Spotlight glow
+    og.fillStyle(0x7a4a10,0.18); og.fillEllipse(W/2,H/2+10,560,380);
+    og.fillStyle(0x9a6020,0.10); og.fillEllipse(W/2,H/2,380,260);
+    // Curtain top bar
+    og.fillStyle(0x3a0e04,1); og.fillRect(0,0,W,34);
+    og.lineStyle(3,0x7a3308,1); og.lineBetween(0,34,W,34);
+    // Curtain left/right drapes
+    og.fillStyle(0x2e0a03,1); og.fillRect(0,34,52,H-34); og.fillRect(W-52,34,52,H-34);
+    og.lineStyle(2,0x5a2205,0.8); og.lineBetween(52,34,52,H); og.lineBetween(W-52,34,W-52,H);
+
+    // Ed silhouette — left side (x=220, y=300)
+    var ex=220, ey=300;
+    og.fillStyle(0x000000,0.92);
+    og.fillCircle(ex,ey-44,13);               // head
+    og.fillRoundedRect(ex-10,ey-30,20,40,3);  // body
+    // Cactus spines
+    og.fillTriangle(ex-5,ey-62,ex-9,ey-48,ex-1,ey-48);
+    og.fillTriangle(ex,ey-66,ex-5,ey-50,ex+5,ey-50);
+    og.fillTriangle(ex+5,ey-62,ex+1,ey-48,ex+9,ey-48);
+    // Cigarette
+    og.fillStyle(0xddc080,0.85); og.fillRect(ex+10,ey-35,12,3);
+    og.fillStyle(0xff6600,0.7);  og.fillRect(ex+22,ey-36,4,5);
+
+    // Boss silhouette — right side (x=740, y=300)
+    var bx=740, by=300;
+    og.fillStyle(0x000000,0.92);
+    if(bossKey==='daikon'||bossKey==='daikon') {
+      // Tall radish shape
+      og.fillRoundedRect(bx-14,by-70,28,80,4);
+      og.fillTriangle(bx-10,by-70,bx+10,by-70,bx,by-100);
+      og.fillTriangle(bx-16,by-50,bx-8,by-38,bx-20,by-36);
+    } else if(bossKey==='handtowel') {
+      // Wide flat rect + loop
+      og.fillRoundedRect(bx-28,by-20,56,36,3);
+      og.strokeCircle(bx,by-36,16); // loop on top
+    } else if(bossKey==='mochiQueen') {
+      // Large circle + crown
+      og.fillCircle(bx,by-10,34);
+      og.fillTriangle(bx-28,by-44,bx-20,by-64,bx-12,by-44);
+      og.fillTriangle(bx-8,by-44,bx,by-70,bx+8,by-44);
+      og.fillTriangle(bx+12,by-44,bx+20,by-64,bx+28,by-44);
+    } else if(bossKey==='insulinAdmiral') {
+      // Horizontal syringe: body + needle
+      og.fillRoundedRect(bx-40,by-12,64,24,4);
+      og.fillTriangle(bx+24,by-6,bx+24,by+6,bx+50,by);
+    } else {
+      // rastaCorpCeo: human silhouette + briefcase
+      og.fillCircle(bx,by-56,16);
+      og.fillRoundedRect(bx-14,by-38,28,44,3);
+      og.fillRoundedRect(bx+14,by-20,22,18,3); // briefcase
+      og.lineStyle(2,0x111111,1); og.lineBetween(bx+14,by-20,bx+36,by-20);
+    }
+
+    // "VS" text
+    var vsT=scene.add.text(W/2,by-10,'VS',{fontFamily:'Bangers,Georgia,serif',fontSize:'38px',color:'#cc6622',stroke:'#000000',strokeThickness:5}).setOrigin(0.5).setScrollFactor(0).setDepth(91).setAlpha(0.82);
+    toDestroy.push(vsT);
+    // Stage title
+    var stageTxt=scene.add.text(W/2,28,'— THE FIGHT —',{fontFamily:'Bangers,Georgia,serif',fontSize:'20px',color:'#c09050',stroke:'#000000',strokeThickness:3}).setOrigin(0.5).setScrollFactor(0).setDepth(91);
+    toDestroy.push(stageTxt);
+
+    // Typewriter dialogue — Ed speaks first
+    var dlgY=H-96;
+    var dlgTxt=scene.add.text(W/2,dlgY,'',{fontFamily:'Inconsolata,monospace',fontSize:'17px',color:'#ffe8b0',stroke:'#000000',strokeThickness:4,backgroundColor:'#00000099',padding:{x:14,y:8},align:'center',wordWrap:{width:700}}).setOrigin(0.5).setScrollFactor(0).setDepth(91);
+    toDestroy.push(dlgTxt);
+
+    var t=0;
+    // Ed line
+    scene.time.delayedCall(t,function(){try{dlgTxt.setText('ED: "'+d.edLine+'"');}catch(e){}});
+    t+=1600;
+    // Boss line
+    scene.time.delayedCall(t,function(){try{dlgTxt.setText(bossKey.toUpperCase()+': "'+d.bossLine+'"');}catch(e){}});
+    t+=2200;
+    // Remaining lines
+    for(var li=0;li<d.lines.length;li++){
+      (function(ln,delay){
+        scene.time.delayedCall(delay,function(){try{dlgTxt.setText('ED: "'+ln+'"');}catch(e){}});
+      })(d.lines[li],t);
+      t+=1200;
+    }
+    // Fade out overlay after all lines
+    scene.time.delayedCall(t+400,function(){
+      try{
+        scene.tweens.add({targets:toDestroy.filter(function(o){return o&&o.setAlpha;}),alpha:0,duration:600,onComplete:function(){_cleanup();}});
+      }catch(e){_cleanup();}
+    });
   } catch(e){}
 }
 
@@ -19369,6 +19480,7 @@ HandtowelScene.prototype.create = function(){
   }
   this._introEnd=delay+500;
   this._flash('MR. HANDTOWEL',2000);
+  _startPuppetIntro(this,'handtowel');
   this._drawBg();
   this._drawPlats();
 };
@@ -20159,6 +20271,7 @@ MochiQueenScene.prototype.create = function(){
   }
   this._introEnd=delay+600;
   this._flash('MOCHI QUEEN',2200,48,'#ff88cc');
+  _startPuppetIntro(this,'mochiQueen');
   this._drawArenaMQ();
   this._drawPlatsMQ();
 };
@@ -21458,6 +21571,7 @@ InsulinAdmiralScene.prototype.create=function(){
   }
   this._introEnd=delay+600;
   this._flash('INSULIN ADMIRAL SHARPE',2400,42,'#ff3300');
+  _startPuppetIntro(this,'insulinAdmiral');
   this._drawArenaIA();this._drawPlatsIA();
 };
 
@@ -21820,6 +21934,7 @@ RastaCorpBossScene.prototype.create=function(){
   _resetPools();
   this.cameras.main.setBounds(0,0,this.LW,H);
   this._flash('CHAIRMAN WHISKERS MCVIBRATION III',2600,38,'#ffd700');
+  _startPuppetIntro(this,'rastaCorpCeo');
   this.noticeTxt.setText('120 HP. FOUR PHASE CORPORATE WAR.');
 };
 
