@@ -50,11 +50,14 @@ new-repo/
 **Why:** Future agents need these to operate. Without them, the next agent starts from zero and will drift immediately.
 
 **What to port:**
-- `TRANSFER/` (this folder — all 5 guardrail docs)
-- `docs/HANDOFF_BIBLE.md` → move to root as `HANDOFF_BIBLE.md`
+- `TRANSFER/` (this folder — all 8 files: 00 through 14)
+- `HANDOFF_BIBLE.md` (already at root — port from root, not from docs/)
 - `docs/CACTUS_ED_AI_GAMEPLAN.md`
 - `docs/BRIEFING_CODEX.md`, `docs/BRIEFING_CODEX_R2.md`
+- `docs/BRIEFING_DEEPSEEK.md` (RastaCorpBossScene spec)
+- `docs/BRIEFING_CLAUDE_CODE_FIGHT_ENGINE_PRESENTATION.md`
 - `docs/GAME_STATE.md`
+- `docs/UPDATE_LOG.md`
 
 **What NOT to port yet:** `.rtf` files, `.txt` AI conversation logs, `combat/` folder scripts (the deterministic fight engine scaffolding), `errors` notebook. These are reference artifacts, not source of truth.
 
