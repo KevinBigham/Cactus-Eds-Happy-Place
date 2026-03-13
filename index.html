@@ -2547,6 +2547,7 @@ function getCertificationAidProgress(scene, zone) {
       worldLabel: 'WORLD 2',
       segmentLabel: 'TRELLIS TO GARDENER',
       zoneLabel: zoneLabel,
+      helpText: 'GO RIGHT TO CLOSE TRELLIS. KEEP RIGHT INTO TESTING. QUIZ ACCEPTS 1-4 OR Z/X/C/UP.',
       steps: [
         { label: 'TRELLIS CONFIRM', done: !!(scene._w2RuleConfirm && scene._w2RuleConfirm.trellis) },
         { label: 'TESTING CONFIRM', done: !!(scene._w2RuleConfirm && scene._w2RuleConfirm.testing) },
@@ -2562,6 +2563,7 @@ function getCertificationAidProgress(scene, zone) {
       worldLabel: 'WORLD 3',
       segmentLabel: 'PRE-AUTH TO PHYSICIAN',
       zoneLabel: zoneLabel,
+      helpText: 'CLIMB TO BOTH GOLD LAMPS. THE PHYSICIAN GATE OPENS ONLY AFTER BOTH ARE FILED.',
       steps: [
         { label: 'LAMP 1', done: !!(scene._preAuthDrill && scene._preAuthDrill.lamps[0] && scene._preAuthDrill.lamps[0].hit) },
         { label: 'LAMP 2', done: !!(scene._preAuthDrill && scene._preAuthDrill.lamps[1] && scene._preAuthDrill.lamps[1].hit) },
@@ -2594,6 +2596,7 @@ function updateCertificationAidOverlay(scene, zone) {
     if (scene._certAidPanelG) scene._certAidPanelG.setAlpha(0);
     if (scene._certAidHeaderTxt) scene._certAidHeaderTxt.setAlpha(0);
     if (scene._certAidZoneTxt) scene._certAidZoneTxt.setAlpha(0);
+    if (scene._certAidHintTxt) scene._certAidHintTxt.setAlpha(0);
     if (scene._certAidControlsTxt) scene._certAidControlsTxt.setAlpha(0);
     if (scene._certAidStepTxts) {
       for (var hi = 0; hi < scene._certAidStepTxts.length; hi++) scene._certAidStepTxts[hi].setAlpha(0);
@@ -2603,22 +2606,27 @@ function updateCertificationAidOverlay(scene, zone) {
   if (!scene._certAidPanelG) {
     scene._certAidPanelG = scene.add.graphics().setScrollFactor(0).setDepth(94);
     scene._certAidHeaderTxt = scene.add.text(12, 12, '', {
+      fontFamily: 'Courier New, monospace', fontSize: '9px',
+      color: '#ffd700', stroke: '#000000', strokeThickness: 3
+    }).setScrollFactor(0).setDepth(95);
+    scene._certAidZoneTxt = scene.add.text(12, 40, '', {
+      fontFamily: 'Courier New, monospace', fontSize: '8px',
+      color: '#d7e6ff', stroke: '#000000', strokeThickness: 3
+    }).setScrollFactor(0).setDepth(95);
+    scene._certAidHintTxt = scene.add.text(12, 58, '', {
       fontFamily: 'Courier New, monospace', fontSize: '7px',
-      color: '#ffd700', stroke: '#000000', strokeThickness: 2
+      color: '#ffffff', stroke: '#000000', strokeThickness: 3,
+      wordWrap: { width: 232 }
     }).setScrollFactor(0).setDepth(95);
-    scene._certAidZoneTxt = scene.add.text(12, 30, '', {
-      fontFamily: 'Courier New, monospace', fontSize: '6px',
-      color: '#d7e6ff', stroke: '#000000', strokeThickness: 2
-    }).setScrollFactor(0).setDepth(95);
-    scene._certAidControlsTxt = scene.add.text(12, 96, 'R RETRY  H HIDE', {
-      fontFamily: 'Courier New, monospace', fontSize: '6px',
-      color: '#aaaaaa', stroke: '#000000', strokeThickness: 2
+    scene._certAidControlsTxt = scene.add.text(12, 144, 'R RETRY  H HIDE', {
+      fontFamily: 'Courier New, monospace', fontSize: '7px',
+      color: '#bbbbbb', stroke: '#000000', strokeThickness: 3
     }).setScrollFactor(0).setDepth(95);
     scene._certAidStepTxts = [];
     for (var si = 0; si < 4; si++) {
-      scene._certAidStepTxts.push(scene.add.text(12, 46 + si * 12, '', {
-        fontFamily: 'Courier New, monospace', fontSize: '6px',
-        color: '#999999', stroke: '#000000', strokeThickness: 2
+      scene._certAidStepTxts.push(scene.add.text(12, 88 + si * 14, '', {
+        fontFamily: 'Courier New, monospace', fontSize: '8px',
+        color: '#999999', stroke: '#000000', strokeThickness: 3
       }).setScrollFactor(0).setDepth(95));
     }
   }
@@ -2633,6 +2641,7 @@ function updateCertificationAidOverlay(scene, zone) {
     scene._certAidPanelG.setAlpha(0);
     scene._certAidHeaderTxt.setAlpha(0);
     scene._certAidZoneTxt.setAlpha(0);
+    if (scene._certAidHintTxt) scene._certAidHintTxt.setAlpha(0);
     scene._certAidControlsTxt.setAlpha(0);
     for (var hi2 = 0; hi2 < scene._certAidStepTxts.length; hi2++) scene._certAidStepTxts[hi2].setAlpha(0);
     return;
@@ -2643,12 +2652,13 @@ function updateCertificationAidOverlay(scene, zone) {
   }
   scene._certAidPanelG.clear();
   scene._certAidPanelG.setAlpha(1);
-  scene._certAidPanelG.fillStyle(0x000000, 0.84);
-  scene._certAidPanelG.fillRoundedRect(6, 6, 186, 102, 4);
-  scene._certAidPanelG.lineStyle(1, 0x88ccff, 0.38);
-  scene._certAidPanelG.strokeRoundedRect(6, 6, 186, 102, 4);
+  scene._certAidPanelG.fillStyle(0x000000, 0.92);
+  scene._certAidPanelG.fillRoundedRect(6, 6, 252, 156, 6);
+  scene._certAidPanelG.lineStyle(2, 0x88ccff, 0.55);
+  scene._certAidPanelG.strokeRoundedRect(6, 6, 252, 156, 6);
   scene._certAidHeaderTxt.setText(progress.worldLabel + '\nSEGMENT: ' + progress.segmentLabel).setAlpha(0.95);
   scene._certAidZoneTxt.setText('ZONE: ' + progress.zoneLabel).setAlpha(0.92);
+  if (scene._certAidHintTxt) scene._certAidHintTxt.setText(progress.helpText || '').setAlpha(0.94);
   scene._certAidControlsTxt.setAlpha(0.8);
   for (var ti = 0; ti < progress.steps.length; ti++) {
     var step = progress.steps[ti];
@@ -12208,6 +12218,8 @@ World2Scene.prototype.create = function() {
   this._fakeBranchNote = { seen: false, paid: false, exitPulseT: 0 };
   this._trellisCue = { x: 520, y: 165, pulseT: 0 };
   this._w2RuleConfirm = { trellis: false, testing: false, fakeBranch: false, podium: false };
+  this._quizReadyAt = 0;
+  this._quizHeldChoice = -1;
 
   // ── HUD ──
   this.hudG = this.add.graphics().setScrollFactor(0).setDepth(60);
@@ -12225,6 +12237,10 @@ World2Scene.prototype.create = function() {
     z: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z),
     x: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X),
     c: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C),
+    one: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE),
+    two: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO),
+    three: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE),
+    four: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR),
     r: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R),
     h: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H),
     esc: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
@@ -12326,27 +12342,27 @@ World2Scene.prototype.create = function() {
     posterG.strokeRoundedRect(pd.x - 22, H * 0.48, 44, 50, 3);
     // Poster text
     this.add.text(pd.x, H * 0.50, pd.text, {
-      fontFamily: 'Courier New, monospace', fontSize: '4px',
-      color: '#887744', stroke: '#000000', strokeThickness: 1,
+      fontFamily: 'Courier New, monospace', fontSize: '5px',
+      color: '#c9b27b', stroke: '#000000', strokeThickness: 2,
       align: 'center', lineSpacing: 1
-    }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.5);
+    }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.72);
   }
   posterG.fillStyle(0x000000, 0.78);
-  posterG.fillRoundedRect(270, H * 0.73, 64, 12, 2);
+  posterG.fillRoundedRect(266, H * 0.728, 74, 16, 2);
   posterG.lineStyle(1, 0x66cc88, 0.35);
-  posterG.strokeRoundedRect(270, H * 0.73, 64, 12, 2);
+  posterG.strokeRoundedRect(266, H * 0.728, 74, 16, 2);
   this.add.text(302, H * 0.732, 'ROOT ACCESS\nFILE WINDOW', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#88ccaa', stroke: '#000000', strokeThickness: 1, align: 'center'
-  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.42);
+    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    color: '#b6f0d0', stroke: '#000000', strokeThickness: 2, align: 'center'
+  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.7);
   posterG.fillStyle(0x000000, 0.78);
-  posterG.fillRoundedRect(485, H * 0.60, 56, 12, 2);
+  posterG.fillRoundedRect(480, H * 0.598, 66, 16, 2);
   posterG.lineStyle(1, 0xffdd44, 0.35);
-  posterG.strokeRoundedRect(485, H * 0.60, 56, 12, 2);
+  posterG.strokeRoundedRect(480, H * 0.598, 66, 16, 2);
   this.add.text(513, H * 0.602, 'HONORS\nLATTICE', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#ffdd88', stroke: '#000000', strokeThickness: 1, align: 'center'
-  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.42);
+    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    color: '#ffe8a6', stroke: '#000000', strokeThickness: 2, align: 'center'
+  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.74);
   posterG.fillStyle(0xffdd44, 0.10);
   posterG.fillCircle(520, 165, 10);
   posterG.fillStyle(0xffdd44, 0.06);
@@ -12354,38 +12370,38 @@ World2Scene.prototype.create = function() {
   posterG.fillCircle(485, 220, 5);
   posterG.fillCircle(510, 190, 4);
   this.add.text(548, 166, 'TOP COPY', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#ffdd88', stroke: '#000000', strokeThickness: 1
-  }).setOrigin(0, 0.5).setDepth(2).setAlpha(0.36);
+    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    color: '#ffe8a6', stroke: '#000000', strokeThickness: 2
+  }).setOrigin(0, 0.5).setDepth(2).setAlpha(0.68);
   posterG.fillStyle(0x000000, 0.80);
-  posterG.fillRoundedRect(862, H * 0.71, 72, 14, 2);
+  posterG.fillRoundedRect(854, H * 0.708, 88, 18, 2);
   posterG.lineStyle(1, 0xffdd44, 0.35);
-  posterG.strokeRoundedRect(862, H * 0.71, 72, 14, 2);
+  posterG.strokeRoundedRect(854, H * 0.708, 88, 18, 2);
   this.add.text(898, H * 0.712, 'TEST FORM F-1\nASCEND IN ORDER', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#ffdd88', stroke: '#000000', strokeThickness: 1, align: 'center'
-  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.46);
+    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    color: '#ffe8a6', stroke: '#000000', strokeThickness: 2, align: 'center'
+  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.76);
   posterG.fillStyle(0xffdd44, 0.10);
   posterG.fillTriangle(884, H * 0.82, 889, H * 0.80, 894, H * 0.82);
   posterG.fillTriangle(934, H * 0.79, 939, H * 0.77, 944, H * 0.79);
   posterG.fillTriangle(984, H * 0.75, 989, H * 0.73, 994, H * 0.75);
   posterG.fillTriangle(1044, H * 0.71, 1049, H * 0.69, 1054, H * 0.71);
   posterG.fillStyle(0x000000, 0.80);
-  posterG.fillRoundedRect(1308, H * 0.60, 58, 12, 2);
+  posterG.fillRoundedRect(1302, H * 0.598, 70, 16, 2);
   posterG.lineStyle(1, 0xcc8844, 0.35);
-  posterG.strokeRoundedRect(1308, H * 0.60, 58, 12, 2);
+  posterG.strokeRoundedRect(1302, H * 0.598, 70, 16, 2);
   this.add.text(1337, H * 0.602, 'LEFT REVIEW\nFILES BACK', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#ccaa77', stroke: '#000000', strokeThickness: 1, align: 'center'
-  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.42);
+    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    color: '#e2bd8c', stroke: '#000000', strokeThickness: 2, align: 'center'
+  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.72);
   posterG.fillStyle(0x000000, 0.82);
-  posterG.fillRoundedRect(1992, H * 0.70, 84, 18, 2);
+  posterG.fillRoundedRect(1984, H * 0.696, 100, 22, 2);
   posterG.lineStyle(1, 0x66cc88, 0.35);
-  posterG.strokeRoundedRect(1992, H * 0.70, 84, 18, 2);
+  posterG.strokeRoundedRect(1984, H * 0.696, 100, 22, 2);
   this.add.text(2034, H * 0.703, 'GREENHOUSE MAINT.\nPOSTED PODIUMS BEFORE CUTTING', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#88ccaa', stroke: '#000000', strokeThickness: 1, align: 'center'
-  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.42);
+    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    color: '#b6f0d0', stroke: '#000000', strokeThickness: 2, align: 'center'
+  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.72);
 
   // ── POP QUIZ SYSTEM (timed challenges that interrupt gameplay) ──
   this._quizTimer = 0;
@@ -12947,41 +12963,56 @@ World2Scene.prototype.update = function(time, delta) {
       var quiz = this._quizQuestions[Math.floor(Math.random() * this._quizQuestions.length)];
       this._currentQuiz = quiz;
       this._quizStartTime = Date.now();
+      this._quizReadyAt = this._quizStartTime + 250;
+      this._quizHeldChoice = -1;
       var qG = this.add.graphics().setScrollFactor(0).setDepth(85);
-      qG.fillStyle(0x0a0a1e, 0.88);
-      qG.fillRoundedRect(W * 0.08, H * 0.15, W * 0.84, H * 0.35, 4);
-      qG.lineStyle(1.5, 0xffdd44, 0.6);
-      qG.strokeRoundedRect(W * 0.08, H * 0.15, W * 0.84, H * 0.35, 4);
+      qG.fillStyle(0x05070f, 0.94);
+      qG.fillRoundedRect(W * 0.08, H * 0.12, W * 0.84, H * 0.46, 6);
+      qG.lineStyle(2, 0xffdd44, 0.72);
+      qG.strokeRoundedRect(W * 0.08, H * 0.12, W * 0.84, H * 0.46, 6);
       this._quizHeader = this.add.text(W / 2, H * 0.18, 'POP QUIZ #' + this._quizCount, {
-        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#ffdd44', stroke: '#000000', strokeThickness: 3
+        fontFamily: 'Courier New, monospace', fontSize: '14px', color: '#ffdd44', stroke: '#000000', strokeThickness: 4
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(86);
       this._quizQ = this.add.text(W / 2, H * 0.26, quiz.q, {
-        fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#ffffff', stroke: '#000000', strokeThickness: 2,
-        wordWrap: { width: W * 0.7 }, align: 'center'
+        fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#ffffff', stroke: '#000000', strokeThickness: 3,
+        wordWrap: { width: W * 0.72 }, align: 'center', lineSpacing: 4
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(86);
-      var ansKeys = ['Z', 'X', 'C', 'UP'];
+      var ansKeys = ['1 / Z', '2 / X', '3 / C', '4 / UP'];
       this._quizAnswerTxts = [];
       for (var qai = 0; qai < quiz.a.length; qai++) {
-        this._quizAnswerTxts.push(this.add.text(W * 0.2 + qai * W * 0.2, H * 0.38, ansKeys[qai] + ': ' + quiz.a[qai], {
-          fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#88ccff', stroke: '#000000', strokeThickness: 2
+        this._quizAnswerTxts.push(this.add.text(W / 2, H * 0.39 + qai * H * 0.055, ansKeys[qai] + '  ' + quiz.a[qai], {
+          fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#88ccff', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(86));
       }
+      this._quizHelpTxt = this.add.text(W / 2, H * 0.54, 'PRESS 1-4 OR Z / X / C / UP', {
+        fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#aaaaaa', stroke: '#000000', strokeThickness: 3
+      }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(86);
       this._quizOverlay = qG;
     }
   }
   if (this._quizActive && this._currentQuiz) {
     var qElapsed = Date.now() - this._quizStartTime;
     var qAnswered = -1;
-    if (Phaser.Input.Keyboard.JustDown(keys.z)) qAnswered = 0;
-    else if (Phaser.Input.Keyboard.JustDown(keys.x)) qAnswered = 1;
-    else if (Phaser.Input.Keyboard.JustDown(keys.c)) qAnswered = 2;
-    else if (Phaser.Input.Keyboard.JustDown(keys.up)) qAnswered = 3;
+    var quizReady = Date.now() >= (this._quizReadyAt || 0);
+    if (quizReady) {
+      var qDown = -1;
+      if ((keys.one && keys.one.isDown) || keys.z.isDown) qDown = 0;
+      else if ((keys.two && keys.two.isDown) || keys.x.isDown) qDown = 1;
+      else if ((keys.three && keys.three.isDown) || keys.c.isDown) qDown = 2;
+      else if ((keys.four && keys.four.isDown) || keys.up.isDown) qDown = 3;
+      if (qDown >= 0 && qDown !== this._quizHeldChoice) qAnswered = qDown;
+      this._quizHeldChoice = qDown;
+    } else {
+      this._quizHeldChoice = -1;
+    }
     if (qAnswered >= 0 || qElapsed > 6000) {
       var qCorrect = qAnswered === this._currentQuiz.correct;
       if (this._quizOverlay) this._quizOverlay.destroy();
       if (this._quizHeader) this._quizHeader.destroy();
       if (this._quizQ) this._quizQ.destroy();
       if (this._quizAnswerTxts) { for (var qdi = 0; qdi < this._quizAnswerTxts.length; qdi++) this._quizAnswerTxts[qdi].destroy(); }
+      if (this._quizHelpTxt) this._quizHelpTxt.destroy();
+      this._quizHeldChoice = -1;
       this._quizActive = false; this._currentQuiz = null;
       if (qElapsed > 6000) { this._flash('TIME\'S UP. COMPLIANCE ASSUMED.', 2000); this.behavior.chaos += 3; }
       else if (qCorrect) { this._flash('CORRECT. COOPERATION NOTED.', 1500); this.behavior.compliance += 4; this._playSfx('stamp'); }
@@ -14077,9 +14108,9 @@ World3Scene.prototype.create = function() {
   );
   this._teachingG = this.add.graphics().setDepth(3);
   this._lessonReadoutTxt = this.add.text(W / 2, 22, '', {
-    fontFamily: 'Courier New, monospace', fontSize: '6px',
-    color: '#88ccff', stroke: '#000000', strokeThickness: 2,
-    align: 'center', backgroundColor: '#00000088', padding: { x: 6, y: 3 }
+    fontFamily: 'Courier New, monospace', fontSize: '8px',
+    color: '#88ccff', stroke: '#000000', strokeThickness: 3,
+    align: 'center', backgroundColor: '#000000cc', padding: { x: 8, y: 4 }
   }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(62).setAlpha(0);
   this._waitingDoor = {
     x: 540, y: H * 0.88 - 6, stillMs: 0, unlockMs: 2800, opened: false, rewarded: false,
@@ -14206,15 +14237,15 @@ World3Scene.prototype.create = function() {
   // Waiting → Diagnostic (x=640)
   gateG3.fillStyle(0x2a3a4a, 0.7); gateG3.fillRect(630, H*0.55, 6, H*0.33); gateG3.fillRect(650, H*0.55, 6, H*0.33);
   gateG3.fillStyle(0x3a5a6a, 0.8); gateG3.fillRoundedRect(630, H*0.53, 26, 6, 3);
-  this.add.text(643, H*0.54, 'DIAGNOSTIC', { fontFamily:'Courier New, monospace', fontSize:'4px', color:'#44ddff', stroke:'#000000', strokeThickness:1 }).setOrigin(0.5,0).setDepth(2).setAlpha(0.5);
+  this.add.text(643, H*0.54, 'DIAGNOSTIC', { fontFamily:'Courier New, monospace', fontSize:'6px', color:'#77eeff', stroke:'#000000', strokeThickness:2 }).setOrigin(0.5,0).setDepth(2).setAlpha(0.72);
   // Diagnostic → Pharmacy (x=1280)
   gateG3.fillStyle(0x3a2a3a, 0.7); gateG3.fillRect(1270, H*0.55, 6, H*0.33); gateG3.fillRect(1290, H*0.55, 6, H*0.33);
   gateG3.fillStyle(0x5a3a5a, 0.8); gateG3.fillRoundedRect(1270, H*0.53, 26, 6, 3);
-  this.add.text(1283, H*0.54, 'PHARMACY', { fontFamily:'Courier New, monospace', fontSize:'4px', color:'#cc44aa', stroke:'#000000', strokeThickness:1 }).setOrigin(0.5,0).setDepth(2).setAlpha(0.5);
+  this.add.text(1283, H*0.54, 'PHARMACY', { fontFamily:'Courier New, monospace', fontSize:'6px', color:'#ee77cc', stroke:'#000000', strokeThickness:2 }).setOrigin(0.5,0).setDepth(2).setAlpha(0.72);
   // Pharmacy → Recovery (x=1920)
   gateG3.fillStyle(0x2a3a2a, 0.7); gateG3.fillRect(1910, H*0.55, 6, H*0.33); gateG3.fillRect(1930, H*0.55, 6, H*0.33);
   gateG3.fillStyle(0x3a5a3a, 0.8); gateG3.fillRoundedRect(1910, H*0.53, 26, 6, 3);
-  this.add.text(1923, H*0.54, 'RECOVERY', { fontFamily:'Courier New, monospace', fontSize:'4px', color:'#66cc88', stroke:'#000000', strokeThickness:1 }).setOrigin(0.5,0).setDepth(2).setAlpha(0.5);
+  this.add.text(1923, H*0.54, 'RECOVERY', { fontFamily:'Courier New, monospace', fontSize:'6px', color:'#88e6aa', stroke:'#000000', strokeThickness:2 }).setOrigin(0.5,0).setDepth(2).setAlpha(0.72);
 
   // ── WAITING ROOM CHAIRS ──
   var chairG3 = this.add.graphics().setDepth(1);
@@ -14231,13 +14262,13 @@ World3Scene.prototype.create = function() {
   chairG3.fillStyle(0xffffff, 0.08);
   chairG3.fillRect(534, H * 0.75, 12, 18);
   this.add.text(540, H * 0.695, 'SIDE FILE\nWINDOW', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#88ccff', stroke: '#000000', strokeThickness: 1, align: 'center'
-  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.4);
+    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    color: '#a7ddff', stroke: '#000000', strokeThickness: 2, align: 'center'
+  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.68);
   this.add.text(2280, H * 0.66, 'PHYSICIAN REVIEW\nTWO SIGNATURES\nAHEAD', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#aabbee', stroke: '#000000', strokeThickness: 1, align: 'center'
-  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.36);
+    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    color: '#c7d6ff', stroke: '#000000', strokeThickness: 2, align: 'center'
+  }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.64);
 
   // ── MEDICAL RECEIPT POOL ──
   this._w3Receipts = [
