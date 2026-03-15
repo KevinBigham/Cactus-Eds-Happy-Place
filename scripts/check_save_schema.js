@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 'use strict';
 
+// Legacy filename retained for compatibility. This script now validates the
+// current live SAVE contract implemented in index.html.
+
 var fs = require('fs');
 var path = require('path');
 var vm = require('vm');
@@ -9,19 +12,25 @@ var assert = require('assert');
 var htmlPath = path.join(__dirname, '..', 'index.html');
 var src = fs.readFileSync(htmlPath, 'utf8');
 var start = src.indexOf('// ── SAVE SYSTEM');
-var end = src.indexOf('var ED_MOVE =');
+var end = src.indexOf('// ── GAMEPAD MANAGER');
 
 if (start < 0 || end < 0 || end <= start) {
-  console.error('Could not find save-system section boundaries in index.html');
+  console.error('Could not find live save-system section boundaries in index.html');
   process.exit(1);
 }
 
 var saveJs = src.slice(start, end);
 var store = {};
 var localStorage = {
-  getItem: function(k){ return Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null; },
-  setItem: function(k,v){ store[k] = String(v); },
-  removeItem: function(k){ delete store[k]; }
+  getItem: function(k) {
+    return Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null;
+  },
+  setItem: function(k, v) {
+    store[k] = String(v);
+  },
+  removeItem: function(k) {
+    delete store[k];
+  }
 };
 
 var sandbox = {
@@ -29,51 +38,70 @@ var sandbox = {
   Math: Math,
   Date: Date,
   JSON: JSON,
-  isFinite: isFinite,
-  ED_MOVE: { walkSpeed: 140 },
-  localStorage: localStorage,
-  window: { addEventListener: function(){} },
-  document: { hidden: false, addEventListener: function(){} },
-  setInterval: function(){ return 1; }
+  localStorage: localStorage
 };
 
 vm.createContext(sandbox);
 vm.runInContext(saveJs, sandbox);
 
 try {
-  assert.strictEqual(sandbox.SAVE_SCHEMA_VERSION, 2, 'SAVE_SCHEMA_VERSION should be 2');
-  assert.strictEqual(typeof sandbox._migrateSaveState, 'function', '_migrateSaveState should exist');
-  assert.strictEqual(typeof sandbox._saveProgress, 'function', '_saveProgress should exist');
-  assert.strictEqual(typeof sandbox._loadProgress, 'function', '_loadProgress should exist');
+  assert.ok(sandbox.SAVE && typeof sandbox.SAVE === 'object', 'SAVE should exist');
+  assert.strictEqual(sandbox.SAVE._key, 'cactusEd_save_v1', 'SAVE._key should match live key');
+  assert.strictEqual(typeof sandbox.SAVE.save, 'function', 'SAVE.save should exist');
+  assert.strictEqual(typeof sandbox.SAVE.load, 'function', 'SAVE.load should exist');
+  assert.strictEqual(typeof sandbox.SAVE.clear, 'function', 'SAVE.clear should exist');
+  assert.strictEqual(typeof sandbox.SAVE.exists, 'function', 'SAVE.exists should exist');
 
-  var migrated = sandbox._migrateSaveState({
-    _schemaVersion: 1,
-    aloe: 888,
-    levelsBeaten: ['3-1', '3-boss'],
-    shop: { speedBoost: true },
-    rastaCorp: { sympathy: 3 }
-  });
+  assert.strictEqual(sandbox.SAVE.exists(), false, 'SAVE.exists should be false when storage is empty');
+  assert.strictEqual(sandbox.SAVE.load(), null, 'SAVE.load should return null when storage is empty');
 
-  assert.strictEqual(migrated._schemaVersion, 2, 'migrated schema version should be 2');
-  assert.strictEqual(migrated.aloe, 888, 'aloe should persist through migration');
-  assert.ok(Array.isArray(migrated.levelsBeaten), 'levelsBeaten should remain an array');
-  assert.strictEqual(migrated.shop.speedBoost, true, 'shop upgrades should persist through migration');
-  assert.ok(migrated.playerPosW3 && typeof migrated.playerPosW3.x === 'number', 'playerPosW3 should exist after migration');
+  var payload = {
+    world: 3,
+    health: 3,
+    aloe: 321,
+    behavior: { curiosity: 2, compliance: 1 },
+    deaths: 4,
+    runs: 2,
+    bestTime: 12345,
+    totalKills: 9,
+    assistMode: {
+      biggerCoyote: true,
+      slowerBosses: false,
+      easyCopter: true,
+      infiniteHealth: false,
+      slowerGame: true
+    }
+  };
 
-  sandbox._applyLoadedState(migrated);
-  assert.strictEqual(sandbox.EWR_STATE._schemaVersion, 2, 'applied state should be schema version 2');
+  assert.strictEqual(sandbox.SAVE.save(payload), true, 'SAVE.save should succeed');
+  assert.strictEqual(sandbox.SAVE.exists(), true, 'SAVE.exists should be true after save');
 
-  var saved = sandbox._saveProgress();
-  assert.strictEqual(saved, true, 'save should succeed');
-  assert.ok(store[sandbox.SAVE_STORAGE_KEY], 'save payload should be written to storage');
+  var loaded = sandbox.SAVE.load();
+  assert.ok(loaded, 'SAVE.load should return an object after save');
+  assert.strictEqual(loaded.world, payload.world, 'world should round-trip');
+  assert.strictEqual(loaded.health, payload.health, 'health should round-trip');
+  assert.strictEqual(loaded.aloe, payload.aloe, 'aloe should round-trip');
+  assert.deepStrictEqual(loaded.behavior, payload.behavior, 'behavior should round-trip');
+  assert.strictEqual(loaded.deaths, payload.deaths, 'deaths should round-trip');
+  assert.strictEqual(loaded.runs, payload.runs, 'runs should round-trip');
+  assert.strictEqual(loaded.bestTime, payload.bestTime, 'bestTime should round-trip');
+  assert.strictEqual(loaded.totalKills, payload.totalKills, 'totalKills should round-trip');
+  assert.deepStrictEqual(loaded.assistMode, payload.assistMode, 'assistMode should round-trip');
+  assert.strictEqual(typeof loaded.timestamp, 'number', 'timestamp should be written');
 
-  sandbox.EWR_STATE.aloe = 1;
-  var loaded = sandbox._loadProgress();
-  assert.strictEqual(loaded, true, 'load should succeed');
-  assert.strictEqual(sandbox.EWR_STATE.aloe, 888, 'load should restore aloe value');
+  var raw = JSON.parse(store[sandbox.SAVE._key]);
+  assert.strictEqual(raw.world, payload.world, 'stored JSON should match saved world');
+
+  store[sandbox.SAVE._key] = '{not valid json';
+  assert.strictEqual(sandbox.SAVE.load(), null, 'malformed save payload should load as null');
+  assert.strictEqual(sandbox.SAVE.exists(), true, 'malformed save payload still exists in storage');
+
+  sandbox.SAVE.clear();
+  assert.strictEqual(sandbox.SAVE.exists(), false, 'SAVE.exists should be false after clear');
+  assert.strictEqual(sandbox.SAVE.load(), null, 'SAVE.load should return null after clear');
 } catch (err) {
-  console.error('Save schema checks failed: ' + err.message);
+  console.error('Live save contract checks failed: ' + err.message);
   process.exit(1);
 }
 
-console.log('Save schema checks passed.');
+console.log('Live save contract checks passed.');

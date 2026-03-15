@@ -2614,19 +2614,19 @@ function updateCertificationAidOverlay(scene, zone) {
       color: '#d7e6ff', stroke: '#000000', strokeThickness: 3
     }).setScrollFactor(0).setDepth(95);
     scene._certAidHintTxt = scene.add.text(12, 58, '', {
-      fontFamily: 'Courier New, monospace', fontSize: '7px',
+      fontFamily: 'Courier New, monospace', fontSize: '9px',
       color: '#ffffff', stroke: '#000000', strokeThickness: 3,
       wordWrap: { width: 232 }
     }).setScrollFactor(0).setDepth(95);
-    scene._certAidControlsTxt = scene.add.text(12, 144, 'R RETRY  H HIDE', {
-      fontFamily: 'Courier New, monospace', fontSize: '7px',
+    scene._certAidControlsTxt = scene.add.text(12, 160, 'R RETRY  H HIDE', {
+      fontFamily: 'Courier New, monospace', fontSize: '8px',
       color: '#bbbbbb', stroke: '#000000', strokeThickness: 3
     }).setScrollFactor(0).setDepth(95);
     scene._certAidStepTxts = [];
     for (var si = 0; si < 4; si++) {
-      scene._certAidStepTxts.push(scene.add.text(12, 88 + si * 14, '', {
-        fontFamily: 'Courier New, monospace', fontSize: '8px',
-        color: '#999999', stroke: '#000000', strokeThickness: 3
+      scene._certAidStepTxts.push(scene.add.text(12, 88 + si * 16, '', {
+        fontFamily: 'Courier New, monospace', fontSize: '9px',
+        color: '#bbbbbb', stroke: '#000000', strokeThickness: 3
       }).setScrollFactor(0).setDepth(95));
     }
   }
@@ -2653,9 +2653,9 @@ function updateCertificationAidOverlay(scene, zone) {
   scene._certAidPanelG.clear();
   scene._certAidPanelG.setAlpha(1);
   scene._certAidPanelG.fillStyle(0x000000, 0.92);
-  scene._certAidPanelG.fillRoundedRect(6, 6, 252, 156, 6);
+  scene._certAidPanelG.fillRoundedRect(6, 6, 252, 175, 6);
   scene._certAidPanelG.lineStyle(2, 0x88ccff, 0.55);
-  scene._certAidPanelG.strokeRoundedRect(6, 6, 252, 156, 6);
+  scene._certAidPanelG.strokeRoundedRect(6, 6, 252, 175, 6);
   scene._certAidHeaderTxt.setText(progress.worldLabel + '\nSEGMENT: ' + progress.segmentLabel).setAlpha(0.95);
   scene._certAidZoneTxt.setText('ZONE: ' + progress.zoneLabel).setAlpha(0.92);
   if (scene._certAidHintTxt) scene._certAidHintTxt.setText(progress.helpText || '').setAlpha(0.94);
@@ -12958,6 +12958,7 @@ World2Scene.prototype.update = function(time, delta) {
         ep.x >= this._quizTriggerXs[this._quizTriggerIndex] &&
         onGround && Math.abs(ep.vy) < 18 && !es.gliding && !es.coptering) {
       this._quizActive = true;
+      if (this.game && this.game.canvas) this.game.canvas.focus();
       this._quizCount++;
       this._quizTriggerIndex++;
       var quiz = this._quizQuestions[Math.floor(Math.random() * this._quizQuestions.length)];
@@ -13883,7 +13884,9 @@ World2Scene.prototype.update = function(time, delta) {
   drawSharedMovementHud(this, H - 30, H - 18);
 
   // ── CAMERA ──
-  var camTarget = { x: ep.x + es.facing * zone.lookAhead, y: ep.y - 30 };
+  var targetLookAheadW2 = es.facing * zone.lookAhead;
+  this._camLookAhead += (targetLookAheadW2 - this._camLookAhead) * 0.05;
+  var camTarget = { x: ep.x + this._camLookAhead, y: ep.y - 30 };
   this.cameras.main.startFollow(camTarget, false, 0.08, 0.08);
 
   // ── SMOKE PARTICLES ──
@@ -14106,9 +14109,10 @@ World3Scene.prototype.create = function() {
     [[180, 210], [400, 185], [960, 155], [1560, 125], [2060, 210], [2260, 175], [2420, 240]],
     ['aloe', 'health', 'ciggun', 'lighter', 'cigsword', 'health', 'carton']
   );
+  this._camLookAhead = 0;
   this._teachingG = this.add.graphics().setDepth(3);
   this._lessonReadoutTxt = this.add.text(W / 2, 22, '', {
-    fontFamily: 'Courier New, monospace', fontSize: '8px',
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
     color: '#88ccff', stroke: '#000000', strokeThickness: 3,
     align: 'center', backgroundColor: '#000000cc', padding: { x: 8, y: 4 }
   }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(62).setAlpha(0);
@@ -14829,7 +14833,7 @@ World3Scene.prototype.update = function(time, delta) {
       if (this._levelT - pad.blockNoticeAt > 1800) {
         pad.blockNoticeAt = this._levelT;
         showProtectedReadableText(this, 'confirm', 120, 'PRE-AUTHORIZATION: STRIKE BOTH SIGNATURE LAMPS BEFORE ADVANCING.', {
-          color: '#88ccff', duration: 3200, fontSize: '8px'
+          color: '#88ccff', duration: 3200, fontSize: '10px'
         }, 2200, 'w3_preauth_gate', true, 1400);
       }
     }
@@ -15237,7 +15241,9 @@ World3Scene.prototype.update = function(time, delta) {
   drawSharedMovementHud(this, H - 30, H - 18);
 
   // Camera
-  this.cameras.main.startFollow({ x: ep.x + es.facing * zone.lookAhead, y: ep.y - 30 }, false, 0.08, 0.08);
+  var targetLookAheadW3 = es.facing * zone.lookAhead;
+  this._camLookAhead += (targetLookAheadW3 - this._camLookAhead) * 0.05;
+  this.cameras.main.startFollow({ x: ep.x + this._camLookAhead, y: ep.y - 30 }, false, 0.08, 0.08);
 
   // Smoke
   this.smokeG.clear();
