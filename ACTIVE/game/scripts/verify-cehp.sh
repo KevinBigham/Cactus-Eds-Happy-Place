@@ -30,14 +30,16 @@ else
   sleep 1
 fi
 
-if [ -f /tmp/codex-playwright-cert/smoke.js ]; then
-  echo "== CEHP smoke =="
-  node /tmp/codex-playwright-cert/smoke.js
-else
-  echo "== CEHP smoke =="
-  echo "Skipping disposable smoke harness: /tmp/codex-playwright-cert/smoke.js not found"
-  echo "Run manual browser sanity instead:"
-  echo "  http://127.0.0.1:4175/index.html"
-  echo "  http://127.0.0.1:4175/index.html?certAid=w2"
-  echo "  http://127.0.0.1:4175/index.html?certAid=w3"
+echo "== CEHP smoke =="
+if [ ! -f package.json ]; then
+  echo "Missing package.json in $(pwd); cannot run repo-owned smoke harness"
+  exit 1
 fi
+
+if [ ! -d node_modules/playwright ]; then
+  echo "Missing Playwright dependency. Run:"
+  echo "  npm install"
+  exit 1
+fi
+
+node tests/cehp_boot_smoke.mjs

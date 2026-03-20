@@ -1,3 +1,8 @@
 # macOS
 .DS_Store
 **/.DS_Store
+
+# Node / Playwright (game tooling)
+ACTIVE/game/node_modules/
+ACTIVE/game/playwright-report/
+ACTIVE/game/test-results/

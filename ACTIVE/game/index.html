@@ -159,6 +159,76 @@ var SAVE = {
   }
 };
 
+var TITLE_ACHIEVEMENTS = [
+  {
+    label: 'ED\'S WORST DAY',
+    description: 'Record 10 total deaths.',
+    isUnlocked: function(stats) { return stats.deaths >= 10; },
+    progress: function(stats) { return Math.min(stats.deaths, 10) + '/10 DEATHS'; }
+  },
+  {
+    label: 'RETURN VISITOR',
+    description: 'Complete 3 total runs.',
+    isUnlocked: function(stats) { return stats.runs >= 3; },
+    progress: function(stats) { return Math.min(stats.runs, 3) + '/3 RUNS'; }
+  },
+  {
+    label: 'FAST TRACK',
+    description: 'Post a best time under 03:00.',
+    isUnlocked: function(stats) { return stats.bestTime !== null && stats.bestTime <= 180000; },
+    progress: function(stats) { return stats.bestTime !== null ? formatTitleBestTime(stats.bestTime) : '--:--'; }
+  },
+  {
+    label: 'SWORN ENEMY',
+    description: 'Defeat 25 total enemies.',
+    isUnlocked: function(stats) { return stats.totalKills >= 25; },
+    progress: function(stats) { return Math.min(stats.totalKills, 25) + '/25 KILLS'; }
+  }
+];
+
+function getTitleAchievementStats(saveData) {
+  return {
+    deaths: saveData && saveData.deaths ? saveData.deaths : 0,
+    runs: saveData && saveData.runs ? saveData.runs : 0,
+    bestTime: saveData && saveData.bestTime ? saveData.bestTime : null,
+    totalKills: saveData && saveData.totalKills ? saveData.totalKills : 0
+  };
+}
+
+function formatTitleBestTime(ms) {
+  if (ms === null || ms === undefined) return '--:--';
+  var totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  var minutes = Math.floor(totalSeconds / 60);
+  var seconds = totalSeconds % 60;
+  return (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+}
+
+function buildTitleAchievementsText(saveData) {
+  var stats = getTitleAchievementStats(saveData);
+  var lines = [
+    'ACHIEVEMENT FILE',
+    '',
+    'TOTAL DEATHS: ' + stats.deaths,
+    'TOTAL RUNS:   ' + stats.runs,
+    'BEST TIME:    ' + formatTitleBestTime(stats.bestTime),
+    'TOTAL KILLS:  ' + stats.totalKills,
+    ''
+  ];
+
+  for (var ai = 0; ai < TITLE_ACHIEVEMENTS.length; ai++) {
+    var achievement = TITLE_ACHIEVEMENTS[ai];
+    var unlocked = achievement.isUnlocked(stats);
+    lines.push((unlocked ? '[FILED] ' : '[PENDING] ') + achievement.label);
+    lines.push(achievement.description);
+    lines.push('PROGRESS: ' + achievement.progress(stats));
+    if (ai !== TITLE_ACHIEVEMENTS.length - 1) lines.push('');
+  }
+
+  lines.push('');
+  lines.push('PRESS Z TO RETURN TO ENROLLMENT');
+  return lines.join('\n');
+}
+
 // ── GAMEPAD MANAGER (navigator.getGamepads polling) ──
 var GAMEPAD = {
   enabled: false,
@@ -13004,7 +13074,14 @@ World2Scene.prototype.update = function(time, delta) {
       if (qDown >= 0 && qDown !== this._quizHeldChoice) qAnswered = qDown;
       this._quizHeldChoice = qDown;
     } else {
-      this._quizHeldChoice = -1;
+      // Track held keys during lockout so a pre-held key isn't
+      // mistaken for a new press once quizReady flips true.
+      var qPre = -1;
+      if ((keys.one && keys.one.isDown) || keys.z.isDown) qPre = 0;
+      else if ((keys.two && keys.two.isDown) || keys.x.isDown) qPre = 1;
+      else if ((keys.three && keys.three.isDown) || keys.c.isDown) qPre = 2;
+      else if ((keys.four && keys.four.isDown) || keys.up.isDown) qPre = 3;
+      this._quizHeldChoice = qPre;
     }
     if (qAnswered >= 0 || qElapsed > 6000) {
       var qCorrect = qAnswered === this._currentQuiz.correct;
@@ -15709,6 +15786,7 @@ TitleScene.prototype.create = function() {
     this._menuItems.push({ label: 'BEGIN ORIENTATION', action: 'play' });
   }
   this._menuItems.push({ label: 'CONTROLS', action: 'controls' });
+  this._menuItems.push({ label: 'ACHIEVEMENTS', action: 'achievements' });
   this._menuItems.push({ label: 'ABOUT THIS PROGRAM', action: 'about' });
   this._menuSel = 0;
   this._menuTxts = [];
@@ -15762,7 +15840,15 @@ TitleScene.prototype.create = function() {
     align: 'center', lineSpacing: 2
   }).setOrigin(0.5).setDepth(21).setAlpha(0);
 
+  // Achievement overlay
+  this._achievementTxt = this.add.text(W / 2, H / 2, buildTitleAchievementsText(savedData), {
+    fontFamily: 'Courier New, monospace', fontSize: '8px',
+    color: '#ffd700', stroke: '#000000', strokeThickness: 3,
+    align: 'left', lineSpacing: 2
+  }).setOrigin(0.5).setDepth(21).setAlpha(0);
+
   this._showControls = false;
+  this._showAchievements = false;
   this._showAbout = false;
 
   // Input
@@ -15933,12 +16019,14 @@ TitleScene.prototype.update = function(time, delta) {
 
     // Menu navigation
     if (this._t > 1200) {
-      if (this._showControls || this._showAbout) {
+      if (this._showControls || this._showAchievements || this._showAbout) {
         if (Phaser.Input.Keyboard.JustDown(keys.z)) {
           this._showControls = false;
+          this._showAchievements = false;
           this._showAbout = false;
           this._controlsG.setAlpha(0);
           this._controlsTxt.setAlpha(0);
+          this._achievementTxt.setAlpha(0);
           this._aboutTxt.setAlpha(0);
         }
       } else {
@@ -15985,6 +16073,13 @@ TitleScene.prototype.update = function(time, delta) {
             this._controlsG.fillRect(0, 0, W, H);
             this._controlsG.setAlpha(1);
             this._controlsTxt.setAlpha(1);
+          } else if (action === 'achievements') {
+            this._showAchievements = true;
+            this._controlsG.clear();
+            this._controlsG.fillStyle(0x000000, 0.92);
+            this._controlsG.fillRect(0, 0, W, H);
+            this._controlsG.setAlpha(1);
+            this._achievementTxt.setText(buildTitleAchievementsText(SAVE.load())).setAlpha(1);
           } else if (action === 'about') {
             this._showAbout = true;
             this._controlsG.clear();

@@ -1,0 +1,13 @@
+{
+  "name": "cehp-verification",
+  "private": true,
+  "description": "Verification tooling for Cactus Ed's Happy Place.",
+  "scripts": {
+    "verify": "./scripts/verify-cehp.sh",
+    "smoke": "node tests/cehp_boot_smoke.mjs",
+    "scan": "./scripts/studio-scan.sh"
+  },
+  "devDependencies": {
+    "playwright": "1.58.2"
+  }
+}

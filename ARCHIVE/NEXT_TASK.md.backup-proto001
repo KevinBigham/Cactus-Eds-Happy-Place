@@ -1,0 +1,61 @@
+# NEXT TASK
+
+This file is the **task beacon**. There is always exactly ONE active task here.
+When this task is complete, the completing agent updates this file with the next task from BACKLOG.md.
+
+> **IF YOUR ROLE DOES NOT MATCH `TASK_OWNER_ROLE` OR `CURRENT_STAGE`, STOP AND PROPOSE ONLY.**
+> `NEXT_HANDLER_ROLE` means you go NEXT, not NOW. It does NOT grant activation during the current stage.
+> Write proposals to `ACTIVE/CONTROL/PROPOSED_NEXT_TASK.md`.
+
+---
+
+## TASK_ID: CEHP-007
+## TITLE: Push Patched index.html + Updated Docs to GitHub
+## TASK_OWNER_ROLE: Operations
+## CURRENT_STAGE: Execute
+## NEXT_HANDLER_ROLE: Reviewer
+## OWNER: Claude Cowork Opus 4.6 (Operations)
+## REVIEWER: Claude Code Sonnet 4.6
+## STATUS: READY
+
+## CONTEXT
+The W2/W3 defect patch pass (2026-03-14) applied surgical fixes to index.html locally:
+- W2/W3 camera direction-change lerp smoothing
+- W2 pop-quiz canvas.focus() recovery
+- W2/W3 certAid text readability improvements
+- W3 lesson readout and pre-auth gate font increases
+
+These patches exist in the local workspace but have NOT been pushed to GitHub.
+The public URL (https://kevinbigham.github.io/Cactus-Eds-Happy-Place/) still serves the pre-patch version.
+
+## FILES_EXPECTED
+- `index.html` (patched runtime)
+- `AGENTS.md` (updated with new agent model versions and process)
+- `CURRENT_PASS.md` (updated for process cleanup pass)
+- `HANDOFF.md` (updated with current state)
+- `KNOWN_ISSUES.md` (already updated from patch pass)
+- `NEXT_TASK.md` (this file — new)
+- `SPRINT_LOG.md` (new)
+- `BACKLOG.md` (already current)
+- `REQUESTED_INPUTS.md` (already current)
+- All files moved to `overflow/reference-docs/`
+
+## SUCCESS_CRITERIA
+- [ ] All changed files are committed and pushed to `main` branch
+- [ ] GitHub Pages URL serves the patched index.html
+- [ ] SHA-256 of public index.html matches local index.html
+- [ ] No files outside the expected set are included in the commit
+
+## VERIFICATION_COMMANDS
+```bash
+# From real git clone:
+git status
+git diff --stat main
+./scripts/verify-cehp.sh
+# After push:
+curl -sI https://kevinbigham.github.io/Cactus-Eds-Happy-Place/ | head -5
+```
+
+## AFTER COMPLETION
+Update this file with the next task:
+- CEHP-008: Human Retest W2/W3 Patches (run the 6-item retest checklist in CURRENT_PASS.md)
