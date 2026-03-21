@@ -814,7 +814,9 @@ var TRANSITIONS = {
   _scene: null,
 
   start: function(scene, type, opts, onMidpoint, onComplete) {
-    if (TRANSITIONS._active) return;
+    // Reset any stuck state from prior transitions
+    TRANSITIONS._active = false;
+    if (TRANSITIONS._g) { try { TRANSITIONS._g.destroy(); } catch(e) {} TRANSITIONS._g = null; }
     opts = opts || {};
     TRANSITIONS._active = true;
     TRANSITIONS._phase = 0;
@@ -824,9 +826,7 @@ var TRANSITIONS = {
     TRANSITIONS._onComplete = onComplete;
     TRANSITIONS._scene = scene;
     TRANSITIONS._texts = [];
-    if (!TRANSITIONS._g) {
-      TRANSITIONS._g = scene.add.graphics().setScrollFactor(0).setDepth(250);
-    }
+    TRANSITIONS._g = scene.add.graphics().setScrollFactor(0).setDepth(250);
     TRANSITIONS._g.clear().setAlpha(1);
     // Start the update loop
     TRANSITIONS._runFrame(scene);
@@ -834,11 +834,30 @@ var TRANSITIONS = {
 
   _runFrame: function(scene) {
     if (!TRANSITIONS._active) return;
+    // Guard against destroyed scene (scene.start kills the source scene)
+    if (!scene || !scene.time || !scene.sys || !scene.sys.isActive()) {
+      TRANSITIONS._active = false;
+      TRANSITIONS._g = null;
+      return;
+    }
     scene.time.delayedCall(16, function() {
+      if (!TRANSITIONS._active) return;
       TRANSITIONS._update(16);
       TRANSITIONS._draw();
       TRANSITIONS._runFrame(scene);
     });
+  },
+
+  _fireMidpoint: function() {
+    // onMidpoint typically calls scene.start() which destroys the source scene.
+    // We must clean up immediately after, since the timer loop will die.
+    var cb = TRANSITIONS._onMidpoint;
+    TRANSITIONS._onMidpoint = null;
+    // Reset state BEFORE calling the callback, since scene.start() is synchronous
+    TRANSITIONS._active = false;
+    TRANSITIONS._g = null; // source scene's graphics will be destroyed with the scene
+    TRANSITIONS._texts = [];
+    if (cb) cb();
   },
 
   _update: function(delta) {
@@ -847,48 +866,40 @@ var TRANSITIONS = {
     var type = TRANSITIONS._type;
 
     if (type === 'glitch') {
-      // Phase 0: 0-400ms tear buildup, Phase 1: 400-600ms flash, Phase 2: 600-1000ms clear
       if (TRANSITIONS._phase === 0 && t >= 400) {
         TRANSITIONS._phase = 1;
-        if (TRANSITIONS._onMidpoint) TRANSITIONS._onMidpoint();
+        TRANSITIONS._fireMidpoint();
+        return;
       }
-      if (TRANSITIONS._phase === 1 && t >= 600) { TRANSITIONS._phase = 2; }
-      if (t >= 1000) { TRANSITIONS._finish(); }
 
     } else if (type === 'vhs_track') {
-      // Phase 0: 0-600ms tracking bars, Phase 1: 600-1000ms static+text, Phase 2: 1000-1500ms clear
       if (TRANSITIONS._phase === 0 && t >= 600) {
         TRANSITIONS._phase = 1;
-        if (TRANSITIONS._onMidpoint) TRANSITIONS._onMidpoint();
+        TRANSITIONS._fireMidpoint();
+        return;
       }
-      if (TRANSITIONS._phase === 1 && t >= 1000) { TRANSITIONS._phase = 2; }
-      if (t >= 1500) { TRANSITIONS._finish(); }
 
     } else if (type === 'stamp') {
-      // Phase 0: 0-200ms dim, Phase 1: 200-500ms stamp, Phase 2: 500-900ms fade
       if (TRANSITIONS._phase === 0 && t >= 200) {
         TRANSITIONS._phase = 1;
-        if (TRANSITIONS._onMidpoint) TRANSITIONS._onMidpoint();
+        TRANSITIONS._fireMidpoint();
+        return;
       }
-      if (TRANSITIONS._phase === 1 && t >= 500) { TRANSITIONS._phase = 2; }
-      if (t >= 900) { TRANSITIONS._finish(); }
 
     } else if (type === 'standby') {
-      // Phase 0: 0-200ms fade to card, Phase 1: 200-1000ms hold, Phase 2: 1000-1300ms fade out
       if (TRANSITIONS._phase === 0 && t >= 200) { TRANSITIONS._phase = 1; }
-      if (TRANSITIONS._phase === 1 && t >= 500) {
-        if (TRANSITIONS._onMidpoint) { TRANSITIONS._onMidpoint(); TRANSITIONS._onMidpoint = null; }
+      if (TRANSITIONS._phase === 1 && t >= 500 && TRANSITIONS._onMidpoint) {
+        TRANSITIONS._fireMidpoint();
+        return;
       }
-      if (TRANSITIONS._phase === 1 && t >= 1000) { TRANSITIONS._phase = 2; }
-      if (t >= 1300) { TRANSITIONS._finish(); }
 
     } else {
       // Default fade
       if (TRANSITIONS._phase === 0 && t >= 400) {
         TRANSITIONS._phase = 1;
-        if (TRANSITIONS._onMidpoint) TRANSITIONS._onMidpoint();
+        TRANSITIONS._fireMidpoint();
+        return;
       }
-      if (t >= 800) { TRANSITIONS._finish(); }
     }
   },
 
@@ -1023,9 +1034,12 @@ var TRANSITIONS = {
 
   _finish: function() {
     TRANSITIONS._active = false;
-    if (TRANSITIONS._g) { TRANSITIONS._g.clear().setAlpha(0); }
+    if (TRANSITIONS._g) {
+      try { TRANSITIONS._g.clear().setAlpha(0); } catch(e) {}
+    }
+    TRANSITIONS._g = null;
     for (var ti = 0; ti < TRANSITIONS._texts.length; ti++) {
-      if (TRANSITIONS._texts[ti] && TRANSITIONS._texts[ti].destroy) TRANSITIONS._texts[ti].destroy();
+      try { if (TRANSITIONS._texts[ti] && TRANSITIONS._texts[ti].destroy) TRANSITIONS._texts[ti].destroy(); } catch(e) {}
     }
     TRANSITIONS._texts = [];
     if (TRANSITIONS._onComplete) TRANSITIONS._onComplete();
