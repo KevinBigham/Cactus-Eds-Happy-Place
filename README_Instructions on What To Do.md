@@ -1,15 +1,15 @@
 # README — Instructions on What To Do
 
 > **Last updated**: 2026-03-21
-> **Updated by**: Claude Opus 4.6 (1M context) — visual upgrade + handoff prep
+> **Updated by**: Claude Opus 4.6 (1M context) — "The Corrupted Broadcast" visual evolution
 
 ---
 
 # Project Overview
 
-**Cactus Ed's Happiest Place (CEHP)** is a single-file browser platformer game built with Phaser (loaded via CDN), written in ES5 JavaScript, with no build step. The entire game runtime lives in one HTML file (`ACTIVE/game/index.html`, ~19,000+ lines).
+**Cactus Ed's Happiest Place (CEHP)** is a single-file browser platformer game built with Phaser (loaded via CDN), written in ES5 JavaScript, with no build step. The entire game runtime lives in one HTML file (`ACTIVE/game/index.html`, ~19,750+ lines).
 
-**Vision**: A living satirical machine that watches you and adapts. The institution doesn't just judge you — it RESPONDS. Every run feels meaningfully different. Every receipt is shareable. Every player becomes a marketer.
+**Vision**: A living satirical machine that watches you and adapts. The institution doesn't just judge you — it RESPONDS. The game is a corrupted institutional broadcast — your behavior determines the signal integrity. Every run feels meaningfully different. Every receipt is shareable. Every player becomes a marketer.
 
 **Four active scenes**: Title, Demo (World 1), World2, World3.
 
@@ -26,6 +26,7 @@
 - **All 10 GOAT rounds are implemented** (Rounds 01-03 were pre-existing; Rounds 04-10 built 2026-03-20)
 - **Visual upgrade shipped** (2026-03-21): WebGL PostFX (vignette, bloom, barrel distortion), smooth scene transitions, enhanced glow effects, dual-pass particles, VHS grain, RGB channel offset tears
 - **Text readability pass** (2026-03-21): All font sizes bumped (minimum 8px), stroke thickness ≥3, dim colors brightened
+- **"The Corrupted Broadcast" visual evolution shipped** (2026-03-21): 10-round visual overhaul adding interconnected systems that make the game react to player behavior in real-time
 - **Renderer**: WebGL via `Phaser.AUTO` with Canvas fallback (`IS_WEBGL` flag guards all PostFX code)
 - Save contract (`cactusEd_save_v1`) fully preserved across all changes
 - Zero ES6 syntax — pure ES5 JavaScript throughout
@@ -85,6 +86,82 @@
 - Case number + mood displayed on pause screen
 - Daily challenge + department + punchcard on title screen
 
+## "The Corrupted Broadcast" — Visual Evolution (10 Rounds)
+
+### VE Round 01 — MOOD LIGHTING
+- `MOOD_VISUALS` system: 7 institutional moods now drive PostFX parameters (bloom strength, vignette radius, grain multiplier)
+- Mood tint overlay (depth 91) — colored full-screen rect per mood
+- Emergency Drill alarm pulse: pulsing red border when mood = alarm
+- Mood applied to all 3 gameplay scenes (DemoScene, World2Scene, World3Scene)
+
+### VE Round 02 — THE FILING CABINET (Animated UI)
+- `ANIM_UI` utility: `typewriter()`, `slideIn()`, `stampIn()`, `slideOut()` — reusable animation primitives
+- Pause screen: text elements stamp in with staggered delays, background fades in, dismissal animates out
+- Lesson cards: panel fades in, title/body stamp in with delays
+- Institutional memos: stamp-in animation on World2 policy memo
+- Flash messages: scale overshoot on appearance (1.3x → 1.0x)
+- All animations respect `reduceFlash` accessibility toggle
+
+### VE Round 03 — THE BEHAVIOR METER
+- `BEHAVIOR_FX` system: maps dominant behavior axis to real-time visual modifiers
+- `getBehaviorIntensity()` helper: returns dominant axis, intensity 0-1, and secondary
+- Chaos: extra grain, tinted vignette, scanline wobble, faster screen tears
+- Compliance: reduced grain, white sterile tint
+- Grace: golden shimmer particles via SMOKE_POOL
+- Effects only activate when intensity > 0.3, scaled by `(intensity - 0.3) / 0.7`
+- Stacks multiplicatively with mood grain multiplier
+
+### VE Round 04 — INSTITUTIONAL TRANSITIONS
+- `TRANSITIONS` system: state machine with 5 themed transition types
+- `glitch` (800ms): tear bars multiply → white flash → dissipate. Used for deaths.
+- `vhs_track` (1500ms): tracking bars scroll → static + noise → clears top-to-bottom. Used for world transitions (W1→W2, Title→saved world).
+- `stamp` (900ms): screen dims → stamp rectangle slams in → fades. Used for Title→Demo.
+- `standby` (1300ms): TV test card with color bars → fade out. Used for End→Title.
+- All `camera.fadeOut()` + `camerafadeoutcomplete` patterns replaced with `TRANSITIONS.start()`
+
+### VE Round 05 — AMBIENT PULSE (Dynamic Lighting)
+- `AMBIENT_LIGHT` system: register light sources, per-frame pulsing render, one-shot flares
+- Light types: `ambient` (slow pulse, wide), `pickup` (medium), `entity` (fast, small)
+- Concentric fillCircle rendering (outer 1.5x/0.3α, inner 1x/0.6α, core 0.4x/fullα) with `Math.sin` oscillation
+- All aloe pickups registered as light sources at scene creation
+- Event flares: green on aloe pickup, gold on enemy kill, red on death
+- Graphics layer at depth 76, max 20 sources, PERF quality scaling
+
+### VE Round 06 — ENVIRONMENTAL STORYTELLING
+- `ENV_FX` system: zone-specific ambient visual effects
+- Dream/Garden/Recovery zones: fog wisps (drifting white rects at ground level)
+- Lesson/Testing zones: paper flutter (gold rects drifting diagonally down)
+- Rupture/Maze/Pharmacy zones: heat shimmer (wobbling horizontal lines at ground level)
+- Afterglow/Lawn zones: data rain (ascending teal dots)
+- Viewport culling for performance, zone transition blending
+- Graphics layer at depth 77, guarded by `reduceParticles`
+
+### VE Round 07 — THE BROADCAST IDENTITY
+- Zone-accent enemy halos: every alive enemy gets a pulsing glow halo matching zone color
+- Dream = green, Lesson = gold, Rupture = red, Afterglow = teal
+- Alpha pulses via `Math.sin(time * 0.005 + enemyIndex)` for organic feel
+- Guarded by `reduceFlash` accessibility toggle
+
+### VE Round 08 — COLOR GRADING
+- `COLOR_GRADE` system: per-zone color overlay with smooth lerp transitions
+- Each zone mapped to overlay color + alpha + saturation shift
+- Smooth alpha lerp during zone transitions (~500ms)
+- Graphics layer at depth 90, stacks correctly under mood overlay (91) and vignette (92)
+
+### VE Round 09 — THE PRINTING CEREMONY
+- CRT power-on animation: white dot → horizontal line → vertical expand → flicker
+- Archetype text stamp-in with camera micro-shake on reveal
+- All receipt ceremony animations guarded by `reduceFlash` and `reduceShake`
+
+### VE Round 10 — THE COMPLETE BROADCAST
+- `BROADCAST_STATE` global: signal integrity (0.1-1.0) computed from behavior + mood
+- Signal formula: `1.0 - (chaosIntensity * 0.6) - (moodAlarm * 0.15) + (complianceIntensity * 0.4)`
+- Signal drives all previous systems: grain multiplied by `(2.0 - signal)`, tear interval multiplied by `signal`
+- Low signal: warm amber color push via additional overlay
+- Channel identification card: "CEHP BROADCAST NETWORK" + case number + mood, shown every 120 seconds
+- Signal persists across scenes via `window._cactusEdBroadcastSignal`
+- Signal is ephemeral (NOT saved to localStorage) — save contract untouched
+
 ---
 
 # Current Important Files
@@ -117,9 +194,10 @@
 
 # Current / Next Tasks
 
-## Current task: OPEN — All GOAT rounds + visual upgrade complete
+## Current task: OPEN — All GOAT rounds + visual evolution complete
 - Rounds 04-10 shipped 2026-03-20
 - Visual upgrade (WebGL PostFX, text readability, scene transitions) shipped 2026-03-21
+- "The Corrupted Broadcast" 10-round visual evolution shipped 2026-03-21
 - TitleScene crash fix shipped 2026-03-21
 - All features are live and pushed to GitHub
 
@@ -157,7 +235,10 @@ The save schema key `cactusEd_save_v1` must be preserved across ALL changes. Run
 # Warnings / Watchouts
 
 ## All changes pushed (2026-03-21)
-All local changes including GOAT rounds 04-10, visual upgrade, text readability pass, and TitleScene crash fix have been pushed to GitHub. The live URL serves the latest version.
+All local changes including GOAT rounds 04-10, visual upgrade, text readability pass, TitleScene crash fix, and "The Corrupted Broadcast" visual evolution have been pushed to GitHub. The live URL serves the latest version.
+
+## Key visual systems added (2026-03-21)
+The visual evolution added 10 new global systems: `MOOD_VISUALS`, `ANIM_UI`, `BEHAVIOR_FX`, `TRANSITIONS`, `AMBIENT_LIGHT`, `ENV_FX`, `COLOR_GRADE`, `BROADCAST_STATE`, plus `getBehaviorIntensity()` and `getMoodVisuals()` helpers. These are all defined near the top of the script block (after `PERF` and before `RECEIPT 2.0`). They use depth layers 76-91 and stack with existing grain (94), tear (93), CRT (95), and vignette (92) layers.
 
 ## Stale docs
 - `ACTIVE/docs/CURRENT_PASS.md` still describes Sprint 006 (project is past Sprint 012). Needs updating or removal.

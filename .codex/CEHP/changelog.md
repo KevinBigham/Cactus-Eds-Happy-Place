@@ -1,5 +1,23 @@
 # CEHP Changelog
 
+## 2026-03-21 — "The Corrupted Broadcast" Visual Evolution (10 Rounds)
+- files modified:
+  - `ACTIVE/game/index.html` — 10-round visual evolution (981 insertions, 32 deletions)
+- changes:
+  - **Round 1 MOOD LIGHTING**: `MOOD_VISUALS` lookup, mood-driven PostFX params, mood tint overlay (depth 91), Emergency Drill alarm pulse, mood init for W2/W3 scenes
+  - **Round 2 THE FILING CABINET**: `ANIM_UI` utility (typewriter/slideIn/stampIn/slideOut), animated pause screen, lesson cards, memos, flash messages
+  - **Round 3 THE BEHAVIOR METER**: `BEHAVIOR_FX` system, `getBehaviorIntensity()`, real-time chaos glitches, compliance sterility, grace shimmer particles, tear frequency modulation
+  - **Round 4 INSTITUTIONAL TRANSITIONS**: `TRANSITIONS` system with 5 types (glitch/vhs_track/stamp/standby/fade), all fadeOut+camerafadeoutcomplete patterns replaced
+  - **Round 5 AMBIENT PULSE**: `AMBIENT_LIGHT` system, pulsing pickup lights, event flares (kill=gold, death=red, collect=green), depth 76
+  - **Round 6 ENVIRONMENTAL STORYTELLING**: `ENV_FX` system, fog wisps/paper flutter/heat shimmer/data rain per zone type, depth 77
+  - **Round 7 THE BROADCAST IDENTITY**: zone-accent enemy halos on all alive enemies, pulsing via Math.sin
+  - **Round 8 COLOR GRADING**: `COLOR_GRADE` system, per-zone overlay with smooth lerp, depth 90
+  - **Round 9 THE PRINTING CEREMONY**: CRT power-on animation (dot→line→expand), archetype stamp-in with camera shake
+  - **Round 10 THE COMPLETE BROADCAST**: `BROADCAST_STATE` meta-layer, signal integrity drives grain/tear/color, channel ID card every 120s, signal persists across scenes
+- all effects: ES5 only, Canvas fallback, accessibility-guarded, PERF-scaled
+- save schema: verified (passes)
+- agent: Claude Opus 4.6 (1M context)
+
 ## 2026-03-21 — Visual Upgrade: WebGL PostFX, Scene Transitions, Glow & Particles
 - files modified:
   - `ACTIVE/game/index.html` — major visual overhaul (123 insertions, 26 deletions)

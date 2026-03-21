@@ -19,7 +19,7 @@ When this task is complete, the completing agent updates this file with the next
 ## STATUS: OPEN
 
 ## CONTEXT
-All GOAT plan rounds (01-10) are fully implemented and deployed. Visual upgrade (WebGL PostFX, text readability, scene transitions, enhanced glow/particles) is shipped. TitleScene cold-open crash is fixed. Everything is pushed to GitHub and live.
+All GOAT plan rounds (01-10) are fully implemented and deployed. Visual upgrade (WebGL PostFX, text readability, scene transitions, enhanced glow/particles) is shipped. "The Corrupted Broadcast" 10-round visual evolution is shipped (mood lighting, animated UI, behavior-driven visuals, institutional transitions, ambient lighting, environmental storytelling, broadcast identity, color grading, printing ceremony, broadcast state meta-layer). TitleScene cold-open crash is fixed. Everything is pushed to GitHub and live.
 
 ## WHAT'S BEEN COMPLETED
 - **Rounds 01-03**: Juice & Feel, Death & Onboarding, Receipt 2.0 (pre-existing)
@@ -31,8 +31,9 @@ All GOAT plan rounds (01-10) are fully implemented and deployed. Visual upgrade 
 - **Round 09**: Surprise & Delight — fourth wall lines, greeter NPC, blank receipt, clerical error jackpot
 - **Round 10**: Content Expansion — case seeds, mood rotations, remix labels
 - **Visual Upgrade**: WebGL PostFX, scene transitions, enhanced glow, dual-pass particles, VHS effects
-- **Text Readability**: All fonts ≥8px, stroke ≥3, bright colors
+- **Text Readability**: All fonts >=8px, stroke >=3, bright colors
 - **Bug Fix**: TitleScene cold-open crash resolved
+- **"The Corrupted Broadcast"**: 10-round visual evolution — mood lighting, animated UI (ANIM_UI), behavior-driven visuals (BEHAVIOR_FX), institutional transitions (TRANSITIONS), dynamic lighting (AMBIENT_LIGHT), environmental storytelling (ENV_FX), broadcast identity (enemy halos), color grading (COLOR_GRADE), printing ceremony (CRT power-on), broadcast state meta-layer (BROADCAST_STATE)
 
 ## NEXT STEPS
 1. Kevin playtests all features on live URL

@@ -1,32 +1,24 @@
 # CEHP Handoff
 
-## What Was Just Done (2026-03-21 — Visual Upgrade + Bug Fix Session)
+## What Was Just Done (2026-03-21 — "The Corrupted Broadcast" Visual Evolution)
 
-### Bug Fix: TitleScene Cold-Open Crash
-- The cold open "any key" check referenced `keys.left`, `keys.right`, `keys.x`, `keys.c`, `keys.esc` which were never registered in TitleScene's key map (only z, up, down). This TypeError killed the game loop on the first update frame, showing a blank screen.
-- Fixed by using inline `addKey()` calls for the missing key references.
+### 10-Round Visual Evolution: "The Corrupted Broadcast"
+Complete visual overhaul adding 10 interconnected systems (981 insertions, 32 deletions). The game is now a corrupted institutional broadcast that reacts to player behavior in real-time.
 
-### Text Readability Upgrade
-- All font sizes bumped: 3-4px→8px, 5px→9px, 6-7px→10px, 8px→11px, 9px→12px, 20px→24px
-- Minimum stroke thickness raised to 3 across the board
-- Dim text colors brightened (#333→#777, #444→#888, #555→#999, plus muted greens/blues)
+**Round 1: MOOD LIGHTING** — `MOOD_VISUALS` lookup maps 7 moods to PostFX params (bloom, vignette, grain). Emergency Drill pulses red.
+**Round 2: THE FILING CABINET** — `ANIM_UI` utility (typewriter, slideIn, stampIn, slideOut). Pause screen, lesson cards, memos, and flash messages all animated.
+**Round 3: THE BEHAVIOR METER** — `BEHAVIOR_FX` + `getBehaviorIntensity()`. Chaos = more glitches/grain/tears. Compliance = sterile. Grace = golden shimmer particles.
+**Round 4: INSTITUTIONAL TRANSITIONS** — `TRANSITIONS` system with 5 types (glitch, vhs_track, stamp, standby, fade). All scene.start() calls converted.
+**Round 5: AMBIENT PULSE** — `AMBIENT_LIGHT` system. Pulsing light sources on pickups. Flares on kills (gold), deaths (red), aloe collection (green).
+**Round 6: ENVIRONMENTAL STORYTELLING** — `ENV_FX` system. Fog wisps (dream), paper flutter (lesson), heat shimmer (rupture), data rain (afterglow).
+**Round 7: THE BROADCAST IDENTITY** — Zone-accent enemy halos. Alive enemies glow with zone color.
+**Round 8: COLOR GRADING** — `COLOR_GRADE` system. Per-zone color overlay with smooth lerp transitions.
+**Round 9: THE PRINTING CEREMONY** — CRT power-on animation (dot→line→expand). Archetype stamp-in with camera shake.
+**Round 10: THE COMPLETE BROADCAST** — `BROADCAST_STATE` meta-layer. Signal degrades with chaos, drives all other systems. Channel ID card every 120s.
 
-### Major Visual Upgrade — WebGL PostFX
-- **Renderer**: Switched from `Phaser.CANVAS` to `Phaser.AUTO` (WebGL with Canvas fallback)
-- **IS_WEBGL flag**: Global detection variable guards all PostFX code
-- **Camera PostFX on all 4 scenes**:
-  - GPU-rendered vignette (replaces crude rectangle overlay in DemoScene)
-  - Subtle bloom (makes lights and pickups pop)
-  - Barrel distortion on TitleScene (CRT monitor curvature)
-- **Scene transitions**: All `scene.start()` calls now fade out/in (Title→gameplay, W1→W2, W2→W3, end→Title)
-- **Enhanced glow effects**: Aloe pickups (dual-halo), floating items (outer halos), Ed's cigarette ember (warm glow rings), subliminal text (PostFX red glow)
-- **Dual-pass particles**: All particles render with soft outer halo at 2.2x radius
-- **VHS grain**: Upgraded to tracking-style bars with occasional scan lines
-- **Screen tear**: RGB channel offset (red/blue/green split lines)
-
-### Previous Session (2026-03-20 — GOAT Rounds 04-10)
-- All 10 GOAT plan rounds fully implemented in a single marathon session
-- See README for full feature list
+### Previous Sessions
+- **2026-03-21**: WebGL PostFX visual upgrade, text readability pass, TitleScene crash fix
+- **2026-03-20**: All 10 GOAT plan rounds (04-10) implemented
 
 ## What To Do Next
 1. Check `ACTIVE/docs/NEXT_TASK.md` — currently OPEN (no active task)
@@ -36,7 +28,7 @@
 
 ## Exact Files To Inspect
 - Task beacon: `ACTIVE/docs/NEXT_TASK.md`
-- Runtime: `ACTIVE/game/index.html` (~18,800 lines)
+- Runtime: `ACTIVE/game/index.html` (~19,750 lines)
 - Agent rules: `ACTIVE/docs/AGENTS.md`
 - Known issues: `ACTIVE/docs/KNOWN_ISSUES.md`
 - Local memory: `.codex/CEHP/status.md`
@@ -63,9 +55,35 @@
 - PostFX is guarded by `IS_WEBGL` global flag — all visual effects have Canvas fallback
 - Game dimensions: W=512, H=448 pixels
 
+## New Visual Systems (2026-03-21)
+Global objects defined near top of script (after PERF, before RECEIPT 2.0):
+- `MOOD_VISUALS` — mood effect → visual parameter lookup
+- `BEHAVIOR_FX` — behavior axis → real-time visual modifiers
+- `ANIM_UI` — typewriter, slideIn, stampIn, slideOut animation utilities
+- `AMBIENT_LIGHT` — dynamic pulsing light source system
+- `ENV_FX` — zone-specific environmental particle effects
+- `COLOR_GRADE` — per-zone color overlay with lerp transitions
+- `BROADCAST_STATE` — meta-layer signal integrity system
+- `TRANSITIONS` — 5 themed scene transition types
+
+Depth layer stack (bottom to top):
+```
+76: Ambient lights (Round 5)
+77: Environmental FX (Round 6)
+90: Color grade overlay (Round 8)
+91: Mood overlay (Round 1)
+92: Vignette + behavior vignette (Round 3)
+93: Tear FX
+94: Grain
+95: CRT scanlines
+96: Subliminal text
+100-104: Receipt terminal (Round 9)
+```
+
 ## Warnings / Risks / Traps
-- The game is ONE GIANT HTML file (~18,800 lines). Do not split it.
+- The game is ONE GIANT HTML file (~19,750 lines). Do not split it.
 - Save contract (`cactusEd_save_v1`) must NEVER break. Always run the schema check.
 - Movement constants in `ED_MOVE` must not change without approval.
 - The cigarette is central to Ed's identity — never remove it.
 - Behavioral tracking stays silent (no visible meters).
+- All visual effects have Canvas fallback and accessibility guards (reduceShake/reduceFlash/reduceParticles).
