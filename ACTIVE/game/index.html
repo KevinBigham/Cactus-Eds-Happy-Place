@@ -159,6 +159,66 @@ var SAVE = {
   }
 };
 
+// ── R06: ABILITY LICENSING SYSTEM ────────────────────────────
+// Tracks which moves are licensed vs unlicensed. Stored separately from SAVE
+// to preserve the save contract. Licenses persist across runs.
+var LICENSE = {
+  _key: 'cactusEd_licenses_v1',
+  // All licensable moves with their form names and certification hints
+  MOVES: {
+    doubleJump:  { form: 'FORM 12-A',     name: 'DOUBLE JUMP',     label: 'EXTENDED VERTICAL DISPLACEMENT',       hint: 'Report to Orientation Hall for assessment', world: 1 },
+    wallJump:    { form: 'FORM 8-C',      name: 'WALL SLIDE/JUMP', label: 'WALL CONTACT PROTOCOL',                hint: 'Complete Wall Contact Training in Zone 2',  world: 1 },
+    kick:        { form: 'FORM 3-D',      name: 'KICK',            label: 'ALTERNATIVE CONFLICT RESOLUTION',      hint: 'Attend conflict seminar — kick 3 cones',    world: 1 },
+    spinDash:    { form: 'FORM 15-B',     name: 'SPIN DASH',       label: 'ROTARY LOCOMOTION AUTHORIZATION',      hint: 'Charge through the Testing Corridor',       world: 2 },
+    tripleJump:  { form: 'FORM 12-A-EXT', name: 'TRIPLE JUMP',     label: 'EXCESSIVE VERTICAL DISPLACEMENT',      hint: 'Reach the hidden stamp above the maze',     world: 2 },
+    cigCopter:   { form: 'FORM 22-F',     name: 'CIG COPTER',      label: 'AIRBORNE NICOTINE PROPULSION',         hint: 'Cross the Wellness Gap in World 3',         world: 3 },
+    groundSlam:  { form: 'FORM 9-G',      name: 'GROUND SLAM',     label: 'CONTROLLED DESCENT INITIATIVE',        hint: 'Break the floor panel in the Diagnostic Lab', world: 3 },
+    glide:       { form: 'FORM 22-F-B',   name: 'GLIDE',           label: 'UNAUTHORIZED DRIFT',                   hint: 'Auto-licensed with Cig Copter certification', world: 3 }
+  },
+  // Default licensed moves (always available)
+  _defaults: ['walk', 'run', 'jump', 'punch'],
+  // Load licenses from localStorage
+  load: function() {
+    try {
+      var raw = localStorage.getItem(LICENSE._key);
+      if (!raw) return {};
+      return JSON.parse(raw);
+    } catch(e) { return {}; }
+  },
+  // Save a specific license
+  grant: function(moveKey) {
+    var licenses = LICENSE.load();
+    licenses[moveKey] = { earned: true, timestamp: Date.now() };
+    // Auto-grant glide with cigCopter
+    if (moveKey === 'cigCopter') {
+      licenses.glide = { earned: true, timestamp: Date.now() };
+    }
+    try { localStorage.setItem(LICENSE._key, JSON.stringify(licenses)); } catch(e) {}
+    return licenses;
+  },
+  // Check if a move is licensed
+  isLicensed: function(moveKey) {
+    var licenses = LICENSE.load();
+    return !!(licenses[moveKey] && licenses[moveKey].earned);
+  },
+  // Get all unlicensed moves
+  getUnlicensed: function() {
+    var licenses = LICENSE.load();
+    var result = [];
+    var keys = Object.keys(LICENSE.MOVES);
+    for (var i = 0; i < keys.length; i++) {
+      if (!licenses[keys[i]] || !licenses[keys[i]].earned) {
+        result.push(keys[i]);
+      }
+    }
+    return result;
+  },
+  // Clear all licenses (for testing)
+  clear: function() {
+    try { localStorage.removeItem(LICENSE._key); } catch(e) {}
+  }
+};
+
 var TITLE_ACHIEVEMENTS = [
   {
     label: 'ED\'S WORST DAY',
@@ -359,6 +419,1142 @@ var PERF = {
   }
 };
 
+// ── RECEIPT 2.0 — PROCEDURAL RECEIPT ENGINE ─────────────────
+// Template engine, archetype titles, near-miss callouts, counterfactuals
+
+// Seeded random for deterministic receipt generation from run data
+function receiptRandom(seed) {
+  var s = seed || 1;
+  return function() {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    return (s >>> 16) / 32768;
+  };
+}
+
+function pickFromPool(pool, rng) {
+  return pool[Math.floor(rng() * pool.length)];
+}
+
+// Word banks for procedural fill-in
+var RECEIPT_WORDS = {
+  OBSERVATION: ['FIELD NOTE', 'BEHAVIORAL OBSERVATION', 'COMPLIANCE MEMO', 'INCIDENT REVIEW', 'PRELIMINARY FINDING', 'DEPARTMENTAL NOTICE', 'INTERNAL MEMO', 'ASSESSMENT BRIEF', 'FILED NOTATION', 'SUPERVISORY REMARK'],
+  VERB_COMPLY: ['followed', 'obeyed', 'acknowledged', 'respected', 'honored', 'upheld', 'observed', 'deferred to', 'submitted to', 'ratified', 'endorsed', 'saluted', 'accepted', 'validated', 'mirrored'],
+  VERB_CHAOS: ['destroyed', 'reclassified', 'liberated', 'decommissioned', 'restructured', 'repurposed', 'dismantled', 'reinvented', 'vaporized', 'democratized', 'improvised upon', 'overrode', 'reinterpreted', 'abolished', 'converted'],
+  VERB_INTUIT: ['discovered', 'anticipated', 'divined', 'shortcut past', 'bypassed', 'sensed', 'instinctively avoided', 'pre-empted', 'navigated around', 'intuited past', 'sidestepped', 'predicted', 'circumvented'],
+  VERB_CURIOUS: ['inspected', 'investigated', 'questioned', 'scrutinized', 'catalogued', 'documented', 'examined', 'audited', 'decoded', 'cross-referenced', 'lingered over', 're-read', 'annotated'],
+  OBJECT: ['safety railing', 'orientation signage', 'wellness checkpoint', 'queue barrier', 'filing cabinet', 'structural pillar', 'load-bearing policy', 'jurisdictional boundary', 'commemorative plaque', 'emergency exit', 'notice board', 'suggestion box', 'custodial supply', 'vending protocol', 'courtesy threshold'],
+  OBJECT_PLURAL: ['safety cones', 'institutional guidelines', 'wellness directives', 'queue positions', 'filing categories', 'structural assumptions', 'approved routes', 'orientation placards', 'policy documents', 'exit strategies'],
+  OUTCOME_COMPLY: ['commended for its patience', 'promoted to permanent fixture', 'awarded a certificate of relevance', 'documented as a success metric', 'noted in your permanent record', 'endorsed by the committee', 'given full marks'],
+  OUTCOME_CHAOS: ['archived as resolved', 'reclassified as debris', 'scheduled for grief counseling', 'filed under former infrastructure', 'reassigned to memory', 'donated to the abstract', 'granted early retirement', 'processed as modern art'],
+  PROTOCOL: ['vertical displacement', 'corridor navigation', 'institutional harmony', 'standard procedure 7-B', 'directional compliance', 'sequential locomotion', 'approved velocity', 'mandatory patience', 'orientation protocol', 'gravity etiquette'],
+  RECLASSIFY_CHAOS: ['improvisational engineering', 'aggressive compliance', 'unauthorized innovation', 'kinetic problem-solving', 'structural jazz', 'applied turbulence', 'freestyle governance', 'percussive maintenance', 'unsanctioned optimization'],
+  LOCATION: ['the testing corridor', 'the wellness checkpoint', 'the orientation foyer', 'the recovery lounge', 'the compliance annex', 'the sub-basement', 'the approval queue', 'the observation deck', 'corridor 7-B'],
+  NUMBER: ['3', '7', '12', '41', '8', '16', '23', '5', '99', '14'],
+  METRIC: ['throughput index', 'compliance velocity', 'disruption quotient', 'orientation coefficient', 'attention throughput', 'engagement deviation', 'curiosity wavelength', 'grace factor'],
+  CONSEQUENCE_COMPLY: ['This is ideal.', 'Continue as directed.', 'No further action is required.', 'Your record has been updated.', 'The committee is satisfied.', 'You are meeting expectations.', 'This has been noted favorably.'],
+  CONSEQUENCE_CHAOS: ['This is being monitored.', 'Revision pending.', 'Your file has been flagged.', 'The committee is convening.', 'Further review may be warranted.', 'Adjustments are underway.', 'Your record has expanded.'],
+  ADJ_COMPLY: ['exemplary', 'textbook', 'model', 'unremarkable', 'consistent', 'standard-exceeding', 'predicted', 'admirable', 'regulation-grade'],
+  REWARD_COMPLY: ['A commendation is being drafted.', 'Your participation sticker is in transit.', 'Gold star pending approval.', 'A form recognizing this form has been filed.', 'The suggestion box has noted your absence from it.']
+};
+
+// Template pools per behavioral axis (20+ each)
+var RECEIPT_TEMPLATES = {
+  compliance: [
+    '[OBSERVATION]: You [VERB_COMPLY] the [OBJECT].\nThe [OBJECT] has been [OUTCOME_COMPLY].',
+    'COMMENDATION: Subject demonstrated\n[ADJ_COMPLY] adherence to [PROTOCOL].\n[REWARD_COMPLY]',
+    'Your [METRIC] of [NUMBER]\nwas within acceptable parameters.\n[CONSEQUENCE_COMPLY]',
+    'ROUTING REPORT: You took\nthe approved path [NUMBER] times.\nThe path thanks you.',
+    'BEHAVIORAL CONCORDANCE:\nYou and the system agreed\non [NUMBER] of [NUMBER] directives.\n[CONSEQUENCE_COMPLY]',
+    'ORIENTATION MILESTONE:\nYou did what was asked\nbefore being asked.\nThis is suspicious compliance.',
+    'POLICY ADHERENCE:\nYour respect for [PROTOCOL]\nhas been filed as [ADJ_COMPLY].\n[REWARD_COMPLY]',
+    'OBEDIENCE INDEX:\nYour responses to [PROTOCOL]\nmatched the [ADJ_COMPLY] template.\n[CONSEQUENCE_COMPLY]',
+    'STANDARD REPORT:\nYou followed [NUMBER] posted signs.\nThe signs have grown accustomed.',
+    'ATTENDANCE METRIC:\nYour presence was [ADJ_COMPLY].\nYour absence would have been noted.',
+    'APPROVAL CHAIN:\nYour actions required zero overrides.\nThe override system feels undervalued.',
+    'COMPLIANCE BRIEF:\nYou were where you were expected.\nExpectation appreciates the consistency.',
+    'NAVIGATION LOG:\nYou respected [NUMBER] [OBJECT_PLURAL]\nand were respected by none.\n[CONSEQUENCE_COMPLY]',
+    'AGREEMENT RECORD:\nYou agreed with [PROTOCOL]\nbefore understanding it.\nUnderstanding was not required.',
+    'PROCEDURE NOTE:\nYou completed [PROTOCOL] as written.\nThe writer has been informed.',
+    'CONFORMITY ASSESSMENT:\nYour [METRIC] suggests alignment.\nAlignment suggests continued enrollment.',
+    'DIRECTIVE RESPONSE:\nYou treated the [OBJECT] with\n[ADJ_COMPLY] deference.\nThe [OBJECT] will not forget.',
+    'REGULATION MEMO:\nYour approach to [LOCATION]\nwas fully approved.\nApproval was not asked for.',
+    'PATTERN MATCH:\nYour behavior in [LOCATION]\nmatched [NUMBER] prior subjects.\nIndividuality score: pending.',
+    'INSTITUTIONAL HARMONY:\nYou and the system moved\nin the same direction.\nThe direction has been archived.'
+  ],
+  chaos: [
+    '[OBSERVATION]: You [VERB_CHAOS] the [OBJECT].\nThe [OBJECT] has been [OUTCOME_CHAOS].',
+    'INCIDENT REPORT: Subject [VERB_CHAOS]\n[NUMBER] [OBJECT_PLURAL] in [LOCATION].\n[CONSEQUENCE_CHAOS]',
+    'Your approach to [PROTOCOL]\nhas been reclassified as\n[RECLASSIFY_CHAOS].',
+    'DISRUPTION INDEX:\nYou [VERB_CHAOS] [NUMBER] approved systems.\nThe systems have been [OUTCOME_CHAOS].',
+    'BEHAVIORAL ANOMALY:\nYour engagement with [LOCATION]\nexceeded all projections.\n[CONSEQUENCE_CHAOS]',
+    'VELOCITY INCIDENT:\nYou converted [PROTOCOL]\ninto [RECLASSIFY_CHAOS].\nThe conversion was irreversible.',
+    'STRUCTURAL EVENT:\nYou treated the [OBJECT] as optional.\nThe [OBJECT] was structural.',
+    'DAMAGE REPORT:\n[NUMBER] [OBJECT_PLURAL] were affected.\nAffected has been redefined.',
+    'ENERGY AUDIT:\nYour [METRIC] suggests\n[RECLASSIFY_CHAOS].\nThis is not a compliment.',
+    'TURBULENCE LOG:\nYou created [NUMBER] incidents\nin [LOCATION].\nThe incidents have been\n[OUTCOME_CHAOS].',
+    'INITIATIVE REPORT:\nYou solved problems\nthat had not yet occurred.\n[CONSEQUENCE_CHAOS]',
+    'MOMENTUM ANALYSIS:\nYour trajectory through [LOCATION]\ndefied [NUMBER] posted advisories.\nAdvisories are updating.',
+    'CONFLICT RESOLUTION:\nYou [VERB_CHAOS] the conflict\nbefore it could be scheduled.\nThe schedule objects.',
+    'INFRASTRUCTURE NOTE:\nThe [OBJECT] in [LOCATION]\nhas been [OUTCOME_CHAOS]\nfollowing your visit.',
+    'DEMOLITION BRIEF:\nWhat you called progress\nresembled [RECLASSIFY_CHAOS].\nProgress has filed an objection.',
+    'ENGAGEMENT EXCESS:\nYour [METRIC] of [NUMBER]\nexceeds the recommended ceiling.\nThe ceiling has been [OUTCOME_CHAOS].',
+    'KINETIC EVENT:\nYou applied force to [PROTOCOL].\n[PROTOCOL] has been [OUTCOME_CHAOS].',
+    'ENTROPY NOTICE:\nYour passage through [LOCATION]\nincreased local disorder by [NUMBER]%.\nOrder is recalculating.',
+    'RECLASSIFICATION:\nWhat was a [OBJECT] is now\ndata. You are the cause.\n[CONSEQUENCE_CHAOS]',
+    'IMPACT STATEMENT:\nThe [OBJECT] was functioning.\nThen you arrived.\nFunctioning has been deferred.'
+  ],
+  intuition: [
+    '[OBSERVATION]: You [VERB_INTUIT] the [OBJECT].\nThe [OBJECT] was not expecting visitors.',
+    'ROUTE DEVIATION: Subject [VERB_INTUIT]\n[PROTOCOL] in [LOCATION].\nThe route has been recalculated.',
+    'NAVIGATION ANOMALY:\nYou arrived at [LOCATION]\nvia a method not in the manual.\nThe manual is being revised.',
+    'UNAUTHORIZED PATHFINDING:\nYou [VERB_INTUIT] [NUMBER] approved routes.\nThe routes feel rejected.',
+    'SENSORY OVERRIDE:\nYou moved before the instruction.\nInstruction is recalculating.',
+    'INSTINCT REPORT:\nYour [METRIC] of [NUMBER] suggests\nyou knew before being told.\nThe telling feels unnecessary.',
+    'OFF-GRID TRANSIT:\nYou located an exit\nnot recognized by [LOCATION].\nFacilities has been alerted.',
+    'AUTONOMY FLAG:\nYou made [NUMBER] decisions\nwithout consulting [OBJECT_PLURAL].\nThe [OBJECT_PLURAL] would like an apology.',
+    'PREDICTIVE MOVEMENT:\nYou [VERB_INTUIT] a hazard\nthat had not been announced.\nThe announcement feels redundant.',
+    'UNAPPROVED DISCOVERY:\nYou found [LOCATION]\nbefore it was ready for visitors.\nPreparations have been abandoned.',
+    'SHORTCUT ANALYSIS:\nYou reduced [PROTOCOL]\nto [NUMBER] steps.\nThe remaining steps feel excluded.',
+    'PREMONITION LOG:\nYou avoided [NUMBER] [OBJECT_PLURAL]\nthat you could not have known about.\nKnowledge is filing a report.',
+    'SPATIAL INTUITION:\nYour understanding of [LOCATION]\nexceeds the blueprints.\nThe blueprints are being questioned.',
+    'BYPASS REPORT:\nYou [VERB_INTUIT] [PROTOCOL]\nentirely. [PROTOCOL]\nis drafting a counter-proposal.',
+    'INDEPENDENT ROUTING:\nYou trusted yourself\nover [NUMBER] posted signs.\nThe signs have convened.',
+    'WAYFINDING ANOMALY:\nYour path through [LOCATION]\nsuggests prior knowledge.\nPrior knowledge is denied.',
+    'ANTICIPATION INDEX:\nYou reacted to [NUMBER] events\nbefore they occurred.\nCausality is under review.',
+    'INTERNAL COMPASS:\nYou navigated without reference\nto [OBJECT_PLURAL].\nReference feels abandoned.',
+    'INSTINCT MEMO:\nWhat you call instinct\nthe system calls [RECLASSIFY_CHAOS].\nThe system may be wrong.',
+    'FORESIGHT FILING:\nYou [VERB_INTUIT] what was planned.\nPlanning has been humbled.'
+  ],
+  curiosity: [
+    '[OBSERVATION]: You [VERB_CURIOUS] the [OBJECT].\nThe [OBJECT] did not consent to inspection.',
+    'INQUIRY LOG: Subject [VERB_CURIOUS]\n[NUMBER] items in [LOCATION].\nThe items have been notified.',
+    'ATTENTION REPORT:\nYou looked at things\nnot designated for looking.\nLooking has been documented.',
+    'ARCHIVE ACCESS:\nYou [VERB_CURIOUS] [NUMBER] [OBJECT_PLURAL]\nthat were filed as forgotten.\nForgotten has been remembered.',
+    'INFORMATIONAL TRESPASS:\nYou read the [OBJECT]\nin [LOCATION].\nThe reading was unauthorized.',
+    'DISCOVERY BRIEF:\nYour [METRIC] of [NUMBER]\nsuggests excessive attentiveness.\nThe recommended amount is less.',
+    'EXPLORATION FLAG:\nYou spent time in [LOCATION]\nwithout a stated purpose.\nPurpose has filed a complaint.',
+    'SIGN INSPECTION:\nYou [VERB_CURIOUS] [NUMBER] signs.\nThe signs were not meant\nto be understood.',
+    'READING INCIDENT:\nYou [VERB_CURIOUS] material that was\ndecorative, not informational.\nDecoration is confused.',
+    'SUPPLEMENTAL INQUIRY:\nYou asked [NUMBER] questions\nthe orientation did not prepare.\nThe curriculum is expanding.',
+    'UNAUTHORIZED ATTENTION:\nYou looked behind the [OBJECT].\nThe [OBJECT] feels exposed.',
+    'INVESTIGATION REPORT:\nYou treated [LOCATION] as\nan exhibit rather than a corridor.\nThe corridor is flattered.',
+    'COLLECTION MEMO:\nYou gathered [NUMBER] items\nnot on the approved collection list.\nThe list is growing.',
+    'INTEREST ANOMALY:\nYour attention to [PROTOCOL]\nexceeded the standard deviation.\nDeviation is being re-standardized.',
+    'OBSERVATION EXCESS:\nYou [VERB_CURIOUS] things\nthat were placed to be ignored.\nIgnorance has been rescheduled.',
+    'BROCHURE INCIDENT:\nYou collected material\nthat was never distributed.\nDistribution is reviewing itself.',
+    'INTERPRETIVE TRESPASS:\nYou found meaning in the [OBJECT].\nMeaning was not budgeted.',
+    'READING VELOCITY:\nYou [VERB_CURIOUS] [NUMBER] items per zone.\nThe per-zone average is lower.',
+    'AWARENESS FLAG:\nYour awareness of [LOCATION]\nexceeds operational requirements.\nRequirements are being expanded.',
+    'NPC ENGAGEMENT:\nYou spoke to [NUMBER] citizens.\nThe citizens were not briefed.'
+  ],
+  grace: [
+    '[OBSERVATION]: Your [METRIC]\nof [NUMBER] indicates recovery\nbeyond standard parameters.',
+    'NEAR-MISS FILING:\nYou avoided the [OBJECT]\nby a margin the system\ncannot officially endorse.',
+    'RECOVERY EVENT:\nYou fell and converted descent\ninto technique.\nTechnique was not the intended outcome.',
+    'COMPOSURE REPORT:\nYour panic resolved into structure.\nStructure was surprised.',
+    'RESILIENCE INDEX:\nYou survived [NUMBER] incidents\nthat the simulation expected\nto resolve differently.',
+    'ELEGANCE NOTICE:\nYou crossed unsafe thresholds\nwith admirable posture.\n[CONSEQUENCE_COMPLY]',
+    'ADAPTATION BRIEF:\nYou adjusted to [NUMBER] hazards\nwithout visible distress.\nDistress was scheduled.',
+    'MOMENTUM RECOVERY:\nYour near-failures were\nmore compelling than\nmost successes on record.',
+    'REFLEXIVE GRACE:\nYou avoided harm at the last moment.\nHarm felt ignored.',
+    'SURVIVAL AESTHETIC:\nYour movement lacked panic.\nPanic is not used to\nbeing excluded.',
+    'PRECISION LOG:\nYou navigated [LOCATION]\nwithin [NUMBER] pixels of failure.\nFailure has been rescheduled.',
+    'LAST-MOMENT FILING:\nYou recovered [NUMBER] times\nfrom situations designed\nto define you by failure.',
+    'COMPOSURE INDEX:\nYour response to the [OBJECT]\nwas [ADJ_COMPLY] under duress.\nDuress feels underperforming.',
+    'BALANCE REPORT:\nYou maintained equilibrium\nacross [NUMBER] destabilizing events.\nThe events have been counseled.',
+    'CLOSE-CALL BRIEF:\nProximity to [NUMBER] [OBJECT_PLURAL]\nwas closer than recommended.\nRecommendations are being widened.',
+    'KINETIC POISE:\nYou treated danger as\nchoreography.\n[CONSEQUENCE_CHAOS]',
+    'RECOVERY CHAIN:\nYou survived [NUMBER] consecutive\nnear-terminations.\nTermination has been deferred.',
+    'DAMAGE AVOIDANCE:\nYou [VERB_INTUIT] [NUMBER] hazards\nthat were considered unavoidable.\nAvoidability is being recalculated.',
+    'ELEGANCE AUDIT:\nYour passage through [LOCATION]\nwas both unsafe and beautiful.\nBeauty is not in the budget.',
+    'INCIDENT SURVIVAL:\nYou emerged from [NUMBER] incidents\nmore composed than when you entered.\nThe incidents are concerned.'
+  ],
+  efficiency: [
+    '[OBSERVATION]: Your [METRIC]\nof [NUMBER] exceeds the standard\ntime-to-completion estimate.',
+    'THROUGHPUT NOTICE:\nYou completed [PROTOCOL]\nin [NUMBER] fewer steps than projected.\nProjections feel inadequate.',
+    'OPTIMIZATION LOG:\nYou skipped [NUMBER] optional experiences.\nThe experiences will remember this.',
+    'VELOCITY REPORT:\nYou moved through [LOCATION]\nbefore it was ready.\nReadiness has been deferred.',
+    'PROGRESS MEMO:\nTime-to-completion falls within\nexpedited parameters.\nPatience has been archived.',
+    'MINIMIZATION BRIEF:\nYou reduced [PROTOCOL]\nto its essential components.\nThe non-essential components\nsend regards.',
+    'SKIP REPORT:\nYou bypassed [NUMBER] [OBJECT_PLURAL]\nwith [ADJ_COMPLY] disinterest.\n[CONSEQUENCE_COMPLY]',
+    'ACCELERATION INDEX:\nYour speed through [LOCATION]\nsuggests familiarity or indifference.\nBoth have been filed.',
+    'TIME AUDIT:\nYou did not stop to understand.\nUnderstanding has been deferred\nto your next enrollment.',
+    'EFFICIENCY GRADE:\nYour approach to [PROTOCOL]\neliminated [NUMBER] redundancies.\nThe redundancies were load-bearing.',
+    'STREAMLINE NOTICE:\nYou treated the [OBJECT] as optional.\nIt was structural.\nStructure is being reconsidered.',
+    'RAPID TRANSIT:\nYou traversed [LOCATION]\n[NUMBER]% faster than median.\nThe median feels slow.',
+    'ABBREVIATION LOG:\nYou abbreviated [PROTOCOL]\nto a point the system\ncannot reconstruct the original.',
+    'DIRECTNESS REPORT:\nYou ignored [NUMBER] scenic detours.\nThe scenery will not be filing\na complaint. The scenery is used to it.',
+    'COMPLETION SPEED:\nYou finished before [NUMBER] systems\nfinished loading.\nLoading is embarrassed.',
+    'ECONOMY OF MOTION:\nYour path used [NUMBER]% fewer\nmovements than average.\nAverage is taking notes.',
+    'URGENCY FILING:\nYour urgency has been noted.\nThe note was written quickly\nout of respect.',
+    'COST ANALYSIS:\nYou spent [NUMBER] seconds\nin [LOCATION].\nThe budgeted time was more.',
+    'EXPEDIENCE REPORT:\nYou prioritized completion\nover comprehension.\nComprehension has been postponed.',
+    'MINIMAL CONTACT:\nYou interacted with [NUMBER]\n[OBJECT_PLURAL].\nThe remainder is untouched\nand slightly offended.'
+  ]
+};
+
+// Archetype title pools per dominant axis
+var RECEIPT_ARCHETYPES = {
+  compliance: ['Standard Operating Procedure Enthusiast', 'Model Participant', 'Institutional Darling', 'Policy Adherence Specialist', 'The Sleepwalker', 'Approved Route Ambassador', 'Obedience Consultant', 'Queue Optimization Volunteer'],
+  chaos: ['Senior Deconstruction Specialist', 'The Deviant', 'Kinetic Restructuring Agent', 'Unauthorized Initiative Director', 'Infrastructure Liberation Officer', 'Applied Entropy Specialist', 'Percussive Maintenance Lead', 'Freelance Demolition Consultant'],
+  intuition: ['Unsanctioned Infrastructure Pioneer', 'Off-Grid Navigation Consultant', 'The Shortcutter', 'Unauthorized Route Specialist', 'Shadow Corridor Analyst', 'Premonition Technician', 'Independent Wayfinding Agent', 'Internal Compass Operator'],
+  curiosity: ['Unscheduled Inquiry Agent', 'The Auditor', 'Supplemental Reading Enthusiast', 'Sign Inspector General', 'Informational Trespasser', 'Unauthorized Attention Director', 'Archive Spelunker', 'Exhibit Misidentification Specialist'],
+  grace: ['Near-Miss Recovery Specialist', 'Kinetic Risk Assessor', 'Last-Millisecond Consultant', 'The Survivor', 'Edge-Case Resolution Expert', 'Reflexive Elegance Technician', 'Applied Composure Agent', 'Danger Choreographer'],
+  efficiency: ['Time Compression Specialist', 'Express Lane Virtuoso', 'The Expediter', 'Minimum Viable Participant', 'Speed-to-Completion Analyst', 'Redundancy Elimination Officer', 'Throughput Maximizer', 'Abbreviated Experience Coordinator']
+};
+
+// Fill template slots with word bank picks
+function fillReceiptTemplate(template, rng) {
+  return template.replace(/\[([A-Z_]+)\]/g, function(match, slot) {
+    var pool = RECEIPT_WORDS[slot];
+    if (!pool) return match;
+    return pickFromPool(pool, rng);
+  });
+}
+
+// Generate a procedural receipt text
+function generateReceiptText(behavior, runData) {
+  // Build seed from run data for determinism
+  var seed = (runData.deaths || 0) * 1000 + (runData.kills || 0) * 100 + (runData.runTime || 0) + (runData.stamps || 0) * 10000;
+  if (seed === 0) seed = Date.now();
+  var rng = receiptRandom(seed);
+
+  // Determine dominant and secondary axes
+  var axes = ['compliance', 'chaos', 'intuition', 'curiosity', 'grace', 'efficiency'];
+  var sorted = axes.slice().sort(function(a, c) { return (behavior[c] || 0) - (behavior[a] || 0); });
+  var dominant = sorted[0];
+  var secondary = sorted[1];
+
+  // Pick template from dominant pool
+  var templates = RECEIPT_TEMPLATES[dominant] || RECEIPT_TEMPLATES.grace;
+  var template = pickFromPool(templates, rng);
+
+  // Fill slots
+  var text = fillReceiptTemplate(template, rng);
+
+  // Archetype title
+  var titlePool = RECEIPT_ARCHETYPES[dominant] || RECEIPT_ARCHETYPES.grace;
+  var archetype = pickFromPool(titlePool, rng);
+
+  return {
+    text: text,
+    archetype: archetype,
+    dominant: dominant,
+    secondary: secondary
+  };
+}
+
+// Near-miss callout text generation
+function generateNearMissCallout(nearMisses, rng) {
+  if (!nearMisses || nearMisses.total === 0) return null;
+  var lines = [];
+  if (nearMisses.coyoteSaves > 0) {
+    lines.push('You jumped ' + nearMisses.coyoteSaves + ' time' + (nearMisses.coyoteSaves > 1 ? 's' : '') + ' after the ground left.');
+  }
+  if (nearMisses.hazardClose > 0) {
+    lines.push('You passed within ' + nearMisses.avgPixels + ' pixels of ' + nearMisses.hazardClose + ' hazard' + (nearMisses.hazardClose > 1 ? 's' : '') + '.');
+  }
+  if (nearMisses.jumpBufferSaves > 0) {
+    lines.push('Your reflexes saved ' + nearMisses.jumpBufferSaves + ' premature jump' + (nearMisses.jumpBufferSaves > 1 ? 's' : '') + '.');
+  }
+  if (nearMisses.wallSaves > 0) {
+    lines.push('You grabbed ' + nearMisses.wallSaves + ' wall' + (nearMisses.wallSaves > 1 ? 's' : '') + ' that should have been missed.');
+  }
+  if (lines.length === 0) {
+    lines.push('You survived ' + nearMisses.total + ' incidents by margins the system cannot officially endorse.');
+  }
+  var line = pickFromPool(lines, rng);
+  var wrappers = [
+    'NEAR-MISS REPORT: ' + line + '\nYour reflexes have been noted in your file.',
+    'SURVIVAL AUDIT: ' + line + '\nThe safety committee is reviewing your luck.',
+    'INCIDENT PROXIMITY: ' + line + '\nThe cones have filed a formal complaint.',
+    'GRACE UNDER FIRE: ' + line + '\nThis level of composure is being monitored.'
+  ];
+  return pickFromPool(wrappers, rng);
+}
+
+// Counterfactual line generation
+function generateCounterfactual(hesitations, rng) {
+  if (!hesitations || hesitations.length === 0) return null;
+  var h = pickFromPool(hesitations, rng);
+  var templates = {
+    fork: 'You hesitated at a fork for ' + (h.duration / 1000).toFixed(1) + 's.\nYour indecision has been scheduled for review.',
+    sign: 'You considered reading the sign.\nThe sign appreciated the glance.',
+    walljump: 'You nearly took the unauthorized route.\nAlmost.',
+    spin: 'You began charging a spin\nthen reconsidered.\nReconsidering has been filed.',
+    secret: 'You hovered near something hidden\nthen walked away.\nThe hidden thing felt seen.',
+    backtrack: 'You reversed direction ' + (h.count || 1) + ' time' + ((h.count || 1) > 1 ? 's' : '') + '.\nThe direction you left is still waiting.'
+  };
+  return templates[h.type] || 'You almost did something different.\nThe difference was logged.';
+}
+
+// ── R04: BEHAVIORAL GRADE (F through S) ──────────────────────
+function calculateBehavioralGrade(behavior) {
+  var total = (behavior.compliance || 0) + (behavior.intuition || 0) +
+              (behavior.curiosity || 0) + (behavior.grace || 0) +
+              (behavior.chaos || 0) + (behavior.efficiency || 0);
+  var grade, label;
+  if (total >= 71) { grade = 'S'; label = 'EXCEPTIONAL — REQUIRES FURTHER OBSERVATION'; }
+  else if (total >= 51) { grade = 'A'; label = 'EXCEEDS INSTITUTIONAL EXPECTATIONS'; }
+  else if (total >= 36) { grade = 'B'; label = 'ADEQUATE WITH RESERVATIONS'; }
+  else if (total >= 21) { grade = 'C'; label = 'MEETS MINIMUM REQUIREMENTS'; }
+  else if (total >= 11) { grade = 'D'; label = 'BELOW INSTITUTIONAL STANDARDS'; }
+  else { grade = 'F'; label = 'REQUIRES IMMEDIATE REMEDIATION'; }
+  return { grade: grade, label: label, total: total };
+}
+
+// ── R04: CORRECTIVE ACTION ITEMS ─────────────────────────────
+function generateCorrectiveItems(behavior) {
+  var axes = [
+    { key: 'compliance', label: 'COMPLIANCE', val: behavior.compliance || 0 },
+    { key: 'intuition', label: 'INTUITION', val: behavior.intuition || 0 },
+    { key: 'curiosity', label: 'CURIOSITY', val: behavior.curiosity || 0 },
+    { key: 'grace', label: 'GRACE', val: behavior.grace || 0 },
+    { key: 'chaos', label: 'CHAOS', val: behavior.chaos || 0 },
+    { key: 'efficiency', label: 'EFFICIENCY', val: behavior.efficiency || 0 }
+  ];
+  axes.sort(function(a, b) { return a.val - b.val; });
+  var items = [];
+  var templates = [
+    'CORRECTIVE ITEM: Increase [AXIS] index. Current: [VAL]. Target: [TARGET].',
+    'MANDATORY IMPROVEMENT: [AXIS] score below institutional minimum. Remediation required.',
+    'NOTICE: [AXIS] deficiency detected (score: [VAL]). Supplemental enrollment recommended.'
+  ];
+  for (var i = 0; i < Math.min(3, axes.length); i++) {
+    if (axes[i].val >= 8) break; // only flag weak axes
+    var t = templates[i % templates.length];
+    t = t.replace(/\[AXIS\]/g, axes[i].label);
+    t = t.replace(/\[VAL\]/g, String(axes[i].val));
+    t = t.replace(/\[TARGET\]/g, String(Math.max(8, axes[i].val + 6)));
+    items.push(t);
+  }
+  return items;
+}
+
+// ── R04: STREAK-SPECIFIC RECEIPT LINES ───────────────────────
+function getStreakReceiptLine(runCount) {
+  if (runCount >= 10) return 'TENTH CONSECUTIVE ENROLLMENT. THE BUREAU IS GROWING CONCERNED ABOUT YOUR ENTHUSIASM.';
+  if (runCount >= 5) return 'FIVE ENROLLMENTS. YOUR PERSISTENCE HAS BEEN ESCALATED TO THE ADVISORY BOARD.';
+  if (runCount >= 3) return 'THIS IS YOUR ' + runCount + 'RD CONSECUTIVE ENROLLMENT. REPEATED PARTICIPATION HAS BEEN FLAGGED.';
+  return null;
+}
+
+// ── R04: BEHAVIOR CARRYOVER MATH ─────────────────────────────
+function applyBehaviorCarryover(behavior, ratio) {
+  var result = {};
+  var keys = ['compliance', 'intuition', 'curiosity', 'grace', 'chaos', 'efficiency'];
+  for (var i = 0; i < keys.length; i++) {
+    result[keys[i]] = Math.floor((behavior[keys[i]] || 0) * ratio);
+  }
+  return result;
+}
+
+// ── R07: TRAIT FORECLOSURE — POLICY FLAG SYSTEM ─────────────
+// The institution reacts to your behavior by applying policies to the next world.
+var POLICY_FLAGS = {
+  compliance: {
+    name: 'INSTITUTIONAL CONFIDENCE PROTOCOL',
+    effects: ['safe_paths_extended', 'surveillance_increased', 'shortcuts_removed'],
+    description: 'Your obedience has been rewarded with additional oversight.'
+  },
+  chaos: {
+    name: 'INCIDENT PREVENTION DIRECTIVE',
+    effects: ['breakables_reinforced', 'response_teams_added', 'emergency_routes_opened'],
+    description: 'Your enthusiasm has triggered precautionary measures.'
+  },
+  intuition: {
+    name: 'NAVIGATION STANDARDIZATION ORDER',
+    effects: ['signage_unreliable', 'unofficial_patterns_added', 'main_paths_monitored'],
+    description: 'Your independence has necessitated route corrections.'
+  },
+  curiosity: {
+    name: 'INFORMATION CONTAINMENT MEMO',
+    effects: ['signs_censored', 'secret_routes_relocated', 'deeper_vents_added'],
+    description: 'Your attentiveness has activated information protocols.'
+  },
+  grace: {
+    name: 'SAFETY MARGIN REDUCTION NOTICE',
+    effects: ['platforms_narrowed', 'rescue_surfaces_removed', 'precision_geometry_added'],
+    description: 'Your composure is being tested under adjusted conditions.'
+  },
+  efficiency: {
+    name: 'PACE REGULATION ADVISORY',
+    effects: ['detours_removed', 'denial_gates_stricter', 'shortcut_risk_increased'],
+    description: 'Your speed has been noted. Adjustments have been made.'
+  }
+};
+
+// Determine active policies based on dominant behavior from previous world
+function determinePolicies(behavior) {
+  var axes = ['compliance', 'intuition', 'curiosity', 'grace', 'chaos', 'efficiency'];
+  var sorted = axes.slice().sort(function(a, b) { return (behavior[b] || 0) - (behavior[a] || 0); });
+  var dominant = sorted[0];
+  var secondary = sorted[1];
+  var policies = [dominant];
+  // Add secondary policy if it's close to dominant (within 40%)
+  if ((behavior[secondary] || 0) > (behavior[dominant] || 1) * 0.6) {
+    policies.push(secondary);
+  }
+  return policies;
+}
+
+// Store policies for next world
+function setPoliciesForNextWorld(behavior) {
+  var policies = determinePolicies(behavior);
+  var policyData = {
+    activeFlags: policies,
+    names: [],
+    effects: []
+  };
+  for (var i = 0; i < policies.length; i++) {
+    var flag = POLICY_FLAGS[policies[i]];
+    if (flag) {
+      policyData.names.push(flag.name);
+      for (var j = 0; j < flag.effects.length; j++) {
+        policyData.effects.push(flag.effects[j]);
+      }
+    }
+  }
+  window._cactusEdPolicyFlags = policyData;
+  // Also store in localStorage for persistence
+  try { localStorage.setItem('cactusEd_policies_v1', JSON.stringify(policyData)); } catch(e) {}
+  return policyData;
+}
+
+// Load policies (from window or localStorage)
+function getActivePolicies() {
+  if (window._cactusEdPolicyFlags) return window._cactusEdPolicyFlags;
+  try {
+    var raw = localStorage.getItem('cactusEd_policies_v1');
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      window._cactusEdPolicyFlags = parsed;
+      return parsed;
+    }
+  } catch(e) {}
+  return null;
+}
+
+// Check if a specific effect is active
+function isPolicyEffect(effectName) {
+  var policies = getActivePolicies();
+  if (!policies || !policies.effects) return false;
+  return policies.effects.indexOf(effectName) >= 0;
+}
+
+// Generate policy effectiveness review text for receipts
+function generatePolicyReview(policies, behavior) {
+  if (!policies || !policies.activeFlags) return null;
+  var lines = ['POLICY EFFECTIVENESS REVIEW', '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500'];
+  for (var i = 0; i < policies.activeFlags.length; i++) {
+    var axis = policies.activeFlags[i];
+    var flag = POLICY_FLAGS[axis];
+    if (!flag) continue;
+    var axisVal = behavior[axis] || 0;
+    var effectiveness;
+    // If the player STILL shows high values in the corrected axis, policy was ineffective
+    if (axisVal >= 15) effectiveness = 'INEFFECTIVE';
+    else if (axisVal >= 8) effectiveness = 'PARTIALLY EFFECTIVE';
+    else effectiveness = 'EFFECTIVE';
+    lines.push(flag.name + ': ' + effectiveness);
+    var commentPool = {
+      INEFFECTIVE: [
+        '  Subject demonstrated continued ' + axis + ' tendencies\n  despite institutional adjustments.',
+        '  Correction protocols failed to modify behavior.\n  Escalation recommended.',
+        '  The subject appears immune to this intervention.'
+      ],
+      'PARTIALLY EFFECTIVE': [
+        '  Some behavioral modification observed.\n  Continued monitoring authorized.',
+        '  Subject showed reduced but persistent ' + axis + '.\n  Protocol extended.',
+        '  Marginal improvement detected. Further review scheduled.'
+      ],
+      EFFECTIVE: [
+        '  Behavioral correction successful.\n  Subject compliance within parameters.',
+        '  The intervention appears to have worked.\n  This is unexpected.',
+        '  Protocol achieved desired outcome.\n  The system is functioning as intended.'
+      ]
+    };
+    var pool = commentPool[effectiveness];
+    lines.push(pool[Math.floor(Math.random() * pool.length)]);
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+
+// ── R07: FAKE-LEFT BRANCH MEMORY ─────────────────────────────
+var FAKE_LEFT = {
+  _key: 'cactusEd_fakeLeft_v1',
+  getVisits: function() {
+    try {
+      var raw = localStorage.getItem(FAKE_LEFT._key);
+      return raw ? parseInt(raw, 10) : 0;
+    } catch(e) { return 0; }
+  },
+  recordVisit: function() {
+    var count = FAKE_LEFT.getVisits() + 1;
+    try { localStorage.setItem(FAKE_LEFT._key, String(count)); } catch(e) {}
+    return count;
+  }
+};
+
+// ── R08: RETENTION SYSTEMS ───────────────────────────────────
+
+// ── DAILY ENROLLMENT CHALLENGE ──
+var DAILY = {
+  _key: 'cactusEd_daily_v1',
+  // Generate deterministic seed from date
+  getSeed: function() { return new Date().toISOString().slice(0, 10); },
+  // Modifier pool
+  MODIFIERS: [
+    { name: 'GRAVITATIONAL AUDIT', desc: 'All gravitational parameters are under review today.', effect: 'low_gravity' },
+    { name: 'EFFICIENCY MANDATE', desc: 'Accelerated processing authorized for all personnel.', effect: 'speed_day' },
+    { name: 'BUDGET CUTS', desc: 'Resource allocation has been temporarily reduced.', effect: 'fragile_day' },
+    { name: 'WELLNESS WEEK', desc: 'All conflict has been suspended for therapeutic purposes.', effect: 'pacifist_day' },
+    { name: 'SMOKING BAN', desc: 'Nicotine propulsion has been prohibited by committee.', effect: 'no_copter' },
+    { name: 'INITIATIVE BONUS', desc: 'Proactive engagement is doubly rewarded today.', effect: 'combo_day' },
+    { name: 'EXPEDITED PROCESSING', desc: 'Par times are now posted. Speed is encouraged.', effect: 'speed_run' },
+    { name: 'PERSONNEL ENLARGEMENT', desc: 'Dimensional adjustments have been applied to all staff.', effect: 'big_ed' },
+    { name: 'OVERTIME PROTOCOL', desc: 'Extended operational hours are in effect.', effect: 'extra_health' },
+    { name: 'PAPER REDUCTION ACT', desc: 'Some documentation has been temporarily removed.', effect: 'fewer_signs' },
+    { name: 'DOUBLE SHIFT', desc: 'All zones require additional verification.', effect: 'double_enemies' },
+    { name: 'FIELD TRIP', desc: 'Non-standard routes have been authorized for today only.', effect: 'shortcuts_open' },
+    { name: 'MORALE INJECTION', desc: 'Institutional happiness metrics are being boosted.', effect: 'extra_particles' },
+    { name: 'COMPLIANCE REVIEW', desc: 'Additional auditing is in effect.', effect: 'extra_auditors' },
+    { name: 'RECALIBRATION DAY', desc: 'All systems are being gently adjusted.', effect: 'random_gravity' }
+  ],
+  // Get today's modifier deterministically
+  getToday: function() {
+    var seed = DAILY.getSeed();
+    var hash = 0;
+    for (var i = 0; i < seed.length; i++) { hash = ((hash << 5) - hash) + seed.charCodeAt(i); hash |= 0; }
+    return DAILY.MODIFIERS[Math.abs(hash) % DAILY.MODIFIERS.length];
+  },
+  // Track completion
+  getStreak: function() {
+    try {
+      var raw = localStorage.getItem(DAILY._key);
+      if (!raw) return { streak: 0, lastDate: '' };
+      return JSON.parse(raw);
+    } catch(e) { return { streak: 0, lastDate: '' }; }
+  },
+  recordCompletion: function() {
+    var today = DAILY.getSeed();
+    var data = DAILY.getStreak();
+    // Check if yesterday was completed for streak
+    var yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    var yStr = yesterday.toISOString().slice(0, 10);
+    if (data.lastDate === yStr) {
+      data.streak++;
+    } else if (data.lastDate !== today) {
+      data.streak = 1;
+    }
+    data.lastDate = today;
+    try { localStorage.setItem(DAILY._key, JSON.stringify(data)); } catch(e) {}
+    return data;
+  }
+};
+
+// ── RECEIPT CABINET (File Cabinet Collection) ──
+var CABINET = {
+  _key: 'cactusEd_cabinet_v1',
+  save: function(receipt) {
+    var cabinet = CABINET.load();
+    cabinet.push({
+      date: new Date().toISOString().slice(0, 10),
+      world: receipt.world || 1,
+      archetype: receipt.archetype || 'UNCLASSIFIED',
+      grade: receipt.grade || '?',
+      dominant: receipt.dominant || 'compliance',
+      quote: (receipt.text || '').substring(0, 80),
+      stamp: receipt.stamp || 'FILED',
+      clerical: Math.random() < 0.02 // 2% chance of CLERICAL ERROR stamp
+    });
+    if (cabinet.length > 100) cabinet = cabinet.slice(-100);
+    try { localStorage.setItem(CABINET._key, JSON.stringify(cabinet)); } catch(e) {}
+  },
+  load: function() {
+    try {
+      var raw = localStorage.getItem(CABINET._key);
+      return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+  },
+  getStats: function() {
+    var cab = CABINET.load();
+    var archetypes = {};
+    var sRanks = {};
+    for (var i = 0; i < cab.length; i++) {
+      archetypes[cab[i].archetype] = true;
+      if (cab[i].grade === 'S') sRanks[cab[i].dominant] = true;
+    }
+    return {
+      total: cab.length,
+      uniqueArchetypes: Object.keys(archetypes).length,
+      sRankAxes: Object.keys(sRanks).length,
+      completeness: Math.min(100, Math.floor((Object.keys(archetypes).length / 48) * 100 + (Object.keys(sRanks).length / 6) * 15))
+    };
+  }
+};
+
+// ── DEPARTMENT ASSIGNMENT ──
+var DEPARTMENT = {
+  _key: 'cactusEd_dept_v1',
+  DEPTS: {
+    efficiency: { name: 'OPERATIONS', perk: 'Par times displayed', stationery: 'minimal' },
+    curiosity: { name: 'RESEARCH', perk: 'Secret location hints', stationery: 'footnotes' },
+    compliance: { name: 'COMPLIANCE', perk: 'Extra checkpoints', stationery: 'gold_border' },
+    grace: { name: 'WELLNESS', perk: 'Extended coyote time', stationery: 'pastel' },
+    chaos: { name: 'INCIDENT RESPONSE', perk: 'Combo starts at x2', stationery: 'red_stamps' },
+    intuition: { name: 'EXPEDITE', perk: 'Secret paths glow', stationery: 'redacted' }
+  },
+  load: function() {
+    try {
+      var raw = localStorage.getItem(DEPARTMENT._key);
+      return raw ? JSON.parse(raw) : { dept: null, history: [], runs: 0 };
+    } catch(e) { return { dept: null, history: [], runs: 0 }; }
+  },
+  update: function(behavior) {
+    var data = DEPARTMENT.load();
+    data.runs++;
+    // Find dominant axis
+    var axes = ['compliance', 'intuition', 'curiosity', 'grace', 'chaos', 'efficiency'];
+    var dom = 'compliance'; var maxV = 0;
+    for (var i = 0; i < axes.length; i++) {
+      if ((behavior[axes[i]] || 0) > maxV) { maxV = behavior[axes[i]]; dom = axes[i]; }
+    }
+    data.history.push(dom);
+    if (data.history.length > 20) data.history = data.history.slice(-20);
+    // Assign department after 5+ runs
+    if (data.runs >= 5) {
+      var counts = {};
+      for (var j = 0; j < data.history.length; j++) {
+        counts[data.history[j]] = (counts[data.history[j]] || 0) + 1;
+      }
+      var topAxis = 'compliance'; var topCount = 0;
+      for (var k in counts) {
+        if (counts.hasOwnProperty(k) && counts[k] > topCount) { topCount = counts[k]; topAxis = k; }
+      }
+      var newDept = DEPARTMENT.DEPTS[topAxis];
+      if (newDept && data.dept !== newDept.name) {
+        data.reassignment = data.dept ? true : false;
+        data.dept = newDept.name;
+        data.deptAxis = topAxis;
+      }
+    }
+    try { localStorage.setItem(DEPARTMENT._key, JSON.stringify(data)); } catch(e) {}
+    return data;
+  }
+};
+
+// ── WAIVER PUNCHCARD ──
+var PUNCHCARD = {
+  _key: 'cactusEd_punch_v1',
+  MAX: 8,
+  load: function() {
+    try {
+      var raw = localStorage.getItem(PUNCHCARD._key);
+      return raw ? JSON.parse(raw) : { punches: 2, redeemed: false }; // starts with 2 courtesy
+    } catch(e) { return { punches: 2, redeemed: false }; }
+  },
+  punch: function(reason) {
+    var data = PUNCHCARD.load();
+    if (data.punches < PUNCHCARD.MAX) data.punches++;
+    try { localStorage.setItem(PUNCHCARD._key, JSON.stringify(data)); } catch(e) {}
+    return data;
+  },
+  redeem: function() {
+    var data = PUNCHCARD.load();
+    if (data.punches >= PUNCHCARD.MAX) {
+      data.punches = 2; // reset with courtesy
+      data.redeemed = true;
+      try { localStorage.setItem(PUNCHCARD._key, JSON.stringify(data)); } catch(e) {}
+      return true;
+    }
+    return false;
+  },
+  isReady: function() { return PUNCHCARD.load().punches >= PUNCHCARD.MAX; }
+};
+
+// ── BEHAVIORAL DRIFT TRACKING ──
+var DRIFT = {
+  _key: 'cactusEd_drift_v1',
+  record: function(behavior) {
+    var data = DRIFT.load();
+    var entry = {};
+    var axes = ['compliance', 'intuition', 'curiosity', 'grace', 'chaos', 'efficiency'];
+    var total = 0;
+    for (var i = 0; i < axes.length; i++) total += (behavior[axes[i]] || 0);
+    if (total === 0) total = 1;
+    for (var j = 0; j < axes.length; j++) {
+      entry[axes[j]] = Math.round(((behavior[axes[j]] || 0) / total) * 100);
+    }
+    data.push(entry);
+    if (data.length > 20) data = data.slice(-20);
+    try { localStorage.setItem(DRIFT._key, JSON.stringify(data)); } catch(e) {}
+    return data;
+  },
+  load: function() {
+    try {
+      var raw = localStorage.getItem(DRIFT._key);
+      return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+  },
+  analyze: function() {
+    var data = DRIFT.load();
+    if (data.length < 5) return null;
+    var first = data[0]; var last = data[data.length - 1];
+    var axes = ['compliance', 'intuition', 'curiosity', 'grace', 'chaos', 'efficiency'];
+    var biggestShift = ''; var biggestDelta = 0; var shiftDir = 0;
+    for (var i = 0; i < axes.length; i++) {
+      var delta = (last[axes[i]] || 0) - (first[axes[i]] || 0);
+      if (Math.abs(delta) > biggestDelta) {
+        biggestDelta = Math.abs(delta);
+        biggestShift = axes[i];
+        shiftDir = delta;
+      }
+    }
+    if (biggestDelta < 5) return { type: 'stable', axis: '', narrative: 'BEHAVIORAL CONSISTENCY CONFIRMED \u2014 PREDICTION MODELS UPDATED.' };
+    var narratives = {
+      chaos: shiftDir > 0 ? 'RADICALIZATION TRAJECTORY DETECTED. MONITORING INCREASED.' : 'DE-ESCALATION IN PROGRESS. INCIDENT REPORTS DECLINING.',
+      compliance: shiftDir > 0 ? 'BEHAVIORAL NORMALIZATION IN PROGRESS. IDEAL OUTCOME.' : 'COMPLIANCE EROSION DETECTED. REVIEW RECOMMENDED.',
+      curiosity: shiftDir > 0 ? 'UNAUTHORIZED INTEREST ESCALATION. CONTAINMENT ADVISED.' : 'CURIOSITY SUPPRESSION SUCCESSFUL. INFORMATION SECURE.',
+      grace: shiftDir > 0 ? 'COMPOSURE INDEX RISING. SAFETY MARGINS BEING TESTED.' : 'GRACE DEGRADATION NOTED. ADDITIONAL SURFACES RECOMMENDED.',
+      efficiency: shiftDir > 0 ? 'PACE ACCELERATION CONFIRMED. SPEED PROTOCOLS ENGAGED.' : 'EFFICIENCY DECLINE. DETOUR FREQUENCY INCREASING.',
+      intuition: shiftDir > 0 ? 'INDEPENDENT NAVIGATION ESCALATION. SIGNAGE UPDATES PENDING.' : 'ROUTE COMPLIANCE IMPROVING. STANDARDIZATION EFFECTIVE.'
+    };
+    return {
+      type: 'shift',
+      axis: biggestShift,
+      delta: biggestDelta,
+      direction: shiftDir > 0 ? 'rising' : 'falling',
+      narrative: narratives[biggestShift] || 'PROFILE INSTABILITY \u2014 CLASSIFICATION SUSPENDED.',
+      first: first,
+      last: last
+    };
+  }
+};
+
+// ── R09: SURPRISE & DELIGHT SYSTEMS ─────────────────────────
+
+// Fourth Wall Receipt lines (triggered by total run count)
+function getFourthWallLine(totalRuns) {
+  if (totalRuns >= 50) return 'THE INSTITUTION APPRECIATES YOUR DEDICATION. A REPRESENTATIVE WILL VISIT SHORTLY.';
+  if (totalRuns >= 30) return 'YOUR ENROLLMENT WAS NEVER VOLUNTARY.';
+  if (totalRuns >= 25) return 'WE KNOW ABOUT THE OTHER BROWSER TAB.';
+  if (totalRuns >= 20) return 'SUBJECT HAS EXCEEDED ALL INSTITUTIONAL EXPECTATIONS. RECOMMEND: RECLASSIFICATION AS STAFF.';
+  if (totalRuns >= 15) return 'WE HAVE ACCESSED YOUR CLIPBOARD CONTENTS.';
+  if (totalRuns >= 10) return 'YOUR DEVICE IDENTIFIER HAS BEEN LOGGED.';
+  if (totalRuns >= 5) return 'WE NOTICE YOU HAVE COMPLETED ORIENTATION ' + totalRuns + ' TIMES. MOST SUBJECTS MOVE ON. WHY HAVEN\'T YOU?';
+  return null;
+}
+
+// Clerical Error Jackpot (5% chance per run)
+function checkClericalError(runData) {
+  var seed = (runData.deaths || 0) * 7 + (runData.kills || 0) * 13 + (runData.runTime || 0) * 3 + (runData.stamps || 0) * 17;
+  return (seed % 20) === 0; // ~5%
+}
+
+// Check for perfect compliance (blank receipt trigger)
+function isBlankReceiptEarned(behavior) {
+  var total = (behavior.compliance || 0) + (behavior.intuition || 0) + (behavior.curiosity || 0) +
+              (behavior.grace || 0) + (behavior.chaos || 0) + (behavior.efficiency || 0);
+  if (total === 0) return false;
+  return ((behavior.compliance || 0) / total) >= 0.95;
+}
+
+// ── R10: CONTENT EXPANSION SYSTEMS ───────────────────────────
+
+// ── CASE SEED SYSTEM ──
+// Every run gets a deterministic Case Number that controls random elements
+var CASE_SEED = {
+  generate: function(runCount, behavior) {
+    var date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    var bHash = '';
+    var axes = ['compliance', 'intuition', 'curiosity', 'grace', 'chaos', 'efficiency'];
+    var maxVal = 0; var maxAxis = 'CO';
+    for (var i = 0; i < axes.length; i++) {
+      if ((behavior[axes[i]] || 0) > maxVal) {
+        maxVal = behavior[axes[i]];
+        maxAxis = axes[i].substring(0, 2).toUpperCase();
+      }
+    }
+    return 'CASE-' + date + '-' + (runCount || 1) + '-' + maxAxis;
+  },
+  // Seeded random from case string
+  rng: function(caseStr) {
+    var hash = 0;
+    for (var i = 0; i < caseStr.length; i++) {
+      hash = ((hash << 5) - hash) + caseStr.charCodeAt(i); hash |= 0;
+    }
+    var seed = Math.abs(hash);
+    return function() {
+      seed = (seed * 16807 + 0) % 2147483647;
+      return (seed - 1) / 2147483646;
+    };
+  }
+};
+
+// ── MOOD ROTATIONS ──
+// Each world can load into an institutional "mood" affecting aesthetics + one rule
+var MOOD_POOL = [
+  { name: 'STANDARD OPERATIONS', effect: 'none', desc: 'Normal institutional parameters.' },
+  { name: 'BUDGET CUTS', effect: 'dim', desc: 'Resource allocation has been reduced.', rule: 'fewer_collectibles' },
+  { name: 'WELLNESS WEEK', effect: 'soft', desc: 'Therapeutic adjustments in effect.', rule: 'slower_enemies' },
+  { name: 'STANDARDIZATION DRIVE', effect: 'sterile', desc: 'Uniformity protocols engaged.', rule: 'uniform_platforms' },
+  { name: 'EMERGENCY DRILL', effect: 'alarm', desc: 'Evacuation timing is being tested.', rule: 'timed_zones' },
+  { name: 'INSPECTION DAY', effect: 'clean', desc: 'Additional oversight is present.', rule: 'extra_auditors' },
+  { name: 'CASUAL FRIDAY', effect: 'bright', desc: 'Relaxed operational parameters.', rule: 'faster_ed' }
+];
+
+function getMoodForCase(caseStr) {
+  var rng = CASE_SEED.rng(caseStr);
+  return MOOD_POOL[Math.floor(rng() * MOOD_POOL.length)];
+}
+
+// ── BEHAVIORAL REMIX LABELS ──
+var REMIX_LABELS = {
+  chaos: 'DISCIPLINARY EDITION',
+  efficiency: 'EXPRESS EDITION',
+  curiosity: 'RESEARCH EDITION',
+  compliance: 'STANDARD EDITION',
+  grace: 'PRECISION EDITION',
+  intuition: 'CLASSIFIED EDITION'
+};
+
+function getRemixLabel(behavior) {
+  var axes = ['compliance', 'intuition', 'curiosity', 'grace', 'chaos', 'efficiency'];
+  var dom = 'compliance'; var maxV = 0;
+  for (var i = 0; i < axes.length; i++) {
+    if ((behavior[axes[i]] || 0) > maxV) { maxV = behavior[axes[i]]; dom = axes[i]; }
+  }
+  return REMIX_LABELS[dom] || 'STANDARD EDITION';
+}
+
+// ── R05: SHAREABLE RECEIPT CARD SYSTEM ───────────────────────
+// Generates a shareable receipt card as a canvas image (1080x1080 or 1080x1920)
+// All rendering is client-side via CanvasRenderingContext2D
+
+// Behavioral emoji bar for text sharing (6 chars, one per axis)
+function generateBehavioralEmoji(behavior) {
+  var axes = ['compliance', 'intuition', 'curiosity', 'chaos', 'grace', 'efficiency'];
+  var emojis = [];
+  // Normalize: find max across all axes for relative scaling
+  var maxVal = 1;
+  for (var i = 0; i < axes.length; i++) {
+    if ((behavior[axes[i]] || 0) > maxVal) maxVal = behavior[axes[i]];
+  }
+  for (var j = 0; j < axes.length; j++) {
+    var pct = maxVal > 0 ? ((behavior[axes[j]] || 0) / maxVal) * 100 : 0;
+    if (pct > 80) emojis.push('\uD83D\uDFEA');       // purple
+    else if (pct > 60) emojis.push('\uD83D\uDFE5');   // red
+    else if (pct > 40) emojis.push('\uD83D\uDFE7');   // orange
+    else if (pct > 20) emojis.push('\uD83D\uDFE8');   // yellow
+    else emojis.push('\u2B1C');                        // white
+  }
+  return emojis.join('');
+}
+
+// Draw a 6-axis radar chart onto a canvas context
+function drawRadarChart(ctx, cx, cy, radius, behavior, maxVal) {
+  var axes = ['compliance', 'intuition', 'curiosity', 'chaos', 'grace', 'efficiency'];
+  var labels = ['COMP', 'INTU', 'CURI', 'CHAOS', 'GRACE', 'EFF'];
+  var n = 6;
+  var angleStep = (Math.PI * 2) / n;
+  var startAngle = -Math.PI / 2; // top
+
+  // Normalize max
+  if (!maxVal || maxVal < 1) {
+    maxVal = 1;
+    for (var mi = 0; mi < axes.length; mi++) {
+      if ((behavior[axes[mi]] || 0) > maxVal) maxVal = behavior[axes[mi]];
+    }
+    maxVal = Math.max(maxVal, 10); // minimum scale
+  }
+
+  // Grid rings at 25%, 50%, 75%, 100%
+  var rings = [0.25, 0.5, 0.75, 1.0];
+  ctx.strokeStyle = 'rgba(26, 10, 46, 0.15)';
+  ctx.lineWidth = 1;
+  for (var ri = 0; ri < rings.length; ri++) {
+    ctx.beginPath();
+    for (var gi = 0; gi < n; gi++) {
+      var gAngle = startAngle + gi * angleStep;
+      var gx = cx + Math.cos(gAngle) * radius * rings[ri];
+      var gy = cy + Math.sin(gAngle) * radius * rings[ri];
+      if (gi === 0) ctx.moveTo(gx, gy);
+      else ctx.lineTo(gx, gy);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  // Axis lines
+  ctx.strokeStyle = 'rgba(26, 10, 46, 0.2)';
+  for (var ai = 0; ai < n; ai++) {
+    var aAngle = startAngle + ai * angleStep;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(aAngle) * radius, cy + Math.sin(aAngle) * radius);
+    ctx.stroke();
+  }
+
+  // Player profile polygon (filled)
+  ctx.beginPath();
+  for (var pi = 0; pi < n; pi++) {
+    var pAngle = startAngle + pi * angleStep;
+    var pVal = Math.min((behavior[axes[pi]] || 0) / maxVal, 1);
+    var px = cx + Math.cos(pAngle) * radius * pVal;
+    var py = cy + Math.sin(pAngle) * radius * pVal;
+    if (pi === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(26, 10, 46, 0.25)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(26, 10, 46, 0.7)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Axis value dots
+  for (var di = 0; di < n; di++) {
+    var dAngle = startAngle + di * angleStep;
+    var dVal = Math.min((behavior[axes[di]] || 0) / maxVal, 1);
+    var dx = cx + Math.cos(dAngle) * radius * dVal;
+    var dy = cy + Math.sin(dAngle) * radius * dVal;
+    ctx.beginPath();
+    ctx.arc(dx, dy, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#1a0a2e';
+    ctx.fill();
+  }
+
+  // Labels
+  ctx.fillStyle = '#1a0a2e';
+  ctx.font = '20px Courier New, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (var li = 0; li < n; li++) {
+    var lAngle = startAngle + li * angleStep;
+    var lx = cx + Math.cos(lAngle) * (radius + 30);
+    var ly = cy + Math.sin(lAngle) * (radius + 30);
+    ctx.fillText(labels[li], lx, ly);
+  }
+}
+
+// Generate a shareable receipt card image
+// mode: 'square' (1080x1080) or 'story' (1080x1920)
+// data: { archetype, grade, gradeLabel, behavior, receiptText, dominant, secondary, stats, worldName, gameUrl }
+function renderShareableReceipt(mode, data) {
+  var w = 1080;
+  var h = mode === 'story' ? 1920 : 1080;
+  var canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  var ctx = canvas.getContext('2d');
+
+  // Background: institutional cream
+  ctx.fillStyle = '#f5f0dc';
+  ctx.fillRect(0, 0, w, h);
+
+  // Subtle grid pattern
+  ctx.strokeStyle = 'rgba(26, 10, 46, 0.04)';
+  ctx.lineWidth = 1;
+  for (var gx = 0; gx < w; gx += 40) {
+    ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
+  }
+  for (var gy = 0; gy < h; gy += 40) {
+    ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+  }
+
+  // Header bar
+  ctx.fillStyle = '#1a0a2e';
+  ctx.fillRect(0, 0, w, 80);
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 28px Courier New, monospace';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText("CACTUS ED'S HAPPIEST PLACE", 40, 40);
+
+  // Subtitle bar
+  ctx.fillStyle = 'rgba(26, 10, 46, 0.08)';
+  ctx.fillRect(0, 80, w, 50);
+  ctx.fillStyle = '#1a0a2e';
+  ctx.font = '22px Courier New, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('\u2500\u2500\u2500 BEHAVIORAL ASSESSMENT \u2500\u2500\u2500', w / 2, 105);
+
+  // World name
+  ctx.font = '20px Courier New, monospace';
+  ctx.fillStyle = '#666666';
+  ctx.fillText(data.worldName || 'WORLD 1: HAPPY PLACE COMMONS', w / 2, 155);
+
+  // Classification box
+  var boxY = mode === 'story' ? 190 : 180;
+  var boxH = mode === 'story' ? 180 : 160;
+  ctx.fillStyle = 'rgba(26, 10, 46, 0.05)';
+  ctx.fillRect(60, boxY, w - 120, boxH);
+  ctx.strokeStyle = 'rgba(26, 10, 46, 0.2)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(60, boxY, w - 120, boxH);
+
+  ctx.fillStyle = '#888888';
+  ctx.font = '16px Courier New, monospace';
+  ctx.fillText('CLASSIFICATION:', w / 2, boxY + 30);
+
+  ctx.fillStyle = '#1a0a2e';
+  ctx.font = 'bold 32px Courier New, monospace';
+  ctx.fillText((data.archetype || 'UNCLASSIFIED').toUpperCase(), w / 2, boxY + 70);
+
+  // Grade circle
+  var gradeColor = data.grade === 'S' ? '#ffd700' : data.grade === 'A' ? '#44ff88' : data.grade === 'B' ? '#88ccff' : '#cc8844';
+  ctx.beginPath();
+  ctx.arc(w / 2, boxY + 120, 30, 0, Math.PI * 2);
+  ctx.fillStyle = gradeColor;
+  ctx.fill();
+  ctx.strokeStyle = '#1a0a2e';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#1a0a2e';
+  ctx.font = 'bold 36px Courier New, monospace';
+  ctx.fillText(data.grade || '?', w / 2, boxY + 122);
+
+  // Radar chart
+  var chartY = mode === 'story' ? 560 : 500;
+  var chartR = mode === 'story' ? 160 : 130;
+  drawRadarChart(ctx, w / 2, chartY, chartR, data.behavior, 0);
+
+  // Divider
+  var quoteY = mode === 'story' ? 780 : 680;
+  ctx.strokeStyle = 'rgba(26, 10, 46, 0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(80, quoteY); ctx.lineTo(w - 80, quoteY); ctx.stroke();
+
+  // Receipt quote (first 120 chars)
+  var quoteText = data.receiptText || '';
+  if (quoteText.length > 120) quoteText = quoteText.substring(0, 117) + '...';
+  ctx.fillStyle = '#1a0a2e';
+  ctx.font = 'italic 18px Courier New, monospace';
+  // Word wrap the quote
+  var quoteWords = quoteText.split(' ');
+  var quoteLine = '';
+  var quoteLineY = quoteY + 30;
+  var quoteMaxW = w - 160;
+  for (var qi = 0; qi < quoteWords.length; qi++) {
+    var testLine = quoteLine + (quoteLine ? ' ' : '') + quoteWords[qi];
+    if (ctx.measureText(testLine).width > quoteMaxW && quoteLine) {
+      ctx.fillText('"' + quoteLine + '"', w / 2, quoteLineY);
+      quoteLine = quoteWords[qi];
+      quoteLineY += 26;
+    } else {
+      quoteLine = testLine;
+    }
+  }
+  if (quoteLine) {
+    ctx.fillText('"' + quoteLine + '"', w / 2, quoteLineY);
+  }
+
+  // Divider
+  var statsY = mode === 'story' ? quoteLineY + 50 : quoteLineY + 40;
+  ctx.beginPath(); ctx.moveTo(80, statsY); ctx.lineTo(w - 80, statsY); ctx.stroke();
+
+  // Stats line
+  var stats = data.stats || {};
+  var statsText = 'INCIDENTS: ' + (stats.deaths || 0) + '  |  STAMPS: ' + (stats.stamps || 0) + '/4';
+  var statsText2 = 'INSERTS: ' + (stats.brochures || 0) + '/5  |  ENROLLMENT: #' + (stats.runNumber || 1);
+  ctx.font = '18px Courier New, monospace';
+  ctx.fillStyle = '#666666';
+  ctx.fillText(statsText, w / 2, statsY + 30);
+  ctx.fillText(statsText2, w / 2, statsY + 56);
+
+  // "PROCESSED" stamp overlay
+  ctx.save();
+  ctx.translate(w / 2 + 180, mode === 'story' ? 450 : 400);
+  ctx.rotate(-0.18);
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = '#cc2222';
+  ctx.fillRect(-70, -22, 140, 44);
+  ctx.strokeStyle = '#cc2222';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(-68, -20, 136, 40);
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = '#cc2222';
+  ctx.font = 'bold 28px Courier New, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('PROCESSED', 0, 0);
+  ctx.restore();
+  ctx.textAlign = 'center';
+
+  // Footer
+  var footerY = mode === 'story' ? h - 80 : h - 50;
+  ctx.strokeStyle = 'rgba(26, 10, 46, 0.3)';
+  ctx.beginPath(); ctx.moveTo(80, footerY - 20); ctx.lineTo(w - 80, footerY - 20); ctx.stroke();
+  ctx.fillStyle = '#1a0a2e';
+  ctx.font = '16px Courier New, monospace';
+  ctx.fillText('PRE-ENROLL NOW: ' + (data.gameUrl || 'cactused.com'), w / 2, footerY + 10);
+
+  // Gold seal in bottom corner
+  ctx.beginPath();
+  ctx.arc(w - 60, footerY + 10, 20, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(w - 60, footerY + 10, 10, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
+  ctx.fill();
+
+  return canvas;
+}
+
+// Generate clipboard text version of receipt
+function generateReceiptClipboardText(data) {
+  var emojiBar = generateBehavioralEmoji(data.behavior);
+  var lines = [
+    "CACTUS ED'S HAPPIEST PLACE",
+    '\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550',
+    'BEHAVIORAL ASSESSMENT',
+    data.worldName || 'World 1: Happy Place Commons',
+    '',
+    'CLASSIFICATION: ' + (data.archetype || 'UNCLASSIFIED').toUpperCase() + ' [' + (data.grade || '?') + ']',
+    '',
+    emojiBar,
+    '',
+    '"' + (data.receiptText || '').substring(0, 100) + '"',
+    '',
+    'INCIDENTS: ' + (data.stats.deaths || 0) + ' | STAMPS: ' + (data.stats.stamps || 0) + '/4',
+    '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500',
+    'PRE-ENROLL NOW: ' + (data.gameUrl || 'cactused.com')
+  ];
+  return lines.join('\n');
+}
+
+// Download a canvas as PNG
+function downloadCanvasAsPNG(canvas, filename) {
+  var link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/png');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Share via navigator.share() with fallback to download
+function shareReceiptCard(canvas, textVersion, filename) {
+  if (navigator.share && navigator.canShare) {
+    canvas.toBlob(function(blob) {
+      var file = new File([blob], filename, { type: 'image/png' });
+      var shareData = { files: [file], text: textVersion };
+      if (navigator.canShare(shareData)) {
+        navigator.share(shareData).catch(function() {
+          downloadCanvasAsPNG(canvas, filename);
+        });
+      } else {
+        downloadCanvasAsPNG(canvas, filename);
+      }
+    }, 'image/png');
+  } else {
+    downloadCanvasAsPNG(canvas, filename);
+  }
+}
+
 // ── SACRED CONSTANTS (DO NOT MODIFY) ─────────────────────────
 var ED_MOVE = {
   walkSpeed:74, runSpeed:110, jumpVel:-275,
@@ -474,8 +1670,9 @@ var FIRE_POOL = [];
 
 // ── ENHANCED ED DRAWING (80+ draw calls) ─────────────────────
 var DRAW_ED_SNES = {
-  draw: function(g, x, y, frame, flipped, cigF, walkT, inAir, hurtT, bladeAngle) {
+  draw: function(g, x, y, frame, flipped, cigF, walkT, inAir, hurtT, bladeAngle, healthPct) {
     frame = frame || 0; cigF = cigF || 0; walkT = walkT || 0;
+    if (healthPct === undefined || healthPct === null) healthPct = 1;
     var sx = flipped ? -1 : 1;
     var bobY = (!inAir && frame !== 5 && frame !== 6 && frame !== 7) ? Math.sin(walkT * 0.012) * 1.2 : 0;
     var breatheY = Math.sin(cigF * 0.04) * 0.5;
@@ -889,17 +2086,29 @@ var DRAW_ED_SNES = {
       g.fillStyle(0xffd700, 0.3);
       g.fillCircle(32, cigY + 1, 6);
     } else {
-      // Normal cig
+      // Normal cig — length and ember scale with health
+      // Full=9px, 75%=7px, 50%=5px, 25%=3px, critical=2px
+      var cigLen = healthPct > 0.75 ? 9 : healthPct > 0.5 ? 7 : healthPct > 0.25 ? 5 : healthPct > 0 ? 3 : 2;
+      var cigEnd = 8 + cigLen;
       g.fillStyle(0xd4c8a0, 1);
-      g.fillRect(8, cigY, 9, 2);
+      g.fillRect(8, cigY, cigLen, 2);
       // Ash band
       g.fillStyle(0x888888, 0.6);
-      g.fillRect(15, cigY, 2, 2);
-      // Ember tip
-      g.fillStyle(0xff6b35, 1);
-      g.fillCircle(17, cigY + 1, 2);
-      g.fillStyle(0xffaa00, 0.7);
-      g.fillCircle(17, cigY + 1, 1.2);
+      g.fillRect(cigEnd - 2, cigY, 2, 2);
+      // Ember tip — flickers at low health
+      var emberAlpha = healthPct <= 0.25 ? (0.5 + Math.sin(cigF * 0.5) * 0.5) : 1;
+      g.fillStyle(0xff6b35, emberAlpha);
+      g.fillCircle(cigEnd, cigY + 1, healthPct <= 0.25 ? 1.5 : 2);
+      g.fillStyle(0xffaa00, emberAlpha * 0.7);
+      g.fillCircle(cigEnd, cigY + 1, healthPct <= 0.25 ? 0.8 : 1.2);
+      // Falling ash at critical health
+      if (healthPct <= 0.25) {
+        var ashDrop = (cigF * 0.03) % 1;
+        if (ashDrop < 0.3) {
+          g.fillStyle(0x888888, 0.4 * (1 - ashDrop / 0.3));
+          g.fillRect(cigEnd - 1, cigY + 2 + ashDrop * 12, 1, 1);
+        }
+      }
     }
 
     g.restore();
@@ -3220,77 +4429,184 @@ function ensureSharedSfx(ac) {
   window._cactusEdSharedSfx = {
     ac: ac,
     master: sfxMaster,
-    play: function(type) {
+    muted: false,
+    _loops: {},  // continuous sound handles (wallslide, copter, spincharge)
+    play: function(type, opts) {
+      if (this.muted) return;
+      opts = opts || {};
+      var intensity = opts.intensity || 1;
       try {
         if (this.ac.state === 'suspended') this.ac.resume();
       } catch(e0) {}
       try {
         var t = this.ac.currentTime;
-        var o, g;
+        var o, g, buf, d, ns, ng;
         if (type === 'jump') {
           o = this.ac.createOscillator();
           g = this.ac.createGain();
-          o.type = 'sine'; o.frequency.setValueAtTime(280, t);
-          o.frequency.linearRampToValueAtTime(520, t + 0.08);
-          g.gain.setValueAtTime(0.3, t);
+          o.type = 'square'; o.frequency.setValueAtTime(300, t);
+          o.frequency.linearRampToValueAtTime(600, t + 0.1);
+          g.gain.setValueAtTime(0.18 * intensity, t);
           g.gain.linearRampToValueAtTime(0, t + 0.1);
           o.connect(g); g.connect(this.master);
           o.start(t); o.stop(t + 0.1);
         } else if (type === 'djump') {
           o = this.ac.createOscillator();
           g = this.ac.createGain();
-          o.type = 'sine'; o.frequency.setValueAtTime(440, t);
-          o.frequency.linearRampToValueAtTime(880, t + 0.08);
-          g.gain.setValueAtTime(0.25, t);
+          o.type = 'square'; o.frequency.setValueAtTime(400, t);
+          o.frequency.linearRampToValueAtTime(800, t + 0.08);
+          g.gain.setValueAtTime(0.15 * intensity, t);
           g.gain.linearRampToValueAtTime(0, t + 0.1);
           o.connect(g); g.connect(this.master);
           o.start(t); o.stop(t + 0.1);
-        } else if (type === 'stomp') {
+          // Reverb-ish tail
+          var o2 = this.ac.createOscillator();
+          var g2 = this.ac.createGain();
+          o2.type = 'sine'; o2.frequency.setValueAtTime(600, t);
+          o2.frequency.linearRampToValueAtTime(900, t + 0.12);
+          g2.gain.setValueAtTime(0.06, t + 0.04);
+          g2.gain.linearRampToValueAtTime(0, t + 0.14);
+          o2.connect(g2); g2.connect(this.master);
+          o2.start(t + 0.04); o2.stop(t + 0.14);
+        } else if (type === 'land') {
+          // Landing — filtered noise burst, intensity scales with fall distance
+          var landLen = 0.05 + intensity * 0.06;
+          buf = this.ac.createBuffer(1, Math.floor(this.ac.sampleRate * landLen), this.ac.sampleRate);
+          d = buf.getChannelData(0);
+          for (var li = 0; li < d.length; li++) d[li] = (Math.random() * 2 - 1) * (1 - li / d.length);
+          ns = this.ac.createBufferSource();
+          ng = this.ac.createGain();
+          ns.buffer = buf;
+          ng.gain.setValueAtTime(0.12 * intensity, t);
+          ng.gain.linearRampToValueAtTime(0, t + landLen);
+          ns.connect(ng); ng.connect(this.master);
+          ns.start(t); ns.stop(t + landLen);
+          // Heavy landings add a sine thud
+          if (intensity > 0.5) {
+            o = this.ac.createOscillator();
+            g = this.ac.createGain();
+            o.type = 'sine'; o.frequency.setValueAtTime(80, t);
+            o.frequency.linearRampToValueAtTime(40, t + 0.1);
+            g.gain.setValueAtTime(0.2 * intensity, t);
+            g.gain.linearRampToValueAtTime(0, t + 0.1);
+            o.connect(g); g.connect(this.master);
+            o.start(t); o.stop(t + 0.1);
+          }
+        } else if (type === 'walljump') {
+          // Quick ascending chirp + noise burst
           o = this.ac.createOscillator();
           g = this.ac.createGain();
-          o.type = 'triangle'; o.frequency.setValueAtTime(120, t);
-          o.frequency.linearRampToValueAtTime(40, t + 0.12);
-          g.gain.setValueAtTime(0.5, t);
-          g.gain.linearRampToValueAtTime(0, t + 0.15);
+          o.type = 'square'; o.frequency.setValueAtTime(350, t);
+          o.frequency.linearRampToValueAtTime(700, t + 0.06);
+          g.gain.setValueAtTime(0.15, t);
+          g.gain.linearRampToValueAtTime(0, t + 0.08);
           o.connect(g); g.connect(this.master);
-          o.start(t); o.stop(t + 0.15);
-          var buf = this.ac.createBuffer(1, 1200, this.ac.sampleRate);
-          var d = buf.getChannelData(0);
-          for (var ni = 0; ni < 1200; ni++) d[ni] = (Math.random() * 2 - 1) * (1 - ni / 1200);
-          var ns = this.ac.createBufferSource();
-          var ng = this.ac.createGain();
-          ns.buffer = buf; ng.gain.setValueAtTime(0.15, t);
+          o.start(t); o.stop(t + 0.08);
+          buf = this.ac.createBuffer(1, 800, this.ac.sampleRate);
+          d = buf.getChannelData(0);
+          for (var wji = 0; wji < 800; wji++) d[wji] = (Math.random() * 2 - 1) * (1 - wji / 800) * 0.6;
+          ns = this.ac.createBufferSource();
+          ng = this.ac.createGain();
+          ns.buffer = buf; ng.gain.setValueAtTime(0.1, t);
+          ng.gain.linearRampToValueAtTime(0, t + 0.06);
+          ns.connect(ng); ng.connect(this.master);
+          ns.start(t); ns.stop(t + 0.06);
+        } else if (type === 'punch') {
+          // Short noise burst + sine thud
+          buf = this.ac.createBuffer(1, 1000, this.ac.sampleRate);
+          d = buf.getChannelData(0);
+          for (var pi = 0; pi < 1000; pi++) d[pi] = (Math.random() * 2 - 1) * (1 - pi / 1000);
+          ns = this.ac.createBufferSource();
+          ng = this.ac.createGain();
+          ns.buffer = buf; ng.gain.setValueAtTime(0.18, t);
+          ng.gain.linearRampToValueAtTime(0, t + 0.06);
+          ns.connect(ng); ng.connect(this.master);
+          ns.start(t); ns.stop(t + 0.06);
+          o = this.ac.createOscillator();
+          g = this.ac.createGain();
+          o.type = 'sine'; o.frequency.value = 150;
+          g.gain.setValueAtTime(0.2, t);
+          g.gain.linearRampToValueAtTime(0, t + 0.06);
+          o.connect(g); g.connect(this.master);
+          o.start(t); o.stop(t + 0.06);
+        } else if (type === 'kick') {
+          // Similar to punch, slightly longer
+          buf = this.ac.createBuffer(1, 1400, this.ac.sampleRate);
+          d = buf.getChannelData(0);
+          for (var ki = 0; ki < 1400; ki++) d[ki] = (Math.random() * 2 - 1) * (1 - ki / 1400);
+          ns = this.ac.createBufferSource();
+          ng = this.ac.createGain();
+          ns.buffer = buf; ng.gain.setValueAtTime(0.2, t);
           ng.gain.linearRampToValueAtTime(0, t + 0.08);
           ns.connect(ng); ng.connect(this.master);
           ns.start(t); ns.stop(t + 0.08);
+          o = this.ac.createOscillator();
+          g = this.ac.createGain();
+          o.type = 'sine'; o.frequency.value = 120;
+          g.gain.setValueAtTime(0.18, t);
+          g.gain.linearRampToValueAtTime(0, t + 0.08);
+          o.connect(g); g.connect(this.master);
+          o.start(t); o.stop(t + 0.08);
+        } else if (type === 'stomp') {
+          // Ground slam — descending square + heavy noise
+          o = this.ac.createOscillator();
+          g = this.ac.createGain();
+          o.type = 'square'; o.frequency.setValueAtTime(400, t);
+          o.frequency.linearRampToValueAtTime(60, t + 0.15);
+          g.gain.setValueAtTime(0.3, t);
+          g.gain.linearRampToValueAtTime(0, t + 0.18);
+          o.connect(g); g.connect(this.master);
+          o.start(t); o.stop(t + 0.18);
+          buf = this.ac.createBuffer(1, 2400, this.ac.sampleRate);
+          d = buf.getChannelData(0);
+          for (var ni = 0; ni < 2400; ni++) d[ni] = (Math.random() * 2 - 1) * (1 - ni / 2400);
+          ns = this.ac.createBufferSource();
+          ng = this.ac.createGain();
+          ns.buffer = buf; ng.gain.setValueAtTime(0.2, t);
+          ng.gain.linearRampToValueAtTime(0, t + 0.12);
+          ns.connect(ng); ng.connect(this.master);
+          ns.start(t); ns.stop(t + 0.12);
         } else if (type === 'hurt') {
-          var buf2 = this.ac.createBuffer(1, 2400, this.ac.sampleRate);
-          var d2 = buf2.getChannelData(0);
-          for (var hi = 0; hi < 2400; hi++) d2[hi] = (Math.random() * 2 - 1) * 0.8;
+          buf = this.ac.createBuffer(1, 2400, this.ac.sampleRate);
+          d = buf.getChannelData(0);
+          for (var hi = 0; hi < 2400; hi++) d[hi] = (Math.random() * 2 - 1) * 0.8;
           var hs = this.ac.createBufferSource();
           var hg = this.ac.createGain();
-          hs.buffer = buf2; hg.gain.setValueAtTime(0.3, t);
+          hs.buffer = buf; hg.gain.setValueAtTime(0.3, t);
           hg.gain.linearRampToValueAtTime(0, t + 0.15);
           hs.connect(hg); hg.connect(this.master);
           hs.start(t); hs.stop(t + 0.15);
         } else if (type === 'collect') {
-          o = this.ac.createOscillator();
-          g = this.ac.createGain();
-          o.type = 'sine'; o.frequency.setValueAtTime(587, t);
-          o.frequency.setValueAtTime(784, t + 0.08);
-          g.gain.setValueAtTime(0.2, t);
-          g.gain.linearRampToValueAtTime(0, t + 0.2);
-          o.connect(g); g.connect(this.master);
-          o.start(t); o.stop(t + 0.2);
+          // Pleasant ascending arpeggio, 3 quick notes
+          var collectNotes = [523, 659, 784];
+          for (var ci = 0; ci < 3; ci++) {
+            var co = this.ac.createOscillator();
+            var cg = this.ac.createGain();
+            co.type = 'sine'; co.frequency.value = collectNotes[ci];
+            cg.gain.setValueAtTime(0.15, t + ci * 0.06);
+            cg.gain.linearRampToValueAtTime(0, t + ci * 0.06 + 0.12);
+            co.connect(cg); cg.connect(this.master);
+            co.start(t + ci * 0.06); co.stop(t + ci * 0.06 + 0.12);
+          }
         } else if (type === 'kill') {
+          // Satisfying crunch: noise burst + descending tone
           o = this.ac.createOscillator();
           g = this.ac.createGain();
           o.type = 'square'; o.frequency.setValueAtTime(200, t);
           o.frequency.linearRampToValueAtTime(60, t + 0.1);
-          g.gain.setValueAtTime(0.2, t);
+          g.gain.setValueAtTime(0.2 * intensity, t);
           g.gain.linearRampToValueAtTime(0, t + 0.12);
           o.connect(g); g.connect(this.master);
           o.start(t); o.stop(t + 0.12);
+          buf = this.ac.createBuffer(1, 1600, this.ac.sampleRate);
+          d = buf.getChannelData(0);
+          for (var kli = 0; kli < 1600; kli++) d[kli] = (Math.random() * 2 - 1) * (1 - kli / 1600);
+          ns = this.ac.createBufferSource();
+          ng = this.ac.createGain();
+          ns.buffer = buf; ng.gain.setValueAtTime(0.15 * intensity, t);
+          ng.gain.linearRampToValueAtTime(0, t + 0.08);
+          ns.connect(ng); ng.connect(this.master);
+          ns.start(t); ns.stop(t + 0.08);
         } else if (type === 'spin') {
           o = this.ac.createOscillator();
           g = this.ac.createGain();
@@ -3301,25 +4617,47 @@ function ensureSharedSfx(ac) {
           o.connect(g); g.connect(this.master);
           o.start(t); o.stop(t + 0.15);
         } else if (type === 'receipt') {
-          for (var ri = 0; ri < 3; ri++) {
+          // Thermal printer simulation — rapid alternating square waves
+          var printerDur = 2.5;
+          var clickCount = 40;
+          for (var ri = 0; ri < clickCount; ri++) {
+            var rTime = t + (ri / clickCount) * printerDur;
             var ro = this.ac.createOscillator();
             var rg = this.ac.createGain();
-            ro.type = 'sine';
-            ro.frequency.value = [392, 494, 587][ri];
-            rg.gain.setValueAtTime(0.15, t + ri * 0.12);
-            rg.gain.linearRampToValueAtTime(0, t + ri * 0.12 + 0.3);
+            ro.type = 'square';
+            ro.frequency.value = 1800 + Math.random() * 400;
+            rg.gain.setValueAtTime(0.04 + Math.random() * 0.03, rTime);
+            rg.gain.linearRampToValueAtTime(0, rTime + 0.025);
             ro.connect(rg); rg.connect(this.master);
-            ro.start(t + ri * 0.12); ro.stop(t + ri * 0.12 + 0.3);
+            ro.start(rTime); ro.stop(rTime + 0.03);
           }
+          // Final ding
+          var dingO = this.ac.createOscillator();
+          var dingG = this.ac.createGain();
+          dingO.type = 'sine'; dingO.frequency.value = 880;
+          dingG.gain.setValueAtTime(0.12, t + printerDur + 0.1);
+          dingG.gain.linearRampToValueAtTime(0, t + printerDur + 0.5);
+          dingO.connect(dingG); dingG.connect(this.master);
+          dingO.start(t + printerDur + 0.1); dingO.stop(t + printerDur + 0.5);
         } else if (type === 'death') {
+          // Descending square wave + noise
           o = this.ac.createOscillator();
           g = this.ac.createGain();
-          o.type = 'sine'; o.frequency.setValueAtTime(440, t);
-          o.frequency.linearRampToValueAtTime(110, t + 0.5);
-          g.gain.setValueAtTime(0.2, t);
-          g.gain.linearRampToValueAtTime(0, t + 0.5);
+          o.type = 'square'; o.frequency.setValueAtTime(400, t);
+          o.frequency.linearRampToValueAtTime(100, t + 0.3);
+          g.gain.setValueAtTime(0.15, t);
+          g.gain.linearRampToValueAtTime(0, t + 0.35);
           o.connect(g); g.connect(this.master);
-          o.start(t); o.stop(t + 0.5);
+          o.start(t); o.stop(t + 0.35);
+          buf = this.ac.createBuffer(1, 4000, this.ac.sampleRate);
+          d = buf.getChannelData(0);
+          for (var di = 0; di < 4000; di++) d[di] = (Math.random() * 2 - 1) * (1 - di / 4000) * 0.5;
+          ns = this.ac.createBufferSource();
+          ng = this.ac.createGain();
+          ns.buffer = buf; ng.gain.setValueAtTime(0.1, t);
+          ng.gain.linearRampToValueAtTime(0, t + 0.3);
+          ns.connect(ng); ng.connect(this.master);
+          ns.start(t); ns.stop(t + 0.3);
         } else if (type === 'stamp') {
           o = this.ac.createOscillator();
           g = this.ac.createGain();
@@ -3331,6 +4669,43 @@ function ensureSharedSfx(ac) {
           o.start(t); o.stop(t + 0.1);
         }
       } catch(e) {}
+    },
+    // ── CONTINUOUS SOUND MANAGEMENT ──
+    startLoop: function(name, freq, oscType, vol) {
+      if (this.muted) return;
+      if (this._loops[name]) return;
+      try {
+        if (this.ac.state === 'suspended') this.ac.resume();
+        var o = this.ac.createOscillator();
+        var g = this.ac.createGain();
+        o.type = oscType || 'triangle';
+        o.frequency.value = freq || 200;
+        g.gain.value = 0;
+        g.gain.linearRampToValueAtTime(vol || 0.05, this.ac.currentTime + 0.05);
+        o.connect(g); g.connect(this.master);
+        o.start();
+        this._loops[name] = { osc: o, gain: g };
+      } catch(e) {}
+    },
+    updateLoop: function(name, freq) {
+      if (this._loops[name]) {
+        try { this._loops[name].osc.frequency.value = freq; } catch(e) {}
+      }
+    },
+    stopLoop: function(name) {
+      if (this._loops[name]) {
+        try {
+          var t = this.ac.currentTime;
+          this._loops[name].gain.gain.linearRampToValueAtTime(0, t + 0.05);
+          this._loops[name].osc.stop(t + 0.06);
+        } catch(e) {}
+        delete this._loops[name];
+      }
+    },
+    stopAllLoops: function() {
+      for (var k in this._loops) {
+        if (this._loops.hasOwnProperty(k)) this.stopLoop(k);
+      }
     }
   };
   return window._cactusEdSharedSfx;
@@ -3388,6 +4763,7 @@ function runParityController(scene, time, delta) {
   if ((Phaser.Input.Keyboard.JustDown(keys.x) || GAMEPAD.justPressed('punch')) && es.punchTimer <= 0) {
     if (!ep.grounded && downHeld && !es._slamming) {
       es._slamming = true;
+      scene._checkLicense('groundSlam'); // R06
       es._slamHangTimer = ED_ABILITIES.slamHangMs;
       ep.vx *= 0.3;
       ep.vy = 0;
@@ -3405,6 +4781,7 @@ function runParityController(scene, time, delta) {
       es.punchTimer = 280;
       es.punchActive = true;
       ep.vx += es.facing * 60;
+      scene._playSfx('punch');
       pushFxParticle({
         x: ep.x + es.facing * 10, y: ep.y - 14,
         vx: es.facing * 40, vy: (Math.random() - 0.5) * 10,
@@ -3447,7 +4824,9 @@ function runParityController(scene, time, delta) {
     } else {
       es.kickTimer = 320;
       es.kickActive = true;
+      scene._checkLicense('kick'); // R06
       ep.vx += es.facing * 90;
+      scene._playSfx('kick');
       for (var kpi = 0; kpi < 3; kpi++) {
         pushFxParticle({
           x: ep.x + es.facing * 14, y: ep.y - 4 + (Math.random() - 0.5) * 10,
@@ -3470,6 +4849,7 @@ function runParityController(scene, time, delta) {
   }
   if (!es.spinning && ep.grounded && moveX !== 0 && downHeld && es.spinCooldownT <= 0 && !es.spinCharging) {
     es.spinCharging = true;
+    scene._checkLicense('spinDash'); // R06
     es.spinChargeT = 0;
     es._spinTierSpeed = ED_ABILITIES.spinTier1Speed;
   }
@@ -3625,19 +5005,30 @@ function runParityController(scene, time, delta) {
     if (ep.x > pl.x - 4 && ep.x < pl.x + pl.w + 4 && ep.vy >= 0 && ep.y >= pl.y - 2 && ep.y <= pl.y + pl.h) {
       if (!ep.grounded && ep.vy > 100) {
         var impactForce = Math.min(ep.vy / ED_MOVE.maxFall, 1);
-        var dustCount = Math.floor(impactForce * 4) + 1;
+        // Scaled landing particles (R01 JUICE: more particles for bigger falls)
+        var dustCount = impactForce < 0.4 ? 4 : impactForce < 0.7 ? 8 : 16;
         for (var ldi = 0; ldi < dustCount; ldi++) {
+          var dustSpread = 10 + impactForce * 15;
           pushFxParticle({
-            x: ep.x + (Math.random() - 0.5) * 10,
+            x: ep.x + (Math.random() - 0.5) * dustSpread,
             y: ep.y + 2,
-            vx: (Math.random() - 0.5) * 30 * impactForce,
-            vy: -(2 + Math.random() * 8 * impactForce),
-            life: 0.3 + impactForce * 0.2,
-            r: 1 + impactForce * 1.5
+            vx: (Math.random() - 0.5) * 40 * impactForce,
+            vy: -(2 + Math.random() * 12 * impactForce),
+            life: 0.3 + impactForce * 0.3,
+            r: 1 + impactForce * 2,
+            color: [0x998877, 0x887766, 0xaa9988][Math.floor(Math.random() * 3)]
           });
         }
         es._landSquash = 80;
         es._landForce = impactForce;
+        // Landing SFX scaled to impact
+        scene._playSfx('land', { intensity: impactForce });
+        // Landing camera shake scaled to impact
+        if (impactForce > 0.3) {
+          var landShakePx = impactForce < 0.7 ? 0.002 : 0.005;
+          var landShakeMs = impactForce < 0.7 ? 30 : 50;
+          scene.cameras.main.shake(landShakeMs, landShakePx);
+        }
       }
       ep.y = pl.y;
       ep.vy = 0;
@@ -3680,6 +5071,7 @@ function runParityController(scene, time, delta) {
   if (es._wallContact !== 0 && !onGround && ep.vy > 0) {
     var pressingIntoWall = (es._wallContact === -1 && leftDown) || (es._wallContact === 1 && rightDown);
     if (pressingIntoWall) {
+      if (!es._wallSliding) scene._checkLicense('wallJump'); // R06: first frame of wall contact
       es._wallSliding = true;
       ep.vy = Math.min(ep.vy, ED_MOVE.wallSlideMaxFall);
       if (Math.random() < 0.3) {
@@ -3721,6 +5113,7 @@ function runParityController(scene, time, delta) {
   } else if (jumpPressed && !ep.grounded && ep.coyoteMs <= 0 && !es.djUsed) {
     ep.vy = ED_ABILITIES.doubleJumpVel;
     es.djUsed = true;
+    scene._checkLicense('doubleJump'); // R06
     scene._playSfx('djump');
     es.gliding = false;
     for (var dji = 0; dji < 5; dji++) {
@@ -3735,6 +5128,7 @@ function runParityController(scene, time, delta) {
   } else if (jumpPressed && !ep.grounded && es.djUsed && !es.tjUsed) {
     ep.vy = ED_ABILITIES.doubleJumpVel * ED_ABILITIES.tripleJumpMult;
     es.tjUsed = true;
+    scene._checkLicense('tripleJump'); // R06
     es._tjApexT = ED_ABILITIES.tripleJumpApexMs;
     scene._playSfx('djump');
     es.gliding = false;
@@ -3758,7 +5152,7 @@ function runParityController(scene, time, delta) {
     es.gliding = false;
     es._wallSliding = false;
     es._wallDetachT = ED_MOVE.wallJumpDetachMs;
-    scene._playSfx('jump');
+    scene._playSfx('walljump');
     scene.edG.fillStyle(0xffd700, 0.3);
     scene.edG.fillCircle(ep.x + es._wallContact * 6, ep.y - 6, 4);
     scene.edG.fillStyle(0xffffff, 0.15);
@@ -3778,6 +5172,7 @@ function runParityController(scene, time, delta) {
   }
 
   if (!onGround && es.tjUsed && !es.coptering && jumpHeld && ep.vy > 0) {
+    if (!es.gliding) scene._checkLicense('glide'); // R06: first frame
     es.gliding = true;
     ep.vy = Math.min(ep.vy, ED_ABILITIES.glideMaxFall);
     ep.vx *= Math.pow(ED_ABILITIES.glideDrag, dt * 60);
@@ -3815,6 +5210,7 @@ function runParityController(scene, time, delta) {
     if (es.copterTapCount >= ASSIST.getCopterTaps() && copterReady && es.copterFuel > 0) {
       if (!es.coptering) {
         es.coptering = true;
+        scene._checkLicense('cigCopter'); // R06
         es.gliding = false;
         scene._playSfx('spin');
         scene._flash('CIG COPTER ENGAGED', 800);
@@ -3863,20 +5259,22 @@ function runParityController(scene, time, delta) {
     es._slamming = false;
     es._slamRecovery = ED_ABILITIES.slamRecoveryMs;
     scene._playSfx('stomp');
-    scene.cameras.main.shake(80, 0.012);
+    scene.cameras.main.shake(130, 0.018);
     scene.time.timeScale = 0.01;
-    var freezeMs = Math.max(1, Math.round(ED_ABILITIES.slamImpactFreeze * 16));
+    var freezeMs = Math.max(1, Math.round(133 * 0.01)); // 8 frames at 60fps
     var selfSlam = scene;
     scene.time.delayedCall(freezeMs, function() { selfSlam.time.timeScale = 1; });
-    for (var swi = 0; swi < 12; swi++) {
-      var swAngle = swi * (Math.PI * 2 / 12);
+    // Screen-wide dust wave (R01 JUICE)
+    for (var swi = 0; swi < 20; swi++) {
+      var swAngle = (swi / 20) * Math.PI * 2;
+      var slamSpread = 8 + Math.random() * 6;
       pushFxParticle({
-        x: ep.x + Math.cos(swAngle) * 6,
+        x: ep.x + Math.cos(swAngle) * slamSpread,
         y: ep.y + 2,
-        vx: Math.cos(swAngle) * (20 + Math.random() * 15),
-        vy: Math.sin(swAngle) * 10 - 10,
-        life: 0.4, r: 1.5 + Math.random(),
-        color: [0xffd700, 0xff6600, 0xffaa44][Math.floor(Math.random() * 3)]
+        vx: Math.cos(swAngle) * (30 + Math.random() * 25),
+        vy: Math.sin(swAngle) * 12 - 15,
+        life: 0.5, r: 2 + Math.random() * 2,
+        color: [0xffd700, 0xff6600, 0xffaa44, 0x998877][Math.floor(Math.random() * 4)]
       });
     }
     var slamRadius = ED_ABILITIES.slamImpactRadius;
@@ -3895,8 +5293,37 @@ function runParityController(scene, time, delta) {
       }
     }
     if (scene.behavior) scene.behavior.chaos += 2;
-    if (scene._flash) scene._flash('CIVIC IMPACT', 800);
+    if (scene._flash) scene._flash('SEISMIC EVENT DETECTED', 1200);
     if (scene._logEvent) scene._logEvent('ground_slam', 'x:' + Math.floor(ep.x));
+  }
+
+  // ── R01 JUICE: Continuous SFX management (wall slide, copter, spin charge) ──
+  var sfx = scene._sfx;
+  if (sfx) {
+    // Wall slide — filtered pink noise while sliding
+    if (es._wallSliding) {
+      sfx.startLoop('wallslide', 180, 'sawtooth', 0.03);
+    } else {
+      sfx.stopLoop('wallslide');
+    }
+    // Cig copter — oscillating triangle wave
+    if (es.coptering && es.copterFuel > 0) {
+      sfx.startLoop('copter', 200, 'triangle', 0.06);
+      // Amplitude modulation via frequency wobble (8Hz feel)
+      var copterWobble = 200 + Math.sin(time * 0.008) * 30;
+      sfx.updateLoop('copter', copterWobble);
+    } else {
+      sfx.stopLoop('copter');
+    }
+    // Spin dash charging — rising sawtooth hum
+    if (es.spinCharging) {
+      var chargePct = es.spinChargeT / Math.max(ED_ABILITIES.spinChargeTime, 1);
+      var chargeFreq = 100 + chargePct * 200;
+      sfx.startLoop('spincharge', chargeFreq, 'sawtooth', 0.05);
+      sfx.updateLoop('spincharge', chargeFreq);
+    } else {
+      sfx.stopLoop('spincharge');
+    }
   }
 
   return { moveX: inputMoveX, onGround: onGround, jumpPressed: jumpPressed };
@@ -4898,15 +6325,43 @@ DemoScene.prototype.create = function() {
   } catch(e) {}
 
   // ── BEHAVIOR TRACKING (silent — feeds haunted receipt) ──
+  // R04: Apply behavior carryover from RE-ENROLL (30%) or APPEAL (100%) if present
+  var _carryover = window._cactusEdBehaviorCarryover || null;
+  window._cactusEdBehaviorCarryover = null; // consume once
   this.behavior = {
-    compliance: 0,   // followed safe paths
-    intuition: 0,    // unauthorized routes, exploration
-    curiosity: 0,    // read signs, talked NPCs, found secrets
-    grace: 0,        // recovered from near-failures
-    chaos: 0,        // spin rampages, invincibility kills
-    efficiency: 0    // fast completion, minimal exploration
+    compliance: _carryover ? (_carryover.compliance || 0) : 0,
+    intuition: _carryover ? (_carryover.intuition || 0) : 0,
+    curiosity: _carryover ? (_carryover.curiosity || 0) : 0,
+    grace: _carryover ? (_carryover.grace || 0) : 0,
+    chaos: _carryover ? (_carryover.chaos || 0) : 0,
+    efficiency: _carryover ? (_carryover.efficiency || 0) : 0
   };
   this._runStartTime = Date.now();
+
+  // ── RECEIPT 2.0 TRACKING ──
+  this._nearMisses = { total: 0, coyoteSaves: 0, hazardClose: 0, jumpBufferSaves: 0, wallSaves: 0, avgPixels: 0, _pixelSum: 0 };
+  this._hesitations = []; // counterfactual tracking: {type, duration, count}
+  this._lastDirectionChange = 0;
+  this._directionChanges = 0;
+  this._receiptPreviewShown = false;
+
+  // ── R06: ABILITY LICENSING TRACKER ──
+  this._licenseViolations = {}; // { moveKey: count }
+  this._licenseNotified = {};   // { moveKey: true } — first-use notification shown
+  this._auditorActive = false;
+  this._auditorTimer = 0;
+  this._certificationsDone = {}; // { moveKey: true } — earned this run
+
+  // ── R09: GREETER NPC ──
+  this._greeter = { x: 80, y: H * 0.88 - 3, state: 'alive', talked: false, killed: false };
+  // ── R09: CLERICAL ERROR JACKPOT ──
+  this._clericalError = checkClericalError({ deaths: 0, kills: 0, runTime: 0, stamps: this._runCount || 1 });
+  this._clericalErrorZone = this._clericalError ? ['A', 'B', 'C', 'D'][Math.floor(Math.random() * 4)] : null;
+
+  // ── R10: CASE SEED + MOOD + REMIX ──
+  this._caseNumber = CASE_SEED.generate(this._runCount, this.behavior);
+  this._mood = getMoodForCase(this._caseNumber);
+  this._remixLabel = getRemixLabel(this.behavior);
 
   // ── LO-FI CIVIC MUZAK (Web Audio — zone-reactive ambient tones) ──
   // Asset Brief: "Fake-happy civic reassurance with a buried administrative pulse."
@@ -5091,6 +6546,7 @@ DemoScene.prototype.create = function() {
   // Camera
   this.cameras.main.setBounds(0, 0, LW, H);
   this._camLookAhead = 0; // directional look-ahead offset
+  this._camPeekY = 0;     // vertical peek offset (UP/DOWN while stationary)
 
   // Ed physics
   this.ep = { x: 60, y: H * 0.88 - 10, vx: 0, vy: 0, grounded: false, coyoteMs: 0, jumpBufMs: 0 };
@@ -5171,6 +6627,28 @@ DemoScene.prototype.create = function() {
   this.aloe = 200;
   this.health = 4;
   this.maxHealth = 4;
+
+  // ── R02: INSTITUTIONAL SIGNAGE TUTORIAL (first playthrough only) ──
+  this._signs = [];
+  this._signG = this.add.graphics().setDepth(3);
+  var isFirstRun = true;
+  try {
+    var savedRuns = localStorage.getItem('cactusEd_signsShown');
+    if (savedRuns === 'true') isFirstRun = false;
+  } catch(e3) {}
+  if (isFirstRun) {
+    this._signs = [
+      { x: 25, y: H * 0.88 - 12, text: 'ALL SUBJECTS MUST DEMONSTRATE\nBASIC LOCOMOTION\n\u2190 \u2192 ARROW KEYS', action: 'move', read: false, nearT: 0 },
+      { x: 78, y: 258, text: 'VERTICAL DISPLACEMENT\nAUTHORIZED\n\nPRESS Z OR \u2191', action: 'jump', read: false, nearT: 0 },
+      { x: 180, y: H * 0.88 - 12, text: 'EXTENDED VERTICAL DISPLACEMENT:\nPRESS Z AGAIN IN MIDAIR\n(FORM 12-A REQUIRED)', action: 'djump', read: false, nearT: 0 },
+      { x: 240, y: H * 0.88 - 12, text: 'CONFLICT RESOLUTION:\nX = CIG LANCE    C = CIG KICK\n(KEEP YOUR RECEIPT)', action: 'combat', read: false, nearT: 0 },
+      { x: 620, y: 290, text: 'WALL CONTACT PROTOCOL:\nHOLD DIRECTION INTO WALL\n+ PRESS Z TO LAUNCH', action: 'walljump', read: false, nearT: 0 },
+      { x: 650, y: H * 0.88 - 12, text: 'UNAUTHORIZED SPINNING:\nHOLD \u2193 + MOVE, THEN RELEASE \u2193\n(DISCIPLINARY ACTION MAY FOLLOW)', action: 'spin', read: false, nearT: 0 },
+      { x: 950, y: 200, text: 'ROTARY LOCOMOTION:\nTAP Z RAPIDLY IN MIDAIR\nAFTER DOUBLE JUMP\n(NOT OSHA APPROVED)', action: 'copter', read: false, nearT: 0 },
+      { x: 1440, y: 260, text: 'CONTROLLED DESCENT:\nPRESS X + \u2193 IN MIDAIR\nFOR GROUND SLAM', action: 'slam', read: false, nearT: 0 }
+    ];
+    try { localStorage.setItem('cactusEd_signsShown', 'true'); } catch(e4) {}
+  }
 
   // ── CIG BOX ITEM BLOCKS ──
   this.cigBoxes = [];
@@ -6119,8 +7597,8 @@ function ensureSceneFlashText(scene) {
   return scene.flashTxt;
 }
 
-DemoScene.prototype._playSfx = function(type) {
-  if (this._sfx) this._sfx.play(type);
+DemoScene.prototype._playSfx = function(type, opts) {
+  if (this._sfx) this._sfx.play(type, opts);
 };
 
 DemoScene.prototype._flash = function(msg, dur) {
@@ -6153,137 +7631,169 @@ DemoScene.prototype._triggerDeath = function(customMsg) {
   this._logEvent('death', dZone);
 
   // Track total deaths across runs
-  var deathSubtext = '';
   try {
     var totalDeaths = window._cactusEdTotalDeaths || 0;
     totalDeaths++;
     window._cactusEdTotalDeaths = totalDeaths;
-    if (totalDeaths === 1) deathSubtext = 'THIS IS YOUR FIRST DISCONTINUATION. IT WILL NOT BE YOUR LAST.';
-    else if (totalDeaths < 5) deathSubtext = 'DISCONTINUATION #' + totalDeaths + '. THE FILE THICKENS.';
-    else if (totalDeaths < 10) deathSubtext = 'DISCONTINUATION #' + totalDeaths + '. THE BUREAU ADMIRES YOUR PERSISTENCE.';
-    else deathSubtext = 'DISCONTINUATION #' + totalDeaths + '. AT THIS POINT, YOU ARE RESEARCH.';
   } catch(e) {}
 
-  // ── INSTITUTIONAL DEATH CARD ──
-  var dG = this.add.graphics().setScrollFactor(0).setDepth(80);
-  dG.fillStyle(0x020008, 0.95);
-  dG.fillRect(0, 0, W, H);
-  for (var dScan = 0; dScan < H; dScan += 3) {
-    dG.fillStyle(0x000000, 0.1); dG.fillRect(0, dScan, W, 1);
-  }
-  dG.fillStyle(0x2e0a0a, 1);
-  dG.fillRect(0, H * 0.12, W, 22);
-  dG.lineStyle(1, 0xff4444, 0.4);
-  dG.lineBetween(0, H * 0.12 + 22, W, H * 0.12 + 22);
-
-  this.add.text(W / 2, H * 0.12 + 4, 'DISCONTINUATION NOTICE', {
-    fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#ff6666',
-    stroke: '#000000', strokeThickness: 3
-  }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(81);
-
-  this.add.text(W / 2, H * 0.22, 'LOCATION: ' + dZone, {
-    fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#888888',
-    stroke: '#000000', strokeThickness: 2
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(81);
-
-  // Death message
-  var deathMsgs = customMsg ? [customMsg] : [
-    'YOUR PARTICIPATION\nHAS BEEN ARCHIVED',
-    'DO NOT WORRY.\nTHIS WAS ALWAYS\nGOING TO HAPPEN.',
-    'YOU HAVE BEEN\nGENTLY DISCONTINUED',
-    'YOUR POTENTIAL\nHAS BEEN REASSIGNED',
-    'WELLNESS STATUS:\nNO LONGER APPLICABLE',
-    'PLEASE REMAIN\nCALM WHILE WE\nFORGET YOU',
-    'THE LESSON CONTINUES.\nYOU DO NOT.',
-    'YOUR RESILIENCE\nHAS BEEN NOTED\nAND OVERRULED.',
-    'YOUR EXPERIENCE\nHAS BEEN CORRECTED',
-    'THE ORIENTATION\nCONTINUES WITHOUT YOU',
-    'THANK YOU FOR\nYOUR SERVICE.\nTHE SERVICE DISAGREES.'
-  ];
-  this.add.text(W / 2, H * 0.42, deathMsgs[Math.floor(Math.random() * deathMsgs.length)], {
-    fontFamily: 'Courier New, monospace', fontSize: '13px', color: '#ffffff',
-    stroke: '#000000', strokeThickness: 4, align: 'center', lineSpacing: 4
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(81);
-
-  if (deathSubtext) {
-    this.add.text(W / 2, H * 0.60, deathSubtext, {
-      fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#885555',
-      stroke: '#000000', strokeThickness: 2
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(81);
-  }
-
-  // Zone-specific death hints (actionable guidance disguised as institutional language)
-  var zoneHints = {
-    'ENROLLMENT PLAZA': 'CIVIC SUGGESTION: THE UPPER ROUTES ARE SAFER.',
-    'THE APPROVED LESSON': 'MEMO: MOVING PLATFORMS HAVE A RHYTHM. LISTEN.',
-    'COMPLIANCE DISTRICT': 'NOTICE: THE STAMPS HAVE A PATTERN. WATCH THE GROUND.',
-    'THE QUIET AFTER': 'OBSERVATION: YOU WERE SO CLOSE. THE RECEIPT AWAITS.'
-  };
-  var zoneHint = zoneHints[dZone];
-  if (zoneHint) {
-    this.add.text(W / 2, H * 0.66, zoneHint, {
-      fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#556655',
-      stroke: '#000000', strokeThickness: 2, wordWrap: { width: W - 40 }, align: 'center'
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(81);
-  }
-
-  // Death stats snapshot
-  var dTimeMs = this._runStartTime ? Date.now() - this._runStartTime : 0;
-  var dTimeSec = Math.floor(dTimeMs / 1000);
-  var dMin = Math.floor(dTimeSec / 60);
-  var dSec = dTimeSec % 60;
-  this.add.text(W * 0.2, H * 0.78, 'TIME: ' + dMin + ':' + (dSec < 10 ? '0' : '') + dSec, {
-    fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#555555',
-    stroke: '#000000', strokeThickness: 2
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(81);
-  this.add.text(W * 0.5, H * 0.78, 'KILLS: ' + (this._telemetry.enemiesKilled || 0), {
-    fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#555555',
-    stroke: '#000000', strokeThickness: 2
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(81);
-  this.add.text(W * 0.8, H * 0.78, 'INSERTS: ' + (this.brochureCount || 0) + '/5', {
-    fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#555555',
-    stroke: '#000000', strokeThickness: 2
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(81);
-
-  // Pixel art Ed on death screen (hurt frame, slightly transparent)
-  if (this.textures.exists('ed_hurt')) {
-    var deathEd = this.add.image(W * 0.12, H * 0.45, 'ed_hurt')
-      .setOrigin(0.5, 0.5).setScale(0.35).setScrollFactor(0).setDepth(81).setAlpha(0.5);
-  }
-
-  // Behavioral snapshot
-  var dB = this.behavior;
-  var dMax = 'compliance'; var dMaxV = 0;
-  var dNames = ['compliance','intuition','curiosity','grace','chaos','efficiency'];
-  for (var di = 0; di < dNames.length; di++) {
-    if (dB[dNames[di]] > dMaxV) { dMaxV = dB[dNames[di]]; dMax = dNames[di]; }
-  }
-  this.add.text(W / 2, H * 0.72, 'FINAL PATTERN: ' + dMax.toUpperCase(), {
-    fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#666666',
-    stroke: '#000000', strokeThickness: 2
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(81);
-
-  var retryLines = ['PRESS Z TO ATTEMPT IMPROVEMENT','PRESS Z TO RE-ENROLL IN EXISTENCE',
-    'PRESS Z TO RESUME BECOMING','PRESS Z TO FILE AN APPEAL'];
-  this.add.text(W / 2, H * 0.90, retryLines[Math.floor(Math.random() * retryLines.length)], {
-    fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#ffd700',
-    stroke: '#000000', strokeThickness: 3
-  }).setOrigin(0.5).setScrollFactor(0).setDepth(81);
-
-  this.cameras.main.shake(200, 0.015);
-
-  // Robust Z restart
+  var ep = this.ep;
+  var es = this.es;
+  var deathX = ep.x;
+  var deathY = ep.y;
   var selfDeath = this;
-  var deathKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
-  this.time.delayedCall(1200, function() {
-    var pollDeath = function() {
-      if (deathKey.isDown) {
-        try { selfDeath.scene.restart(); } catch(e) { window.location.reload(); }
-      } else {
-        selfDeath.time.delayedCall(80, pollDeath);
+
+  // ── R02: INSTITUTIONAL PROCESSING (fast death — 0.4s total) ──
+
+  // Phase 1 (Frame 0-3): Cactus particle explosion at death location
+  for (var dpi = 0; dpi < 10; dpi++) {
+    var dAng = (dpi / 10) * Math.PI * 2;
+    pushFxParticle({
+      x: deathX + Math.cos(dAng) * 4,
+      y: deathY - 10 + Math.sin(dAng) * 4,
+      vx: Math.cos(dAng) * (25 + Math.random() * 20),
+      vy: Math.sin(dAng) * 20 - 15,
+      life: 0.6, r: 2 + Math.random() * 2,
+      color: [0x3d6b34, 0x5a9e48, 0x8bc96a][Math.floor(Math.random() * 3)]
+    });
+  }
+  // Cigarette ember particles
+  for (var dei = 0; dei < 3; dei++) {
+    pushFxParticle({
+      x: deathX + (Math.random() - 0.5) * 8,
+      y: deathY - 16 + (Math.random() - 0.5) * 6,
+      vx: (Math.random() - 0.5) * 15,
+      vy: -(8 + Math.random() * 12),
+      life: 0.8, r: 1.5,
+      color: [0xff6600, 0xffaa44][Math.floor(Math.random() * 2)]
+    });
+  }
+
+  // Hide Ed immediately
+  ep.x = -999; ep.y = -999;
+
+  // Phase 2 (Frame 4-8): Hit-stop freeze + "PROCESSING..." text
+  this.cameras.main.shake(100, 0.012);
+  this.time.timeScale = 0.01;
+
+  // Processing text at death location
+  var procText = this.add.text(deathX, deathY - 20, 'PROCESSING...', {
+    fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#ff8888',
+    stroke: '#000000', strokeThickness: 3
+  }).setOrigin(0.5).setDepth(75);
+
+  // Phase 3 (Frame 9-15): Institutional message flash
+  var deathMsgs = customMsg ? [customMsg] : [
+    'YOUR PATIENCE IS APPRECIATED',
+    'RECALIBRATION IN PROGRESS',
+    'INCIDENT LOGGED. PLEASE STAND BY',
+    'RE-ENROLLMENT AUTHORIZED',
+    'PROCESSING EVENT #' + (window._cactusEdTotalDeaths || 1) + '. COST: $' + ((window._cactusEdTotalDeaths || 1) * 600),
+    'YOUR COOPERATION DURING\nTHIS TRANSITION IS NOTED'
+  ];
+  var deathMsg = deathMsgs[Math.floor(Math.random() * deathMsgs.length)];
+
+  // ── R04: HOLD Z INSTANT RESTART (skip receipt, restart immediately) ──
+  this._deathZHoldStart = 0;
+  this._deathZAborted = false;
+  var deathZKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+  var pollDeathZ = function() {
+    if (selfDeath._deathZAborted || !selfDeath._dying) return;
+    if (deathZKey.isDown) {
+      if (selfDeath._deathZHoldStart === 0) selfDeath._deathZHoldStart = Date.now();
+      if (Date.now() - selfDeath._deathZHoldStart >= 1000) {
+        // Held Z for 1 second — instant restart
+        selfDeath._deathZAborted = true;
+        selfDeath._dying = false;
+        selfDeath.time.timeScale = 1;
+        try { selfDeath.scene.restart(); } catch(e2) { window.location.reload(); }
+        return;
       }
-    };
-    pollDeath();
+    } else {
+      selfDeath._deathZHoldStart = 0; // released, reset
+    }
+    selfDeath.time.delayedCall(50, pollDeathZ);
+  };
+  this.time.delayedCall(100, pollDeathZ);
+
+  this.time.delayedCall(1, function() { // ~83ms in frozen time
+    selfDeath.time.timeScale = 1;
+
+    // Flash the institutional message
+    selfDeath._flash(deathMsg, 1500);
+
+    // Brief dark pulse
+    var darkPulse = selfDeath.add.graphics().setScrollFactor(0).setDepth(74);
+    darkPulse.fillStyle(0x000000, 0.4);
+    darkPulse.fillRect(0, 0, W, H);
+    selfDeath.tweens.add({
+      targets: darkPulse, alpha: 0, duration: 250,
+      onComplete: function() { darkPulse.destroy(); }
+    });
+
+    // Phase 4 (Frame 16+): Respawn at zone start
+    selfDeath.time.delayedCall(200, function() {
+      // Determine respawn position (zone start)
+      var respawnX = 60;
+      var respawnY = H * 0.88 - 10;
+      if (selfDeath._currentZone) {
+        respawnX = selfDeath._currentZone.xStart + 40;
+      }
+
+      // Reset Ed state
+      ep.x = respawnX;
+      ep.y = respawnY;
+      ep.vx = 0;
+      ep.vy = 0;
+      ep.grounded = false;
+      es.hurtTimer = 0;
+      es.punchActive = false; es.punchTimer = 0;
+      es.kickActive = false; es.kickTimer = 0;
+      es.spinning = false; es.spinCharging = false;
+      es.coptering = false;
+      es._slamming = false;
+      es._wallSliding = false;
+      selfDeath.health = selfDeath.maxHealth;
+      selfDeath._dying = false;
+
+      // Stop continuous SFX
+      if (selfDeath._sfx) selfDeath._sfx.stopAllLoops();
+
+      // Assembly animation: particles converge inward
+      for (var rpi = 0; rpi < 8; rpi++) {
+        var rAng = (rpi / 8) * Math.PI * 2;
+        pushFxParticle({
+          x: respawnX + Math.cos(rAng) * 30,
+          y: respawnY - 10 + Math.sin(rAng) * 20,
+          vx: -Math.cos(rAng) * 25,
+          vy: -Math.sin(rAng) * 15,
+          life: 0.4, r: 2,
+          color: [0x3d6b34, 0x5a9e48, 0xffd700][Math.floor(Math.random() * 3)]
+        });
+      }
+
+      // Respawn SFX (ascending tone — reverse of death)
+      if (selfDeath._sfx) {
+        try {
+          var ac = selfDeath._sfx.ac;
+          var t = ac.currentTime;
+          var ro = ac.createOscillator();
+          var rg = ac.createGain();
+          ro.type = 'square'; ro.frequency.setValueAtTime(100, t);
+          ro.frequency.linearRampToValueAtTime(400, t + 0.15);
+          rg.gain.setValueAtTime(0.12, t);
+          rg.gain.linearRampToValueAtTime(0, t + 0.2);
+          ro.connect(rg); rg.connect(selfDeath._sfx.master);
+          ro.start(t); ro.stop(t + 0.2);
+        } catch(e2) {}
+      }
+
+      // Clean up processing text
+      if (procText && procText.active) procText.destroy();
+
+      // Brief invulnerability flash
+      es.hurtTimer = 1.0;
+    });
   });
 };
   var self = this;
@@ -6341,25 +7851,47 @@ DemoScene.prototype._registerKill = function() {
   this._telemetry.enemiesKilled++;
   if (this._killCombo > this._telemetry.maxKillCombo) this._telemetry.maxKillCombo = this._killCombo;
   this._logEvent('kill', 'combo:' + this._killCombo);
-  this._playSfx('kill');
-  // Institutional commentary on kill streaks
-  if (this._killCombo === 3) {
-    this._flash('PROACTIVE ENGAGEMENT ×3', 1200);
-  } else if (this._killCombo === 5) {
-    this._flash('CIVIC DISTURBANCE: FILED', 1500);
+  this._playSfx('kill', { intensity: Math.min(1 + this._killCombo * 0.1, 1.5) });
+
+  // ── R01 JUICE: Hit-stop freeze + screen shake on kills ──
+  var combo = this._killCombo;
+  var freezeMs = combo < 2 ? 50 : combo < 5 ? 50 : combo < 10 ? 67 : 133;
+  var shakeIntensity = combo < 3 ? 0.003 : combo < 5 ? 0.005 : combo < 10 ? 0.008 : 0.015;
+  var shakeDur = combo < 3 ? 30 : combo < 5 ? 40 : combo < 10 ? 60 : 100;
+  this.cameras.main.shake(shakeDur, shakeIntensity);
+  // Freeze via timeScale
+  var selfKill = this;
+  this.time.timeScale = 0.01;
+  this.time.delayedCall(Math.max(1, Math.round(freezeMs * 0.01)), function() {
+    selfKill.time.timeScale = 1;
+  });
+
+  // Institutional commentary on kill streaks (enhanced with R01 text)
+  if (combo === 1) {
+    this._flash('PARTICIPATION NOTED', 800);
+  } else if (combo === 2) {
+    this._flash('PROACTIVE ENGAGEMENT', 1000);
+  } else if (combo === 3) {
+    this._flash('ENTHUSIASM EXCEEDS PARAMETERS', 1200);
+    this._safeFlash(0xff4444, 0.08);
+  } else if (combo >= 4 && combo < 8) {
+    this._flash('CIVIC DISTURBANCE: FILED ×' + combo, 1500);
     this.behavior.chaos += 3;
-  } else if (this._killCombo === 8) {
-    this._flash('ENTHUSIASM EXCEEDS PARAMETERS', 1800);
+    this._safeFlash(0xff4444, 0.1);
+  } else if (combo >= 8 && combo < 12) {
+    this._flash('YOUR VIOLENCE HAS BEEN\nRECLASSIFIED AS INITIATIVE', 1800);
     this.behavior.chaos += 5;
-  } else if (this._killCombo >= 12) {
+    this._safeFlash(0xff0000, 0.15);
+  } else if (combo >= 12) {
     var megaLines = [
-      'YOUR VIOLENCE HAS BEEN RECLASSIFIED AS INITIATIVE.',
-      'THE COMMUNITY IS ADJUSTING TO YOUR ENTHUSIASM.',
-      'CIVIC REPORT: LOCAL HERO OR LOCAL INCIDENT. PENDING.',
-      'YOUR COMMITMENT HAS BEEN NOTED AND FORWARDED.'
+      'COMMENDATION PENDING —\nPLEASE DO NOT STOP',
+      'THE COMMUNITY IS ADJUSTING\nTO YOUR ENTHUSIASM.',
+      'CIVIC REPORT: LOCAL HERO\nOR LOCAL INCIDENT. PENDING.',
+      'YOUR COMMITMENT HAS BEEN\nNOTED AND FORWARDED.'
     ];
     this._flash(megaLines[Math.floor(Math.random() * megaLines.length)], 2200);
     this.behavior.chaos += 8;
+    this._safeFlash(0xff0000, 0.2);
     this._killCombo = 0; // reset after mega
   }
 };
@@ -6424,80 +7956,23 @@ DemoScene.prototype._showReceipt = function() {
   currents.sort(function(a, c2) { return c2.val - a.val; });
   var dominant = currents[0].name;
 
-  // Receipt text based on dominant current
-  var receipts = {
-    grace: [
-      'ORIENTATION SUMMARY:\nYou ignored several instructions\nand arrived beautifully.\nWe have recorded this as confidence.',
-      'PROGRESS NOTE:\nYour panic resolved into structure.\nWe have recorded this as composure.',
-      'BEHAVIOR REVIEW:\nYou crossed unsafe thresholds\nwith admirable posture.\nThis is being monitored.',
-      'WELLNESS OBSERVATION:\nYou fell and turned it into\nsomething worth watching.\nThe committee is conflicted.',
-      'ADJUSTMENT REPORT:\nYour near-failures were\nmore compelling than\nmost successes on record.',
-      'RECOVERY EVENT:\nYou almost failed and did not.\nFailure has been rescheduled.',
-      'NEAR-MISS COMMENDATION:\nYou avoided harm at the last moment.\nHarm felt ignored.',
-      'MOMENTARY ELEGANCE:\nYour movement lacked panic.\nPanic is not used to being excluded.',
-      'GRACE REPORT:\nYou recovered elegantly from\na situation designed to\ndefine you by failure.'
-    ],
-    chaos: [
-      'CIVIC ASSESSMENT:\nYour proactive engagement metrics\nexceed departmental expectations.\nEnthusiasm filed.',
-      'OUTCOME REPORT:\nYou treated hazard like\nchoreography. This is\nbeing monitored with interest.',
-      'WELLNESS NOTE:\nYour turbulence responsiveness\nhas been flagged as exemplary.\nPlease continue.',
-      'BEHAVIORAL SUMMARY:\nYou arrived in every direction\nat once. The system\nis still processing this.',
-      'INCIDENT LOG:\nYou did not follow\nthe approved rhythm.\nYou invented a new one.\nThis is not a compliment.',
-      'DISRUPTION REPORT:\nYou solved a problem by breaking it.\nThe problem has been archived as resolved.',
-      'INDECOROUS VELOCITY:\nYour spin exceeded recommended civility.\nCivility is drafting revised rules.',
-      'VIOLENCE CLARIFICATION:\nYou called it self-defense.\nThe system called it data.',
-      'DISCIPLINE REPORT:\nYou converted an obstacle into technique.\nThis appears contagious.'
-    ],
-    curiosity: [
-      'DISCOVERY NOTE:\nYour attention remains difficult\nto standardize.\nArchive privileges under review.',
-      'EXPLORATION STATUS:\nYour looking-around is beginning\nto resemble belief.\nThis has been noted.',
-      'BOUNDARY REVIEW:\nYou entered areas not intended\nfor personal growth.\nWe are adjusting the curriculum.',
-      'INQUIRY ASSESSMENT:\nYou asked questions\nthe orientation did not prepare.\nThe signs have been updated.',
-      'ATTENTION LOG:\nYou read things that were\nnot written for you.\nThe archive appreciates\nyour enthusiasm.',
-      'UNSCHEDULED INQUIRY:\nYou looked behind the sign.\nThe sign has been coached to feel betrayed.',
-      'ARCHIVE ACCESS FLAG:\nYou read what was not for you.\nThe file has adjusted its attitude.',
-      'FIELD OBSERVATION:\nYou spoke to citizens without purpose.\nPurpose has filed a complaint.',
-      'BROCHURE ANOMALY:\nYou collected an insert that was\nnever distributed.\nDistribution is reviewing its mistakes.',
-      'LEARNING NOTICE:\nYou demonstrated mastery in an area\nthe syllabus refuses to acknowledge.'
-    ],
-    compliance: [
-      'CIVIC ASSESSMENT:\nYour adherence to approved routing\nis a credit to the enrollment process.\nContinue as directed.',
-      'LEARNING SUMMARY:\nYou followed the preferred route\nand arrived predictably.\nThis is ideal.',
-      'PROGRESS NOTE:\nYour obedience has been recorded\nas a healthy developmental milestone.\nWell done.',
-      'ORIENTATION REPORT:\nYou did exactly what\nwas expected of you.\nWe expected more.\nBut this is also fine.',
-      'COMPLIANCE CERTIFICATE:\nYou completed the approved\nexperience without deviation.\nThe system is proud.\nThe system is always proud.',
-      'COMPLIANCE CONFIRMATION:\nYou followed the route provided.\nThe route thanks you.',
-      'APPROVED POSTURE NOTICE:\nYour stillness has been recorded\nas agreement.',
-      'STANDARD PROCEDURE:\nYou waited for the system to speak first.\nThe system appreciated being first.',
-      'ATTENDANCE MEMO:\nYour body was present.\nYour agreement remains outstanding.',
-      'COMPLIANCE UPDATE:\nYou followed the signs.\nThe signs have since been revised.'
-    ],
-    efficiency: [
-      'PROGRESS NOTE:\nTime-to-completion falls within\nacceptable performance parameters.\nYour urgency has been noted.',
-      'MOTION SUMMARY:\nYou converted distance into\nspeed without asking permission.\nThis is being reviewed.',
-      'CIVIC ASSESSMENT:\nYou completed orientation faster\nthan the curriculum anticipated.\nThis changes nothing.',
-      'VELOCITY REPORT:\nYou moved through the lesson\nbefore the lesson was ready.\nThe lesson has feelings\nabout this.',
-      'EFFICIENCY LOG:\nYou skipped the parts\nthat were meant to\nchange you.\nThey will be added\nto your next enrollment.',
-      'THROUGHPUT NOTICE:\nYou completed the section quickly.\nThe section feels replaceable.',
-      'MINIMIZED LOSS REPORT:\nYou died less than expected.\nExpectations have been updated.',
-      'TIME SAVED:\nYou did not stop to understand.\nUnderstanding has been deferred.',
-      'PROCESS OPTIMIZATION:\nYou skipped optional experiences.\nOptional experiences will remember this.'
-    ],
-    intuition: [
-      'LEARNING OUTCOME:\nYou found what the lesson\npreferred to imply.\nYour initiative remains difficult to grade.',
-      'BEHAVIOR REVIEW:\nYou followed your instincts\ninto a restricted interpretation.\nThat was not what we meant.',
-      'WELLNESS NOTE:\nYou remained strangely yourself\nthroughout the intervention.\nThe system misunderstood you\nsuccessfully.',
-      'ROUTE ANALYSIS:\nYou took a path\nwe did not build.\nWe are checking\nif it was always there.',
-      'AUTONOMY ASSESSMENT:\nYou made decisions\nwithout consulting the signs.\nThe signs would like\nan apology.',
-      'UNAUTHORIZED ROUTE SUCCESS:\nYou took a path we did not approve.\nApproval is performing a risk assessment.',
-      'SENSORY OVERRIDE:\nYou moved before the instruction arrived.\nInstruction is recalculating your category.',
-      'OFF-RECORD DECISION:\nYou made a choice without evidence.\nEvidence is requesting a meeting.',
-      'INTUITION MEMO:\nYou located an exit not recognized\nby the building.\nFacilities has been alerted.'
-    ]
+  // ── RECEIPT 2.0: PROCEDURAL GENERATION ──
+  var runData = {
+    deaths: this._telemetry ? this._telemetry.deaths : 0,
+    kills: this._telemetry ? this._telemetry.enemiesKilled : 0,
+    runTime: this._runStartTime ? Math.floor((Date.now() - this._runStartTime) / 1000) : 0,
+    stamps: this.enrollmentCard ? this.enrollmentCard.stamps.filter(function(s) { return s.earned; }).length : 0
   };
+  var generated = generateReceiptText(b, runData);
+  var receiptText = generated.text;
+  var archetype = generated.archetype;
 
-  var receiptLines = receipts[dominant] || receipts.grace;
-  var receiptText = receiptLines[Math.floor(Math.random() * receiptLines.length)];
+  // Near-miss callout
+  var rng2 = receiptRandom(runData.deaths * 777 + runData.kills * 33 + 42);
+  var nearMissLine = generateNearMissCallout(this._nearMisses, rng2);
+
+  // Counterfactual line
+  var counterfactualLine = generateCounterfactual(this._hesitations, rng2);
 
   // Full receipt terminal overlay
   var rG = this.add.graphics().setScrollFactor(0).setDepth(100);
@@ -6509,9 +7984,9 @@ DemoScene.prototype._showReceipt = function() {
     rG.fillStyle(0x000000, 0.15);
     rG.fillRect(0, rScan, W, 1);
   }
-  // Receipt paper
-  var rW = 300, rH = 240;
-  var rX = (W - rW) / 2, rY = (H - rH) / 2 - 20;
+  // Receipt paper — taller to fit new content
+  var rW = 310, rH = 320;
+  var rX = (W - rW) / 2, rY = (H - rH) / 2 - 30;
   rG.fillStyle(0xf5f0dc, 1);
   rG.fillRect(rX, rY, rW, rH);
   // Perforated top edge
@@ -6534,33 +8009,83 @@ DemoScene.prototype._showReceipt = function() {
     color: '#ffd700'
   }).setScrollFactor(0).setDepth(101);
 
-  // Subheader
-  this.add.text(rX + 8, rY + 28, 'CIVIC ENROLLMENT RECEIPT', {
-    fontFamily: 'Press Start 2P, monospace', fontSize: '11px',
-    color: '#333333'
-  }).setScrollFactor(0).setDepth(101);
+  // ── ARCHETYPE TITLE (prominent, like a name badge) ──
+  rG.fillStyle(0x1a0a2e, 0.08);
+  rG.fillRect(rX + 4, rY + 26, rW - 8, 22);
+  rG.lineStyle(0.5, 0x333333, 0.3);
+  rG.lineBetween(rX + 8, rY + 48, rX + rW - 8, rY + 48);
+  this.add.text(rX + rW / 2, rY + 29, 'CLASSIFICATION:', {
+    fontFamily: 'Courier New, monospace', fontSize: '6px',
+    color: '#888888'
+  }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
+  this.add.text(rX + rW / 2, rY + 36, archetype.toUpperCase(), {
+    fontFamily: 'Press Start 2P, monospace', fontSize: '7px',
+    color: '#1a0a2e'
+  }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
 
   // Divider line
   rG.lineStyle(1, 0x333333, 0.5);
-  rG.lineBetween(rX + 8, rY + 38, rX + rW - 8, rY + 38);
+  rG.lineBetween(rX + 8, rY + 52, rX + rW - 8, rY + 52);
 
-  // Receipt body text
-  this.add.text(rX + 12, rY + 44, receiptText, {
+  // Receipt body text (procedurally generated)
+  this.add.text(rX + 12, rY + 56, receiptText, {
     fontFamily: 'Inconsolata, monospace', fontSize: '11px',
     color: '#1a0a2e', wordWrap: { width: rW - 24 }, lineSpacing: 2
   }).setScrollFactor(0).setDepth(101);
 
-  // Enrollment card status
+  // ── NEAR-MISS CALLOUT ──
+  var nextLineY = rY + 140;
+  if (nearMissLine) {
+    rG.lineStyle(0.5, 0xcc4444, 0.3);
+    rG.lineBetween(rX + 8, nextLineY, rX + rW - 8, nextLineY);
+    this.add.text(rX + 12, nextLineY + 3, nearMissLine, {
+      fontFamily: 'Courier New, monospace', fontSize: '7px',
+      color: '#884422', wordWrap: { width: rW - 24 }, lineSpacing: 1
+    }).setScrollFactor(0).setDepth(101);
+    nextLineY += 30;
+  }
+
+  // ── COUNTERFACTUAL LINE ──
+  if (counterfactualLine) {
+    this.add.text(rX + 12, nextLineY + 2, counterfactualLine, {
+      fontFamily: 'Courier New, monospace', fontSize: '7px',
+      color: '#666688', fontStyle: 'italic', wordWrap: { width: rW - 24 }, lineSpacing: 1
+    }).setScrollFactor(0).setDepth(101);
+    nextLineY += 24;
+  }
+
+  // ── R06: LICENSING VIOLATIONS SECTION ──
+  var violationKeys = Object.keys(this._licenseViolations || {});
+  if (violationKeys.length > 0) {
+    rG.lineStyle(0.5, 0xcc4444, 0.3);
+    rG.lineBetween(rX + 8, nextLineY, rX + rW - 8, nextLineY);
+    var violLines = ['LICENSING VIOLATIONS'];
+    violLines.push('\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500');
+    for (var vi = 0; vi < violationKeys.length; vi++) {
+      var vKey = violationKeys[vi];
+      var vInfo = LICENSE.MOVES[vKey];
+      if (vInfo) {
+        violLines.push(vInfo.form + ' (' + vInfo.name + '): ' + this._licenseViolations[vKey] + ' unauthorized uses');
+      }
+    }
+    violLines.push('STATUS: UNDER REVIEW');
+    this.add.text(rX + 12, nextLineY + 3, violLines.join('\n'), {
+      fontFamily: 'Courier New, monospace', fontSize: '6px',
+      color: '#cc4444', wordWrap: { width: rW - 24 }, lineSpacing: 1
+    }).setScrollFactor(0).setDepth(101);
+    nextLineY += 12 + violLines.length * 8;
+  }
+
+  // ── ENROLLMENT + BROCHURES ──
   var stampStr = '';
   for (var esi = 0; esi < this.enrollmentCard.stamps.length; esi++) {
     stampStr += this.enrollmentCard.stamps[esi].earned ? '[■] ' : '[□] ';
   }
-  this.add.text(rX + 8, rY + rH - 70, 'ENROLLMENT: ' + stampStr, {
+  this.add.text(rX + 8, rY + rH - 80, 'ENROLLMENT: ' + stampStr, {
     fontFamily: 'Courier New, monospace', fontSize: '11px',
     color: '#666666'
   }).setScrollFactor(0).setDepth(101);
 
-  // Brochure insert collection summary
   var brochureComment = '';
   if (this.brochureCount === 0) {
     brochureComment = 'INSERTS FOUND: 0/5. INCURIOSITY NOTED.';
@@ -6571,7 +8096,7 @@ DemoScene.prototype._showReceipt = function() {
   } else {
     brochureComment = 'INSERTS FOUND: 5/5. YOUR FILE HAS BEEN REOPENED.';
   }
-  this.add.text(rX + 8, rY + rH - 58, brochureComment, {
+  this.add.text(rX + 8, rY + rH - 68, brochureComment, {
     fontFamily: 'Courier New, monospace', fontSize: '7px',
     color: this.brochureCount >= 5 ? '#ffd700' : '#888888'
   }).setScrollFactor(0).setDepth(101);
@@ -6586,16 +8111,82 @@ DemoScene.prototype._showReceipt = function() {
   var chaosScore = b.chaos || 0;
   var secondCurrent = currents[1] ? currents[1].name.toUpperCase() : 'N/A';
 
-  this.add.text(rX + 8, rY + rH - 44, 'PATTERN: ' + dominant.toUpperCase() + ' / ' + secondCurrent, {
+  this.add.text(rX + 8, rY + rH - 54, 'PATTERN: ' + dominant.toUpperCase() + ' / ' + secondCurrent, {
     fontFamily: 'Courier New, monospace', fontSize: '8px',
     color: '#888888'
   }).setScrollFactor(0).setDepth(101);
 
-  // Run stats (institutional formatting — it's all data to the system)
-  this.add.text(rX + 8, rY + rH - 34, 'TIME: ' + runTimeStr + '  GRACE: ' + graceScore + '  CHAOS: ' + chaosScore, {
+  this.add.text(rX + 8, rY + rH - 44, 'TIME: ' + runTimeStr + '  GRACE: ' + graceScore + '  CHAOS: ' + chaosScore, {
     fontFamily: 'Courier New, monospace', fontSize: '7px',
     color: '#666666'
   }).setScrollFactor(0).setDepth(101);
+
+  // ── R04: INSTITUTIONAL ASSESSMENT GRADE ──
+  var gradeResult = calculateBehavioralGrade(b);
+  rG.fillStyle(0x1a0a2e, 0.06);
+  rG.fillRect(rX + 4, rY + rH - 38, rW - 8, 14);
+  this.add.text(rX + rW / 2, rY + rH - 36, 'INSTITUTIONAL ASSESSMENT: ' + gradeResult.grade + ' — ' + gradeResult.label, {
+    fontFamily: 'Courier New, monospace', fontSize: '7px',
+    color: gradeResult.grade === 'S' ? '#ffd700' : gradeResult.grade === 'A' ? '#44ff88' : '#888888',
+    fontStyle: 'bold'
+  }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
+
+  // ── R04: STREAK RECEIPT LINE ──
+  var streakLine = getStreakReceiptLine(this._runCount);
+  if (streakLine) {
+    this.add.text(rX + 8, rY + rH - 24, streakLine, {
+      fontFamily: 'Courier New, monospace', fontSize: '6px',
+      color: '#cc8844', fontStyle: 'italic', wordWrap: { width: rW - 16 }
+    }).setScrollFactor(0).setDepth(101);
+  }
+
+  // ── R08: RETENTION SYSTEM HOOKS ──
+  // Record daily completion
+  DAILY.recordCompletion();
+  // Save to receipt cabinet
+  CABINET.save({
+    world: 1, archetype: archetype, grade: gradeResult.grade,
+    dominant: dominant, text: receiptText, stamp: 'FILED'
+  });
+  // Update department assignment
+  DEPARTMENT.update(b);
+  // Record behavioral drift
+  DRIFT.record(b);
+  // Punch the waiver card (world completion = 1 punch)
+  PUNCHCARD.punch('world_complete');
+  if (gradeResult.grade === 'A' || gradeResult.grade === 'S') PUNCHCARD.punch('high_grade');
+
+  // ── R08: LONGITUDINAL BEHAVIORAL ANALYSIS ──
+  var driftAnalysis = DRIFT.analyze();
+  if (driftAnalysis) {
+    rG.lineStyle(0.5, 0x666688, 0.3);
+    rG.lineBetween(rX + 8, rY + rH - 22, rX + rW - 8, rY + rH - 22);
+    this.add.text(rX + rW / 2, rY + rH - 20, 'LONGITUDINAL NOTE: ' + driftAnalysis.narrative, {
+      fontFamily: 'Courier New, monospace', fontSize: '5px',
+      color: '#666688', fontStyle: 'italic', wordWrap: { width: rW - 16 }
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
+  }
+
+  // ── R09: FOURTH WALL RECEIPT LINE ──
+  var fourthWall = getFourthWallLine(window._cactusEdRunCount || this._runCount);
+  if (fourthWall) {
+    this.add.text(rX + rW / 2, rY + rH - 8, 'ADMINISTRATIVE NOTE: ' + fourthWall, {
+      fontFamily: 'Courier New, monospace', fontSize: '5px',
+      color: '#555577', fontStyle: 'italic', wordWrap: { width: rW - 16 }
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
+  }
+
+  // ── R09: BLANK RECEIPT CHECK (perfect compliance) ──
+  // If earned, the receipt text was already shown normally but we add the stamp
+  if (isBlankReceiptEarned(b)) {
+    // Override stamp to be the blank receipt message
+    this.time.delayedCall(3200, function() {
+      var blankTxt = self.add.text(rX + rW / 2, rY + rH / 2 - 10, 'PERFECT RECORD.\nTHANK YOU FOR YOUR SERVICE.\nNO FURTHER ASSESSMENT REQUIRED.', {
+        fontFamily: 'Courier New, monospace', fontSize: '8px',
+        color: '#1a0a2e', align: 'center', lineSpacing: 4
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(104);
+    });
+  }
 
   // Brochure-enriched receipt addendum (only if 3+ collected)
   if (this.brochureCount >= 3) {
@@ -6609,17 +8200,238 @@ DemoScene.prototype._showReceipt = function() {
       'ADDENDUM: THE BROCHURES DISAGREE WITH EACH OTHER.',
       'ADDENDUM: NOT ALL DISCOVERIES WERE SCHEDULED.'
     ];
-    this.add.text(rX + 8, rY + rH - 30, addendums[Math.floor(Math.random() * addendums.length)], {
+    this.add.text(rX + 8, rY + rH - 34, addendums[Math.floor(Math.random() * addendums.length)], {
       fontFamily: 'Courier New, monospace', fontSize: '7px',
       color: '#cc8844', fontStyle: 'italic'
     }).setScrollFactor(0).setDepth(101);
   }
+
+  // ── RECEIPT STAMP ANIMATION (slams down after receipt prints) ──
+  var stampTexts = ['PROCESSED', 'FILED', 'REVIEWED', 'ARCHIVED', 'ACKNOWLEDGED'];
+  var stampWord = stampTexts[Math.floor(rng2() * stampTexts.length)];
+  var stampAngle = (rng2() * 6 - 3) * (Math.PI / 180); // 2-5 degrees rotation
+  var stampG = this.add.graphics().setScrollFactor(0).setDepth(102).setAlpha(0);
+  var stampTxt = this.add.text(rX + rW / 2, rY + rH / 2 + 20, stampWord, {
+    fontFamily: 'Press Start 2P, monospace', fontSize: '18px',
+    color: '#cc2222', stroke: '#881111', strokeThickness: 2
+  }).setOrigin(0.5).setScrollFactor(0).setDepth(103).setAlpha(0).setRotation(stampAngle);
+  // Draw stamp border
+  var sSelf = this;
+  this.time.delayedCall(2800, function() {
+    // KA-CHUNK SFX
+    if (sSelf._sfx) {
+      var ac = sSelf._sfx._ac;
+      if (ac) {
+        var thud = ac.createOscillator();
+        thud.type = 'square';
+        thud.frequency.setValueAtTime(80, ac.currentTime);
+        thud.frequency.exponentialRampToValueAtTime(30, ac.currentTime + 0.15);
+        var thudG = ac.createGain();
+        thudG.gain.setValueAtTime(0.25, ac.currentTime);
+        thudG.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.2);
+        thud.connect(thudG); thudG.connect(ac.destination);
+        thud.start(ac.currentTime); thud.stop(ac.currentTime + 0.2);
+        // Noise burst
+        var bufLen = ac.sampleRate * 0.08;
+        var nBuf = ac.createBuffer(1, bufLen, ac.sampleRate);
+        var nData = nBuf.getChannelData(0);
+        for (var ni = 0; ni < bufLen; ni++) nData[ni] = (Math.random() * 2 - 1) * 0.6;
+        var nSrc = ac.createBufferSource();
+        nSrc.buffer = nBuf;
+        var nG = ac.createGain();
+        nG.gain.setValueAtTime(0.2, ac.currentTime);
+        nG.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.1);
+        nSrc.connect(nG); nG.connect(ac.destination);
+        nSrc.start(ac.currentTime); nSrc.stop(ac.currentTime + 0.1);
+      }
+    }
+    // Stamp visual — slam in with scale
+    stampG.setAlpha(1);
+    stampG.fillStyle(0xcc2222, 0.15);
+    stampG.fillRect(rX + rW / 2 - 60, rY + rH / 2 - 2, 120, 44);
+    stampG.lineStyle(2, 0xcc2222, 0.6);
+    stampG.strokeRect(rX + rW / 2 - 58, rY + rH / 2, 116, 40);
+    stampTxt.setAlpha(1).setScale(1.8);
+    sSelf.tweens.add({ targets: stampTxt, scaleX: 1, scaleY: 1, duration: 80, ease: 'Back.easeOut' });
+    // Screenshake on stamp
+    sSelf.cameras.main.shake(60, 0.006);
+  });
 
   // Bottom: press Z to continue
   this.add.text(W / 2, rY + rH + 16, 'PRESS Z TO RESUME BECOMING', {
     fontFamily: 'Press Start 2P, monospace', fontSize: '12px',
     color: '#ffd700', stroke: '#000000', strokeThickness: 2
   }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
+
+  // ── R05: PRINT RECEIPT BUTTON (appears after stamp animation) ──
+  var printSelf = this;
+  var printGrade = calculateBehavioralGrade(b);
+  var shareData = {
+    archetype: archetype,
+    grade: printGrade.grade,
+    gradeLabel: printGrade.label,
+    behavior: JSON.parse(JSON.stringify(b)),
+    receiptText: receiptText,
+    dominant: dominant,
+    secondary: currents[1] ? currents[1].name : '',
+    worldName: 'WORLD 1: HAPPY PLACE COMMONS',
+    gameUrl: 'tkevinbigham.github.io/CEHP/ACTIVE/game/',
+    stats: {
+      deaths: runData.deaths,
+      stamps: runData.stamps,
+      brochures: printSelf.brochureCount || 0,
+      runNumber: printSelf._runCount || 1
+    }
+  };
+  this.time.delayedCall(3500, function() {
+    var printBtn = printSelf.add.text(W / 2, rY + rH + 34, 'P — PRINT RECEIPT', {
+      fontFamily: 'Courier New, monospace', fontSize: '8px',
+      color: '#888888', stroke: '#000000', strokeThickness: 2
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
+    // Fade in
+    printBtn.setAlpha(0);
+    printSelf.tweens.add({ targets: printBtn, alpha: 1, duration: 400 });
+
+    // P key opens share overlay
+    var pKey = printSelf.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+    printSelf._shareOverlayOpen = false;
+    var pollPrint = function() {
+      if (printSelf._shareOverlayOpen || !printSelf._receiptActive) return;
+      if (pKey.isDown) {
+        printSelf._shareOverlayOpen = true;
+        // ── SHARE OVERLAY ──
+        var sG = printSelf.add.graphics().setScrollFactor(0).setDepth(150);
+        sG.fillStyle(0x020008, 0.92);
+        sG.fillRect(0, 0, W, H);
+        // CRT scanlines
+        for (var ss = 0; ss < H; ss += 3) { sG.fillStyle(0x000000, 0.1); sG.fillRect(0, ss, W, 1); }
+
+        // Title
+        printSelf.add.text(W / 2, H * 0.12, 'RECEIPT PRINTING SERVICES', {
+          fontFamily: 'Press Start 2P, monospace', fontSize: '12px',
+          color: '#ffd700', stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
+
+        printSelf.add.text(W / 2, H * 0.20, 'SELECT FORMAT:', {
+          fontFamily: 'Courier New, monospace', fontSize: '9px',
+          color: '#888888', stroke: '#000000', strokeThickness: 2
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
+
+        // Format indicator
+        var formatMode = 'square';
+        var formatText = printSelf.add.text(W / 2, H * 0.27, '[SQUARE 1080x1080]   STORY 1080x1920', {
+          fontFamily: 'Courier New, monospace', fontSize: '8px',
+          color: '#ffd700', stroke: '#000000', strokeThickness: 2
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
+
+        // Action buttons
+        printSelf.add.text(W / 2, H * 0.40, '1 — DOWNLOAD RECEIPT (PNG)', {
+          fontFamily: 'Courier New, monospace', fontSize: '10px',
+          color: '#44ff88', stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
+
+        printSelf.add.text(W / 2, H * 0.48, '2 — COPY TO CLIPBOARD (TEXT)', {
+          fontFamily: 'Courier New, monospace', fontSize: '10px',
+          color: '#88ccff', stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
+
+        printSelf.add.text(W / 2, H * 0.56, '3 — SHARE (MOBILE)', {
+          fontFamily: 'Courier New, monospace', fontSize: '10px',
+          color: '#cc8844', stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
+
+        printSelf.add.text(W / 2, H * 0.64, 'TAB — TOGGLE FORMAT  |  ESC — BACK', {
+          fontFamily: 'Courier New, monospace', fontSize: '7px',
+          color: '#666666', stroke: '#000000', strokeThickness: 2
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
+
+        // Status text (for feedback)
+        var statusText = printSelf.add.text(W / 2, H * 0.75, '', {
+          fontFamily: 'Courier New, monospace', fontSize: '9px',
+          color: '#ffd700', stroke: '#000000', strokeThickness: 2
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
+
+        // Emoji preview
+        var emojiPreview = generateBehavioralEmoji(shareData.behavior);
+        printSelf.add.text(W / 2, H * 0.82, 'BEHAVIORAL CODE: ' + emojiPreview, {
+          fontFamily: 'Courier New, monospace', fontSize: '10px',
+          color: '#aaaaaa', stroke: '#000000', strokeThickness: 2
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
+
+        // Key handlers
+        var key1 = printSelf.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ONE);
+        var key2 = printSelf.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TWO);
+        var key3 = printSelf.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.THREE);
+        var tabKey = printSelf.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.TAB);
+        var escKey = printSelf.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+        var tabCooldown = false;
+
+        var pollShare = function() {
+          if (!printSelf._shareOverlayOpen) return;
+
+          // Toggle format
+          if (tabKey.isDown && !tabCooldown) {
+            tabCooldown = true;
+            formatMode = formatMode === 'square' ? 'story' : 'square';
+            if (formatMode === 'square') {
+              formatText.setText('[SQUARE 1080x1080]   STORY 1080x1920');
+            } else {
+              formatText.setText(' SQUARE 1080x1080   [STORY 1080x1920]');
+            }
+            printSelf.time.delayedCall(300, function() { tabCooldown = false; });
+          }
+
+          // Download
+          if (key1.isDown) {
+            var card = renderShareableReceipt(formatMode, shareData);
+            var archSlug = (shareData.archetype || 'receipt').toLowerCase().replace(/[^a-z0-9]+/g, '_').substring(0, 30);
+            var dateStr = new Date().toISOString().substring(0, 10);
+            downloadCanvasAsPNG(card, 'cactus_ed_receipt_' + archSlug + '_' + dateStr + '.png');
+            statusText.setText('RECEIPT DOWNLOADED. FILE YOUR COPY.');
+            printSelf.time.delayedCall(2000, function() { statusText.setText(''); });
+          }
+
+          // Copy to clipboard
+          if (key2.isDown) {
+            var clipText = generateReceiptClipboardText(shareData);
+            try {
+              navigator.clipboard.writeText(clipText).then(function() {
+                statusText.setText('COPIED TO CLIPBOARD. DISTRIBUTE ACCORDINGLY.');
+              }).catch(function() {
+                statusText.setText('CLIPBOARD ACCESS DENIED BY THE INSTITUTION.');
+              });
+            } catch(e) {
+              statusText.setText('CLIPBOARD UNAVAILABLE. TRY DOWNLOAD INSTEAD.');
+            }
+            printSelf.time.delayedCall(2000, function() { statusText.setText(''); });
+          }
+
+          // Share (mobile)
+          if (key3.isDown) {
+            var shareCard = renderShareableReceipt(formatMode, shareData);
+            var shareClip = generateReceiptClipboardText(shareData);
+            var shareFN = 'cactus_ed_receipt.png';
+            shareReceiptCard(shareCard, shareClip, shareFN);
+            statusText.setText('SHARING RECEIPT VIA INSTITUTIONAL CHANNELS...');
+            printSelf.time.delayedCall(2000, function() { statusText.setText(''); });
+          }
+
+          // ESC to close
+          if (escKey.isDown) {
+            printSelf._shareOverlayOpen = false;
+            sG.destroy();
+            return;
+          }
+
+          printSelf.time.delayedCall(100, pollShare);
+        };
+        printSelf.time.delayedCall(300, pollShare);
+      } else {
+        printSelf.time.delayedCall(100, pollPrint);
+      }
+    };
+    pollPrint();
+  });
 
   // Camera shake for receipt reveal (medium — this is a signature moment)
   this.cameras.main.shake(200, 0.008);
@@ -6679,7 +8491,8 @@ DemoScene.prototype._showReceipt = function() {
         'NPCS MET:      ' + cTel.npcsSpoken,
         'KILLS:         ' + cTel.enemiesKilled + ' (BEST COMBO: ' + cTel.maxKillCombo + ')',
         'GRACE:         ' + cB.grace + ' (BEST CHAIN: ' + cTel.maxRecoveryChain + ')',
-        'DEATHS:        ' + cTel.deaths
+        'INSTITUTIONAL INCIDENTS: ' + cTel.deaths,
+        'RE-MATERIALIZATION COST: $' + (cTel.deaths * 600)
       ];
       self7.add.text(W / 2, H * 0.32, statsLines.join('\n'), {
         fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#aaaaaa',
@@ -6747,21 +8560,38 @@ DemoScene.prototype._showReceipt = function() {
       }
 
       // Bureau classification (moved below medals)
-      self7.add.text(W / 2, H * 0.76, completeSummaries[maxCurr] || completeSummaries.compliance, {
+      self7.add.text(W / 2, H * 0.73, completeSummaries[maxCurr] || completeSummaries.compliance, {
         fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#ffd700',
         stroke: '#000000', strokeThickness: 2, wordWrap: { width: W - 60 }, align: 'center'
       }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
-      // Next-goal magnet
-      self7.add.text(W / 2, H * 0.80, 'WORLD 2: SUNLUSH LEARNING PRESERVE — ACCESS PENDING', {
-        fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#666666',
-        stroke: '#000000', strokeThickness: 2
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
+
+      // ── R04: INSTITUTIONAL ASSESSMENT GRADE (prominent) ──
+      var cGrade = calculateBehavioralGrade(cB);
+      var gradeColor = cGrade.grade === 'S' ? '#ffd700' : cGrade.grade === 'A' ? '#44ff88' : cGrade.grade === 'B' ? '#88ccff' : '#ff8888';
+      cG.fillStyle(parseInt(gradeColor.replace('#',''), 16), 0.15);
+      cG.fillRect(W * 0.1, H * 0.76, W * 0.8, 18);
+      cG.lineStyle(1, parseInt(gradeColor.replace('#',''), 16), 0.3);
+      cG.strokeRect(W * 0.1, H * 0.76, W * 0.8, 18);
+      self7.add.text(W / 2, H * 0.765, 'INSTITUTIONAL ASSESSMENT: ' + cGrade.grade + ' — ' + cGrade.label, {
+        fontFamily: 'Courier New, monospace', fontSize: '8px', color: gradeColor,
+        stroke: '#000000', strokeThickness: 3, fontStyle: 'bold'
+      }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(111);
+
+      // ── R04: CORRECTIVE ACTION ITEMS ──
+      var cItems = generateCorrectiveItems(cB);
+      if (cItems.length > 0) {
+        self7.add.text(W / 2, H * 0.80, cItems.join('\n'), {
+          fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#cc8844',
+          stroke: '#000000', strokeThickness: 2, wordWrap: { width: W - 40 },
+          align: 'center', lineSpacing: 2
+        }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(111);
+      }
+
       // Replay hooks + personal best comparison
       var replayHints = [];
       var pb = self7._personalBest;
       var isNewRecord = false;
       if (pb.totalCompletions > 1) {
-        // Compare to personal best
         var pbTimeSec = pb.bestTime ? Math.floor(pb.bestTime / 1000) : 0;
         var pbMin = Math.floor(pbTimeSec / 60);
         var pbSec = pbTimeSec % 60;
@@ -6781,27 +8611,31 @@ DemoScene.prototype._showReceipt = function() {
       if (cTel.kiosksRead < 6) replayHints.push((6 - cTel.kiosksRead) + ' SPONSOR KIOSKS UNREAD.');
       if (replayHints.length > 0) {
         var hintColor = isNewRecord ? '#ffd700' : '#cc8844';
-        self7.add.text(W / 2, H * 0.86, replayHints.slice(0, 2).join('\n'), {
-          fontFamily: 'Courier New, monospace', fontSize: '7px', color: hintColor,
+        self7.add.text(W / 2, H * 0.87, replayHints.slice(0, 2).join('\n'), {
+          fontFamily: 'Courier New, monospace', fontSize: '6px', color: hintColor,
           stroke: '#000000', strokeThickness: 2, align: 'center'
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
       }
-      // NEW RECORD celebration (extra confetti burst)
+      // NEW RECORD celebration
       if (isNewRecord) {
         for (var nrc = 0; nrc < 20; nrc++) {
           var nrX = W * 0.3 + Math.random() * W * 0.4;
-          var nrY = H * 0.83 + Math.random() * 10;
+          var nrY = H * 0.85 + Math.random() * 10;
           cG.fillStyle(0xffd700, 0.5 + Math.random() * 0.3);
           cG.fillRect(nrX, nrY, 2, 2);
         }
       }
-      // Press Z for World 2, X to replay World 1
-      self7.add.text(W / 2, H * 0.92, 'Z — PROCEED TO WORLD 2', {
-        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#44ff88',
-        stroke: '#000000', strokeThickness: 3
+      // ── R04: THREE-BUTTON LAYOUT: RE-ENROLL / APPEAL / PROCEED ──
+      self7.add.text(W / 2, H * 0.91, 'Z — RE-ENROLL  (FRESH START, 30% BEHAVIORAL MEMORY)', {
+        fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#ffd700',
+        stroke: '#000000', strokeThickness: 3, fontStyle: 'bold'
       }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
-      self7.add.text(W / 2, H * 0.97, 'X — RE-ENROLL WORLD 1', {
-        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#888888',
+      self7.add.text(W / 2, H * 0.945, 'X — APPEAL  (FULL BEHAVIORAL RECORD PRESERVED)', {
+        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#cc8844',
+        stroke: '#000000', strokeThickness: 2
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
+      self7.add.text(W / 2, H * 0.975, 'C — PROCEED TO WORLD 2', {
+        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#44ff88',
         stroke: '#000000', strokeThickness: 2
       }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
       // Celebration confetti
@@ -6812,17 +8646,27 @@ DemoScene.prototype._showReceipt = function() {
         cG.fillStyle(confCol, 0.4 + Math.random() * 0.3);
         cG.fillRect(confX, confY, 2 + Math.random() * 3, 2 + Math.random() * 3);
       }
-      // Wait for Z to restart (fresh key, delay to prevent double-fire)
+      // ── R04: THREE-BUTTON POLLING (Z=RE-ENROLL, X=APPEAL, C=PROCEED) ──
       self7._completeScreenActive = true;
       self7.time.delayedCall(800, function() {
         var zKey = self7.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
         var xKey = self7.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+        var cKey = self7.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
         var pollRestart = function() {
           if (!self7._completeScreenActive) return;
           if (zKey.isDown) {
+            // ── RE-ENROLL (30% behavior carryover — institutional memory fades) ──
+            self7._completeScreenActive = false;
+            window._cactusEdBehaviorCarryover = applyBehaviorCarryover(self7.behavior, 0.3);
+            try { self7.scene.restart(); } catch(e) { window.location.reload(); }
+          } else if (xKey.isDown) {
+            // ── APPEAL (full behavior preserved — the institution remembers everything) ──
+            self7._completeScreenActive = false;
+            window._cactusEdBehaviorCarryover = JSON.parse(JSON.stringify(self7.behavior));
+            try { self7.scene.restart(); } catch(e) { window.location.reload(); }
+          } else if (cKey.isDown) {
             // ── PROCEED TO WORLD 2 — save behavior across worlds ──
             self7._completeScreenActive = false;
-            // Persist behavior, telemetry, and run data
             window._cactusEdCarryover = {
               behavior: JSON.parse(JSON.stringify(self7.behavior)),
               kills: self7._telemetry.enemiesKilled,
@@ -6831,7 +8675,8 @@ DemoScene.prototype._showReceipt = function() {
               time: Date.now() - self7._runStartTime,
               world1Classification: completeSummaries[maxCurr] || 'COMPLIANT'
             };
-            // ── SAVE TO LOCALSTORAGE (the institution keeps your file) ──
+            // R07: Set policy flags for World 2 based on W1 behavior
+            setPoliciesForNextWorld(self7.behavior);
             SAVE.save({
               world: 2, health: self7.health, aloe: self7.aloe,
               behavior: self7.behavior, deaths: self7._telemetry.deaths,
@@ -6839,7 +8684,6 @@ DemoScene.prototype._showReceipt = function() {
               totalKills: self7._telemetry.enemiesKilled,
               assistMode: ASSIST.active ? { biggerCoyote: ASSIST.biggerCoyote, slowerBosses: ASSIST.slowerBosses, easyCopter: ASSIST.easyCopter, infiniteHealth: ASSIST.infiniteHealth, slowerGame: ASSIST.slowerGame } : {}
             });
-            // Transition cinematic — brief loading screen
             var transG = self7.add.graphics().setScrollFactor(0).setDepth(120);
             transG.fillStyle(0x000000, 1); transG.fillRect(0, 0, W, H);
             var transTexts = [
@@ -6863,10 +8707,6 @@ DemoScene.prototype._showReceipt = function() {
               self7.time.delayedCall(800, showTransLine);
             };
             showTransLine();
-          } else if (xKey.isDown) {
-            // ── RE-ENROLL WORLD 1 ──
-            self7._completeScreenActive = false;
-            try { self7.scene.restart(); } catch(e) { window.location.reload(); }
           } else {
             self7.time.delayedCall(80, pollRestart);
           }
@@ -6878,6 +8718,127 @@ DemoScene.prototype._showReceipt = function() {
     }
   };
   this.time.delayedCall(200, checkDismiss); // start polling early, flag controls readiness
+};
+
+// ── R06: LICENSING VIOLATION DETECTION ───────────────────────
+// Called whenever an unlicensed move is performed.
+// Returns true if the move is unlicensed (violation logged), false if licensed.
+DemoScene.prototype._checkLicense = function(moveKey) {
+  if (LICENSE.isLicensed(moveKey)) return false; // licensed, no violation
+  // Count violation
+  if (!this._licenseViolations[moveKey]) this._licenseViolations[moveKey] = 0;
+  this._licenseViolations[moveKey]++;
+  // Behavioral tracking: unlicensed moves feed chaos + intuition
+  if (this.behavior) {
+    this.behavior.chaos += 1;
+    this.behavior.intuition += 1;
+  }
+  // First-use notification (0.5s flash)
+  if (!this._licenseNotified[moveKey]) {
+    this._licenseNotified[moveKey] = true;
+    var moveInfo = LICENSE.MOVES[moveKey];
+    if (moveInfo) {
+      this._flash('UNLICENSED MANEUVER DETECTED \u2014 ' + moveInfo.form + ' REQUIRED', 2000);
+    }
+  }
+  // Repeated use (3+ times): chance to spawn Auditor
+  if (this._licenseViolations[moveKey] >= 3 && !this._auditorActive && Math.random() < 0.3) {
+    this._spawnAuditor();
+  }
+  return true; // violation occurred
+};
+
+// Spawn a floating clipboard Auditor (non-lethal, annoying, 5-second lifespan)
+DemoScene.prototype._spawnAuditor = function() {
+  if (this._auditorActive) return;
+  this._auditorActive = true;
+  this._auditorTimer = 5000; // 5 seconds
+  var ep = this.ep;
+  // Auditor starts behind the player
+  this._auditorX = ep.x - ep.facing * 60;
+  this._auditorY = ep.y - 30;
+  this._flash('COMPLIANCE AUDITOR DISPATCHED', 1500);
+};
+
+// Update Auditor each frame (called from update loop)
+DemoScene.prototype._updateAuditor = function(delta) {
+  if (!this._auditorActive) return;
+  this._auditorTimer -= delta;
+  if (this._auditorTimer <= 0) {
+    this._auditorActive = false;
+    return;
+  }
+  // Slowly follow player
+  var ep = this.ep;
+  var dx = ep.x - this._auditorX;
+  var dy = (ep.y - 20) - this._auditorY;
+  var dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist > 5) {
+    this._auditorX += (dx / dist) * 40 * (delta / 1000);
+    this._auditorY += (dy / dist) * 30 * (delta / 1000);
+  }
+  // Push player if too close (non-lethal nudge)
+  if (dist < 20) {
+    ep.vx += (dx > 0 ? -15 : 15);
+  }
+};
+
+// Draw Auditor (called from render)
+DemoScene.prototype._drawAuditor = function(g) {
+  if (!this._auditorActive) return;
+  var ax = this._auditorX;
+  var ay = this._auditorY;
+  // Clipboard body (institutional beige)
+  g.fillStyle(0xd4c5a9, 0.9);
+  g.fillRect(ax - 6, ay - 10, 12, 16);
+  g.lineStyle(1, 0x8b7355, 0.8);
+  g.strokeRect(ax - 6, ay - 10, 12, 16);
+  // Clipboard clip (gold)
+  g.fillStyle(0xffd700, 0.8);
+  g.fillRect(ax - 3, ay - 12, 6, 4);
+  // Red warning eye
+  g.fillStyle(0xff4444, 0.6 + Math.sin(Date.now() * 0.01) * 0.3);
+  g.fillCircle(ax, ay - 3, 2);
+  // Text lines (tiny)
+  g.fillStyle(0x333333, 0.5);
+  g.fillRect(ax - 4, ay + 1, 8, 1);
+  g.fillRect(ax - 4, ay + 3, 6, 1);
+  g.fillRect(ax - 4, ay + 5, 7, 1);
+};
+
+// Grant a certification (license a move with fanfare)
+DemoScene.prototype._grantCertification = function(moveKey) {
+  if (LICENSE.isLicensed(moveKey)) return; // already licensed
+  if (this._certificationsDone[moveKey]) return; // already done this run
+  this._certificationsDone[moveKey] = true;
+  LICENSE.grant(moveKey);
+  var moveInfo = LICENSE.MOVES[moveKey];
+  if (!moveInfo) return;
+  // Fanfare: ascending tone + stamp SFX
+  if (this._sfx) {
+    try {
+      var ac = this._sfx._ac || getSharedAudioContext();
+      var t = ac.currentTime;
+      // Ascending fanfare (3 notes)
+      var notes = [262, 330, 392]; // C E G
+      for (var ni = 0; ni < notes.length; ni++) {
+        var osc = ac.createOscillator();
+        var gain = ac.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(notes[ni], t + ni * 0.12);
+        gain.gain.setValueAtTime(0.15, t + ni * 0.12);
+        gain.gain.linearRampToValueAtTime(0, t + ni * 0.12 + 0.2);
+        osc.connect(gain); gain.connect(ac.destination);
+        osc.start(t + ni * 0.12); osc.stop(t + ni * 0.12 + 0.25);
+      }
+    } catch(e) {}
+  }
+  // Flash certification text
+  this._flash(moveInfo.form + ' \u2014 APPROVED.\n' + moveInfo.name + ' NOW LICENSED.', 3000);
+  // Camera shake (celebratory)
+  this.cameras.main.shake(100, 0.005);
+  // Compliance reward
+  if (this.behavior) this.behavior.compliance += 3;
 };
 
 // ── BEAUTIFUL RECOVERY DETECTION ────────────────────────────
@@ -7586,22 +9547,29 @@ DemoScene.prototype.update = function(time, delta) {
         fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#88ccff',
         stroke: '#000000', strokeThickness: 2, align: 'center', wordWrap: { width: W - 60 }
       }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
-      // Controls reminder
-      this._pauseTexts.push(this.add.text(W / 2, H * 0.50, [
-        'APPROVED CONTROLS',
-        '',
-        'ARROWS \u2014 NAVIGATE THE APPROVED ROUTE',
-        'Z / UP \u2014 JUMP / DOUBLE / TRIPLE JUMP',
-        'HOLD DOWN + MOVE, RELEASE \u2014 CHARGE SPIN',
-        'PRESS JUMP ON WALL \u2014 WALL JUMP',
-        'HOLD Z AFTER 3RD JUMP \u2014 GLIDE',
-        'TAP Z RAPIDLY AFTER DOUBLE JUMP \u2014 CIG COPTER',
-        'X \u2014 CIG LANCE / FIRE WEAPON / SLAM',
-        'C \u2014 CIG KICK / AIR DASH'
-      ].join('\n'), {
-        fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#aaaaaa',
-        stroke: '#000000', strokeThickness: 2, align: 'center', lineSpacing: 2
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
+      // ── R06: EMPLOYEE HANDBOOK (replaces basic controls list) ──
+      var handbookLines = ['EMPLOYEE HANDBOOK \u2014 AUTHORIZED PROCEDURES', '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500'];
+      handbookLines.push('\u2713 BASIC LOCOMOTION ........... Licensed');
+      handbookLines.push('\u2713 VERTICAL DISPLACEMENT ...... Licensed');
+      handbookLines.push('\u2713 CONFLICT RESOLUTION (PUNCH)  Licensed');
+      var moveKeys = Object.keys(LICENSE.MOVES);
+      for (var hbi = 0; hbi < moveKeys.length; hbi++) {
+        var hbKey = moveKeys[hbi];
+        var hbMove = LICENSE.MOVES[hbKey];
+        var hbLicensed = LICENSE.isLicensed(hbKey);
+        var hbViol = this._licenseViolations[hbKey] || 0;
+        if (hbLicensed) {
+          handbookLines.push('\u2713 ' + hbMove.form + ': ' + hbMove.name + ' ... Licensed');
+        } else {
+          var hbStatus = hbViol > 0 ? 'PENDING (' + hbViol + ' violations)' : 'PENDING';
+          handbookLines.push('\u25A1 ' + hbMove.form + ': ' + hbMove.name + ' ... ' + hbStatus);
+          handbookLines.push('  "' + hbMove.hint + '"');
+        }
+      }
+      this._pauseTexts.push(this.add.text(W / 2, H * 0.44, handbookLines.join('\n'), {
+        fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#aaaaaa',
+        stroke: '#000000', strokeThickness: 2, align: 'left', lineSpacing: 1
+      }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(91));
       // Status bar
       var b = this.behavior;
       var maxB = Math.max(b.compliance, b.intuition, b.curiosity, b.grace, b.chaos, b.efficiency);
@@ -7611,8 +9579,14 @@ DemoScene.prototype.update = function(time, delta) {
       else if (b.curiosity === maxB) domName = 'CURIOSITY';
       else if (b.efficiency === maxB) domName = 'EFFICIENCY';
       else if (b.intuition === maxB) domName = 'INTUITION';
-      this._pauseTexts.push(this.add.text(W / 2, H * 0.78, 'DOMINANT PATTERN: ' + domName, {
+      this._pauseTexts.push(this.add.text(W / 2, H * 0.76, 'DOMINANT PATTERN: ' + domName, {
         fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#666666',
+        stroke: '#000000', strokeThickness: 2
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
+      // R10: Case number + mood + remix on pause screen
+      var pauseInfo = (this._caseNumber || '') + '  |  MOOD: ' + (this._mood ? this._mood.name : 'STANDARD');
+      this._pauseTexts.push(this.add.text(W / 2, H * 0.80, pauseInfo, {
+        fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#555555',
         stroke: '#000000', strokeThickness: 2
       }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
       // Enrollment status
@@ -7626,10 +9600,12 @@ DemoScene.prototype.update = function(time, delta) {
       }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
       // Accessibility options
       var a = this._accessibility;
+      var sfxMuted = this._sfx ? this._sfx.muted : false;
       var accStr = 'COMFORT: ' +
         (a.reduceShake ? '[X]' : '[ ]') + ' SHAKE  ' +
         (a.reduceFlash ? '[X]' : '[ ]') + ' FLASH  ' +
-        (a.reduceParticles ? '[X]' : '[ ]') + ' PARTICLES  (1/2/3 TO TOGGLE)';
+        (a.reduceParticles ? '[X]' : '[ ]') + ' PARTICLES  ' +
+        (sfxMuted ? '[X]' : '[ ]') + ' MUTE  (1/2/3/4 TO TOGGLE)';
       this._pauseTexts.push(this.add.text(W / 2, H * 0.88, accStr, {
         fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#555555',
         stroke: '#000000', strokeThickness: 2
@@ -7684,6 +9660,19 @@ DemoScene.prototype.update = function(time, delta) {
     }
     if (Phaser.Input.Keyboard.JustDown(threeKey)) {
       this._accessibility.reduceParticles = !this._accessibility.reduceParticles;
+      this._paused = false;
+      if (this._pauseG) this._pauseG.clear().setAlpha(0);
+    }
+    var fourKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR);
+    if (Phaser.Input.Keyboard.JustDown(fourKey)) {
+      if (this._sfx) {
+        this._sfx.muted = !this._sfx.muted;
+        if (this._sfx.muted) this._sfx.stopAllLoops();
+      }
+      // Also mute/unmute muzak
+      if (this._muzak && this._muzak.master) {
+        this._muzak.master.gain.value = this._sfx.muted ? 0 : 0.08;
+      }
       this._paused = false;
       if (this._pauseG) this._pauseG.clear().setAlpha(0);
     }
@@ -7754,6 +9743,94 @@ DemoScene.prototype.update = function(time, delta) {
     transFlash.fillStyle(tc.color, tc.alpha);
     transFlash.fillRect(0, 0, W, H);
     this.tweens.add({ targets: transFlash, alpha: 0, duration: 800, onComplete: function() { transFlash.destroy(); }});
+
+    // ── R06: CERTIFICATION ACT TRIGGERS (zone-specific skill challenges) ──
+    // These fire on zone transitions as "discovery" moments
+  }
+
+  // ── R09: CLERICAL ERROR JACKPOT (one-zone celebration) ──
+  if (this._clericalError && zone.id === this._clericalErrorZone) {
+    // Enemies in this zone bounce happily
+    for (var cei = 0; cei < this.mochiList.length; cei++) {
+      var ce = this.mochiList[cei];
+      if (ce.dieT < 0) {
+        ce.y = ce.y - Math.abs(Math.sin(time * 0.005 + cei)) * 2; // bouncy
+      }
+    }
+    // One-time celebration banner
+    if (!this._clericalBannerShown) {
+      this._clericalBannerShown = true;
+      this._flash('CONGRATULATIONS \u2014 INSTITUTIONAL ERROR IN YOUR FAVOR', 4000);
+    }
+  }
+
+  // ── R06: CERTIFICATION CHECKS (position-based during gameplay) ──
+  // Double Jump cert: reach above y=50% of screen in Zone A using double jump
+  if (!LICENSE.isLicensed('doubleJump') && zone.id === 'A' && es.djUsed && ep.y < H * 0.5) {
+    this._grantCertification('doubleJump');
+  }
+  // Wall Jump cert: wall slide or wall jump in Zone B
+  if (!LICENSE.isLicensed('wallJump') && zone.id === 'B' && (es._wallSliding || (es._wallContact !== 0 && !ep.grounded && ep.vy < 0))) {
+    if (!this._wallCertProgress) this._wallCertProgress = 0;
+    this._wallCertProgress++;
+    if (this._wallCertProgress >= 3) { // sustained wall contact = certified
+      this._grantCertification('wallJump');
+    }
+  }
+  // Kick cert: use kick 3 times in Zone B
+  if (!LICENSE.isLicensed('kick') && zone.id === 'B' && es.kickActive) {
+    if (!this._kickCertCount) this._kickCertCount = 0;
+    if (!this._kickCertCooldown) this._kickCertCooldown = 0;
+    this._kickCertCooldown -= delta;
+    if (this._kickCertCooldown <= 0) {
+      this._kickCertCount++;
+      this._kickCertCooldown = 500; // prevent rapid counting
+      if (this._kickCertCount >= 3) {
+        this._grantCertification('kick');
+      }
+    }
+  }
+  // Spin Dash cert: use spin dash successfully (reach high speed)
+  if (!LICENSE.isLicensed('spinDash') && es.spinning) {
+    this._grantCertification('spinDash');
+  }
+  // Triple Jump cert: perform a triple jump
+  if (!LICENSE.isLicensed('tripleJump') && es.tjUsed && ep.vy < 0) {
+    this._grantCertification('tripleJump');
+  }
+  // Cig Copter cert: use cig copter
+  if (!LICENSE.isLicensed('cigCopter') && es.coptering) {
+    this._grantCertification('cigCopter');
+  }
+  // Ground Slam cert: perform a ground slam
+  if (!LICENSE.isLicensed('groundSlam') && es._slamming) {
+    this._grantCertification('groundSlam');
+  }
+
+  if (zone !== prevZone) {
+    // ── RECEIPT PREVIEW TEASER (once per world, at midpoint) ──
+    if (zone.id === 'C' && !this._receiptPreviewShown) {
+      this._receiptPreviewShown = true;
+      var previewLines = [
+        'PRELIMINARY FINDING: init...',
+        'BEHAVIORAL NOTE: Subject appears to\u2014',
+        'RECEIPT DRAFT: Your [REDACTED] has been...',
+        'PATTERN ANALYSIS: Dominant axis suggest\u2014',
+        'ASSESSMENT PENDING: Your file is being...',
+        'INTERIM MEMO: Classification in progr\u2014'
+      ];
+      var previewText = previewLines[Math.floor(Math.random() * previewLines.length)];
+      var previewTxt = this.add.text(W / 2, H - 18, previewText, {
+        fontFamily: 'Courier New, monospace', fontSize: '7px',
+        color: '#cc8844', stroke: '#000000', strokeThickness: 2
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(80).setAlpha(0);
+      var tSelf = this;
+      this.tweens.add({ targets: previewTxt, alpha: 0.8, duration: 300, delay: 500, onComplete: function() {
+        tSelf.time.delayedCall(500, function() {
+          tSelf.tweens.add({ targets: previewTxt, alpha: 0, duration: 200, onComplete: function() { previewTxt.destroy(); }});
+        });
+      }});
+    }
 
     // ── MUZAK ZONE CROSSFADE (smooth chord transition) ──
     if (this._muzak && this._muzak.currentZone !== zone.type) {
@@ -8365,6 +10442,7 @@ DemoScene.prototype.update = function(time, delta) {
       }
     } else {
       es.punchTimer = 280; es.punchActive = true;
+      this._playSfx('punch');
       // Forward lunge — Ed surges toward the attack
       ep.vx += es.facing * 60;
       // Punch launch particle
@@ -8426,7 +10504,7 @@ DemoScene.prototype.update = function(time, delta) {
       }
     }
     this.behavior.chaos += 2;
-    this._flash('CIVIC IMPACT', 800);
+    this._flash('SEISMIC EVENT DETECTED', 1200);
     this._logEvent('ground_slam', 'x:' + Math.floor(ep.x));
   }
   if (es.punchTimer > 0) { es.punchTimer -= delta; if (es.punchTimer <= 0) es.punchActive = false; }
@@ -8455,6 +10533,7 @@ DemoScene.prototype.update = function(time, delta) {
       this._logEvent('air_dash', 'x:' + Math.floor(ep.x));
     } else {
       es.kickTimer = 320; es.kickActive = true;
+      this._playSfx('kick');
       ep.vx += es.facing * 90;
       for (var kpi = 0; kpi < 3; kpi++) {
         SMOKE_POOL.push({
@@ -8628,21 +10707,30 @@ DemoScene.prototype.update = function(time, delta) {
         // Landing impact feedback (visual squash based on fall speed)
         if (!ep.grounded && ep.vy > 100) {
           var impactForce = Math.min(ep.vy / ED_MOVE.maxFall, 1);
-          // Landing dust (more dust = harder landing)
-          var dustCount = Math.floor(impactForce * 4) + 1;
+          // Scaled landing particles (R01 JUICE)
+          var dustCount = impactForce < 0.4 ? 4 : impactForce < 0.7 ? 8 : 16;
           for (var ldi = 0; ldi < dustCount; ldi++) {
+            var dustSpread = 10 + impactForce * 15;
             SMOKE_POOL.push({
-              x: ep.x + (Math.random() - 0.5) * 10,
+              x: ep.x + (Math.random() - 0.5) * dustSpread,
               y: ep.y + 2,
-              vx: (Math.random() - 0.5) * 30 * impactForce,
-              vy: -(2 + Math.random() * 8 * impactForce),
-              life: 0.3 + impactForce * 0.2,
-              r: 1 + impactForce * 1.5
+              vx: (Math.random() - 0.5) * 40 * impactForce,
+              vy: -(2 + Math.random() * 12 * impactForce),
+              life: 0.3 + impactForce * 0.3,
+              r: 1 + impactForce * 2,
+              color: [0x998877, 0x887766, 0xaa9988][Math.floor(Math.random() * 3)]
             });
           }
           // Landing squash state (visual only — 80ms)
           es._landSquash = 80;
           es._landForce = impactForce;
+          // Landing SFX + shake
+          this._playSfx('land', { intensity: impactForce });
+          if (impactForce > 0.3) {
+            var landShakePx = impactForce < 0.7 ? 0.002 : 0.005;
+            var landShakeMs = impactForce < 0.7 ? 30 : 50;
+            this.cameras.main.shake(landShakeMs, landShakePx);
+          }
         }
         ep.y = pl.y;
         ep.vy = 0;
@@ -8763,6 +10851,11 @@ DemoScene.prototype.update = function(time, delta) {
     // Track coyote-time jumps (jumped after leaving platform = beautiful recovery)
     if (!ep.grounded && ep.coyoteMs > 0) {
       es._justCoyoteJumped = true;
+      if (this._nearMisses) { this._nearMisses.coyoteSaves++; this._nearMisses.total++; }
+    }
+    // Track jump buffer saves (pre-landed input)
+    if (ep.jumpBufMs > 0 && ep.jumpBufMs < ED_MOVE.jumpBufMs * 0.6) {
+      if (this._nearMisses) { this._nearMisses.jumpBufferSaves++; this._nearMisses.total++; }
     }
     ep.vy = ED_MOVE.jumpVel;
     this._playSfx('jump');
@@ -8812,6 +10905,8 @@ DemoScene.prototype.update = function(time, delta) {
   }
   // Wall jump (press jump while wall sliding — launches away from wall, resets air jumps!)
   if (jumpPressed && es._wallSliding && es._wallContact !== 0) {
+    // Near-miss: wall save (grabbed wall while falling)
+    if (ep.vy > 100 && this._nearMisses) { this._nearMisses.wallSaves++; this._nearMisses.total++; }
     ep.vy = ED_MOVE.wallJumpVelY;
     ep.vx = -es._wallContact * ED_MOVE.wallJumpVelX; // launch AWAY from wall
     es.facing = -es._wallContact;
@@ -8820,7 +10915,7 @@ DemoScene.prototype.update = function(time, delta) {
     es.gliding = false;
     es._wallSliding = false;
     es._wallDetachT = ED_MOVE.wallJumpDetachMs;
-    this._playSfx('jump');
+    this._playSfx('walljump');
     // Wall stamp mark (Ed kicks off — leaves a brief mark on the wall)
     this.edG.fillStyle(0xffd700, 0.3);
     this.edG.fillCircle(ep.x + es._wallContact * 6, ep.y - 6, 4);
@@ -11136,6 +13231,51 @@ DemoScene.prototype.update = function(time, delta) {
       if (kiosk._readPrompt) kiosk._readPrompt.setAlpha(0);
     }
   }
+  // ── R09: GREETER NPC (special — near start, 3 interaction states) ──
+  if (this._greeter && this._greeter.state === 'alive') {
+    var gr = this._greeter;
+    // Draw greeter (friendly green NPC with waving hand)
+    this.npcG.fillStyle(0x00e676, 0.2 + Math.sin(time * 0.003) * 0.1);
+    this.npcG.fillEllipse(gr.x, gr.y + 2, 24, 6);
+    // Body
+    this.npcG.fillStyle(0x44aa66, 0.9);
+    this.npcG.fillRect(gr.x - 4, gr.y - 14, 8, 14);
+    // Head
+    this.npcG.fillStyle(0xffcc88, 0.9);
+    this.npcG.fillCircle(gr.x, gr.y - 18, 5);
+    // Waving hand
+    var waveY = Math.sin(time * 0.008) * 3;
+    this.npcG.fillStyle(0xffcc88, 0.9);
+    this.npcG.fillCircle(gr.x + 7, gr.y - 20 + waveY, 2);
+    // "HI!" label
+    this.npcG.fillStyle(0xffffff, 0.8);
+    this.npcG.fillRoundedRect(gr.x - 8, gr.y - 32, 16, 10, 3);
+    // Interaction: talk (proximity) or kill (attack)
+    var grDist = Math.sqrt(Math.pow(ep.x - gr.x, 2) + Math.pow(ep.y - gr.y, 2));
+    if (grDist < 35) {
+      // Check if Ed is attacking
+      if (es.punchActive || es.kickActive || es.spinning) {
+        gr.state = 'dead';
+        gr.killed = true;
+        try { window._cactusEdGreeterState = 'killed'; } catch(e2) {}
+        // Death effect
+        for (var gdi = 0; gdi < 6; gdi++) {
+          pushFxParticle({
+            x: gr.x + (Math.random() - 0.5) * 10,
+            y: gr.y - 10 + (Math.random() - 0.5) * 8,
+            vx: (Math.random() - 0.5) * 20, vy: -(10 + Math.random() * 15),
+            life: 0.6, r: 2, color: [0x44aa66, 0x00e676][Math.floor(Math.random() * 2)]
+          });
+        }
+      } else if (!gr.talked) {
+        gr.talked = true;
+        try { window._cactusEdGreeterState = 'talked'; } catch(e2) {}
+        this._flash('WELCOME TO CACTUS ED\'S HAPPIEST PLACE!\nWE\'RE SO GLAD YOU\'RE HERE!', 3000);
+        this.behavior.curiosity += 1;
+      }
+    }
+  }
+
   for (var npi2 = 0; npi2 < this.npcs.length; npi2++) {
     var npc = this.npcs[npi2];
     var npcDef = NPC_TYPES[npc.type];
@@ -11266,6 +13406,64 @@ DemoScene.prototype.update = function(time, delta) {
       r: 1.5 + Math.random()
     });
   }
+  // ── R02: INSTITUTIONAL SIGNAGE (render + interaction) ──
+  if (this._signs && this._signs.length > 0) {
+    this._signG.clear();
+    var upHeld = keys.up.isDown || GAMEPAD.isDown('up');
+    for (var sgi = 0; sgi < this._signs.length; sgi++) {
+      var sign = this._signs[sgi];
+      if (sign.read) continue;
+      var signDist = Math.abs(ep.x - sign.x) + Math.abs(ep.y - sign.y);
+      var signNear = signDist < 40;
+
+      // Draw sign post
+      this._signG.fillStyle(0x665544, 1);
+      this._signG.fillRect(sign.x - 1, sign.y - 20, 2, 22); // post
+      this._signG.fillStyle(0xf5f0dc, 0.95);
+      var signW = 70, signH = 28;
+      this._signG.fillRect(sign.x - signW / 2, sign.y - 20 - signH, signW, signH);
+      this._signG.lineStyle(1, 0x665544, 0.6);
+      this._signG.strokeRect(sign.x - signW / 2, sign.y - 20 - signH, signW, signH);
+
+      // Show text when near
+      if (signNear) {
+        sign.nearT += delta;
+        if (!sign._txt) {
+          sign._txt = this.add.text(sign.x, sign.y - 60, sign.text, {
+            fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#2d1b00',
+            stroke: '#f5f0dc', strokeThickness: 2, align: 'center',
+            wordWrap: { width: 160 }, lineSpacing: 1
+          }).setOrigin(0.5).setDepth(30);
+        }
+        sign._txt.setAlpha(Math.min(sign.nearT / 300, 1));
+
+        // Read sign: stand near 1.5s+ or press UP
+        if (sign.nearT > 1500 || upHeld) {
+          sign.read = true;
+          if (this.behavior) this.behavior.curiosity += 2;
+          if (this._logEvent) this._logEvent('sign_read', sign.action);
+          this._playSfx('stamp');
+          // Fade out text
+          var sigTxt = sign._txt;
+          this.tweens.add({ targets: sigTxt, alpha: 0, duration: 800, onComplete: function() { sigTxt.destroy(); } });
+          sign._txt = null;
+        }
+      } else {
+        // Player ran past — check if they passed the sign's x without reading
+        if (ep.x > sign.x + 60 && !sign._passLogged) {
+          sign._passLogged = true;
+          if (this.behavior) this.behavior.efficiency += 1;
+          if (this._logEvent) this._logEvent('sign_skip', sign.action);
+        }
+        if (sign._txt) {
+          sign._txt.destroy();
+          sign._txt = null;
+        }
+        sign.nearT = 0;
+      }
+    }
+  }
+
   this.smokeG.clear();
   for (var sp = SMOKE_POOL.length - 1; sp >= 0; sp--) {
     var p = SMOKE_POOL[sp];
@@ -11274,10 +13472,38 @@ DemoScene.prototype.update = function(time, delta) {
     p.vy -= 15 * dt;
     p.life -= dt * 1.2;
     if (p.life <= 0) { SMOKE_POOL.splice(sp, 1); continue; }
-    this.smokeG.fillStyle(0xaaaaaa, p.life * 0.35);
+    this.smokeG.fillStyle(p.color || 0xaaaaaa, p.life * 0.35);
     this.smokeG.fillCircle(p.x, p.y, p.r);
   }
   if (SMOKE_POOL.length > PERF.maxSmoke) SMOKE_POOL.splice(0, SMOKE_POOL.length - PERF.maxSmoke);
+
+  // ── R06: AUDITOR UPDATE + DRAW ──
+  this._updateAuditor(delta);
+  this._drawAuditor(this.smokeG);
+
+  // ── R01 JUICE: Continuous SFX management (DemoScene) ──
+  var sfx = this._sfx;
+  if (sfx) {
+    if (es._wallSliding) {
+      sfx.startLoop('wallslide', 180, 'sawtooth', 0.03);
+    } else {
+      sfx.stopLoop('wallslide');
+    }
+    if (es.coptering && es.copterFuel > 0) {
+      sfx.startLoop('copter', 200, 'triangle', 0.06);
+      sfx.updateLoop('copter', 200 + Math.sin(time * 0.008) * 30);
+    } else {
+      sfx.stopLoop('copter');
+    }
+    if (es.spinCharging) {
+      var chargePct = es.spinChargeT / Math.max(ED_ABILITIES.spinChargeTime, 1);
+      var chargeFreq = 100 + chargePct * 200;
+      sfx.startLoop('spincharge', chargeFreq, 'sawtooth', 0.05);
+      sfx.updateLoop('spincharge', chargeFreq);
+    } else {
+      sfx.stopLoop('spincharge');
+    }
+  }
 
   // ── DRAW ED ──
   var frame = 0;
@@ -11489,19 +13715,46 @@ DemoScene.prototype.update = function(time, delta) {
     }
   }
 
-  // ── LANDING SQUASH (visual scale effect on hard landings) ──
+  // ── SQUASH-AND-STRETCH (R01 JUICE: full state-based deformation) ──
   var edScaleX = 1, edScaleY = 1;
   if (es._landSquash > 0) {
+    // Landing squash: wide and short, springs back over duration
     var squashPct = es._landSquash / 80; // 0→1
-    var squashAmt = es._landForce * 0.2 * squashPct;
+    var squashAmt = es._landForce * 0.3 * squashPct;
     edScaleX = 1 + squashAmt;    // wider
     edScaleY = 1 - squashAmt;    // shorter
-  }
-  // Jump stretch (thinner and taller when ascending fast)
-  if (!onGround && ep.vy < -100) {
-    var stretchAmt = Math.min(Math.abs(ep.vy) / 400, 0.15);
-    edScaleX = 1 - stretchAmt * 0.5;
-    edScaleY = 1 + stretchAmt;
+  } else if (!onGround && ep.vy < -100) {
+    // Rising: vertical stretch (thinner and taller)
+    var riseAmt = Math.min(Math.abs(ep.vy) / 400, 0.2);
+    edScaleX = 1 - riseAmt * 0.5;
+    edScaleY = 1 + riseAmt;
+  } else if (!onGround && ep.vy > 150) {
+    // Fast falling: extreme vertical stretch
+    var fallAmt = Math.min(ep.vy / 500, 0.25);
+    edScaleX = 1 - fallAmt * 0.5;
+    edScaleY = 1 + fallAmt;
+  } else if (es.spinning) {
+    // Spin dash: extreme horizontal stretch
+    edScaleX = 1.4;
+    edScaleY = 0.6;
+  } else if (es.spinCharging) {
+    // Spin charge: building compression
+    var chgPct = es.spinChargeT / Math.max(ED_ABILITIES.spinChargeTime, 1);
+    edScaleX = 1 - chgPct * 0.15;
+    edScaleY = 1 + chgPct * 0.1;
+  } else if (es.coptering && es.copterFuel > 0) {
+    // Copter: rhythmic pulse
+    var copterPulse = Math.sin(this._levelT * 0.015) * 0.05;
+    edScaleX = 1.0;
+    edScaleY = 0.95 + copterPulse;
+  } else if (es.punchActive) {
+    // Punch: arm extension stretch
+    edScaleX = 1.2;
+    edScaleY = 0.9;
+  } else if (es.kickActive) {
+    // Kick: similar to punch
+    edScaleX = 1.15;
+    edScaleY = 0.92;
   }
 
   // Apply scale to Ed's drawing
@@ -11511,7 +13764,8 @@ DemoScene.prototype.update = function(time, delta) {
     this.edG.scaleCanvas(edScaleX, edScaleY);
     this.edG.translateCanvas(-ep.x, -ep.y);
   }
-  DRAW_ED_SNES.draw(this.edG, ep.x, ep.y, frame, es.facing < 0, es.cigF, es.walkT, !onGround, es.hurtTimer, es.copterBladeAngle);
+  var edHealthPct = this.maxHealth > 0 ? this.health / this.maxHealth : 1;
+  DRAW_ED_SNES.draw(this.edG, ep.x, ep.y, frame, es.facing < 0, es.cigF, es.walkT, !onGround, es.hurtTimer, es.copterBladeAngle, edHealthPct);
 
   // ── SPRITE OVERLAY: ED (pixel art on top of procedural) ──
   if (this._edSprite && this.textures.exists('ed_idle')) {
@@ -11562,15 +13816,18 @@ DemoScene.prototype.update = function(time, delta) {
   // ── ED'S SIGNATURE CIGARETTE SMOKE TRAIL ──
   // The cig IS Ed (Q16). This is his visual identity — persistent, alive, reactive.
   if (!this._cigSmoke) this._cigSmoke = [];
-  // Emit smoke from cig tip position
-  var cigTipX = ep.x + es.facing * 17;
+  // Emit smoke from cig tip position — scaled by health
+  var cigHpPct = this.maxHealth > 0 ? this.health / this.maxHealth : 1;
+  var cigTipOffset = cigHpPct > 0.75 ? 17 : cigHpPct > 0.5 ? 15 : cigHpPct > 0.25 ? 13 : 11;
+  var cigTipX = ep.x + es.facing * cigTipOffset;
   var cigTipY = ep.y - 18 + Math.sin(es.cigF * 0.08) * 0.8;
-  var smokeRate = 0.15; // base emission rate
+  // Smoke rate scales with health: full=0.15, 50%=thin, 25%=sputtering
+  var smokeRate = cigHpPct > 0.75 ? 0.15 : cigHpPct > 0.5 ? 0.10 : cigHpPct > 0.25 ? 0.05 : 0.02;
   // Speed affects smoke — faster = more turbulent
   var speedFactor = Math.abs(ep.vx) / ED_MOVE.walkSpeed;
   if (es.spinning) speedFactor = 2.5;
-  if (es.coptering) smokeRate = 0.4; // copter = lots of smoke
-  if (es.gliding) smokeRate = 0.25;
+  if (es.coptering) smokeRate = Math.max(smokeRate, 0.4); // copter = lots of smoke
+  if (es.gliding) smokeRate = Math.max(smokeRate, 0.25);
 
   if (Math.random() < smokeRate) {
     this._cigSmoke.push({
@@ -11661,13 +13918,55 @@ DemoScene.prototype.update = function(time, delta) {
     }
   }
 
-  // ── ZONE-AWARE CAMERA ──
-  // Directional look-ahead: leads in the direction Ed is moving
-  var targetLookAhead = es.facing * zone.lookAhead;
-  this._camLookAhead += (targetLookAhead - this._camLookAhead) * 0.05;
+  // ── RECEIPT 2.0 HESITATION TRACKING ──
+  if (this._hesitations) {
+    // Track standing still (fork hesitation)
+    if (Math.abs(ep.vx) < 5 && ep.grounded) {
+      if (!this._idleStart) this._idleStart = this._levelT;
+      var idleDur = this._levelT - this._idleStart;
+      if (idleDur > 1000 && !this._idleLogged) {
+        this._hesitations.push({ type: 'fork', duration: idleDur });
+        this._idleLogged = true;
+      }
+    } else {
+      this._idleStart = 0;
+      this._idleLogged = false;
+    }
+    // Track spin charge cancels
+    if (es._prevSpinCharging && !es.spinChargeT && !es.spinning) {
+      this._hesitations.push({ type: 'spin', duration: 0 });
+    }
+    es._prevSpinCharging = es.spinChargeT > 0;
+    // Track direction reversals (backtracking)
+    if (!this._prevFacing) this._prevFacing = es.facing;
+    if (es.facing !== this._prevFacing && Math.abs(ep.vx) > 20) {
+      this._directionChanges++;
+      if (this._directionChanges >= 4 && this._directionChanges % 4 === 0) {
+        this._hesitations.push({ type: 'backtrack', count: this._directionChanges });
+      }
+    }
+    this._prevFacing = es.facing;
+  }
+
+  // ── ZONE-AWARE CAMERA WITH LOOKAHEAD ──
+  // Horizontal look-ahead: 50px base + zone bonus in movement direction
+  var baseLookAhead = 50;
+  var targetLookAhead = es.facing * (baseLookAhead + zone.lookAhead);
+  this._camLookAhead += (targetLookAhead - this._camLookAhead) * 0.08;
+
+  // Vertical peek: hold UP/DOWN while stationary to pan camera
+  var isStationary = Math.abs(ep.vx) < 10 && ep.grounded;
+  var peekTarget = 0;
+  if (isStationary && keys.up.isDown && !keys.down.isDown) {
+    peekTarget = -80;
+  } else if (isStationary && keys.down.isDown && !keys.up.isDown) {
+    peekTarget = 80;
+  }
+  this._camPeekY += (peekTarget - this._camPeekY) * 0.06;
+
   // Zone-specific lerp and Y offset
   var camTargetX = ep.x + this._camLookAhead;
-  var camTargetY = ep.y + zone.camYOff;
+  var camTargetY = ep.y + zone.camYOff + this._camPeekY;
   this.cameras.main.startFollow(
     { x: camTargetX, y: camTargetY },
     true, zone.camLerp, zone.camLerp
@@ -12152,6 +14451,31 @@ World2Scene.prototype.create = function() {
     { x: 1470, y: 210, w: 8, h: 95 }
   ];
 
+  // ── R07: POLICY-DRIVEN WORLD MODIFICATIONS ──
+  this._activePolicies = getActivePolicies();
+  if (this._activePolicies && this._activePolicies.effects) {
+    var fx = this._activePolicies.effects;
+    // Grace policy: platforms narrowed (15-20% width reduction on selected platforms)
+    if (fx.indexOf('platforms_narrowed') >= 0) {
+      for (var pni = 0; pni < this.platRects.length; pni++) {
+        if (pni % 3 === 0 && this.platRects[pni].w > 25) { // every 3rd platform
+          var shrink = this.platRects[pni].w * 0.18;
+          this.platRects[pni].x += shrink / 2;
+          this.platRects[pni].w -= shrink;
+        }
+      }
+    }
+    // Compliance policy: safe paths extended (add extra flat boring segments)
+    if (fx.indexOf('safe_paths_extended') >= 0) {
+      this.platRects.push({ x: 150, y: H * 0.88, w: 80, h: 8 });
+      this.platRects.push({ x: 250, y: H * 0.88, w: 80, h: 8 });
+    }
+  }
+  // Track policy-related state for receipt
+  this._policyBreakablesBlocked = 0;
+  this._policyCensoredSigns = 0;
+  this._policyAuditorSpawns = 0;
+
   // ── ED (reuse World 1 movement constants) ──
   this.ep = { x: 60, y: H * 0.88 - 10, vx: 0, vy: 0, grounded: false, coyoteMs: 0, jumpBufMs: 0 };
   this.es = { facing: 1, walkT: 0, cigF: 0, punchTimer: 0, punchActive: false, kickTimer: 0, kickActive: false, hurtTimer: 0, djUsed: false, tjUsed: false, gliding: false, spinning: false, spinChargeT: 0, spinActiveT: 0, spinCooldownT: 0, coptering: false, copterFuel: 4000, copterTapCount: 0, copterLastTap: 0, copterBladeAngle: 0 };
@@ -12241,6 +14565,71 @@ World2Scene.prototype.create = function() {
         }
       });
     });
+    // ── R07: INSTITUTIONAL MEMO (policy notification at world start) ──
+    var w2Policies = getActivePolicies();
+    if (w2Policies && w2Policies.names && w2Policies.names.length > 0) {
+      this._policyMemoActive = true;
+      this._paused = true; // freeze gameplay during memo
+      var memoSelf = this;
+      var memoG = this.add.graphics().setScrollFactor(0).setDepth(200);
+      memoG.fillStyle(0x020008, 0.92);
+      memoG.fillRect(0, 0, W, H);
+      // CRT scanlines
+      for (var ms = 0; ms < H; ms += 3) { memoG.fillStyle(0x000000, 0.1); memoG.fillRect(0, ms, W, 1); }
+      // Memo box
+      var mW = 300, mH = 200;
+      var mX = (W - mW) / 2, mY = (H - mH) / 2;
+      memoG.fillStyle(0xf5f0dc, 1);
+      memoG.fillRect(mX, mY, mW, mH);
+      memoG.lineStyle(2, 0x1a0a2e, 0.5);
+      memoG.strokeRect(mX, mY, mW, mH);
+      // Header
+      memoG.fillStyle(0x1a0a2e, 1);
+      memoG.fillRect(mX, mY, mW, 22);
+      this.add.text(mX + 8, mY + 5, 'INTEROFFICE MEMO', {
+        fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#ffd700'
+      }).setScrollFactor(0).setDepth(201);
+      // Body
+      var memoLines = ['RE: SUBJECT ED \u2014 POLICY UPDATE', '',
+        'Based on your previous evaluation,',
+        'the following policies are now in',
+        'effect for this facility:', ''];
+      for (var mpi = 0; mpi < w2Policies.names.length; mpi++) {
+        memoLines.push('\u2022 ' + w2Policies.names[mpi]);
+      }
+      memoLines.push('');
+      memoLines.push('These measures are for your safety.');
+      memoLines.push('Compliance is appreciated.');
+      this.add.text(mX + 12, mY + 30, memoLines.join('\n'), {
+        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#1a0a2e',
+        lineSpacing: 2, wordWrap: { width: mW - 24 }
+      }).setScrollFactor(0).setDepth(201);
+      // Dismiss prompt
+      this.add.text(mX + mW / 2, mY + mH - 14, '[PRESS Z TO ACKNOWLEDGE]', {
+        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#888888'
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(201);
+      // Auto-dismiss after 5s or on key press
+      var memoKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
+      var dismissMemo = function() {
+        if (!memoSelf._policyMemoActive) return;
+        if (memoKey.isDown) {
+          memoSelf._policyMemoActive = false;
+          memoSelf._paused = false;
+          memoG.destroy();
+          return;
+        }
+        memoSelf.time.delayedCall(80, dismissMemo);
+      };
+      this.time.delayedCall(500, dismissMemo);
+      // Auto-dismiss failsafe
+      this.time.delayedCall(8000, function() {
+        if (memoSelf._policyMemoActive) {
+          memoSelf._policyMemoActive = false;
+          memoSelf._paused = false;
+          memoG.destroy();
+        }
+      });
+    }
   } else {
     this.behavior = { compliance: 0, intuition: 0, curiosity: 0, grace: 0, chaos: 0, efficiency: 0 };
   }
@@ -12403,6 +14792,7 @@ World2Scene.prototype.create = function() {
     { x: 2000, text: 'THE FUTURE\nIS BRIGHT.\nSQUINT.' },
     { x: 2300, text: 'CONGRATULATIONS!\nYOU MADE IT\nTHIS FAR.\nTHIS FAR IS\nNOT ENOUGH.' }
   ];
+  var _signsCensored = isPolicyEffect('signs_censored');
   for (var pti = 0; pti < posterDefs.length; pti++) {
     var pd = posterDefs[pti];
     // Poster frame
@@ -12410,10 +14800,17 @@ World2Scene.prototype.create = function() {
     posterG.fillRoundedRect(pd.x - 22, H * 0.48, 44, 50, 3);
     posterG.lineStyle(1, 0xcc8844, 0.2);
     posterG.strokeRoundedRect(pd.x - 22, H * 0.48, 44, 50, 3);
+    // R07: Censor every other poster if curiosity policy active
+    var posterText = pd.text;
+    if (_signsCensored && pti % 2 === 0) {
+      posterText = '[REDACTED]\n\nACCESS LEVEL\nINSUFFICIENT';
+      this._policyCensoredSigns++;
+    }
     // Poster text
-    this.add.text(pd.x, H * 0.50, pd.text, {
+    this.add.text(pd.x, H * 0.50, posterText, {
       fontFamily: 'Courier New, monospace', fontSize: '5px',
-      color: '#c9b27b', stroke: '#000000', strokeThickness: 2,
+      color: _signsCensored && pti % 2 === 0 ? '#cc4444' : '#c9b27b',
+      stroke: '#000000', strokeThickness: 2,
       align: 'center', lineSpacing: 1
     }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.72);
   }
@@ -12658,6 +15055,7 @@ World2Scene.prototype.create = function() {
   this.cameras.main.setBounds(0, 0, LW, H);
   this.cameras.main.startFollow({ x: 60, y: H / 2 }, false, 0.08, 0.08);
   this._camLookAhead = 0;
+  this._camPeekY = 0;
   applyCertificationAidCheckpoint(this);
 };
 
@@ -12683,6 +15081,37 @@ World2Scene.prototype.update = function(time, delta) {
     var t = this._muzak.ac.currentTime;
     for (var mci = 0; mci < this._muzak.oscs.length; mci++) {
       this._muzak.oscs[mci].frequency.linearRampToValueAtTime(ch[mci], t + 2);
+    }
+  }
+
+  // ── R07: POLICY GAMEPLAY EFFECTS ──
+  if (this._activePolicies && this._activePolicies.effects) {
+    var pfx = this._activePolicies.effects;
+    // Chaos: response teams — spawn auditor-like clipboard after kills
+    if (pfx.indexOf('response_teams_added') >= 0 && this._killCombo > 0 && !this._policyAuditorObj) {
+      this._policyAuditorSpawns++;
+      this._policyAuditorObj = { x: ep.x - 50, y: ep.y - 30, timer: 4000 };
+    }
+    // Update policy auditor
+    if (this._policyAuditorObj) {
+      this._policyAuditorObj.timer -= delta;
+      var pa = this._policyAuditorObj;
+      var padx = ep.x - pa.x;
+      var pady = (ep.y - 20) - pa.y;
+      var padist = Math.sqrt(padx * padx + pady * pady);
+      if (padist > 5) {
+        pa.x += (padx / padist) * 35 * dt;
+        pa.y += (pady / padist) * 25 * dt;
+      }
+      if (padist < 20) ep.vx += (padx > 0 ? -10 : 10);
+      // Draw clipboard auditor
+      this.smokeG.fillStyle(0xd4c5a9, 0.8);
+      this.smokeG.fillRect(pa.x - 5, pa.y - 8, 10, 14);
+      this.smokeG.fillStyle(0xffd700, 0.7);
+      this.smokeG.fillRect(pa.x - 2, pa.y - 10, 4, 3);
+      this.smokeG.fillStyle(0xff4444, 0.5 + Math.sin(time * 0.01) * 0.3);
+      this.smokeG.fillCircle(pa.x, pa.y - 2, 2);
+      if (pa.timer <= 0) this._policyAuditorObj = null;
     }
   }
 
@@ -13330,6 +15759,16 @@ World2Scene.prototype.update = function(time, delta) {
           fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#555555', stroke: '#000000', strokeThickness: 2
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
 
+        // ── R07: POLICY EFFECTIVENESS REVIEW ──
+        var w2PolicyReview = generatePolicyReview(selfW2C._activePolicies, selfW2C.behavior);
+        if (w2PolicyReview) {
+          selfW2C.add.text(W / 2, H * 0.82, w2PolicyReview, {
+            fontFamily: 'Courier New, monospace', fontSize: '5px', color: '#cc8844',
+            stroke: '#000000', strokeThickness: 2, align: 'center',
+            wordWrap: { width: W - 60 }, lineSpacing: 1
+          }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(111);
+        }
+
         selfW2C.add.text(W / 2, H * 0.85, 'WORLD 3: WELLSPRING MEDICAL PAVILION — ACCESS PENDING', {
           fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#555555',
           stroke: '#000000', strokeThickness: 2
@@ -13359,6 +15798,8 @@ World2Scene.prototype.update = function(time, delta) {
                 reportCard: JSON.parse(JSON.stringify(selfW2C._reportCard)),
                 world: 2
               };
+              // R07: Set policy flags for World 3 based on W2 behavior
+              setPoliciesForNextWorld(selfW2C.behavior);
               var trG = selfW2C.add.graphics().setScrollFactor(0).setDepth(120);
               trG.fillStyle(0x000000, 1); trG.fillRect(0, 0, W, H);
               var trLines = ['FORWARDING PATIENT FILE...', 'INSURANCE PRE-AUTHORIZATION...', 'THE PAVILION AWAITS.'];
@@ -13729,19 +16170,52 @@ World2Scene.prototype.update = function(time, delta) {
   if (this._fakeBranchNote && !this._fakeBranchNote.seen && zone.type === 'maze' &&
       ep.x < 1368 && ep.y < 332 && ep.y > 210) {
     this._fakeBranchNote.seen = true;
+    // ── R07: FAKE-LEFT BRANCH THAT REMEMBERS ──
+    var fakeVisit = FAKE_LEFT.recordVisit();
+    var fakeSelf = this;
     scheduleReadableZoneEvent(this, 'pa', 120, function() {
-      if (this._fakeBranchNote.paid) return;
-      this._fakeBranchNote.paid = true;
-      this.behavior.curiosity += 1;
-      this._fakeBranchNote.exitPulseT = 900;
-      if (this._w2RuleConfirm) this._w2RuleConfirm.fakeBranch = true;
-      this.floatingItems.push({ x: 1322, y: 226, type: 'aloe', vy: -58, bobT: 0, life: 20, floating: true });
-      bumpFirstSessionMetric(this, 'curiosityPayoffs', 'w2_fake_branch', 1);
-      setFirstSessionMetric(this, 'curiosityDetourPaid', 'w2_fake_branch', 1);
-      showProtectedReadableText(this, 'pa', 0, 'ARCHIVE NOTE: LEFT REVIEW FILES BACK INTO THE MAIN OFFICE. APPROVED EXIT REMAINS ABOVE.', {
-        color: '#ccaa77', duration: 3200, fontSize: '8px'
-      }, 2400, 'w2_fake_branch_note', true, 1400);
-    }.bind(this), 1400);
+      if (fakeSelf._fakeBranchNote.paid) return;
+      fakeSelf._fakeBranchNote.paid = true;
+      fakeSelf.behavior.curiosity += 1;
+      fakeSelf._fakeBranchNote.exitPulseT = 900;
+      if (fakeSelf._w2RuleConfirm) fakeSelf._w2RuleConfirm.fakeBranch = true;
+      bumpFirstSessionMetric(fakeSelf, 'curiosityPayoffs', 'w2_fake_branch', 1);
+      setFirstSessionMetric(fakeSelf, 'curiosityDetourPaid', 'w2_fake_branch', 1);
+      if (fakeVisit === 1) {
+        // Visit 1: Dead end. Classic trap.
+        fakeSelf.floatingItems.push({ x: 1322, y: 226, type: 'aloe', vy: -58, bobT: 0, life: 20, floating: true });
+        showProtectedReadableText(fakeSelf, 'pa', 0, 'ARCHIVE NOTE: LEFT REVIEW FILES BACK INTO THE MAIN OFFICE. APPROVED EXIT REMAINS ABOVE.', {
+          color: '#ccaa77', duration: 3200, fontSize: '8px'
+        }, 2400, 'w2_fake_branch_note', true, 1400);
+      } else if (fakeVisit === 2) {
+        // Visit 2: A tiny vent has appeared. Reward for persistence.
+        fakeSelf.floatingItems.push({ x: 1322, y: 226, type: 'aloe', vy: -58, bobT: 0, life: 20, floating: true });
+        fakeSelf.floatingItems.push({ x: 1340, y: 240, type: 'aloe', vy: -58, bobT: 0, life: 20, floating: true });
+        showProtectedReadableText(fakeSelf, 'pa', 0, 'UNAUTHORIZED VENT DETECTED. THE INSTITUTION DID NOT ANTICIPATE YOUR RETURN.', {
+          color: '#88ccff', duration: 3200, fontSize: '8px'
+        }, 2400, 'w2_fake_branch_v2', true, 1400);
+      } else if (fakeVisit === 3) {
+        // Visit 3: Vent sealed, crack in floor, escalating gag.
+        showProtectedReadableText(fakeSelf, 'pa', 0, 'UNAUTHORIZED VENT USAGE DETECTED \u2014 ACCESS REVOKED.\nA NEW CRACK HAS APPEARED IN THE FLOOR. THIS WAS NOT PLANNED.', {
+          color: '#ff8844', duration: 4000, fontSize: '8px'
+        }, 2800, 'w2_fake_branch_v3', true, 1600);
+        fakeSelf.behavior.curiosity += 3;
+      } else {
+        // Visit 4+: Running gag. Increasingly exasperated institution.
+        var fakeGags = [
+          'AGAIN? THE ARCHIVE IS CONCERNED ABOUT YOUR ATTACHMENT TO THIS CORNER.',
+          'VISIT #' + fakeVisit + '. THE DEAD END HAS FILED A RESTRAINING ORDER.',
+          'THE INSTITUTION HAS RUN OUT OF WAYS TO DISCOURAGE YOU.',
+          'THIS CORNER HAS BEEN NAMED AFTER YOU. ATTENDANCE IS MANDATORY.',
+          'YOUR PERSISTENCE HAS BEEN ESCALATED TO A COMMITTEE THAT DOES NOT EXIST.'
+        ];
+        showProtectedReadableText(fakeSelf, 'pa', 0, fakeGags[(fakeVisit - 4) % fakeGags.length], {
+          color: '#ffd700', duration: 3500, fontSize: '8px'
+        }, 2400, 'w2_fake_branch_v' + fakeVisit, true, 1400);
+        fakeSelf.behavior.curiosity += 2;
+        fakeSelf.behavior.chaos += 1;
+      }
+    }, 1400);
   }
 
   if (this._gardenerPreview && zone.type === 'lawn' && !this.boss.active) {
@@ -13960,10 +16434,16 @@ World2Scene.prototype.update = function(time, delta) {
   if (this._titleTxt) { this._titleTxt.setText('2-1  ' + zone.name); this._titleTxt.setColor(w2ZoneCols[zone.type] || '#88ffaa'); }
   drawSharedMovementHud(this, H - 30, H - 18);
 
-  // ── CAMERA ──
-  var targetLookAheadW2 = es.facing * zone.lookAhead;
-  this._camLookAhead += (targetLookAheadW2 - this._camLookAhead) * 0.05;
-  var camTarget = { x: ep.x + this._camLookAhead, y: ep.y - 30 };
+  // ── CAMERA WITH LOOKAHEAD ──
+  var baseLookW2 = 50;
+  var targetLookAheadW2 = es.facing * (baseLookW2 + zone.lookAhead);
+  this._camLookAhead += (targetLookAheadW2 - this._camLookAhead) * 0.08;
+  var isStationaryW2 = Math.abs(ep.vx) < 10 && ep.grounded;
+  var peekTargetW2 = 0;
+  if (isStationaryW2 && keys.up.isDown && !keys.down.isDown) peekTargetW2 = -80;
+  else if (isStationaryW2 && keys.down.isDown && !keys.up.isDown) peekTargetW2 = 80;
+  this._camPeekY += (peekTargetW2 - this._camPeekY) * 0.06;
+  var camTarget = { x: ep.x + this._camLookAhead, y: ep.y - 30 + this._camPeekY };
   this.cameras.main.startFollow(camTarget, false, 0.08, 0.08);
 
   // ── SMOKE PARTICLES ──
@@ -14187,6 +16667,7 @@ World3Scene.prototype.create = function() {
     ['aloe', 'health', 'ciggun', 'lighter', 'cigsword', 'health', 'carton']
   );
   this._camLookAhead = 0;
+  this._camPeekY = 0;
   this._teachingG = this.add.graphics().setDepth(3);
   this._lessonReadoutTxt = this.add.text(W / 2, 22, '', {
     fontFamily: 'Courier New, monospace', fontSize: '10px',
@@ -15317,10 +17798,16 @@ World3Scene.prototype.update = function(time, delta) {
   if (this._titleTxt) { this._titleTxt.setText('3-1  ' + zone.name); this._titleTxt.setColor(w3ZCols[zone.type] || '#4488cc'); }
   drawSharedMovementHud(this, H - 30, H - 18);
 
-  // Camera
-  var targetLookAheadW3 = es.facing * zone.lookAhead;
-  this._camLookAhead += (targetLookAheadW3 - this._camLookAhead) * 0.05;
-  this.cameras.main.startFollow({ x: ep.x + this._camLookAhead, y: ep.y - 30 }, false, 0.08, 0.08);
+  // Camera with lookahead
+  var baseLookW3 = 50;
+  var targetLookAheadW3 = es.facing * (baseLookW3 + zone.lookAhead);
+  this._camLookAhead += (targetLookAheadW3 - this._camLookAhead) * 0.08;
+  var isStationaryW3 = Math.abs(ep.vx) < 10 && ep.grounded;
+  var peekTargetW3 = 0;
+  if (isStationaryW3 && keys.up.isDown && !keys.down.isDown) peekTargetW3 = -80;
+  else if (isStationaryW3 && keys.down.isDown && !keys.up.isDown) peekTargetW3 = 80;
+  this._camPeekY += (peekTargetW3 - this._camPeekY) * 0.06;
+  this.cameras.main.startFollow({ x: ep.x + this._camLookAhead, y: ep.y - 30 + this._camPeekY }, false, 0.08, 0.08);
 
   // Smoke
   this.smokeG.clear();
@@ -15719,6 +18206,65 @@ TitleScene.prototype.create = function() {
   this._bootIdx = 0;
   this._bootTimer = 0;
 
+  // ── R02: COLD OPEN (3-second auto-start on first visit) ──
+  this._coldOpen = true;
+  this._coldOpenT = 0;
+  // Show cold open text immediately
+  this._coldTitle = this.add.text(W / 2, H * 0.35, 'CACTUS ED\'S\nHAPPIEST PLACE', {
+    fontFamily: 'Courier New, monospace', fontSize: '20px',
+    color: '#ffd700', stroke: '#000000', strokeThickness: 5,
+    align: 'center', lineSpacing: 4
+  }).setOrigin(0.5).setDepth(15);
+  this._coldSub = this.add.text(W / 2, H * 0.55, 'YOU HAVE BEEN PRE-ENROLLED.', {
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
+    color: '#88ccff', stroke: '#000000', strokeThickness: 3
+  }).setOrigin(0.5).setDepth(15);
+  this._coldCount = this.add.text(W / 2, H * 0.70, '', {
+    fontFamily: 'Courier New, monospace', fontSize: '9px',
+    color: '#555555', stroke: '#000000', strokeThickness: 2
+  }).setOrigin(0.5).setDepth(15);
+  this._coldSkip = this.add.text(W / 2, H * 0.80, 'PRESS ANY KEY TO BEGIN', {
+    fontFamily: 'Courier New, monospace', fontSize: '8px',
+    color: '#ffd700', stroke: '#000000', strokeThickness: 2
+  }).setOrigin(0.5).setDepth(15).setAlpha(0.6 + Math.sin(0) * 0.4);
+
+  // ── R08: DAILY MEMO DISPLAY ──
+  var todayMod = DAILY.getToday();
+  var dailyStreak = DAILY.getStreak();
+  this.add.text(W / 2, H * 0.62, 'TODAY\'S MEMO: ' + todayMod.name, {
+    fontFamily: 'Courier New, monospace', fontSize: '7px',
+    color: '#cc8844', stroke: '#000000', strokeThickness: 2
+  }).setOrigin(0.5).setDepth(15);
+  this.add.text(W / 2, H * 0.66, todayMod.desc, {
+    fontFamily: 'Courier New, monospace', fontSize: '6px',
+    color: '#888888', stroke: '#000000', strokeThickness: 2
+  }).setOrigin(0.5).setDepth(15);
+  if (dailyStreak.streak > 0) {
+    this.add.text(W / 2, H * 0.70, 'DAILY STREAK: ' + dailyStreak.streak + ' CONSECUTIVE DAYS', {
+      fontFamily: 'Courier New, monospace', fontSize: '6px',
+      color: '#44ff88', stroke: '#000000', strokeThickness: 2
+    }).setOrigin(0.5).setDepth(15);
+  }
+  // ── R08: DEPARTMENT + PUNCHCARD STATUS ──
+  var deptData = DEPARTMENT.load();
+  if (deptData.dept) {
+    this.add.text(W / 2, H * 0.74, 'DEPARTMENT: ' + deptData.dept, {
+      fontFamily: 'Courier New, monospace', fontSize: '6px',
+      color: '#88ccff', stroke: '#000000', strokeThickness: 2
+    }).setOrigin(0.5).setDepth(15);
+  }
+  var punchData = PUNCHCARD.load();
+  if (punchData.punches > 0) {
+    var punchStr = '';
+    for (var pi2 = 0; pi2 < PUNCHCARD.MAX; pi2++) {
+      punchStr += pi2 < punchData.punches ? '\u25A0 ' : '\u25A1 ';
+    }
+    this.add.text(W / 2, H * 0.77, 'WAIVER: ' + punchStr + (PUNCHCARD.isReady() ? ' READY!' : ''), {
+      fontFamily: 'Courier New, monospace', fontSize: '6px',
+      color: PUNCHCARD.isReady() ? '#ffd700' : '#666666', stroke: '#000000', strokeThickness: 2
+    }).setOrigin(0.5).setDepth(15);
+  }
+
   // Background
   this.bg = this.add.graphics().setDepth(0);
 
@@ -15965,6 +18511,50 @@ TitleScene.prototype.update = function(time, delta) {
       this.bg.fillCircle(tp.x, tp.y, tp.r);
     }
     if (this._titleParticles.length > 20) this._titleParticles.splice(0, this._titleParticles.length - 20);
+  }
+
+  // ── R02: COLD OPEN (auto-start in 3s or any key) ──
+  if (this._coldOpen) {
+    this._coldOpenT += delta;
+    var countdown = Math.max(0, Math.ceil((3000 - this._coldOpenT) / 1000));
+    this._coldCount.setText('ORIENTATION BEGINS IN ' + countdown + '...');
+    this._coldSkip.setAlpha(0.5 + Math.sin(this._t * 0.005) * 0.3);
+
+    // Any key press or auto-start after 3s
+    var anyKey = keys.z.isDown || keys.up.isDown || keys.left.isDown || keys.right.isDown ||
+      keys.down.isDown || keys.x.isDown || keys.c.isDown || keys.esc.isDown;
+    if (anyKey || this._coldOpenT >= 3000) {
+      this._coldOpen = false;
+      if (this._coldTitle) this._coldTitle.destroy();
+      if (this._coldSub) this._coldSub.destroy();
+      if (this._coldCount) this._coldCount.destroy();
+      if (this._coldSkip) this._coldSkip.destroy();
+      // Route to game (same logic as menu play action)
+      var savedGame = SAVE.load();
+      if (savedGame && savedGame.world > 1) {
+        window._cactusEdCarryover = {
+          behavior: savedGame.behavior || {},
+          kills: savedGame.totalKills || 0,
+          deaths: savedGame.deaths || 0,
+          world: savedGame.world
+        };
+        window._cactusEdRunCount = savedGame.runs || 1;
+        if (savedGame.assistMode && savedGame.assistMode.biggerCoyote !== undefined) {
+          ASSIST.biggerCoyote = savedGame.assistMode.biggerCoyote;
+          ASSIST.slowerBosses = savedGame.assistMode.slowerBosses;
+          ASSIST.easyCopter = savedGame.assistMode.easyCopter;
+          ASSIST.infiniteHealth = savedGame.assistMode.infiniteHealth;
+          ASSIST.slowerGame = savedGame.assistMode.slowerGame || false;
+          ASSIST.count();
+        }
+        var targetWorld = savedGame.world === 3 ? 'World3' : 'World2';
+        this.scene.start(targetWorld);
+      } else {
+        this.scene.start('Demo');
+      }
+      return;
+    }
+    return;
   }
 
   // ── PHASE 0: BOOT SEQUENCE ──

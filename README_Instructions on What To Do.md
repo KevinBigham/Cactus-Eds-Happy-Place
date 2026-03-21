@@ -7,13 +7,13 @@
 
 # Project Overview
 
-**Cactus Ed's Happiest Place (CEHP)** is a single-file browser platformer game built with Phaser (loaded via CDN), written in ES5 JavaScript, with no build step. The entire game runtime lives in one HTML file (`ACTIVE/game/index.html`, ~16,113 lines).
+**Cactus Ed's Happiest Place (CEHP)** is a single-file browser platformer game built with Phaser (loaded via CDN), written in ES5 JavaScript, with no build step. The entire game runtime lives in one HTML file (`ACTIVE/game/index.html`, ~19,000+ lines).
 
-**Vision**: Complete first-session certification (World 2 / World 3 trust and continuity paths) before adding new content or engagement systems. Protect authored readability, save compatibility, and browser-runnable simplicity.
+**Vision**: A living satirical machine that watches you and adapts. The institution doesn't just judge you — it RESPONDS. Every run feels meaningfully different. Every receipt is shareable. Every player becomes a marketer.
 
-**Four active scenes**: Title, Demo, World2, World3.
+**Four active scenes**: Title, Demo (World 1), World2, World3.
 
-**Live URL**: https://kevinbigham.github.io/Cactus-Eds-Happy-Place/
+**Play now**: https://kevinbigham.github.io/Cactus-Eds-Happy-Place/
 **Repo**: https://github.com/KevinBigham/Cactus-Eds-Happy-Place
 
 ---
@@ -22,22 +22,65 @@
 
 ## What exists and works
 - The full game runs from `ACTIVE/game/index.html` in any browser
-- Four scenes are playable: Title, Demo, World2, World3
-- W2 and W3 gameplay patches (from Sprint 005) are applied locally but NOT YET PUSHED to GitHub
-- CEHP-010 quiz fix is built and applied locally (2026-03-17)
+- Four scenes are playable: Title, Demo (World 1), World2, World3
+- **All 10 GOAT rounds are implemented** (Rounds 01-03 were pre-existing; Rounds 04-10 built 2026-03-20)
+- Save contract (`cactusEd_save_v1`) fully preserved across all changes
+- Zero ES6 syntax — pure ES5 JavaScript throughout
 
-## What is unfinished
-- **CEHP-010** (W2 pop-quiz auto-dismiss fix) is BUILT but awaiting Reviewer validation
-- **CEHP-007** (push all local changes to GitHub) is blocked until CEHP-010 review completes
-- **CEHP-008** (human retest of W2/W3 patches on live URL) is blocked until push happens
-- First-session certification closeout is pending W2 quiz fix + W3 certAid retest
+## GOAT Plan Rounds — Feature Summary
 
-## What changed most recently (2026-03-17)
-- CEHP-010 build: fixed W2 quiz auto-dismiss bug (root cause: held gameplay keys misread as quiz answers during lockout-to-ready transition)
-- Change scope: 7 lines in W2 quiz input-handling block only, no W3 code, no save schema changes
+### Rounds 01-03 (Pre-existing)
+- **R01 JUICE & FEEL**: Procedural SFX, hit-stop, screenshake, squash-stretch, combo text
+- **R02 DEATH & ONBOARDING**: Fast respawn, institutional signage tutorial, cold open, camera lookahead
+- **R03 RECEIPT 2.0**: Procedural receipt templates (20 templates x 6 axes x 16 word banks), near-miss callouts, receipt stamp animation
 
-## What changed today (2026-03-20)
-- Full project reorganization by Claude Cowork. All files moved from flat `ALL/` directory into structured `ACTIVE/` and `ARCHIVE/` folders. Old pointer-only directories dissolved. Root cleaned to essentials only. See "Reorganization Notes" section below.
+### Round 04 — THE REPLAY ENGINE
+- Behavioral grade (F through S) on receipt + completion screen
+- Corrective Action Items (1-3 institutional improvement mandates)
+- RE-ENROLL (30% behavior carryover) / APPEAL (100%) / PROCEED TO WORLD 2 buttons
+- Hold-Z instant restart during death animation (1-second hold)
+- Streak-specific receipt lines at runs 3, 5, 10
+
+### Round 05 — SHAREABLE RECEIPT CARD
+- Canvas receipt card renderer (1080x1080 square + 1080x1920 story format)
+- Six-axis radar chart (compliance/intuition/curiosity/chaos/grace/efficiency)
+- Download PNG / Copy clipboard text / Share API (mobile)
+- Behavioral emoji bar for Wordle-style text sharing
+- "PRINT RECEIPT" button after stamp animation (P key)
+
+### Round 06 — ABILITY LICENSING
+- 8 licensable moves with institutional form numbers (FORM 12-A, FORM 8-C, etc.)
+- Unlicensed moves still work — but violations are logged + flash notifications
+- Auditor enemy (floating clipboard, non-lethal, 5s lifespan) spawns on repeated violations
+- Certification acts (zone-based skill challenges grant licenses permanently)
+- Employee Handbook replaces controls on pause menu (shows license status + hints)
+
+### Round 07 — TRAIT FORECLOSURE
+- Policy Flag system: institution applies 2-3 policies to next world based on dominant behavior
+- Institutional Memo at world start (cream overlay listing active policies)
+- World modifications: narrowed platforms (grace), censored signs (curiosity), response teams (chaos), extended safe paths (compliance)
+- Policy Effectiveness Review on completion screen
+- Fake-Left Branch memory (4+ visits with escalating institutional gags)
+
+### Round 08 — RETENTION SYSTEMS
+- Daily Enrollment Challenge (15 modifiers, deterministic from date seed)
+- Receipt Cabinet (localStorage collection, 100 max, archetype/S-rank tracking)
+- Department Assignment (6 departments after 5+ runs, cumulative behavioral tracking)
+- Waiver Punchcard (8 slots, 2 courtesy, world completion/high grades earn punches)
+- Behavioral Drift Tracking (longitudinal analysis with trend narratives after 5+ runs)
+
+### Round 09 — SURPRISE & DELIGHT
+- Fourth Wall Receipt lines at runs 5/10/15/20/25/30/50
+- Greeter NPC near W1 start (talk/kill/ignore — tracked for endgame payoff)
+- Blank Receipt for 95%+ compliance ("PERFECT RECORD. NO FURTHER ASSESSMENT REQUIRED.")
+- Clerical Error Jackpot (~5% chance — one-zone celebration with bouncing enemies)
+
+### Round 10 — CONTENT EXPANSION
+- Case Seed system (deterministic run ID: CASE-DATE-RUN-AXIS)
+- Mood Rotations (7 institutional moods: Budget Cuts, Wellness Week, Casual Friday, etc.)
+- Behavioral Remix Labels (DISCIPLINARY/EXPRESS/RESEARCH/STANDARD/PRECISION/CLASSIFIED editions)
+- Case number + mood displayed on pause screen
+- Daily challenge + department + punchcard on title screen
 
 ---
 
@@ -71,19 +114,15 @@
 
 # Current / Next Tasks
 
-## Current task: CEHP-010
-**Fix W2 pop-quiz auto-dismiss timing on first trigger**
-- Status: BUILT — awaiting Reviewer validation
-- Owner: Reviewer (Claude Code Sonnet 4.6)
-- The fix is applied in `ACTIVE/game/index.html` lines 13076-13084
-- After review: Operations pushes to GitHub
+## Current task: NONE — All GOAT rounds complete
+- Rounds 04-10 shipped in a single session (2026-03-20)
+- All features are live and pushed to GitHub
+- CEHP-010 quiz fix was included in the push
 
 ## Next likely tasks (in order)
-1. Reviewer validates CEHP-010 quiz fix
-2. Operations pushes ALL local changes to GitHub (completing CEHP-007)
-3. Kevin retests deployed fix on live URL (CEHP-008)
-4. If W2 quiz fix + W3 certAid retest pass → certification closeout
-5. After certification → Architect defines next feature priority
+1. Kevin playtests all new features on live URL
+2. Bug reports / polish pass based on playtest feedback
+3. Architect defines post-GOAT priority (new content? new worlds? marketing push?)
 
 ---
 
@@ -113,8 +152,8 @@ The save schema key `cactusEd_save_v1` must be preserved across ALL changes. Run
 
 # Warnings / Watchouts
 
-## Unpushed changes (CRITICAL)
-Local workspace has had unpushed changes since 2026-03-14. Nothing since Sprint 005 gameplay patches has reached GitHub. The live URL is still serving the pre-patch version. Human retest cannot happen until changes are pushed.
+## All changes pushed (2026-03-20)
+All local changes including GOAT rounds 04-10 have been pushed to GitHub. The live URL serves the latest version.
 
 ## Stale docs
 - `ACTIVE/docs/CURRENT_PASS.md` still describes Sprint 006 (project is past Sprint 012). Needs updating or removal.
@@ -126,7 +165,7 @@ Local workspace has had unpushed changes since 2026-03-14. Nothing since Sprint 
 - `ARCHIVE/legacy/quarantine/combat/` — a full combat engine (30+ JS files). Historical only — do not activate.
 
 ## GitHub Pages deployment
-The GitHub Pages workflow (`.github/workflows/static.yml`) deploys the entire repo. The game is now at `ACTIVE/game/index.html`. The workflow `path` setting may need updating to `ACTIVE/game` if you want the game served at the root URL. Currently it deploys everything from `.`.
+The GitHub Pages workflow (`.github/workflows/static.yml`) deploys from `ACTIVE/game/` so index.html is served at the root URL. Push to `main` triggers automatic deployment.
 
 ## Process vs. product ratio
 This project has extensive governance documentation relative to its actual codebase (1 HTML file). The governance is useful but can be overwhelming. Focus on the game file and NEXT_TASK.md first.
