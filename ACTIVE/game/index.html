@@ -2095,8 +2095,12 @@ var DRAW_ED_SNES = {
       // Ash band
       g.fillStyle(0x888888, 0.6);
       g.fillRect(cigEnd - 2, cigY, 2, 2);
-      // Ember tip — flickers at low health
+      // Ember tip — flickers at low health, with warm halo
       var emberAlpha = healthPct <= 0.25 ? (0.5 + Math.sin(cigF * 0.5) * 0.5) : 1;
+      g.fillStyle(0xff4444, emberAlpha * 0.08);
+      g.fillCircle(cigEnd, cigY + 1, 10);
+      g.fillStyle(0xff6b35, emberAlpha * 0.18);
+      g.fillCircle(cigEnd, cigY + 1, 6);
       g.fillStyle(0xff6b35, emberAlpha);
       g.fillCircle(cigEnd, cigY + 1, healthPct <= 0.25 ? 1.5 : 2);
       g.fillStyle(0xffaa00, emberAlpha * 0.7);
@@ -3327,6 +3331,11 @@ function drawFloatingItem(g, x, y, type, bobT) {
   var bob = Math.sin(bobT * 0.006) * 3;
   var glow = 0.2 + Math.sin(bobT * 0.008) * 0.1;
   var col = ITEM_TYPES[type] ? ITEM_TYPES[type].color : 0xffffff;
+  // Outer halo
+  g.fillStyle(col, glow * 0.12);
+  g.fillCircle(x, y + bob, 20);
+  g.fillStyle(col, glow * 0.25);
+  g.fillCircle(x, y + bob, 14);
   // Glow
   g.fillStyle(col, glow);
   g.fillCircle(x, y + bob, 10);
@@ -6117,6 +6126,11 @@ function drawPlatform(g, px, py, pw) {
 function drawAloePickup(g, x, y, bobT) {
   var bob = Math.sin(bobT * 0.004) * 3;
   var glow = 0.3 + Math.sin(bobT * 0.006) * 0.15;
+  // Outer halo
+  g.fillStyle(0x00e676, glow * 0.15);
+  g.fillCircle(x, y + bob, 18);
+  g.fillStyle(0x00e676, glow * 0.3);
+  g.fillCircle(x, y + bob, 12);
   // Glow
   g.fillStyle(0x00e676, glow);
   g.fillCircle(x, y + bob, 8);
@@ -7520,6 +7534,9 @@ DemoScene.prototype.create = function() {
     color: '#ff0000', stroke: '#000000', strokeThickness: 6,
     align: 'center'
   }).setOrigin(0.5).setScrollFactor(0).setDepth(96).setAlpha(0);
+  if (IS_WEBGL) {
+    this.subliminalTxt.postFX.addGlow(0xff0000, 4, 0, false, 0.1, 12);
+  }
 
   this._subliminalTimer = 0;
   this._subliminalInterval = 12000 + Math.random() * 8000; // 12-20s between flashes
@@ -7535,19 +7552,23 @@ DemoScene.prototype.create = function() {
   this._tearTimer = 0;
   this._tearInterval = 18000 + Math.random() * 12000; // 18-30s
 
-  // Vignette (persistent dark edges — cinematic menace)
-  this.vignetteG = this.add.graphics().setScrollFactor(0).setDepth(92);
-  // Top/bottom bands
-  this.vignetteG.fillStyle(0x000000, 0.3);
-  this.vignetteG.fillRect(0, 0, W, 20);
-  this.vignetteG.fillRect(0, H - 20, W, 20);
-  this.vignetteG.fillStyle(0x000000, 0.15);
-  this.vignetteG.fillRect(0, 20, W, 15);
-  this.vignetteG.fillRect(0, H - 35, W, 15);
-  // Side vignette
-  this.vignetteG.fillStyle(0x000000, 0.12);
-  this.vignetteG.fillRect(0, 0, 12, H);
-  this.vignetteG.fillRect(W - 12, 0, 12, H);
+  // Vignette + PostFX
+  if (IS_WEBGL) {
+    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.88, 0.38);
+    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 1.1, 1.15);
+  } else {
+    // Canvas fallback — manual vignette
+    this.vignetteG = this.add.graphics().setScrollFactor(0).setDepth(92);
+    this.vignetteG.fillStyle(0x000000, 0.3);
+    this.vignetteG.fillRect(0, 0, W, 20);
+    this.vignetteG.fillRect(0, H - 20, W, 20);
+    this.vignetteG.fillStyle(0x000000, 0.15);
+    this.vignetteG.fillRect(0, 20, W, 15);
+    this.vignetteG.fillRect(0, H - 35, W, 15);
+    this.vignetteG.fillStyle(0x000000, 0.12);
+    this.vignetteG.fillRect(0, 0, 12, H);
+    this.vignetteG.fillRect(W - 12, 0, 12, H);
+  }
 
   // ── MYSTICAL FONZ CAT — floats by on a cig smoke cloud every ~40s ──
   this.fonzCatG = this.add.graphics().setScrollFactor(0).setDepth(55);
@@ -8699,7 +8720,10 @@ DemoScene.prototype._showReceipt = function() {
             }).setOrigin(0.5).setScrollFactor(0).setDepth(121);
             var showTransLine = function() {
               if (transIdx >= transTexts.length) {
-                try { self7.scene.start('World2'); } catch(e) { window.location.reload(); }
+                self7.cameras.main.fadeOut(800, 0, 0, 0);
+                self7.cameras.main.once('camerafadeoutcomplete', function() {
+                  try { self7.scene.start('World2'); } catch(e) { window.location.reload(); }
+                });
                 return;
               }
               transTxt.setText(transTexts[transIdx]);
@@ -9707,9 +9731,14 @@ DemoScene.prototype.update = function(time, delta) {
     this._updateTramRun(delta);
     // Still draw Wonder Showzen effects during tram
     this.grainG.clear();
-    for (var gri = 0; gri < 20; gri++) {
-      this.grainG.fillStyle(0xffffff, 0.03 + Math.random() * 0.03);
-      this.grainG.fillRect(Math.floor(Math.random() * W), Math.floor(Math.random() * H), 1, 1);
+    for (var gri = 0; gri < 12; gri++) {
+      this.grainG.fillStyle(0xffffff, 0.02 + Math.random() * 0.03);
+      this.grainG.fillRect(Math.floor(Math.random() * W), Math.floor(Math.random() * H), 2, 1);
+    }
+    // VHS tracking line
+    if (Math.random() < 0.04) {
+      this.grainG.fillStyle(0xffffff, 0.06);
+      this.grainG.fillRect(0, Math.floor(Math.random() * H), W, 1);
     }
     return;
   }
@@ -10096,6 +10125,13 @@ DemoScene.prototype.update = function(time, delta) {
     this.tearG.fillRect(0, tearY, W, tearH);
     this.tearG.fillStyle(0xffffff, 0.05);
     this.tearG.fillRect(4, tearY, W, tearH); // offset = tear
+    // RGB channel offset — broken broadcast aesthetic
+    this.tearG.fillStyle(0xff0000, 0.08);
+    this.tearG.fillRect(0, tearY - 2, W, 1);
+    this.tearG.fillStyle(0x0000ff, 0.08);
+    this.tearG.fillRect(0, tearY + tearH + 1, W, 1);
+    this.tearG.fillStyle(0x00ff00, 0.05);
+    this.tearG.fillRect(2, tearY + Math.floor(tearH / 2), W, 1);
     // Clear after 120ms
     var tearRef = this.tearG;
     this.time.delayedCall(120, function() { tearRef.clear(); });
@@ -13472,6 +13508,9 @@ DemoScene.prototype.update = function(time, delta) {
     p.vy -= 15 * dt;
     p.life -= dt * 1.2;
     if (p.life <= 0) { SMOKE_POOL.splice(sp, 1); continue; }
+    // Dual-pass: soft outer halo + solid inner
+    this.smokeG.fillStyle(p.color || 0xaaaaaa, p.life * 0.12);
+    this.smokeG.fillCircle(p.x, p.y, p.r * 2.2);
     this.smokeG.fillStyle(p.color || 0xaaaaaa, p.life * 0.35);
     this.smokeG.fillCircle(p.x, p.y, p.r);
   }
@@ -14361,6 +14400,7 @@ World2Scene.prototype.preload = function() {};
 
 World2Scene.prototype.create = function() {
   var self = this;
+  this.cameras.main.fadeIn(1000, 0, 0, 0);
   // Load sprites
   var keys = Object.keys(SPRITE_IMAGES);
   for (var i = 0; i < keys.length; i++) {
@@ -15056,6 +15096,13 @@ World2Scene.prototype.create = function() {
   this.cameras.main.startFollow({ x: 60, y: H / 2 }, false, 0.08, 0.08);
   this._camLookAhead = 0;
   this._camPeekY = 0;
+
+  // PostFX
+  if (IS_WEBGL) {
+    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.85, 0.42);
+    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 1.15, 1.2);
+  }
+
   applyCertificationAidCheckpoint(this);
 };
 
@@ -15809,7 +15856,13 @@ World2Scene.prototype.update = function(time, delta) {
                 stroke: '#000000', strokeThickness: 3
               }).setOrigin(0.5).setScrollFactor(0).setDepth(121);
               var showTr = function() {
-                if (trI >= trLines.length) { try { selfW2C.scene.start('World3'); } catch(e) { window.location.reload(); } return; }
+                if (trI >= trLines.length) {
+                  selfW2C.cameras.main.fadeOut(800, 0, 0, 0);
+                  selfW2C.cameras.main.once('camerafadeoutcomplete', function() {
+                    try { selfW2C.scene.start('World3'); } catch(e) { window.location.reload(); }
+                  });
+                  return;
+                }
                 trTxt.setText(trLines[trI]); trI++;
                 selfW2C.time.delayedCall(900, showTr);
               };
@@ -16455,6 +16508,8 @@ World2Scene.prototype.update = function(time, delta) {
     var s = SMOKE_POOL[si]; s.life -= dt;
     if (s.life <= 0) { SMOKE_POOL.splice(si, 1); continue; }
     s.x += s.vx * dt; s.y += s.vy * dt; s.r += dt * 0.8;
+    this.smokeG.fillStyle(s.color || 0xaaaaaa, (s.life / 1.0) * 0.04);
+    this.smokeG.fillCircle(s.x, s.y, s.r * 2.2);
     this.smokeG.fillStyle(s.color || 0xaaaaaa, (s.life / 1.0) * 0.12);
     this.smokeG.fillCircle(s.x, s.y, s.r);
   }
@@ -16517,6 +16572,7 @@ World3Scene.prototype.preload = function() {};
 
 World3Scene.prototype.create = function() {
   var self = this;
+  this.cameras.main.fadeIn(1000, 0, 0, 0);
   var keys2 = Object.keys(SPRITE_IMAGES);
   for (var i = 0; i < keys2.length; i++) { if (!this.textures.exists(keys2[i])) { try { this.textures.addImage(keys2[i], SPRITE_IMAGES[keys2[i]]); } catch(e) {} } }
 
@@ -16862,6 +16918,13 @@ World3Scene.prototype.create = function() {
 
   this.cameras.main.setBounds(0, 0, LW, H);
   this.cameras.main.startFollow({ x: 60, y: H / 2 }, false, 0.08, 0.08);
+
+  // PostFX
+  if (IS_WEBGL) {
+    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.82, 0.45);
+    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 1.2, 1.25);
+  }
+
   applyCertificationAidCheckpoint(this);
 };
 
@@ -17818,6 +17881,8 @@ World3Scene.prototype.update = function(time, delta) {
     var sm = SMOKE_POOL[s3]; sm.life -= dt;
     if (sm.life <= 0) { SMOKE_POOL.splice(s3, 1); continue; }
     sm.x += sm.vx*dt; sm.y += sm.vy*dt; sm.r += dt*0.8;
+    this.smokeG.fillStyle(sm.color || 0xaaaaaa, (sm.life/1.0)*0.04);
+    this.smokeG.fillCircle(sm.x, sm.y, sm.r * 2.2);
     this.smokeG.fillStyle(sm.color || 0xaaaaaa, (sm.life/1.0)*0.12);
     this.smokeG.fillCircle(sm.x, sm.y, sm.r);
   }
@@ -18111,7 +18176,10 @@ World3Scene.prototype._triggerEnding = function() {
                       var pF2 = function() {
                         if (fZ2.isDown) {
                           window._cactusEdRunCount = (window._cactusEdRunCount || 1) + 1;
-                          try { selfEnd.scene.start('Title'); } catch(e) { window.location.reload(); }
+                          selfEnd.cameras.main.fadeOut(1200, 0, 0, 0);
+                          selfEnd.cameras.main.once('camerafadeoutcomplete', function() {
+                            try { selfEnd.scene.start('Title'); } catch(e) { window.location.reload(); }
+                          });
                         } else { selfEnd.time.delayedCall(80, pF2); }
                       };
                       pF2();
@@ -18187,6 +18255,7 @@ TitleScene.prototype.preload = function() {};
 
 TitleScene.prototype.create = function() {
   var self = this;
+  this.cameras.main.fadeIn(1500, 0, 0, 0);
   var certAid = getCertificationAidConfig();
   if (certAid.enabled && certAid.sceneKey) {
     this.scene.start(certAid.sceneKey);
@@ -18397,6 +18466,13 @@ TitleScene.prototype.create = function() {
   this._showAchievements = false;
   this._showAbout = false;
 
+  // PostFX — corrupted broadcast feel
+  if (IS_WEBGL) {
+    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.80, 0.50);
+    this.cameras.main.postFX.addBloom(0x0a0014, 1, 1, 1.3, 1.5);
+    this.cameras.main.postFX.addBarrel(1.03);
+  }
+
   // Input
   this.keys = {
     z: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z),
@@ -18552,9 +18628,17 @@ TitleScene.prototype.update = function(time, delta) {
           ASSIST.count();
         }
         var targetWorld = savedGame.world === 3 ? 'World3' : 'World2';
-        this.scene.start(targetWorld);
+        this.cameras.main.fadeOut(600, 0, 0, 0);
+        var selfCold = this;
+        this.cameras.main.once('camerafadeoutcomplete', function() {
+          selfCold.scene.start(targetWorld);
+        });
       } else {
-        this.scene.start('Demo');
+        this.cameras.main.fadeOut(600, 0, 0, 0);
+        var selfCold2 = this;
+        this.cameras.main.once('camerafadeoutcomplete', function() {
+          selfCold2.scene.start('Demo');
+        });
       }
       return;
     }
@@ -18651,15 +18735,27 @@ TitleScene.prototype.update = function(time, delta) {
                 ASSIST.count();
               }
               var targetWorld = savedGame.world === 3 ? 'World3' : 'World2';
-              this.scene.start(targetWorld);
+              var selfMenu = this;
+              this.cameras.main.fadeOut(600, 0, 0, 0);
+              this.cameras.main.once('camerafadeoutcomplete', function() {
+                selfMenu.scene.start(targetWorld);
+              });
             } else {
-              this.scene.start('Demo');
+              var selfMenu2 = this;
+              this.cameras.main.fadeOut(600, 0, 0, 0);
+              this.cameras.main.once('camerafadeoutcomplete', function() {
+                selfMenu2.scene.start('Demo');
+              });
             }
             } else if (action === 'newgame') {
               SAVE.clear();
               window._cactusEdCarryover = null;
               window._cactusEdRunCount = 1;
-              this.scene.start('Demo');
+              var selfMenu3 = this;
+              this.cameras.main.fadeOut(600, 0, 0, 0);
+              this.cameras.main.once('camerafadeoutcomplete', function() {
+                selfMenu3.scene.start('Demo');
+              });
             } else if (action === 'controls') {
             this._showControls = true;
             this._controlsG.clear();
@@ -18689,7 +18785,7 @@ TitleScene.prototype.update = function(time, delta) {
 };
 
 var config = {
-  type: Phaser.CANVAS,
+  type: Phaser.AUTO,
   width: W,
   height: H,
   backgroundColor: '#0a0014',
@@ -18702,6 +18798,7 @@ var config = {
 };
 
 var GAME_INSTANCE = new Phaser.Game(config);
+var IS_WEBGL = (GAME_INSTANCE.renderer.type === Phaser.WEBGL);
 </script>
 </body>
 </html>
