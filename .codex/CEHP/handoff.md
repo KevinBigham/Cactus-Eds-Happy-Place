@@ -1,38 +1,44 @@
 # CEHP Handoff
 
-## What Was Just Done (2026-03-20 — Project Reorganization + Alignment)
-- Full file-system audit and reorganization by Claude Cowork Opus 4.6
-- All files moved from flat `ALL/` directory into structured `ACTIVE/` layout:
-  - `ACTIVE/game/` — index.html, package.json, scripts/, tests/, asset scaffolds
-  - `ACTIVE/docs/` — all active documentation (NEXT_TASK.md, AGENTS.md, etc.)
-  - `ACTIVE/knowledge/` — STUDIO_KERNEL/, overflow/, docs_skills/
-- Old pointer-only `ACTIVE/` subdirs (MEMORY/, AUTOMATION/, REPO/, CONTROL/) dissolved
-- Root cleaned to 4 essential files + ACTIVE/ + ARCHIVE/ + config dirs
-- Root-level duplicates removed (000 - AI PORTFOLIO..., CEHP - 000 - FOREVER..., CEHP_Studio_Systems_Report.docx)
-- Stale protocol artifacts moved to ARCHIVE/ (PROTOCOL_AUDIT.md, PROTOCOL_TEST_ARTIFACT.md, STUDIO_WIDE_VERDICT.md)
-- Never-used systems moved to ARCHIVE/ (self_healing/, auto_tasks/, telemetry/, tools/)
-- `.gitignore` updated for new paths
-- `.codex/CEHP/` memory files updated with new paths
-- CLAUDE.md (root) and README created/updated for new structure
-- GitHub Pages workflow already points to `ACTIVE/game` — correct
-- **Git repository initialized and all active work pushed to GitHub**
+## What Was Just Done (2026-03-21 — Visual Upgrade + Bug Fix Session)
 
-## What Was Previously Done (2026-03-17 — CEHP-010 BUILD)
-- CEHP-010 quiz fix built: during 250ms input lockout, `_quizHeldChoice` was reset to -1 every frame → held gameplay keys misread as quiz answers. Fix: track held keys during lockout.
-- Change scope: 7 lines in W2 quiz input-handling block only. No W3 code. No save schema. `check_save_schema.js` PASS.
+### Bug Fix: TitleScene Cold-Open Crash
+- The cold open "any key" check referenced `keys.left`, `keys.right`, `keys.x`, `keys.c`, `keys.esc` which were never registered in TitleScene's key map (only z, up, down). This TypeError killed the game loop on the first update frame, showing a blank screen.
+- Fixed by using inline `addKey()` calls for the missing key references.
+
+### Text Readability Upgrade
+- All font sizes bumped: 3-4px→8px, 5px→9px, 6-7px→10px, 8px→11px, 9px→12px, 20px→24px
+- Minimum stroke thickness raised to 3 across the board
+- Dim text colors brightened (#333→#777, #444→#888, #555→#999, plus muted greens/blues)
+
+### Major Visual Upgrade — WebGL PostFX
+- **Renderer**: Switched from `Phaser.CANVAS` to `Phaser.AUTO` (WebGL with Canvas fallback)
+- **IS_WEBGL flag**: Global detection variable guards all PostFX code
+- **Camera PostFX on all 4 scenes**:
+  - GPU-rendered vignette (replaces crude rectangle overlay in DemoScene)
+  - Subtle bloom (makes lights and pickups pop)
+  - Barrel distortion on TitleScene (CRT monitor curvature)
+- **Scene transitions**: All `scene.start()` calls now fade out/in (Title→gameplay, W1→W2, W2→W3, end→Title)
+- **Enhanced glow effects**: Aloe pickups (dual-halo), floating items (outer halos), Ed's cigarette ember (warm glow rings), subliminal text (PostFX red glow)
+- **Dual-pass particles**: All particles render with soft outer halo at 2.2x radius
+- **VHS grain**: Upgraded to tracking-style bars with occasional scan lines
+- **Screen tear**: RGB channel offset (red/blue/green split lines)
+
+### Previous Session (2026-03-20 — GOAT Rounds 04-10)
+- All 10 GOAT plan rounds fully implemented in a single marathon session
+- See README for full feature list
 
 ## What To Do Next
-1. Check `ACTIVE/docs/NEXT_TASK.md` — it always has exactly one task defined
-2. Current task: CEHP-010 (W2 quiz fix) — STATUS: BUILT, awaiting Reviewer validation
-3. After review: Operations pushes any subsequent changes to GitHub
-4. After push: Kevin retests deployed fix on live URL (CEHP-008)
+1. Check `ACTIVE/docs/NEXT_TASK.md` — currently OPEN (no active task)
+2. Kevin should playtest all features on the live URL
+3. Based on playtest: define next priority (new content, polish, marketing, etc.)
+4. Next agent should read `CLAUDE.md` and this file first
 
 ## Exact Files To Inspect
 - Task beacon: `ACTIVE/docs/NEXT_TASK.md`
-- Runtime: `ACTIVE/game/index.html`
+- Runtime: `ACTIVE/game/index.html` (~18,800 lines)
 - Agent rules: `ACTIVE/docs/AGENTS.md`
 - Known issues: `ACTIVE/docs/KNOWN_ISSUES.md`
-- Sprint history: `ACTIVE/docs/SPRINT_LOG.md`
 - Local memory: `.codex/CEHP/status.md`
 - Backlog: `ACTIVE/docs/BACKLOG.md`
 
@@ -40,16 +46,26 @@
 - Branch: `main`
 - Remote: `origin` → `https://github.com/KevinBigham/Cactus-Eds-Happy-Place`
 - All active work is committed and pushed
+- GitHub Pages deploys automatically on push to main
+
+## Tech Stack Summary
+- Phaser 3.70.0 via CDN (WebGL renderer with Canvas fallback)
+- ES5 JavaScript only (no let/const, no arrow functions, no template literals)
+- Single HTML file: `ACTIVE/game/index.html`
+- Save key: `cactusEd_save_v1` (localStorage)
+- Verification: `node ACTIVE/game/scripts/check_save_schema.js`
+
+## Key Architecture Notes
+- Ed, cats, and enemies are drawn via Phaser Graphics (fillRect/fillCircle), NOT sprites
+- Custom particle system (SMOKE_POOL array, 67+ push sites) — NOT Phaser emitters
+- Behavioral tracking: `this.behavior = { compliance, intuition, curiosity, grace, chaos, efficiency }`
+- Receipt system: `generateReceiptText(behavior, runData)` returns `{text, archetype, dominant, secondary}`
+- PostFX is guarded by `IS_WEBGL` global flag — all visual effects have Canvas fallback
+- Game dimensions: W=512, H=448 pixels
 
 ## Warnings / Risks / Traps
-- Reference docs are in `ACTIVE/knowledge/overflow/reference-docs/` — SPEC, PLAN, IMPLEMENT, etc.
-- Do not recreate reference docs at root level — that was the old structure
-- `ACTIVE/docs/NEXT_TASK.md` is the single source of truth for "what to do next"
-- `ACTIVE/docs/BACKLOG.md` is the queue of future tasks
-- `ACTIVE/docs/SPRINT_LOG.md` is the chronological history
-- Changelog entries before 2026-03-20 reference `ALL/` paths — those are historical and correct for when they were written
-
-## Easy To Forget
-- The GitHub Pages workflow deploys from `ACTIVE/game/` — index.html must stay there
-- Save schema verification: `node ACTIVE/game/scripts/check_save_schema.js`
-- TASK_OWNER_ROLE in NEXT_TASK.md is the sole activation key for agents
+- The game is ONE GIANT HTML file (~18,800 lines). Do not split it.
+- Save contract (`cactusEd_save_v1`) must NEVER break. Always run the schema check.
+- Movement constants in `ED_MOVE` must not change without approval.
+- The cigarette is central to Ed's identity — never remove it.
+- Behavioral tracking stays silent (no visible meters).

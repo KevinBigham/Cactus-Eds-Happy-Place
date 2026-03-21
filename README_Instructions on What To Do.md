@@ -1,7 +1,7 @@
 # README — Instructions on What To Do
 
-> **Last updated**: 2026-03-20
-> **Updated by**: Claude Cowork Opus 4.6 (project reorganization)
+> **Last updated**: 2026-03-21
+> **Updated by**: Claude Opus 4.6 (1M context) — visual upgrade + handoff prep
 
 ---
 
@@ -24,6 +24,9 @@
 - The full game runs from `ACTIVE/game/index.html` in any browser
 - Four scenes are playable: Title, Demo (World 1), World2, World3
 - **All 10 GOAT rounds are implemented** (Rounds 01-03 were pre-existing; Rounds 04-10 built 2026-03-20)
+- **Visual upgrade shipped** (2026-03-21): WebGL PostFX (vignette, bloom, barrel distortion), smooth scene transitions, enhanced glow effects, dual-pass particles, VHS grain, RGB channel offset tears
+- **Text readability pass** (2026-03-21): All font sizes bumped (minimum 8px), stroke thickness ≥3, dim colors brightened
+- **Renderer**: WebGL via `Phaser.AUTO` with Canvas fallback (`IS_WEBGL` flag guards all PostFX code)
 - Save contract (`cactusEd_save_v1`) fully preserved across all changes
 - Zero ES6 syntax — pure ES5 JavaScript throughout
 
@@ -114,15 +117,16 @@
 
 # Current / Next Tasks
 
-## Current task: NONE — All GOAT rounds complete
-- Rounds 04-10 shipped in a single session (2026-03-20)
+## Current task: OPEN — All GOAT rounds + visual upgrade complete
+- Rounds 04-10 shipped 2026-03-20
+- Visual upgrade (WebGL PostFX, text readability, scene transitions) shipped 2026-03-21
+- TitleScene crash fix shipped 2026-03-21
 - All features are live and pushed to GitHub
-- CEHP-010 quiz fix was included in the push
 
 ## Next likely tasks (in order)
-1. Kevin playtests all new features on live URL
+1. Kevin playtests all features on live URL
 2. Bug reports / polish pass based on playtest feedback
-3. Architect defines post-GOAT priority (new content? new worlds? marketing push?)
+3. Define next priority: new worlds, marketing, asset upgrade, etc.
 
 ---
 
@@ -152,8 +156,8 @@ The save schema key `cactusEd_save_v1` must be preserved across ALL changes. Run
 
 # Warnings / Watchouts
 
-## All changes pushed (2026-03-20)
-All local changes including GOAT rounds 04-10 have been pushed to GitHub. The live URL serves the latest version.
+## All changes pushed (2026-03-21)
+All local changes including GOAT rounds 04-10, visual upgrade, text readability pass, and TitleScene crash fix have been pushed to GitHub. The live URL serves the latest version.
 
 ## Stale docs
 - `ACTIVE/docs/CURRENT_PASS.md` still describes Sprint 006 (project is past Sprint 012). Needs updating or removal.

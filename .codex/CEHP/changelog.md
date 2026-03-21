@@ -1,5 +1,47 @@
 # CEHP Changelog
 
+## 2026-03-21 — Visual Upgrade: WebGL PostFX, Scene Transitions, Glow & Particles
+- files modified:
+  - `ACTIVE/game/index.html` — major visual overhaul (123 insertions, 26 deletions)
+- changes:
+  - Renderer switched from `Phaser.CANVAS` to `Phaser.AUTO` (WebGL with Canvas fallback)
+  - Added `IS_WEBGL` global flag for safe PostFX guards
+  - Camera PostFX on all 4 scenes: vignette, bloom, barrel distortion (TitleScene)
+  - All `scene.start()` calls wrapped with fadeOut/fadeIn transitions
+  - fadeIn added to all scene create methods
+  - Enhanced glow: aloe pickups (dual-halo), floating items (outer halos), cigarette ember (warm glow rings), subliminal text (PostFX red glow)
+  - Dual-pass particle rendering across all 3 gameplay scenes (soft outer halo at 2.2x radius)
+  - Screen grain upgraded to VHS tracking style
+  - Screen tear enhanced with RGB channel offset
+  - Manual vignette wrapped in `if (!IS_WEBGL)` fallback
+- save schema: verified (passes)
+- agent: Claude Opus 4.6 (1M context)
+
+## 2026-03-21 — Text Readability Upgrade
+- files modified:
+  - `ACTIVE/game/index.html` — 278 font size changes, color brightening
+- changes:
+  - All font sizes bumped: 3-4px→8px, 5px→9px, 6-7px→10px, 8px→11px, 9px→12px, title 20px→24px
+  - Minimum strokeThickness raised to 3 (from 1-2)
+  - Dim text colors brightened: #333→#777, #444→#888, #555→#999, plus muted greens/blues
+- save schema: verified (passes)
+- agent: Claude Opus 4.6 (1M context)
+
+## 2026-03-21 — TitleScene Cold-Open Crash Fix
+- files modified:
+  - `ACTIVE/game/index.html` — fixed cold open key references (6 insertions, 2 deletions)
+- root cause: cold open "any key" check referenced `keys.left`, `keys.right`, `keys.x`, `keys.c`, `keys.esc` which were never registered in TitleScene's key map (only z, up, down). TypeError killed game loop on first update frame.
+- fix: used inline `addKey()` calls for the missing key references
+- save schema: verified (passes)
+- agent: Claude Opus 4.6 (1M context)
+
+## 2026-03-20 — GOAT Rounds 04-10 Implementation
+- files modified:
+  - `ACTIVE/game/index.html` — massive feature addition (~4,000+ lines)
+- rounds implemented: Replay Engine (R04), Shareable Receipt (R05), Ability Licensing (R06), Trait Foreclosure (R07), Retention Systems (R08), Surprise & Delight (R09), Content Expansion (R10)
+- save schema: verified (passes)
+- agent: Claude Opus 4.6 (1M context)
+
 ## 2026-03-17 — CEHP-010 BUILD COMPLETE — W2 Quiz Auto-Dismiss Fix
 - files modified:
   - `ALL/index.html` — fixed quiz auto-dismiss bug at lines 13076-13084. Root cause: during 250ms input lockout, `_quizHeldChoice` was reset to -1 every frame. When lockout expired, any gameplay key (Z/X/C/UP) still held from walking/jumping was misread as a new quiz answer, causing instant dismiss (~0.2s). Fix: track held keys during lockout so the ready-transition doesn't register pre-held keys as new input.

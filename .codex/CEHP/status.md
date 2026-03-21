@@ -1,9 +1,11 @@
 # CEHP Status
 
-- current objective: CEHP-010 — Fix W2 pop-quiz auto-dismiss timing on first trigger
-- what is done: CEHP-010 BUILD COMPLETE. Root cause: during 250ms input lockout, `_quizHeldChoice` was reset to -1 every frame. When lockout expired, any gameplay key (Z/X/C/UP) still held was misread as a new quiz answer → instant dismiss. Fix: track held keys during lockout so the transition to "ready" doesn't register a pre-held key as new input.
-- what is in progress: CEHP-010 Review — awaiting Reviewer (Claude Code Sonnet 4.6) validation
-- blockers: none — workspace reorganized, git init pending
-- next recommended action: Reviewer validates fix in ACTIVE/game/index.html lines 13076-13084, confirms quiz behavior, then Operations pushes to GitHub
-- project reorganization: completed 2026-03-20 — files moved from ALL/ to ACTIVE/game/, ACTIVE/docs/, ACTIVE/knowledge/. Root cleaned. Git repo needs initialization and push.
-- last-updated: 2026-03-20
+- current objective: OPEN — No active task. All GOAT rounds complete. Visual upgrade shipped.
+- what is done: Rounds 01-10 GOAT plan fully implemented. Visual upgrade complete (WebGL PostFX, scene transitions, enhanced glow/particles, text readability pass). TitleScene cold-open crash fixed. All changes pushed to GitHub and deployed live.
+- what is in progress: Nothing — ready for next direction from Kevin or Architect
+- blockers: None
+- next recommended action: Kevin playtests all features on live URL. Then define next priority (new worlds, marketing, polish pass, etc.)
+- live URL: https://kevinbigham.github.io/Cactus-Eds-Happy-Place/
+- repo: https://github.com/KevinBigham/Cactus-Eds-Happy-Place
+- branch: main (clean, all pushed)
+- last-updated: 2026-03-21
