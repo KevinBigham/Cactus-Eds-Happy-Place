@@ -3885,26 +3885,26 @@ function updateCertificationAidOverlay(scene, zone) {
   if (!scene._certAidPanelG) {
     scene._certAidPanelG = scene.add.graphics().setScrollFactor(0).setDepth(94);
     scene._certAidHeaderTxt = scene.add.text(12, 12, '', {
-      fontFamily: 'Courier New, monospace', fontSize: '9px',
+      fontFamily: 'Courier New, monospace', fontSize: '12px',
       color: '#ffd700', stroke: '#000000', strokeThickness: 3
     }).setScrollFactor(0).setDepth(95);
     scene._certAidZoneTxt = scene.add.text(12, 40, '', {
-      fontFamily: 'Courier New, monospace', fontSize: '8px',
+      fontFamily: 'Courier New, monospace', fontSize: '11px',
       color: '#d7e6ff', stroke: '#000000', strokeThickness: 3
     }).setScrollFactor(0).setDepth(95);
     scene._certAidHintTxt = scene.add.text(12, 58, '', {
-      fontFamily: 'Courier New, monospace', fontSize: '9px',
+      fontFamily: 'Courier New, monospace', fontSize: '12px',
       color: '#ffffff', stroke: '#000000', strokeThickness: 3,
       wordWrap: { width: 232 }
     }).setScrollFactor(0).setDepth(95);
     scene._certAidControlsTxt = scene.add.text(12, 160, 'R RETRY  H HIDE', {
-      fontFamily: 'Courier New, monospace', fontSize: '8px',
+      fontFamily: 'Courier New, monospace', fontSize: '11px',
       color: '#bbbbbb', stroke: '#000000', strokeThickness: 3
     }).setScrollFactor(0).setDepth(95);
     scene._certAidStepTxts = [];
     for (var si = 0; si < 4; si++) {
       scene._certAidStepTxts.push(scene.add.text(12, 88 + si * 16, '', {
-        fontFamily: 'Courier New, monospace', fontSize: '9px',
+        fontFamily: 'Courier New, monospace', fontSize: '12px',
         color: '#bbbbbb', stroke: '#000000', strokeThickness: 3
       }).setScrollFactor(0).setDepth(95));
     }
@@ -3988,7 +3988,7 @@ function showContextHint(scene, hintId, stage) {
   TEXT_ZONES.show(scene, hintPack[stage], {
     color: stage === 'nudge' ? '#88ccff' : stage === 'clarify' ? '#ccaa44' : '#ffd700',
     duration: stage === 'solve' ? 4200 : 3200,
-    fontSize: '9px'
+    fontSize: '12px'
   });
   return true;
 }
@@ -4087,8 +4087,8 @@ function updateFirstSessionDebugOverlay(scene, zone) {
   }
   if (!scene._firstSessionDebugTxt) {
     scene._firstSessionDebugTxt = scene.add.text(W - 4, H - 4, '', {
-      fontFamily: 'Courier New, monospace', fontSize: '6px',
-      color: '#d7e6ff', stroke: '#000000', strokeThickness: 2,
+      fontFamily: 'Courier New, monospace', fontSize: '10px',
+      color: '#d7e6ff', stroke: '#000000', strokeThickness: 3,
       align: 'right', backgroundColor: '#00000099', padding: { x: 4, y: 3 }
     }).setOrigin(1, 1).setScrollFactor(0).setDepth(92);
   }
@@ -5614,7 +5614,7 @@ function drawSharedMovementHud(scene, fuelY, weaponY) {
     scene.hudG.fillRect(8, weaponY + 2, 66 * wpnPct, 8);
     if (!scene._weaponTxt) {
       scene._weaponTxt = scene.add.text(10, weaponY + 1, '', {
-        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#000000',
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#000000',
         stroke: '#ffffff', strokeThickness: 1
       }).setScrollFactor(0).setDepth(62);
     }
@@ -5961,7 +5961,7 @@ function buildParallax(scene, levelWidth) {
 
     // Subtitle — pure white on black, constrained to billboard
     scene.add.text(bbx + bbW / 2, bby + 24, bb.sub, {
-      fontFamily: 'Courier New, monospace', fontSize: '9px',
+      fontFamily: 'Courier New, monospace', fontSize: '12px',
       color: '#ffffff', stroke: '#000000', strokeThickness: 3,
       align: 'center', lineSpacing: 1,
       wordWrap: { width: bbW - 14 }
@@ -6011,7 +6011,7 @@ function buildParallax(scene, levelWidth) {
     else if (ssX >= 2200) signColor = '#88ddbb';
     else if (ssX >= 600) signColor = '#ddbb66';
     scene.add.text(ssX + signW / 2, H * 0.647, zSign.text, {
-      fontFamily: 'Courier New, monospace', fontSize: '9px',
+      fontFamily: 'Courier New, monospace', fontSize: '12px',
       color: signColor, stroke: '#000000', strokeThickness: 3
     }).setOrigin(0.5, 0).setScrollFactor(0.7).setDepth(2);
   }
@@ -6539,7 +6539,7 @@ DemoScene.prototype.create = function() {
     firstLiveHitLogged: false, recoveryEaseCycle: -1, confirmPulseT: 0
   };
   this.add.text(2006, H * 0.80, 'FORM 22-B', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
     color: '#88bba0', stroke: '#000000', strokeThickness: 1
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.34);
 
@@ -6818,8 +6818,8 @@ DemoScene.prototype.create = function() {
   gateG.lineBetween(3, H * 0.53, 63, H * 0.53);
   // Gate text
   this.add.text(33, H * 0.54, 'ENROLLMENT', {
-    fontFamily: 'Courier New, monospace', fontSize: '6px',
-    color: '#ffd700', stroke: '#000000', strokeThickness: 2
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
+    color: '#ffd700', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5, 0).setDepth(2);
   // Civic lanterns on pillars
   gateG.fillStyle(0xffdd88, 0.12);
@@ -6835,8 +6835,8 @@ DemoScene.prototype.create = function() {
   gateG.lineStyle(1, 0xff4444, 0.4);
   gateG.lineBetween(1398, H * 0.48, 1448, H * 0.48);
   this.add.text(1423, H * 0.49, 'COMPLIANCE', {
-    fontFamily: 'Courier New, monospace', fontSize: '6px',
-    color: '#ff6644', stroke: '#000000', strokeThickness: 2
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
+    color: '#ff6644', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5, 0).setDepth(2);
   // Warning lights
   gateG.fillStyle(0xff4444, 0.08);
@@ -6852,8 +6852,8 @@ DemoScene.prototype.create = function() {
   gateG.lineStyle(1, 0x66ccaa, 0.4);
   gateG.lineBetween(2198, H * 0.53, 2248, H * 0.53);
   this.add.text(2223, H * 0.54, 'RETURN', {
-    fontFamily: 'Courier New, monospace', fontSize: '6px',
-    color: '#66ccaa', stroke: '#000000', strokeThickness: 2
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
+    color: '#66ccaa', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5, 0).setDepth(2);
   gateG.fillStyle(0x66ccaa, 0.06);
   gateG.fillCircle(2201, H * 0.57, 5);
@@ -6869,8 +6869,8 @@ DemoScene.prototype.create = function() {
   afterG.fillRect(2370, H * 0.72, 12, 8);
   afterG.fillRect(2384, H * 0.71, 8, 7);
   this.add.text(2377, H * 0.70, 'UNCLAIMED FILES\nFORM 22-B', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#778888', stroke: '#000000', strokeThickness: 1, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
+    color: '#778888', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.25);
 
   // ── ZONE B: CIVIC CLOCK TOWER (the lesson has a schedule) ──
@@ -6889,8 +6889,8 @@ DemoScene.prototype.create = function() {
   envG.lineBetween(836, H * 0.44, 841, H * 0.44 - 3); // minute
   // "TIME REMAINING" text
   this.add.text(836, H * 0.44 + 14, 'TIME\nREMAINING', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#887744', stroke: '#000000', strokeThickness: 1, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
+    color: '#887744', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.4);
 
   // ── ZONE B: INSTRUCTIONAL CHALKBOARD (x=1050) ──
@@ -6900,8 +6900,8 @@ DemoScene.prototype.create = function() {
   envG.strokeRoundedRect(1040, H * 0.52, 40, 25, 2);
   // Chalk text (faint)
   this.add.text(1060, H * 0.53, 'LESSON:\nOBEY THE\nARROWS', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#aaccaa', stroke: '#000000', strokeThickness: 1, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
+    color: '#aaccaa', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.3);
   envG.fillStyle(0x000000, 0.82);
   envG.fillRoundedRect(982, H * 0.69, 54, 12, 2);
@@ -6912,7 +6912,7 @@ DemoScene.prototype.create = function() {
     envG.fillTriangle(btx, H * 0.715, btx + 5, H * 0.708, btx + 5, H * 0.722);
   }
   this.add.text(1009, H * 0.692, 'RECONNECT BELT', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
     color: '#88ccff', stroke: '#000000', strokeThickness: 1
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.45);
 
@@ -6924,7 +6924,7 @@ DemoScene.prototype.create = function() {
   envG.fillStyle(0x334422, 0.5);
   envG.fillRoundedRect(2290, H * 0.87 - 14, 30, 3, 1); // backrest
   this.add.text(2305, H * 0.87 - 18, 'CIVIC REST', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
     color: '#446655', stroke: '#000000', strokeThickness: 1
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.3);
   envG.fillStyle(0x223333, 0.35);
@@ -6932,8 +6932,8 @@ DemoScene.prototype.create = function() {
   envG.fillStyle(0x111111, 0.7);
   envG.fillRoundedRect(2402, H * 0.73, 20, 10, 2);
   this.add.text(2412, H * 0.732, 'FORM 22-B\nRETURN', {
-    fontFamily: 'Courier New, monospace', fontSize: '3px',
-    color: '#88aa99', stroke: '#000000', strokeThickness: 1, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
+    color: '#88aa99', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.42);
   // ── ORIENTATION CHAMBER VISUAL (first 80px — teach through space) ──
   var ocG = this.add.graphics().setDepth(1);
@@ -6944,22 +6944,22 @@ DemoScene.prototype.create = function() {
   ocG.fillStyle(0xffd700, 0.12);
   ocG.fillTriangle(20, H * 0.87, 25, H * 0.85, 30, H * 0.87); // up arrow at wall
   this.add.text(25, H * 0.88, 'JUMP', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
     color: '#ffd700', stroke: '#000000', strokeThickness: 1
   }).setOrigin(0.5, 0).setDepth(1).setAlpha(0.35);
   // Second step indicator above step platform
   ocG.fillStyle(0x88ccff, 0.12);
   ocG.fillTriangle(50, 295, 55, 290, 60, 295); // up arrow
   this.add.text(55, 298, 'AGAIN', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
     color: '#88ccff', stroke: '#000000', strokeThickness: 1
   }).setOrigin(0.5, 0).setDepth(1).setAlpha(0.3);
   // Reward aloe in the chamber (reachable with double jump)
   this.pickups.push({ x: 45, y: 250, collected: false, bobT: 0 });
   // "ORIENTATION" label at chamber entrance
   this.add.text(40, H * 0.42, 'ORIENTATION\nCHAMBER', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
-    color: '#557766', stroke: '#000000', strokeThickness: 1, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
+    color: '#557766', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(1).setAlpha(0.25);
 
   // Painted arrow on ground near first platform gap (teaches "you can jump")
@@ -6981,8 +6981,8 @@ DemoScene.prototype.create = function() {
   tutG.fillTriangle(320, H * 0.86, 330, H * 0.855, 320, H * 0.87); // right arrow
   // "HOLD DOWN + MOVE" painted on ground (very faint, environmental)
   this.add.text(315, H * 0.88 - 1, '\u2193+\u2192', {
-    fontFamily: 'Courier New, monospace', fontSize: '6px',
-    color: '#ff88cc', stroke: '#000000', strokeThickness: 2
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
+    color: '#ff88cc', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5).setDepth(1).setAlpha(0.4);
   // Flower beds
   var ppColors = [0xff88aa, 0xffdd66, 0x88ccff, 0xaaddaa];
@@ -7010,8 +7010,8 @@ DemoScene.prototype.create = function() {
   ppG.lineStyle(1, 0x66ccaa, 0.5);
   ppG.strokeRoundedRect(1285, H * 0.78, 90, 14, 2);
   this.add.text(1330, H * 0.78 + 2, 'POCKET PARK — REST AREA', {
-    fontFamily: 'Courier New, monospace', fontSize: '6px',
-    color: '#88ddbb', stroke: '#000000', strokeThickness: 2
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
+    color: '#88ddbb', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5, 0).setDepth(2);
 
   // ── INTAKE CORRIDOR (C-06) — Visual Treatment ──
@@ -7061,8 +7061,8 @@ DemoScene.prototype.create = function() {
     icG.lineStyle(1, 0xff6644, 0.5);
     icG.strokeRoundedRect(cs.x, H * 0.52, 25, 10, 2);
     this.add.text(cs.x + 12.5, H * 0.525, cs.text, {
-      fontFamily: 'Courier New, monospace', fontSize: '5px',
-      color: '#ff8866', stroke: '#000000', strokeThickness: 2
+      fontFamily: 'Courier New, monospace', fontSize: '12px',
+      color: '#ff8866', stroke: '#000000', strokeThickness: 3
     }).setOrigin(0.5, 0).setDepth(2);
   }
   icG.fillStyle(0x111122, 0.8);
@@ -7070,8 +7070,8 @@ DemoScene.prototype.create = function() {
   icG.lineStyle(1, 0xffd700, 0.35);
   icG.strokeRoundedRect(1998, H * 0.50, 32, 14, 2);
   this.add.text(2014, H * 0.503, 'OBSERVE\nFLOOR', {
-    fontFamily: 'Courier New, monospace', fontSize: '4px',
-    color: '#ffdd88', stroke: '#000000', strokeThickness: 1, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
+    color: '#ffdd88', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.45);
 
   // Vent overlay (the system is watching)
@@ -7098,8 +7098,8 @@ DemoScene.prototype.create = function() {
   saG.lineStyle(0.5, 0xffd700, 0.5);
   saG.strokeRoundedRect(1740, 105, 50, 16, 2);
   this.add.text(1765, 107, 'THE FIRST ENROLLMENT\nHAD NO CURRICULUM.', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
-    color: '#ffd700', stroke: '#000000', strokeThickness: 2, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
+    color: '#ffd700', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2);
   // Aloe reward in alcove
   this.pickups.push({ x: 1765, y: 125, collected: false, bobT: 0 });
@@ -7126,7 +7126,7 @@ DemoScene.prototype.create = function() {
   for (var lfi = 0; lfi < loreFragments.length; lfi++) {
     var lf = loreFragments[lfi];
     this.add.text(lf.x, lf.y, lf.text, {
-      fontFamily: 'Courier New, monospace', fontSize: '5px',
+      fontFamily: 'Courier New, monospace', fontSize: '12px',
       color: lf.color, stroke: '#000000', strokeThickness: 1
     }).setOrigin(0.5, 0).setDepth(1).setAlpha(lf.alpha);
   }
@@ -7402,7 +7402,7 @@ DemoScene.prototype.create = function() {
 
   this.tickerTxt = this.add.text(W, H - 14, '', {
     fontFamily: 'Press Start 2P, monospace', fontSize: '11px',
-    color: '#ffd700', stroke: '#000000', strokeThickness: 2
+    color: '#ffd700', stroke: '#000000', strokeThickness: 3
   }).setScrollFactor(0).setDepth(59);
 
   // Input
@@ -7678,7 +7678,7 @@ DemoScene.prototype._triggerDeath = function(customMsg) {
 
   // Processing text at death location
   var procText = this.add.text(deathX, deathY - 20, 'PROCESSING...', {
-    fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#ff8888',
+    fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#ff8888',
     stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5).setDepth(75);
 
@@ -7813,13 +7813,13 @@ DemoScene.prototype._triggerDeath = function(customMsg) {
   this._lessonCardG.fillCircle(38, lcY + lcH / 2, 4);
 
   var titleTxt = this.add.text(55, lcY + 6, title, {
-    fontFamily: 'Courier New, monospace', fontSize: '9px',
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
     color: '#ffd700', stroke: '#000000', strokeThickness: 3,
     fontStyle: 'bold'
   }).setScrollFactor(0).setDepth(86);
   var bodyTxt = this.add.text(55, lcY + 22, body, {
-    fontFamily: 'Courier New, monospace', fontSize: '8px',
-    color: '#ffffff', stroke: '#000000', strokeThickness: 2,
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
+    color: '#ffffff', stroke: '#000000', strokeThickness: 3,
     wordWrap: { width: W - 110 }
   }).setScrollFactor(0).setDepth(86);
 
@@ -8015,11 +8015,11 @@ DemoScene.prototype._showReceipt = function() {
   rG.lineStyle(0.5, 0x333333, 0.3);
   rG.lineBetween(rX + 8, rY + 48, rX + rW - 8, rY + 48);
   this.add.text(rX + rW / 2, rY + 29, 'CLASSIFICATION:', {
-    fontFamily: 'Courier New, monospace', fontSize: '6px',
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
     color: '#888888'
   }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
   this.add.text(rX + rW / 2, rY + 36, archetype.toUpperCase(), {
-    fontFamily: 'Press Start 2P, monospace', fontSize: '7px',
+    fontFamily: 'Press Start 2P, monospace', fontSize: '10px',
     color: '#1a0a2e'
   }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
 
@@ -8039,7 +8039,7 @@ DemoScene.prototype._showReceipt = function() {
     rG.lineStyle(0.5, 0xcc4444, 0.3);
     rG.lineBetween(rX + 8, nextLineY, rX + rW - 8, nextLineY);
     this.add.text(rX + 12, nextLineY + 3, nearMissLine, {
-      fontFamily: 'Courier New, monospace', fontSize: '7px',
+      fontFamily: 'Courier New, monospace', fontSize: '10px',
       color: '#884422', wordWrap: { width: rW - 24 }, lineSpacing: 1
     }).setScrollFactor(0).setDepth(101);
     nextLineY += 30;
@@ -8048,7 +8048,7 @@ DemoScene.prototype._showReceipt = function() {
   // ── COUNTERFACTUAL LINE ──
   if (counterfactualLine) {
     this.add.text(rX + 12, nextLineY + 2, counterfactualLine, {
-      fontFamily: 'Courier New, monospace', fontSize: '7px',
+      fontFamily: 'Courier New, monospace', fontSize: '10px',
       color: '#666688', fontStyle: 'italic', wordWrap: { width: rW - 24 }, lineSpacing: 1
     }).setScrollFactor(0).setDepth(101);
     nextLineY += 24;
@@ -8070,7 +8070,7 @@ DemoScene.prototype._showReceipt = function() {
     }
     violLines.push('STATUS: UNDER REVIEW');
     this.add.text(rX + 12, nextLineY + 3, violLines.join('\n'), {
-      fontFamily: 'Courier New, monospace', fontSize: '6px',
+      fontFamily: 'Courier New, monospace', fontSize: '10px',
       color: '#cc4444', wordWrap: { width: rW - 24 }, lineSpacing: 1
     }).setScrollFactor(0).setDepth(101);
     nextLineY += 12 + violLines.length * 8;
@@ -8097,7 +8097,7 @@ DemoScene.prototype._showReceipt = function() {
     brochureComment = 'INSERTS FOUND: 5/5. YOUR FILE HAS BEEN REOPENED.';
   }
   this.add.text(rX + 8, rY + rH - 68, brochureComment, {
-    fontFamily: 'Courier New, monospace', fontSize: '7px',
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
     color: this.brochureCount >= 5 ? '#ffd700' : '#888888'
   }).setScrollFactor(0).setDepth(101);
 
@@ -8112,12 +8112,12 @@ DemoScene.prototype._showReceipt = function() {
   var secondCurrent = currents[1] ? currents[1].name.toUpperCase() : 'N/A';
 
   this.add.text(rX + 8, rY + rH - 54, 'PATTERN: ' + dominant.toUpperCase() + ' / ' + secondCurrent, {
-    fontFamily: 'Courier New, monospace', fontSize: '8px',
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
     color: '#888888'
   }).setScrollFactor(0).setDepth(101);
 
   this.add.text(rX + 8, rY + rH - 44, 'TIME: ' + runTimeStr + '  GRACE: ' + graceScore + '  CHAOS: ' + chaosScore, {
-    fontFamily: 'Courier New, monospace', fontSize: '7px',
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
     color: '#666666'
   }).setScrollFactor(0).setDepth(101);
 
@@ -8126,7 +8126,7 @@ DemoScene.prototype._showReceipt = function() {
   rG.fillStyle(0x1a0a2e, 0.06);
   rG.fillRect(rX + 4, rY + rH - 38, rW - 8, 14);
   this.add.text(rX + rW / 2, rY + rH - 36, 'INSTITUTIONAL ASSESSMENT: ' + gradeResult.grade + ' — ' + gradeResult.label, {
-    fontFamily: 'Courier New, monospace', fontSize: '7px',
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
     color: gradeResult.grade === 'S' ? '#ffd700' : gradeResult.grade === 'A' ? '#44ff88' : '#888888',
     fontStyle: 'bold'
   }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
@@ -8135,7 +8135,7 @@ DemoScene.prototype._showReceipt = function() {
   var streakLine = getStreakReceiptLine(this._runCount);
   if (streakLine) {
     this.add.text(rX + 8, rY + rH - 24, streakLine, {
-      fontFamily: 'Courier New, monospace', fontSize: '6px',
+      fontFamily: 'Courier New, monospace', fontSize: '10px',
       color: '#cc8844', fontStyle: 'italic', wordWrap: { width: rW - 16 }
     }).setScrollFactor(0).setDepth(101);
   }
@@ -8162,7 +8162,7 @@ DemoScene.prototype._showReceipt = function() {
     rG.lineStyle(0.5, 0x666688, 0.3);
     rG.lineBetween(rX + 8, rY + rH - 22, rX + rW - 8, rY + rH - 22);
     this.add.text(rX + rW / 2, rY + rH - 20, 'LONGITUDINAL NOTE: ' + driftAnalysis.narrative, {
-      fontFamily: 'Courier New, monospace', fontSize: '5px',
+      fontFamily: 'Courier New, monospace', fontSize: '12px',
       color: '#666688', fontStyle: 'italic', wordWrap: { width: rW - 16 }
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
   }
@@ -8171,7 +8171,7 @@ DemoScene.prototype._showReceipt = function() {
   var fourthWall = getFourthWallLine(window._cactusEdRunCount || this._runCount);
   if (fourthWall) {
     this.add.text(rX + rW / 2, rY + rH - 8, 'ADMINISTRATIVE NOTE: ' + fourthWall, {
-      fontFamily: 'Courier New, monospace', fontSize: '5px',
+      fontFamily: 'Courier New, monospace', fontSize: '12px',
       color: '#555577', fontStyle: 'italic', wordWrap: { width: rW - 16 }
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
   }
@@ -8182,7 +8182,7 @@ DemoScene.prototype._showReceipt = function() {
     // Override stamp to be the blank receipt message
     this.time.delayedCall(3200, function() {
       var blankTxt = self.add.text(rX + rW / 2, rY + rH / 2 - 10, 'PERFECT RECORD.\nTHANK YOU FOR YOUR SERVICE.\nNO FURTHER ASSESSMENT REQUIRED.', {
-        fontFamily: 'Courier New, monospace', fontSize: '8px',
+        fontFamily: 'Courier New, monospace', fontSize: '11px',
         color: '#1a0a2e', align: 'center', lineSpacing: 4
       }).setOrigin(0.5).setScrollFactor(0).setDepth(104);
     });
@@ -8201,7 +8201,7 @@ DemoScene.prototype._showReceipt = function() {
       'ADDENDUM: NOT ALL DISCOVERIES WERE SCHEDULED.'
     ];
     this.add.text(rX + 8, rY + rH - 34, addendums[Math.floor(Math.random() * addendums.length)], {
-      fontFamily: 'Courier New, monospace', fontSize: '7px',
+      fontFamily: 'Courier New, monospace', fontSize: '10px',
       color: '#cc8844', fontStyle: 'italic'
     }).setScrollFactor(0).setDepth(101);
   }
@@ -8213,7 +8213,7 @@ DemoScene.prototype._showReceipt = function() {
   var stampG = this.add.graphics().setScrollFactor(0).setDepth(102).setAlpha(0);
   var stampTxt = this.add.text(rX + rW / 2, rY + rH / 2 + 20, stampWord, {
     fontFamily: 'Press Start 2P, monospace', fontSize: '18px',
-    color: '#cc2222', stroke: '#881111', strokeThickness: 2
+    color: '#cc2222', stroke: '#881111', strokeThickness: 3
   }).setOrigin(0.5).setScrollFactor(0).setDepth(103).setAlpha(0).setRotation(stampAngle);
   // Draw stamp border
   var sSelf = this;
@@ -8260,7 +8260,7 @@ DemoScene.prototype._showReceipt = function() {
   // Bottom: press Z to continue
   this.add.text(W / 2, rY + rH + 16, 'PRESS Z TO RESUME BECOMING', {
     fontFamily: 'Press Start 2P, monospace', fontSize: '12px',
-    color: '#ffd700', stroke: '#000000', strokeThickness: 2
+    color: '#ffd700', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
 
   // ── R05: PRINT RECEIPT BUTTON (appears after stamp animation) ──
@@ -8285,8 +8285,8 @@ DemoScene.prototype._showReceipt = function() {
   };
   this.time.delayedCall(3500, function() {
     var printBtn = printSelf.add.text(W / 2, rY + rH + 34, 'P — PRINT RECEIPT', {
-      fontFamily: 'Courier New, monospace', fontSize: '8px',
-      color: '#888888', stroke: '#000000', strokeThickness: 2
+      fontFamily: 'Courier New, monospace', fontSize: '11px',
+      color: '#888888', stroke: '#000000', strokeThickness: 3
     }).setOrigin(0.5).setScrollFactor(0).setDepth(101);
     // Fade in
     printBtn.setAlpha(0);
@@ -8313,15 +8313,15 @@ DemoScene.prototype._showReceipt = function() {
         }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
 
         printSelf.add.text(W / 2, H * 0.20, 'SELECT FORMAT:', {
-          fontFamily: 'Courier New, monospace', fontSize: '9px',
-          color: '#888888', stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '12px',
+          color: '#888888', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
 
         // Format indicator
         var formatMode = 'square';
         var formatText = printSelf.add.text(W / 2, H * 0.27, '[SQUARE 1080x1080]   STORY 1080x1920', {
-          fontFamily: 'Courier New, monospace', fontSize: '8px',
-          color: '#ffd700', stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '11px',
+          color: '#ffd700', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
 
         // Action buttons
@@ -8341,21 +8341,21 @@ DemoScene.prototype._showReceipt = function() {
         }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
 
         printSelf.add.text(W / 2, H * 0.64, 'TAB — TOGGLE FORMAT  |  ESC — BACK', {
-          fontFamily: 'Courier New, monospace', fontSize: '7px',
-          color: '#666666', stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '10px',
+          color: '#666666', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
 
         // Status text (for feedback)
         var statusText = printSelf.add.text(W / 2, H * 0.75, '', {
-          fontFamily: 'Courier New, monospace', fontSize: '9px',
-          color: '#ffd700', stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '12px',
+          color: '#ffd700', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
 
         // Emoji preview
         var emojiPreview = generateBehavioralEmoji(shareData.behavior);
         printSelf.add.text(W / 2, H * 0.82, 'BEHAVIORAL CODE: ' + emojiPreview, {
           fontFamily: 'Courier New, monospace', fontSize: '10px',
-          color: '#aaaaaa', stroke: '#000000', strokeThickness: 2
+          color: '#aaaaaa', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
 
         // Key handlers
@@ -8470,12 +8470,12 @@ DemoScene.prototype._showReceipt = function() {
       // World 1 title
       self7.add.text(W / 2, H * 0.20, 'WORLD 1: HAPPY PLACE COMMONS', {
         fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#88ccff',
-        stroke: '#000000', strokeThickness: 2
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
       // Run number
       self7.add.text(W / 2, H * 0.26, 'ENROLLMENT #' + self7._runCount, {
-        fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#666666',
-        stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#666666',
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
       // Stats
       var cB = self7.behavior;
@@ -8495,8 +8495,8 @@ DemoScene.prototype._showReceipt = function() {
         'RE-MATERIALIZATION COST: $' + (cTel.deaths * 600)
       ];
       self7.add.text(W / 2, H * 0.32, statsLines.join('\n'), {
-        fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#aaaaaa',
-        stroke: '#000000', strokeThickness: 2, lineSpacing: 4
+        fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#aaaaaa',
+        stroke: '#000000', strokeThickness: 3, lineSpacing: 4
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(111);
       // Institutional summary of your entire run
       var maxCurr = 'compliance';
@@ -8545,24 +8545,24 @@ DemoScene.prototype._showReceipt = function() {
         // Star symbol
         self7.add.text(mdX, medalY - 1, medalSymbols[md.medal], {
           fontFamily: 'Courier New, monospace', fontSize: '12px',
-          color: medalCols[md.medal], stroke: '#000000', strokeThickness: 2
+          color: medalCols[md.medal], stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
         // Label
         self7.add.text(mdX, medalY + 16, md.label, {
-          fontFamily: 'Courier New, monospace', fontSize: '6px',
-          color: medalCols[md.medal], stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '10px',
+          color: medalCols[md.medal], stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
         // Medal rank
         self7.add.text(mdX, medalY + 24, md.medal, {
-          fontFamily: 'Courier New, monospace', fontSize: '5px',
-          color: '#888888', stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '12px',
+          color: '#888888', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
       }
 
       // Bureau classification (moved below medals)
       self7.add.text(W / 2, H * 0.73, completeSummaries[maxCurr] || completeSummaries.compliance, {
-        fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#ffd700',
-        stroke: '#000000', strokeThickness: 2, wordWrap: { width: W - 60 }, align: 'center'
+        fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#ffd700',
+        stroke: '#000000', strokeThickness: 3, wordWrap: { width: W - 60 }, align: 'center'
       }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
 
       // ── R04: INSTITUTIONAL ASSESSMENT GRADE (prominent) ──
@@ -8573,7 +8573,7 @@ DemoScene.prototype._showReceipt = function() {
       cG.lineStyle(1, parseInt(gradeColor.replace('#',''), 16), 0.3);
       cG.strokeRect(W * 0.1, H * 0.76, W * 0.8, 18);
       self7.add.text(W / 2, H * 0.765, 'INSTITUTIONAL ASSESSMENT: ' + cGrade.grade + ' — ' + cGrade.label, {
-        fontFamily: 'Courier New, monospace', fontSize: '8px', color: gradeColor,
+        fontFamily: 'Courier New, monospace', fontSize: '11px', color: gradeColor,
         stroke: '#000000', strokeThickness: 3, fontStyle: 'bold'
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(111);
 
@@ -8581,8 +8581,8 @@ DemoScene.prototype._showReceipt = function() {
       var cItems = generateCorrectiveItems(cB);
       if (cItems.length > 0) {
         self7.add.text(W / 2, H * 0.80, cItems.join('\n'), {
-          fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#cc8844',
-          stroke: '#000000', strokeThickness: 2, wordWrap: { width: W - 40 },
+          fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#cc8844',
+          stroke: '#000000', strokeThickness: 3, wordWrap: { width: W - 40 },
           align: 'center', lineSpacing: 2
         }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(111);
       }
@@ -8612,8 +8612,8 @@ DemoScene.prototype._showReceipt = function() {
       if (replayHints.length > 0) {
         var hintColor = isNewRecord ? '#ffd700' : '#cc8844';
         self7.add.text(W / 2, H * 0.87, replayHints.slice(0, 2).join('\n'), {
-          fontFamily: 'Courier New, monospace', fontSize: '6px', color: hintColor,
-          stroke: '#000000', strokeThickness: 2, align: 'center'
+          fontFamily: 'Courier New, monospace', fontSize: '10px', color: hintColor,
+          stroke: '#000000', strokeThickness: 3, align: 'center'
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
       }
       // NEW RECORD celebration
@@ -8627,16 +8627,16 @@ DemoScene.prototype._showReceipt = function() {
       }
       // ── R04: THREE-BUTTON LAYOUT: RE-ENROLL / APPEAL / PROCEED ──
       self7.add.text(W / 2, H * 0.91, 'Z — RE-ENROLL  (FRESH START, 30% BEHAVIORAL MEMORY)', {
-        fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#ffd700',
+        fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#ffd700',
         stroke: '#000000', strokeThickness: 3, fontStyle: 'bold'
       }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
       self7.add.text(W / 2, H * 0.945, 'X — APPEAL  (FULL BEHAVIORAL RECORD PRESERVED)', {
-        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#cc8844',
-        stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#cc8844',
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
       self7.add.text(W / 2, H * 0.975, 'C — PROCEED TO WORLD 2', {
-        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#44ff88',
-        stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#44ff88',
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
       // Celebration confetti
       for (var conf = 0; conf < 30; conf++) {
@@ -8694,7 +8694,7 @@ DemoScene.prototype._showReceipt = function() {
             ];
             var transIdx = 0;
             var transTxt = self7.add.text(W / 2, H / 2, '', {
-              fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#44ff88',
+              fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#44ff88',
               stroke: '#000000', strokeThickness: 3
             }).setOrigin(0.5).setScrollFactor(0).setDepth(121);
             var showTransLine = function() {
@@ -9003,7 +9003,7 @@ DemoScene.prototype._startTramRun = function() {
   var countTexts = ['CIVIC TRAM DEPARTING', '3', '2', '1', 'HOLD ON'];
   var countIdx = 0;
   var countTxt = this.add.text(W / 2, H / 2, '', {
-    fontFamily: 'Courier New, monospace', fontSize: '20px',
+    fontFamily: 'Courier New, monospace', fontSize: '24px',
     color: '#ffd700', stroke: '#000000', strokeThickness: 5
   }).setOrigin(0.5).setScrollFactor(0).setDepth(91);
 
@@ -9209,8 +9209,8 @@ DemoScene.prototype._updateTramRun = function(delta) {
     if (!this._tramLaneLabels) this._tramLaneLabels = [];
     if (!this._tramLaneLabels[tli]) {
       this._tramLaneLabels[tli] = this.add.text(6, tly - 1, laneLabels[tli], {
-        fontFamily: 'Courier New, monospace', fontSize: '6px',
-        color: '#445566', stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '10px',
+        color: '#88aacc', stroke: '#000000', strokeThickness: 3
       }).setScrollFactor(0).setDepth(11);
     }
     this._tramLaneLabels[tli].setColor(isActive ? '#88aacc' : '#334455').setAlpha(1);
@@ -9221,8 +9221,8 @@ DemoScene.prototype._updateTramRun = function(delta) {
   // Speed indicator (top right)
   if (!this._tramSpeedTxt) {
     this._tramSpeedTxt = this.add.text(W - 6, 6, '', {
-      fontFamily: 'Courier New, monospace', fontSize: '9px',
-      color: '#ffd700', stroke: '#000000', strokeThickness: 2
+      fontFamily: 'Courier New, monospace', fontSize: '12px',
+      color: '#ffd700', stroke: '#000000', strokeThickness: 3
     }).setOrigin(1, 0).setScrollFactor(0).setDepth(11);
   }
   var speedPct = Math.floor(tr.speed / tr.maxSpeed * 100);
@@ -9346,7 +9346,7 @@ DemoScene.prototype._updateTramRun = function(delta) {
     if (!sm2._txt) {
       sm2._txt = this.add.text(sm2.x + 6, H * 0.13, sm2.text, {
         fontFamily: 'Press Start 2P, monospace', fontSize: '11px',
-        color: '#ffd700', stroke: '#000000', strokeThickness: 2
+        color: '#ffd700', stroke: '#000000', strokeThickness: 3
       }).setScrollFactor(0).setDepth(11);
       this._tramSponsorTxts.push(sm2._txt);
     }
@@ -9541,11 +9541,11 @@ DemoScene.prototype.update = function(time, delta) {
       var wisdom = pauseWisdom[Math.floor(Math.random() * pauseWisdom.length)];
       this._pauseTexts.push(this.add.text(W / 2, H * 0.15 + 7, 'ADJUSTMENT IN PROGRESS', {
         fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#ffd700',
-        stroke: '#000000', strokeThickness: 2
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
       this._pauseTexts.push(this.add.text(W / 2, H * 0.35, wisdom, {
-        fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#88ccff',
-        stroke: '#000000', strokeThickness: 2, align: 'center', wordWrap: { width: W - 60 }
+        fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#88ccff',
+        stroke: '#000000', strokeThickness: 3, align: 'center', wordWrap: { width: W - 60 }
       }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
       // ── R06: EMPLOYEE HANDBOOK (replaces basic controls list) ──
       var handbookLines = ['EMPLOYEE HANDBOOK \u2014 AUTHORIZED PROCEDURES', '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500'];
@@ -9567,8 +9567,8 @@ DemoScene.prototype.update = function(time, delta) {
         }
       }
       this._pauseTexts.push(this.add.text(W / 2, H * 0.44, handbookLines.join('\n'), {
-        fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#aaaaaa',
-        stroke: '#000000', strokeThickness: 2, align: 'left', lineSpacing: 1
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#aaaaaa',
+        stroke: '#000000', strokeThickness: 3, align: 'left', lineSpacing: 1
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(91));
       // Status bar
       var b = this.behavior;
@@ -9580,14 +9580,14 @@ DemoScene.prototype.update = function(time, delta) {
       else if (b.efficiency === maxB) domName = 'EFFICIENCY';
       else if (b.intuition === maxB) domName = 'INTUITION';
       this._pauseTexts.push(this.add.text(W / 2, H * 0.76, 'DOMINANT PATTERN: ' + domName, {
-        fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#666666',
-        stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#666666',
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
       // R10: Case number + mood + remix on pause screen
       var pauseInfo = (this._caseNumber || '') + '  |  MOOD: ' + (this._mood ? this._mood.name : 'STANDARD');
       this._pauseTexts.push(this.add.text(W / 2, H * 0.80, pauseInfo, {
-        fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#555555',
-        stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#999999',
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
       // Enrollment status
       var stampCount = 0;
@@ -9595,8 +9595,8 @@ DemoScene.prototype.update = function(time, delta) {
         if (this.enrollmentCard.stamps[psi].earned) stampCount++;
       }
       this._pauseTexts.push(this.add.text(W / 2, H * 0.83, 'ENROLLMENT: ' + stampCount + '/4 STAMPS  |  INSERTS: ' + this.brochureCount + '/5', {
-        fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#666666',
-        stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#666666',
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
       // Accessibility options
       var a = this._accessibility;
@@ -9607,8 +9607,8 @@ DemoScene.prototype.update = function(time, delta) {
         (a.reduceParticles ? '[X]' : '[ ]') + ' PARTICLES  ' +
         (sfxMuted ? '[X]' : '[ ]') + ' MUTE  (1/2/3/4 TO TOGGLE)';
       this._pauseTexts.push(this.add.text(W / 2, H * 0.88, accStr, {
-        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#555555',
-        stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#999999',
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
       // ── ASSIST MODE (Celeste-grade accessibility — institutional wrappers) ──
       var assistStr = 'ACCOMMODATIONS: ' +
@@ -9617,14 +9617,14 @@ DemoScene.prototype.update = function(time, delta) {
         (ASSIST.easyCopter ? '[X]' : '[ ]') + ' FLIGHT  ' +
         (ASSIST.infiniteHealth ? '[X]' : '[ ]') + ' SEDATIVE  (5/6/7/8 TO TOGGLE)';
       this._pauseTexts.push(this.add.text(W / 2, H * 0.92, assistStr, {
-        fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#445544',
-        stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#88aa88',
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
       if (ASSIST.active) {
         var assistLabel = ASSIST.getLabel();
         if (assistLabel) {
           this._pauseTexts.push(this.add.text(W / 2, H * 0.95, assistLabel, {
-            fontFamily: 'Courier New, monospace', fontSize: '5px', color: '#335533',
+            fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#77aa77',
             stroke: '#000000', strokeThickness: 1
           }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
         }
@@ -9821,8 +9821,8 @@ DemoScene.prototype.update = function(time, delta) {
       ];
       var previewText = previewLines[Math.floor(Math.random() * previewLines.length)];
       var previewTxt = this.add.text(W / 2, H - 18, previewText, {
-        fontFamily: 'Courier New, monospace', fontSize: '7px',
-        color: '#cc8844', stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '10px',
+        color: '#cc8844', stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(80).setAlpha(0);
       var tSelf = this;
       this.tweens.add({ targets: previewTxt, alpha: 0.8, duration: 300, delay: 500, onComplete: function() {
@@ -10176,7 +10176,7 @@ DemoScene.prototype.update = function(time, delta) {
     this.cameras.main.flash(200, 20, 10, 30, false);
     // PA announcement changes tone
     TEXT_ZONES.show(this, 'THE ORIENTATION IS CONCLUDING. PLEASE REMAIN.', {
-      color: '#cc8888', duration: 3000, fontSize: '9px'
+      color: '#cc8888', duration: 3000, fontSize: '12px'
     });
     this.time.delayedCall(2000, function() {
       TEXT_ZONES.show(selfPBC, 'YOUR COUNSELOR WILL SEE YOU NOW.', {
@@ -10497,7 +10497,7 @@ DemoScene.prototype.update = function(time, delta) {
           this.aloe += 20;
           var slamLabel = this.add.text(sm2.x, sm2.y - 20, 'SLAMMED +20', {
             fontFamily: 'Press Start 2P, monospace', fontSize: '10px',
-            color: '#ff6600', stroke: '#000000', strokeThickness: 2
+            color: '#ff6600', stroke: '#000000', strokeThickness: 3
           }).setDepth(25);
           this.tweens.add({ targets: slamLabel, y: sm2.y - 45, alpha: 0, duration: 900, onComplete: function() { slamLabel.destroy(); }});
         }
@@ -11284,7 +11284,7 @@ DemoScene.prototype.update = function(time, delta) {
           var sLabel = stompLabels[Math.floor(Math.random() * stompLabels.length)];
           var sText = this.add.text(m.x, m.y - 20, sLabel, {
             fontFamily: 'Press Start 2P, monospace', fontSize: '10px',
-            color: '#ffd700', stroke: '#000000', strokeThickness: 2
+            color: '#ffd700', stroke: '#000000', strokeThickness: 3
           }).setDepth(25);
           this.tweens.add({ targets: sText, y: m.y - 45, alpha: 0, duration: 900, onComplete: function() { sText.destroy(); }});
           this.behavior.chaos += 1;
@@ -11374,7 +11374,7 @@ DemoScene.prototype.update = function(time, delta) {
           var cLabel = combatLabels[Math.floor(Math.random() * combatLabels.length)];
           var kText = this.add.text(m.x, m.y - 20, cLabel, {
             fontFamily: 'Press Start 2P, monospace', fontSize: '10px',
-            color: '#ffd700', stroke: '#000000', strokeThickness: 2
+            color: '#ffd700', stroke: '#000000', strokeThickness: 3
           }).setDepth(25);
           this.tweens.add({ targets: kText, y: m.y - 45, alpha: 0, duration: 900, onComplete: function() { kText.destroy(); }});
         }
@@ -11546,8 +11546,8 @@ DemoScene.prototype.update = function(time, delta) {
           filing: 'RECORDS', napping: 'APPROVED REST'
         };
         cc._label = this.add.text(ccx, ccy + 6, jobLabels[cc.job] || 'CITIZEN', {
-          fontFamily: 'Courier New, monospace', fontSize: '5px',
-          color: '#888888', stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '12px',
+          color: '#888888', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(3);
       }
     }
@@ -11609,8 +11609,8 @@ DemoScene.prototype.update = function(time, delta) {
       }
       // Floating institutional label
       var aloeText = this.add.text(pk.x, pk.y - 5, 'WELLNESS +30', {
-        fontFamily: 'Courier New, monospace', fontSize: '8px',
-        color: '#00e676', stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '11px',
+        color: '#00e676', stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setDepth(25);
       this.tweens.add({ targets: aloeText, y: pk.y - 30, alpha: 0, duration: 800, onComplete: function() { aloeText.destroy(); }});
     }
@@ -11685,14 +11685,14 @@ DemoScene.prototype.update = function(time, delta) {
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(86);
       // Lore reveal line (the hidden truth)
       var bRevealTxt = this.add.text(W * 0.5, H * 0.30, '"' + br.reveal + '"', {
-        fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#ffffff',
-        stroke: '#000000', strokeThickness: 2, fontStyle: 'italic',
+        fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#ffffff',
+        stroke: '#000000', strokeThickness: 3, fontStyle: 'italic',
         wordWrap: { width: W * 0.7 }, align: 'center'
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(86);
       // Institutional hint
       var bHintTxt = this.add.text(W * 0.5, H * 0.40, br.hint, {
-        fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#cc8844',
-        stroke: '#000000', strokeThickness: 2,
+        fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#cc8844',
+        stroke: '#000000', strokeThickness: 3,
         wordWrap: { width: W * 0.7 }, align: 'center'
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(86);
 
@@ -11752,7 +11752,7 @@ DemoScene.prototype.update = function(time, delta) {
           // WORLD 2 PREVIEW — special interaction for the Pocket Park panel
           if ((sm.label.indexOf('WORLD 2') >= 0 || sm.label.indexOf('CROSS-DEPARTMENT') >= 0) && !this._world2PreviewShown) {
             this._world2PreviewShown = true;
-            TEXT_ZONES.show(this, sm.label, { color: '#888888', duration: 2000, fontSize: '9px' });
+            TEXT_ZONES.show(this, sm.label, { color: '#888888', duration: 2000, fontSize: '12px' });
             // Delayed World 2 preview vignette
             var selfW2 = this;
             this.time.delayedCall(2500, function() {
@@ -11769,12 +11769,12 @@ DemoScene.prototype.update = function(time, delta) {
               // Preview text
               var previewText = selfW2._world2PreviewLines.join('\n');
               var w2PreviewTxt = selfW2.add.text(W / 2, H * 0.35, previewText, {
-                fontFamily: 'Courier New, monospace', fontSize: '9px',
+                fontFamily: 'Courier New, monospace', fontSize: '12px',
                 color: '#66cc88', stroke: '#000000', strokeThickness: 3,
                 align: 'center', lineSpacing: 4
               }).setOrigin(0.5).setScrollFactor(0).setDepth(86);
               var w2PromptTxt = selfW2.add.text(W / 2, H * 0.80, 'PRESS Z TO RETURN TO CURRENT ENROLLMENT', {
-                fontFamily: 'Courier New, monospace', fontSize: '9px',
+                fontFamily: 'Courier New, monospace', fontSize: '12px',
                 color: '#ffd700', stroke: '#000000', strokeThickness: 3
               }).setOrigin(0.5).setScrollFactor(0).setDepth(86);
               var w2Key = selfW2.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
@@ -11810,7 +11810,7 @@ DemoScene.prototype.update = function(time, delta) {
               });
             });
           } else {
-            TEXT_ZONES.show(this, sm.label, { color: '#888888', duration: 3000, fontSize: '9px' });
+            TEXT_ZONES.show(this, sm.label, { color: '#888888', duration: 3000, fontSize: '12px' });
           }
         }
       }
@@ -11884,7 +11884,7 @@ DemoScene.prototype.update = function(time, delta) {
     recordFirstSessionBeat(this, 'w1_callback_paid');
     setFirstSessionMetric(this, 'curiosityPayoffs', 'w1_form_22b', Math.floor(getSceneElapsedMs(this) / 100) / 10);
     showProtectedReadableText(this, 'pa', 700, 'RETURN DESK NOTICE: FORM 22-B MATERIALS WERE RELEASED TO THE MEMORIAL LEDGE.', {
-      color: '#88ddbb', duration: 4200, fontSize: '9px'
+      color: '#88ddbb', duration: 4200, fontSize: '12px'
     }, 3200, 'w1_return_desk_notice', true, 2500);
   }
 
@@ -11912,7 +11912,7 @@ DemoScene.prototype.update = function(time, delta) {
       if (!pre.relatednessShown) {
         pre.relatednessShown = true;
         showProtectedReadableText(this, 'boss_ceremony', 1200, 'RECORDS NOTE: FORM 22-B COUNSELOR REVIEW FOLLOWS THE FLOOR MARKING.', {
-          color: '#aabbaa', duration: 3200, fontSize: '8px'
+          color: '#aabbaa', duration: 3200, fontSize: '11px'
         }, 2400, 'w1_counselor_note', true, 2200);
       }
     }
@@ -11952,7 +11952,7 @@ DemoScene.prototype.update = function(time, delta) {
         this._playSfx('stamp');
         bumpFirstSessionMetric(this, 'confirmationSeen', 'counselor', 1);
         showProtectedReadableText(this, 'confirm', 260, 'FORM 22-B REVIEW: MARKING OBSERVED.', {
-          color: '#88ddaa', duration: 2400, fontSize: '8px'
+          color: '#88ddaa', duration: 2400, fontSize: '11px'
         }, 2200, 'counselor_confirm', false, 1800);
       }
       if (liveSweep && sweepPhase > damageStart && sweepPhase < damageEnd && Math.abs(ep.x - sweepX) < (easedCycle ? 15 : 18) && ep.y > H * 0.82 &&
@@ -11985,7 +11985,7 @@ DemoScene.prototype.update = function(time, delta) {
           this._playSfx('stamp');
           bumpFirstSessionMetric(this, 'confirmationSeen', 'counselor', 1);
           showProtectedReadableText(this, 'confirm', 220, 'FORM 22-B REVIEW: MARKING OBSERVED.', {
-            color: '#88ddaa', duration: 2400, fontSize: '8px'
+            color: '#88ddaa', duration: 2400, fontSize: '11px'
           }, 2200, 'counselor_confirm', false, 1800);
         }
         if (!pre.cleanLogged) {
@@ -13023,8 +13023,8 @@ DemoScene.prototype.update = function(time, delta) {
     var bossTitle = boss.phase === 1 ? 'EVALUATION PROGRESS' : 'CURRICULUM INTEGRITY';
     if (!this._bossHpLabel) {
       this._bossHpLabel = this.add.text(W / 2, bBarY - 1, bossTitle, {
-        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#ffd700',
-        stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#ffd700',
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(62);
     }
     this._bossHpLabel.setText(bossTitle).setAlpha(1);
@@ -13195,7 +13195,7 @@ DemoScene.prototype.update = function(time, delta) {
       kiosk._brandBg.setAlpha(1);
       if (!kiosk._brandTxt) {
         kiosk._brandTxt = this.add.text(kx, ky - 33, kiosk.brand, {
-          fontFamily: 'Courier New, monospace', fontSize: '6px',
+          fontFamily: 'Courier New, monospace', fontSize: '10px',
           color: '#ffd700', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(4);
       }
@@ -13203,8 +13203,8 @@ DemoScene.prototype.update = function(time, delta) {
       // "READ" prompt
       if (!kiosk._readPrompt) {
         kiosk._readPrompt = this.add.text(kx, ky + 6, '\u2191 READ', {
-          fontFamily: 'Courier New, monospace', fontSize: '7px',
-          color: '#88ccff', stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '10px',
+          color: '#88ccff', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setDepth(4);
       }
       kiosk._readPrompt.setAlpha(1);
@@ -13430,8 +13430,8 @@ DemoScene.prototype.update = function(time, delta) {
         sign.nearT += delta;
         if (!sign._txt) {
           sign._txt = this.add.text(sign.x, sign.y - 60, sign.text, {
-            fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#2d1b00',
-            stroke: '#f5f0dc', strokeThickness: 2, align: 'center',
+            fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#2d1b00',
+            stroke: '#f5f0dc', strokeThickness: 3, align: 'center',
             wordWrap: { width: 160 }, lineSpacing: 1
           }).setOrigin(0.5).setDepth(30);
         }
@@ -14067,7 +14067,7 @@ DemoScene.prototype.update = function(time, delta) {
     if (!this._weaponTxt) {
       this._weaponTxt = this.add.text(8, 22, '', {
         fontFamily: 'Press Start 2P, monospace', fontSize: '12px',
-        color: '#ffd700', stroke: '#000000', strokeThickness: 2
+        color: '#ffd700', stroke: '#000000', strokeThickness: 3
       }).setScrollFactor(0).setDepth(61);
     }
     this._weaponTxt.setText(wName + wAmmo + wTime).setAlpha(1);
@@ -14084,7 +14084,7 @@ DemoScene.prototype.update = function(time, delta) {
     if (!this._invTxt) {
       this._invTxt = this.add.text(W / 2, 5, '', {
         fontFamily: 'Press Start 2P, monospace', fontSize: '12px',
-        color: '#ff00ff', stroke: '#000000', strokeThickness: 2
+        color: '#ff00ff', stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(61);
     }
     this._invTxt.setText('INVINCIBLE ' + invSec + 's').setAlpha(1);
@@ -14195,8 +14195,8 @@ DemoScene.prototype.update = function(time, delta) {
     // Label
     if (!this._wpnTxt) {
       this._wpnTxt = this.add.text(40, wpnY + 1, '', {
-        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#ffffff',
-        stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#ffffff',
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(62);
     }
     var wpnLabel = wpnName + (this.weapon.ammo > 0 ? ' x' + this.weapon.ammo : '');
@@ -14220,8 +14220,8 @@ DemoScene.prototype.update = function(time, delta) {
     var timerStr = timerMin + ':' + (timerS < 10 ? '0' : '') + timerS + '.' + (timerCs < 10 ? '0' : '') + timerCs;
     if (!this._timerTxt) {
       this._timerTxt = this.add.text(W - 6, 5, '', {
-        fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#555555',
-        stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#999999',
+        stroke: '#000000', strokeThickness: 3
       }).setOrigin(1, 0).setScrollFactor(0).setDepth(62);
     }
     this._timerTxt.setText(timerStr);
@@ -14230,8 +14230,8 @@ DemoScene.prototype.update = function(time, delta) {
   // ── DEATH COUNTER + RUN COUNTER (persistent awareness) ──
   if (!this._deathHudTxt) {
     this._deathHudTxt = this.add.text(W - 6, 14, '', {
-      fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#444444',
-      stroke: '#000000', strokeThickness: 2
+      fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#888888',
+      stroke: '#000000', strokeThickness: 3
     }).setOrigin(1, 0).setScrollFactor(0).setDepth(62);
   }
   var totalDeaths = window._cactusEdTotalDeaths || 0;
@@ -14278,7 +14278,7 @@ DemoScene.prototype.update = function(time, delta) {
       var selfAmbientPA = this;
       scheduleReadableEvent(this, 'pa', 0, function() {
         TEXT_ZONES.show(selfAmbientPA, zonePA[Math.floor(Math.random() * zonePA.length)], {
-          color: '#666666', duration: 4500, fontSize: '8px'
+          color: '#666666', duration: 4500, fontSize: '11px'
         });
       }, 4000);
     }
@@ -14323,8 +14323,8 @@ DemoScene.prototype.update = function(time, delta) {
     // Dominant label
     if (!this._compassTxt) {
       this._compassTxt = this.add.text(compassX, compassY + 14, '', {
-        fontFamily: 'Courier New, monospace', fontSize: '5px',
-        color: '#666666', stroke: '#000000', strokeThickness: 2
+        fontFamily: 'Courier New, monospace', fontSize: '12px',
+        color: '#666666', stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(62);
     }
     var compassLabel = bNames[bMaxIdx].substring(0, 5).toUpperCase();
@@ -14601,12 +14601,12 @@ World2Scene.prototype.create = function() {
       memoLines.push('These measures are for your safety.');
       memoLines.push('Compliance is appreciated.');
       this.add.text(mX + 12, mY + 30, memoLines.join('\n'), {
-        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#1a0a2e',
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#1a0a2e',
         lineSpacing: 2, wordWrap: { width: mW - 24 }
       }).setScrollFactor(0).setDepth(201);
       // Dismiss prompt
       this.add.text(mX + mW / 2, mY + mH - 14, '[PRESS Z TO ACKNOWLEDGE]', {
-        fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#888888'
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#888888'
       }).setOrigin(0.5).setScrollFactor(0).setDepth(201);
       // Auto-dismiss after 5s or on key press
       var memoKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
@@ -14683,7 +14683,7 @@ World2Scene.prototype.create = function() {
   // ── HUD ──
   this.hudG = this.add.graphics().setScrollFactor(0).setDepth(60);
   this._titleTxt = this.add.text(W / 2, 5, '2-1  ENROLLMENT GARDEN', {
-    fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#88ffaa',
+    fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#88ffaa',
     stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(61);
 
@@ -14808,9 +14808,9 @@ World2Scene.prototype.create = function() {
     }
     // Poster text
     this.add.text(pd.x, H * 0.50, posterText, {
-      fontFamily: 'Courier New, monospace', fontSize: '5px',
+      fontFamily: 'Courier New, monospace', fontSize: '12px',
       color: _signsCensored && pti % 2 === 0 ? '#cc4444' : '#c9b27b',
-      stroke: '#000000', strokeThickness: 2,
+      stroke: '#000000', strokeThickness: 3,
       align: 'center', lineSpacing: 1
     }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.72);
   }
@@ -14819,16 +14819,16 @@ World2Scene.prototype.create = function() {
   posterG.lineStyle(1, 0x66cc88, 0.35);
   posterG.strokeRoundedRect(266, H * 0.728, 74, 16, 2);
   this.add.text(302, H * 0.732, 'ROOT ACCESS\nFILE WINDOW', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
-    color: '#b6f0d0', stroke: '#000000', strokeThickness: 2, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
+    color: '#b6f0d0', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.7);
   posterG.fillStyle(0x000000, 0.78);
   posterG.fillRoundedRect(480, H * 0.598, 66, 16, 2);
   posterG.lineStyle(1, 0xffdd44, 0.35);
   posterG.strokeRoundedRect(480, H * 0.598, 66, 16, 2);
   this.add.text(513, H * 0.602, 'HONORS\nLATTICE', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
-    color: '#ffe8a6', stroke: '#000000', strokeThickness: 2, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
+    color: '#ffe8a6', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.74);
   posterG.fillStyle(0xffdd44, 0.10);
   posterG.fillCircle(520, 165, 10);
@@ -14837,16 +14837,16 @@ World2Scene.prototype.create = function() {
   posterG.fillCircle(485, 220, 5);
   posterG.fillCircle(510, 190, 4);
   this.add.text(548, 166, 'TOP COPY', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
-    color: '#ffe8a6', stroke: '#000000', strokeThickness: 2
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
+    color: '#ffe8a6', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0, 0.5).setDepth(2).setAlpha(0.68);
   posterG.fillStyle(0x000000, 0.80);
   posterG.fillRoundedRect(854, H * 0.708, 88, 18, 2);
   posterG.lineStyle(1, 0xffdd44, 0.35);
   posterG.strokeRoundedRect(854, H * 0.708, 88, 18, 2);
   this.add.text(898, H * 0.712, 'TEST FORM F-1\nASCEND IN ORDER', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
-    color: '#ffe8a6', stroke: '#000000', strokeThickness: 2, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
+    color: '#ffe8a6', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.76);
   posterG.fillStyle(0xffdd44, 0.10);
   posterG.fillTriangle(884, H * 0.82, 889, H * 0.80, 894, H * 0.82);
@@ -14858,16 +14858,16 @@ World2Scene.prototype.create = function() {
   posterG.lineStyle(1, 0xcc8844, 0.35);
   posterG.strokeRoundedRect(1302, H * 0.598, 70, 16, 2);
   this.add.text(1337, H * 0.602, 'LEFT REVIEW\nFILES BACK', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
-    color: '#e2bd8c', stroke: '#000000', strokeThickness: 2, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
+    color: '#e2bd8c', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.72);
   posterG.fillStyle(0x000000, 0.82);
   posterG.fillRoundedRect(1984, H * 0.696, 100, 22, 2);
   posterG.lineStyle(1, 0x66cc88, 0.35);
   posterG.strokeRoundedRect(1984, H * 0.696, 100, 22, 2);
   this.add.text(2034, H * 0.703, 'GREENHOUSE MAINT.\nPOSTED PODIUMS BEFORE CUTTING', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
-    color: '#b6f0d0', stroke: '#000000', strokeThickness: 2, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
+    color: '#b6f0d0', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.72);
 
   // ── POP QUIZ SYSTEM (timed challenges that interrupt gameplay) ──
@@ -14898,7 +14898,7 @@ World2Scene.prototype.create = function() {
   detG.fillStyle(0x2a2010, 0.6);
   detG.fillRect(1430, 85, 180, 8);
   this.add.text(1520, 88, 'DETENTION', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
     color: '#aa6633', stroke: '#000000', strokeThickness: 1
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.4);
   // Detention aloe reward (hard to reach, big payout)
@@ -14917,8 +14917,8 @@ World2Scene.prototype.create = function() {
   ];
   for (var wli = 0; wli < w2Lore.length; wli++) {
     this.add.text(w2Lore[wli].x, H * 0.87, w2Lore[wli].text, {
-      fontFamily: 'Courier New, monospace', fontSize: '4px',
-      color: '#556644', stroke: '#000000', strokeThickness: 1
+      fontFamily: 'Courier New, monospace', fontSize: '11px',
+      color: '#99bb77', stroke: '#000000', strokeThickness: 1
     }).setOrigin(0.5, 0).setDepth(1).setAlpha(0.18);
   }
 
@@ -14959,7 +14959,7 @@ World2Scene.prototype.create = function() {
   gateG.fillStyle(0x5a7a5a, 0.8);
   gateG.fillRoundedRect(630, H * 0.53, 26, 6, 3);
   this.add.text(643, H * 0.54, 'TESTING', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
     color: '#ffdd44', stroke: '#000000', strokeThickness: 1
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.5);
 
@@ -14970,7 +14970,7 @@ World2Scene.prototype.create = function() {
   gateG.fillStyle(0x6a5a30, 0.8);
   gateG.fillRoundedRect(1270, H * 0.53, 26, 6, 3);
   this.add.text(1283, H * 0.54, 'OFFICE', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
     color: '#cc8844', stroke: '#000000', strokeThickness: 1
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.5);
 
@@ -14981,7 +14981,7 @@ World2Scene.prototype.create = function() {
   gateG.fillStyle(0x4a7a4a, 0.8);
   gateG.fillRoundedRect(1910, H * 0.53, 26, 6, 3);
   this.add.text(1923, H * 0.54, 'EXIT', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
     color: '#66cc66', stroke: '#000000', strokeThickness: 1
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.5);
 
@@ -15005,7 +15005,7 @@ World2Scene.prototype.create = function() {
   chairG.fillStyle(0x5a4a30, 0.4);
   chairG.fillRect(2382, H * 0.76, 16, 8);
   this.add.text(2390, H * 0.77, 'COMMENCEMENT', {
-    fontFamily: 'Courier New, monospace', fontSize: '3px',
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
     color: '#776644', stroke: '#000000', strokeThickness: 1
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.2);
 
@@ -15445,7 +15445,7 @@ World2Scene.prototype.update = function(time, delta) {
         };
         var selfNR = this;
         scheduleReadableZoneEvent(this, 'pa', 2500, function() {
-          TEXT_ZONES.show(selfNR, npcReact[maxNB] || '', { color: '#666666', duration: 2500, fontSize: '8px' });
+          TEXT_ZONES.show(selfNR, npcReact[maxNB] || '', { color: '#666666', duration: 2500, fontSize: '11px' });
         }, 2000);
       }
     }
@@ -15485,7 +15485,7 @@ World2Scene.prototype.update = function(time, delta) {
         }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(86));
       }
       this._quizHelpTxt = this.add.text(W / 2, H * 0.54, 'PRESS 1-4 OR Z / X / C / UP', {
-        fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#aaaaaa', stroke: '#000000', strokeThickness: 3
+        fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#aaaaaa', stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(86);
       this._quizOverlay = qG;
     }
@@ -15536,7 +15536,7 @@ World2Scene.prototype.update = function(time, delta) {
     var selfDet = this;
     this.time.delayedCall(1500, function() {
       TEXT_ZONES.show(selfDet, selfDet._w2Receipts[Math.floor(Math.random() * selfDet._w2Receipts.length)], {
-        color: '#cc8844', duration: 4000, fontSize: '9px'
+        color: '#cc8844', duration: 4000, fontSize: '12px'
       });
     });
   }
@@ -15571,7 +15571,7 @@ World2Scene.prototype.update = function(time, delta) {
     if (Math.random() < 0.3) {
       var selfW2PA = this;
       scheduleReadableEvent(this, 'pa', 0, function() {
-        TEXT_ZONES.show(selfW2PA, zPA[Math.floor(Math.random() * zPA.length)], { color: '#556644', duration: 4500, fontSize: '8px' });
+        TEXT_ZONES.show(selfW2PA, zPA[Math.floor(Math.random() * zPA.length)], { color: '#99bb77', duration: 4500, fontSize: '11px' });
       }, 4000);
     }
   }
@@ -15617,7 +15617,7 @@ World2Scene.prototype.update = function(time, delta) {
         intuition: 'UNOFFICIAL ANNOTATION:'
       };
       TEXT_ZONES.show(selfReceipt, (receiptPrefix[maxB2] || 'TRANSCRIPT NOTE:') + ' ' + receipt, {
-        color: '#cc8844', duration: 5000, fontSize: '9px'
+        color: '#cc8844', duration: 5000, fontSize: '12px'
       });
       selfReceipt._playSfx('stamp');
     }, 2600);
@@ -15643,7 +15643,7 @@ World2Scene.prototype.update = function(time, delta) {
       };
       var selfBehaviorPA = this;
       scheduleReadableZoneEvent(this, 'pa', 8000, function() {
-        TEXT_ZONES.show(selfBehaviorPA, behaviorPA[maxBC] || '', { color: '#556644', duration: 4000, fontSize: '8px' });
+        TEXT_ZONES.show(selfBehaviorPA, behaviorPA[maxBC] || '', { color: '#99bb77', duration: 4000, fontSize: '11px' });
       }, 3500);
     }
   }
@@ -15694,12 +15694,12 @@ World2Scene.prototype.update = function(time, delta) {
           stroke: '#000000', strokeThickness: 4
         }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(111);
         selfW2C.add.text(W / 2, H * 0.16, 'WORLD 2: SUNLUSH LEARNING PRESERVE', {
-          fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#88ccaa',
-          stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#88ccaa',
+          stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
         selfW2C.add.text(W / 2, H * 0.23, '── FINAL REPORT CARD ──', {
-          fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#ffdd44',
-          stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#ffdd44',
+          stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
 
         var rc = selfW2C._reportCard;
@@ -15716,8 +15716,8 @@ World2Scene.prototype.update = function(time, delta) {
           var rcz = rcZones[rci2];
           var grade = rc[rcz.letter] || '?';
           selfW2C.add.text(W * 0.3, H * 0.30 + rci2 * 16, rcz.name, {
-            fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#aaaaaa',
-            stroke: '#000000', strokeThickness: 2
+            fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#aaaaaa',
+            stroke: '#000000', strokeThickness: 3
           }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(111);
           selfW2C.add.text(W * 0.78, H * 0.30 + rci2 * 16, grade, {
             fontFamily: 'Press Start 2P, monospace', fontSize: '12px', color: gradeColors[grade],
@@ -15740,46 +15740,46 @@ World2Scene.prototype.update = function(time, delta) {
         else if (b2.grace > 12) eduClass = 'SCHOLARSHIP RECIPIENT (UNCLAIMED)';
         else if (b2.intuition > 10) eduClass = 'TRANSFERRED FROM SOMEWHERE BETTER';
         selfW2C.add.text(W / 2, H * 0.65, 'THE PRESERVE CLASSIFIES YOU AS:', {
-          fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#888888',
-          stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#888888',
+          stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
         selfW2C.add.text(W / 2, H * 0.70, eduClass, {
-          fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#44ff88',
-          stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#44ff88',
+          stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
 
         var cTime2 = Math.floor((Date.now() - selfW2C._runStartTime) / 1000);
         selfW2C.add.text(W * 0.2, H * 0.78, 'TIME: ' + Math.floor(cTime2/60) + ':' + (cTime2%60<10?'0':'') + cTime2%60, {
-          fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#555555', stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#999999', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
         selfW2C.add.text(W * 0.5, H * 0.78, 'KILLS: ' + selfW2C._telemetry.enemiesKilled, {
-          fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#555555', stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#999999', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
         selfW2C.add.text(W * 0.8, H * 0.78, 'QUIZZES: ' + selfW2C._quizCount + '/2', {
-          fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#555555', stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#999999', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
 
         // ── R07: POLICY EFFECTIVENESS REVIEW ──
         var w2PolicyReview = generatePolicyReview(selfW2C._activePolicies, selfW2C.behavior);
         if (w2PolicyReview) {
           selfW2C.add.text(W / 2, H * 0.82, w2PolicyReview, {
-            fontFamily: 'Courier New, monospace', fontSize: '5px', color: '#cc8844',
-            stroke: '#000000', strokeThickness: 2, align: 'center',
+            fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#cc8844',
+            stroke: '#000000', strokeThickness: 3, align: 'center',
             wordWrap: { width: W - 60 }, lineSpacing: 1
           }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(111);
         }
 
         selfW2C.add.text(W / 2, H * 0.85, 'WORLD 3: WELLSPRING MEDICAL PAVILION — ACCESS PENDING', {
-          fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#555555',
-          stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#999999',
+          stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
         selfW2C.add.text(W / 2, H * 0.92, 'Z — PROCEED TO WORLD 3', {
-          fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#44ff88',
+          fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#44ff88',
           stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
         selfW2C.add.text(W / 2, H * 0.97, 'X — RE-ENROLL WORLD 2', {
-          fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#666666',
-          stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#666666',
+          stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(111);
         for (var w2cf = 0; w2cf < 25; w2cf++) {
           cG.fillStyle([0x44ff88, 0xffdd44, 0x88ccff, 0xff88aa][Math.floor(Math.random()*4)], 0.4);
@@ -15805,7 +15805,7 @@ World2Scene.prototype.update = function(time, delta) {
               var trLines = ['FORWARDING PATIENT FILE...', 'INSURANCE PRE-AUTHORIZATION...', 'THE PAVILION AWAITS.'];
               var trI = 0;
               var trTxt = selfW2C.add.text(W/2, H/2, '', {
-                fontFamily: 'Courier New, monospace', fontSize: '9px', color: '#88ccff',
+                fontFamily: 'Courier New, monospace', fontSize: '12px', color: '#88ccff',
                 stroke: '#000000', strokeThickness: 3
               }).setOrigin(0.5).setScrollFactor(0).setDepth(121);
               var showTr = function() {
@@ -15854,7 +15854,7 @@ World2Scene.prototype.update = function(time, delta) {
       var gardenerPool = boss.phase === 1 ? gardenerLines1 : boss.phase === 2 ? gardenerLines2 : gardenerLines3;
       if (gardenerPool[boss.moveState]) {
         TEXT_ZONES.show(this, gardenerPool[boss.moveState][Math.floor(Math.random() * gardenerPool[boss.moveState].length)], {
-          color: '#88ffaa', duration: 1800, fontSize: '9px'
+          color: '#88ffaa', duration: 1800, fontSize: '12px'
         });
       }
     }
@@ -16128,11 +16128,11 @@ World2Scene.prototype.update = function(time, delta) {
       // Reveal card
       this._flash(wbr.label, 3000);
       this.time.delayedCall(1200, function() {
-        TEXT_ZONES.show(selfBr2, '"' + wbr.reveal + '"', { color: '#ffdd44', duration: 4000, fontSize: '9px' });
+        TEXT_ZONES.show(selfBr2, '"' + wbr.reveal + '"', { color: '#ffdd44', duration: 4000, fontSize: '12px' });
       });
       this.time.delayedCall(4000, function() {
         TEXT_ZONES.show(selfBr2, selfBr2._w2Receipts[Math.floor(Math.random() * selfBr2._w2Receipts.length)], {
-          color: '#cc8844', duration: 3500, fontSize: '9px'
+          color: '#cc8844', duration: 3500, fontSize: '12px'
         });
       });
       this.cameras.main.shake(40, 0.004);
@@ -16149,7 +16149,7 @@ World2Scene.prototype.update = function(time, delta) {
     this._playSfx('stamp');
     bumpFirstSessionMetric(this, 'confirmationSeen', 'trellis', 1);
     showProtectedReadableText(this, 'confirm', 120, 'HONORS LATTICE: TOP COPY RELEASED.', {
-      color: '#ffdd88', duration: 2200, fontSize: '8px'
+      color: '#ffdd88', duration: 2200, fontSize: '11px'
     }, 2200, 'w2_trellis', true, 1800);
   }
   if (this._w2RuleConfirm && !this._w2RuleConfirm.testing && zone.type === 'testing' &&
@@ -16158,13 +16158,13 @@ World2Scene.prototype.update = function(time, delta) {
     this._playSfx('stamp');
     bumpFirstSessionMetric(this, 'confirmationSeen', 'testing_lane', 1);
     showProtectedReadableText(this, 'confirm', 100, 'TEST FORM F-1: ROUTE VERIFIED.', {
-      color: '#ffdd44', duration: 2200, fontSize: '8px'
+      color: '#ffdd44', duration: 2200, fontSize: '11px'
     }, 2000, 'w2_testing', true, 1800);
   }
   if (!this._testingLaneNoticeSeen && zone.type === 'testing' && ep.x > 845) {
     this._testingLaneNoticeSeen = true;
     showProtectedReadableText(this, 'pa', 100, 'PROCTOR NOTICE: THE POSTED ROUTE CLIMBS IN ORDER.', {
-      color: '#ffdd44', duration: 2800, fontSize: '8px'
+      color: '#ffdd44', duration: 2800, fontSize: '11px'
     }, 2200, 'w2_testing_notice', true, 1800);
   }
   if (this._fakeBranchNote && !this._fakeBranchNote.seen && zone.type === 'maze' &&
@@ -16185,19 +16185,19 @@ World2Scene.prototype.update = function(time, delta) {
         // Visit 1: Dead end. Classic trap.
         fakeSelf.floatingItems.push({ x: 1322, y: 226, type: 'aloe', vy: -58, bobT: 0, life: 20, floating: true });
         showProtectedReadableText(fakeSelf, 'pa', 0, 'ARCHIVE NOTE: LEFT REVIEW FILES BACK INTO THE MAIN OFFICE. APPROVED EXIT REMAINS ABOVE.', {
-          color: '#ccaa77', duration: 3200, fontSize: '8px'
+          color: '#ccaa77', duration: 3200, fontSize: '11px'
         }, 2400, 'w2_fake_branch_note', true, 1400);
       } else if (fakeVisit === 2) {
         // Visit 2: A tiny vent has appeared. Reward for persistence.
         fakeSelf.floatingItems.push({ x: 1322, y: 226, type: 'aloe', vy: -58, bobT: 0, life: 20, floating: true });
         fakeSelf.floatingItems.push({ x: 1340, y: 240, type: 'aloe', vy: -58, bobT: 0, life: 20, floating: true });
         showProtectedReadableText(fakeSelf, 'pa', 0, 'UNAUTHORIZED VENT DETECTED. THE INSTITUTION DID NOT ANTICIPATE YOUR RETURN.', {
-          color: '#88ccff', duration: 3200, fontSize: '8px'
+          color: '#88ccff', duration: 3200, fontSize: '11px'
         }, 2400, 'w2_fake_branch_v2', true, 1400);
       } else if (fakeVisit === 3) {
         // Visit 3: Vent sealed, crack in floor, escalating gag.
         showProtectedReadableText(fakeSelf, 'pa', 0, 'UNAUTHORIZED VENT USAGE DETECTED \u2014 ACCESS REVOKED.\nA NEW CRACK HAS APPEARED IN THE FLOOR. THIS WAS NOT PLANNED.', {
-          color: '#ff8844', duration: 4000, fontSize: '8px'
+          color: '#ff8844', duration: 4000, fontSize: '11px'
         }, 2800, 'w2_fake_branch_v3', true, 1600);
         fakeSelf.behavior.curiosity += 3;
       } else {
@@ -16210,7 +16210,7 @@ World2Scene.prototype.update = function(time, delta) {
           'YOUR PERSISTENCE HAS BEEN ESCALATED TO A COMMITTEE THAT DOES NOT EXIST.'
         ];
         showProtectedReadableText(fakeSelf, 'pa', 0, fakeGags[(fakeVisit - 4) % fakeGags.length], {
-          color: '#ffd700', duration: 3500, fontSize: '8px'
+          color: '#ffd700', duration: 3500, fontSize: '11px'
         }, 2400, 'w2_fake_branch_v' + fakeVisit, true, 1400);
         fakeSelf.behavior.curiosity += 2;
         fakeSelf.behavior.chaos += 1;
@@ -16223,7 +16223,7 @@ World2Scene.prototype.update = function(time, delta) {
     if (!gp.seen && ep.x > gp.xStart - 35) {
       gp.seen = true;
       showProtectedReadableText(this, 'boss_ceremony', 250, 'GREENHOUSE MAINTENANCE: POSTED PODIUMS BEFORE CUTTING. VINE RESPONSE FOLLOWS.', {
-        color: '#88ffaa', duration: 3600, fontSize: '9px'
+        color: '#88ffaa', duration: 3600, fontSize: '12px'
       }, 2400, 'w2_gardener_notice', true, 2200);
     }
     gp.active = ep.x > gp.xStart && ep.x < gp.xEnd;
@@ -16255,7 +16255,7 @@ World2Scene.prototype.update = function(time, delta) {
         this._playSfx('stamp');
         bumpFirstSessionMetric(this, 'confirmationSeen', 'gardener', 1);
         showProtectedReadableText(this, 'confirm', 220, 'POSTED PODIUMS BEFORE CUTTING: POSITION APPROVED.', {
-          color: '#88ffaa', duration: 2400, fontSize: '8px'
+          color: '#88ffaa', duration: 2400, fontSize: '11px'
         }, 2200, 'w2_podium_confirm', false, 1800);
       }
       if (podiumPhase > podiumWarnMs && ep.x > podiumLeft && ep.x < podiumLeft + podiumW && ep.y > H * 0.82 &&
@@ -16319,7 +16319,7 @@ World2Scene.prototype.update = function(time, delta) {
           this._playSfx('stamp');
           bumpFirstSessionMetric(this, 'confirmationSeen', 'gardener', 1);
           showProtectedReadableText(this, 'confirm', 180, 'POSTED PODIUMS BEFORE CUTTING: POSITION APPROVED.', {
-            color: '#88ffaa', duration: 2400, fontSize: '8px'
+            color: '#88ffaa', duration: 2400, fontSize: '11px'
           }, 2200, 'w2_podium_confirm', false, 1800);
         }
         if (!gp.cleanLogged) {
@@ -16726,7 +16726,7 @@ World3Scene.prototype.create = function() {
   // ── HUD ──
   this.hudG = this.add.graphics().setScrollFactor(0).setDepth(60);
   this._titleTxt = this.add.text(W / 2, 5, '3-1  THE WAITING ROOM', {
-    fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#88ccff',
+    fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#88ccff',
     stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(61);
 
@@ -16779,7 +16779,7 @@ World3Scene.prototype.create = function() {
   ];
   for (var w3li = 0; w3li < w3Lore.length; w3li++) {
     this.add.text(w3Lore[w3li].x, H * 0.87, w3Lore[w3li].text, {
-      fontFamily: 'Courier New, monospace', fontSize: '4px', color: '#445566', stroke: '#000000', strokeThickness: 1
+      fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#88aacc', stroke: '#000000', strokeThickness: 1
     }).setOrigin(0.5, 0).setDepth(1).setAlpha(0.18);
   }
 
@@ -16824,12 +16824,12 @@ World3Scene.prototype.create = function() {
   chairG3.fillStyle(0xffffff, 0.08);
   chairG3.fillRect(534, H * 0.75, 12, 18);
   this.add.text(540, H * 0.695, 'SIDE FILE\nWINDOW', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
-    color: '#a7ddff', stroke: '#000000', strokeThickness: 2, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
+    color: '#a7ddff', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.68);
   this.add.text(2280, H * 0.66, 'PHYSICIAN REVIEW\nTWO SIGNATURES\nAHEAD', {
-    fontFamily: 'Courier New, monospace', fontSize: '5px',
-    color: '#c7d6ff', stroke: '#000000', strokeThickness: 2, align: 'center'
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
+    color: '#c7d6ff', stroke: '#000000', strokeThickness: 3, align: 'center'
   }).setOrigin(0.5, 0).setDepth(2).setAlpha(0.64);
 
   // ── MEDICAL RECEIPT POOL ──
@@ -16928,7 +16928,7 @@ World3Scene.prototype.update = function(time, delta) {
         this._playSfx('stamp');
         bumpFirstSessionMetric(this, 'confirmationSeen', 'waiting', 1);
         showProtectedReadableText(this, 'confirm', 140, 'SIDE FILE REVIEW: STILLNESS ACCEPTED.', {
-          color: '#88ddaa', duration: 2200, fontSize: '8px'
+          color: '#88ddaa', duration: 2200, fontSize: '11px'
         }, 2200, 'w3_waiting_confirm', true, 1200);
       }
       if (wd.stillMs >= wd.unlockMs) {
@@ -16944,7 +16944,7 @@ World3Scene.prototype.update = function(time, delta) {
         setFirstSessionMetric(this, 'cleanPreteach', 'waiting', Math.floor(getSceneElapsedMs(this) / 100) / 10);
         bumpFirstSessionMetric(this, 'curiosityPayoffs', 'w3_waiting_window', 1);
         showProtectedReadableText(this, 'confirm', 120, 'SIDE FILE WINDOW: RELEASED.', {
-          color: '#88ddaa', duration: 2400, fontSize: '8px'
+          color: '#88ddaa', duration: 2400, fontSize: '11px'
         }, 2600, 'w3_waiting_release', true, 1400);
       }
     } else if (zone.type !== 'waiting' && !wd.opened) {
@@ -17083,7 +17083,7 @@ World3Scene.prototype.update = function(time, delta) {
           this._playSfx('stamp');
           bumpFirstSessionMetric(this, 'confirmationSeen', 'scan', 1);
           showProtectedReadableText(this, 'confirm', 140, 'SCAN WINDOW ACCEPTED.', {
-            color: '#88ddaa', duration: 2200, fontSize: '8px'
+            color: '#88ddaa', duration: 2200, fontSize: '11px'
           }, 2000, 'w3_scan_confirm', true, 1800);
         }
       }
@@ -17258,7 +17258,7 @@ World3Scene.prototype.update = function(time, delta) {
         scheduleReadableZoneEvent(this, 'pa', 2500, function() {
           if (!(npcR3[maxN3] || '')) return;
           showProtectedReadableText(selfNR3, 'pa', 0, npcR3[maxN3] || '', {
-            color: '#555566', duration: 2500, fontSize: '8px'
+            color: '#9999aa', duration: 2500, fontSize: '11px'
           }, 1800, 'w3_npc_followup', true, 4500);
         }, 2000);
       }
@@ -17316,7 +17316,7 @@ World3Scene.prototype.update = function(time, delta) {
   if (zone.type === 'recovery' && !this._physicianForeshadowSeen && ep.x > 2230) {
     this._physicianForeshadowSeen = true;
     showProtectedReadableText(this, 'boss_ceremony', 300, 'CHART NOTICE: FINAL REVIEW REQUIRES PRE-AUTHORIZATION.', {
-      color: '#aabbee', duration: 3600, fontSize: '9px'
+      color: '#aabbee', duration: 3600, fontSize: '12px'
     }, 2400, 'w3_chart_notice', true, 2200);
   }
 
@@ -17327,7 +17327,7 @@ World3Scene.prototype.update = function(time, delta) {
       pad.seen = true;
       this._physicianForeshadowSeen = true;
       showProtectedReadableText(this, 'boss_ceremony', 250, 'PRE-AUTHORIZATION: STRIKE BOTH SIGNATURE LAMPS BEFORE ADVANCING.', {
-        color: '#88ccff', duration: 3600, fontSize: '9px'
+        color: '#88ccff', duration: 3600, fontSize: '12px'
       }, 2400, 'w3_preauth_notice', true, 2200);
     }
     if (pad.active || (!pad.completed && ep.x > pad.xStart - 20 && ep.x < pad.xEnd + 50)) {
@@ -17427,7 +17427,7 @@ World3Scene.prototype.update = function(time, delta) {
         intuition: 'OFF-LABEL OBSERVATION:'
       };
       showProtectedReadableText(selfR3, 'pa', 0, (rPre3[maxB3] || 'PATIENT FILE:') + ' ' + r3, {
-        color: '#88aabb', duration: 5000, fontSize: '9px'
+        color: '#88aabb', duration: 5000, fontSize: '12px'
       }, 2200, 'w3_zone_receipt', true, 1600);
       selfR3._playSfx('stamp');
     }, 2600);
@@ -17454,7 +17454,7 @@ World3Scene.prototype.update = function(time, delta) {
       scheduleReadableZoneEvent(this, 'pa', 8000, function() {
         if (!(bPA3[maxBC3] || '')) return;
         showProtectedReadableText(selfBC3, 'pa', 0, bPA3[maxBC3] || '', {
-          color: '#445566', duration: 4000, fontSize: '8px'
+          color: '#88aacc', duration: 4000, fontSize: '11px'
         }, 1800, 'w3_behavior_pa', true, 1600);
       }, 3500);
     }
@@ -17508,7 +17508,7 @@ World3Scene.prototype.update = function(time, delta) {
       var physicianPool = boss3.phase === 1 ? physicianLines1 : boss3.phase === 2 ? physicianLines2 : physicianLines3;
       if (physicianPool[boss3.moveState]) {
         TEXT_ZONES.show(this, physicianPool[boss3.moveState][Math.floor(Math.random() * physicianPool[boss3.moveState].length)], {
-          color: '#88ccff', duration: 1800, fontSize: '9px'
+          color: '#88ccff', duration: 1800, fontSize: '12px'
         });
       }
     }
@@ -17968,12 +17968,12 @@ World3Scene.prototype._triggerEnding = function() {
         var stripped = abilities[strippedCount];
         // Flash the ability name briefly — then it disappears
         var stripTxt = selfEnd.add.text(W / 2, H * 0.40, stripped.name, {
-          fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#444444',
-          stroke: '#000000', strokeThickness: 2
+          fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#888888',
+          stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5).setScrollFactor(0).setDepth(201).setAlpha(0.5);
         // Strikethrough effect — the ability is being revoked
         var strikeTxt = selfEnd.add.text(W / 2, H * 0.40, '————————', {
-          fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#ff4444',
+          fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#ff4444',
           stroke: '#000000', strokeThickness: 1
         }).setOrigin(0.5).setScrollFactor(0).setDepth(202).setAlpha(0);
         selfEnd.tweens.add({ targets: strikeTxt, alpha: 0.6, duration: 300 });
@@ -18055,8 +18055,8 @@ World3Scene.prototype._triggerEnding = function() {
                     }).setOrigin(0.5).setScrollFactor(0).setDepth(211);
 
                     selfEnd.add.text(W / 2, H * 0.18, 'A CIVIC ORIENTATION EXPERIENCE\nIN THREE INSTITUTIONS', {
-                      fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#666666',
-                      stroke: '#000000', strokeThickness: 2, align: 'center'
+                      fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#666666',
+                      stroke: '#000000', strokeThickness: 3, align: 'center'
                     }).setOrigin(0.5).setScrollFactor(0).setDepth(211);
 
                     // The three institutions
@@ -18065,8 +18065,8 @@ World3Scene.prototype._triggerEnding = function() {
                       'WORLD 2: SUNLUSH LEARNING PRESERVE',
                       'WORLD 3: WELLSPRING MEDICAL PAVILION'
                     ].join('\n'), {
-                      fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#444444',
-                      stroke: '#000000', strokeThickness: 2, align: 'center', lineSpacing: 4
+                      fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#888888',
+                      stroke: '#000000', strokeThickness: 3, align: 'center', lineSpacing: 4
                     }).setOrigin(0.5).setScrollFactor(0).setDepth(211);
 
                     // Stats
@@ -18078,8 +18078,8 @@ World3Scene.prototype._triggerEnding = function() {
                       'ENEMIES: ' + selfEnd._telemetry.enemiesKilled,
                       'WELLNESS: ' + Math.floor(selfEnd._vitals.wellnessScore) + '%'
                     ].join('  |  '), {
-                      fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#555555',
-                      stroke: '#000000', strokeThickness: 2
+                      fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#999999',
+                      stroke: '#000000', strokeThickness: 3
                     }).setOrigin(0.5).setScrollFactor(0).setDepth(211);
 
                     // Ed pixel art
@@ -18089,21 +18089,21 @@ World3Scene.prototype._triggerEnding = function() {
 
                     // FINAL CLASSIFICATION: INCONCLUSIVE. (the lead-in)
                     selfEnd.add.text(W / 2, H * 0.73, 'FINAL CLASSIFICATION: INCONCLUSIVE.', {
-                      fontFamily: 'Courier New, monospace', fontSize: '8px', color: '#888888',
-                      stroke: '#000000', strokeThickness: 2
+                      fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#888888',
+                      stroke: '#000000', strokeThickness: 3
                     }).setOrigin(0.5).setScrollFactor(0).setDepth(211);
 
                     // The epigraph (now positioned as credits quote, not emotional endpoint)
                     selfEnd.add.text(W / 2, H * 0.82, '"THE SYSTEM MEASURED EVERYTHING.\nIT UNDERSTOOD NOTHING.\nED SMOKED THE WHOLE TIME."', {
-                      fontFamily: 'Courier New, monospace', fontSize: '6px', color: '#ffd700',
-                      stroke: '#000000', strokeThickness: 2, align: 'center',
+                      fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#ffd700',
+                      stroke: '#000000', strokeThickness: 3, align: 'center',
                       fontStyle: 'italic', lineSpacing: 3
                     }).setOrigin(0.5).setScrollFactor(0).setDepth(211);
 
                     // Replay
                     selfEnd.add.text(W / 2, H * 0.95, 'PRESS Z TO START A NEW FILE', {
-                      fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#333333',
-                      stroke: '#000000', strokeThickness: 2
+                      fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#777777',
+                      stroke: '#000000', strokeThickness: 3
                     }).setOrigin(0.5).setScrollFactor(0).setDepth(211);
 
                     selfEnd.time.delayedCall(3000, function() {
@@ -18132,8 +18132,8 @@ World3Scene.prototype._triggerEnding = function() {
 
     // Prompt the player
     var walkPrompt = selfEnd.add.text(W / 2, H * 0.94, 'PRESS → TO WALK', {
-      fontFamily: 'Courier New, monospace', fontSize: '7px', color: '#333333',
-      stroke: '#000000', strokeThickness: 2
+      fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#777777',
+      stroke: '#000000', strokeThickness: 3
     }).setOrigin(0.5).setScrollFactor(0).setDepth(201);
     // Fade prompt after 4 seconds
     selfEnd.tweens.add({ targets: walkPrompt, alpha: 0, duration: 2000, delay: 4000 });
@@ -18211,7 +18211,7 @@ TitleScene.prototype.create = function() {
   this._coldOpenT = 0;
   // Show cold open text immediately
   this._coldTitle = this.add.text(W / 2, H * 0.35, 'CACTUS ED\'S\nHAPPIEST PLACE', {
-    fontFamily: 'Courier New, monospace', fontSize: '20px',
+    fontFamily: 'Courier New, monospace', fontSize: '24px',
     color: '#ffd700', stroke: '#000000', strokeThickness: 5,
     align: 'center', lineSpacing: 4
   }).setOrigin(0.5).setDepth(15);
@@ -18220,37 +18220,37 @@ TitleScene.prototype.create = function() {
     color: '#88ccff', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5).setDepth(15);
   this._coldCount = this.add.text(W / 2, H * 0.70, '', {
-    fontFamily: 'Courier New, monospace', fontSize: '9px',
-    color: '#555555', stroke: '#000000', strokeThickness: 2
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
+    color: '#999999', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5).setDepth(15);
   this._coldSkip = this.add.text(W / 2, H * 0.80, 'PRESS ANY KEY TO BEGIN', {
-    fontFamily: 'Courier New, monospace', fontSize: '8px',
-    color: '#ffd700', stroke: '#000000', strokeThickness: 2
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
+    color: '#ffd700', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5).setDepth(15).setAlpha(0.6 + Math.sin(0) * 0.4);
 
   // ── R08: DAILY MEMO DISPLAY ──
   var todayMod = DAILY.getToday();
   var dailyStreak = DAILY.getStreak();
   this.add.text(W / 2, H * 0.62, 'TODAY\'S MEMO: ' + todayMod.name, {
-    fontFamily: 'Courier New, monospace', fontSize: '7px',
-    color: '#cc8844', stroke: '#000000', strokeThickness: 2
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
+    color: '#cc8844', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5).setDepth(15);
   this.add.text(W / 2, H * 0.66, todayMod.desc, {
-    fontFamily: 'Courier New, monospace', fontSize: '6px',
-    color: '#888888', stroke: '#000000', strokeThickness: 2
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
+    color: '#888888', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5).setDepth(15);
   if (dailyStreak.streak > 0) {
     this.add.text(W / 2, H * 0.70, 'DAILY STREAK: ' + dailyStreak.streak + ' CONSECUTIVE DAYS', {
-      fontFamily: 'Courier New, monospace', fontSize: '6px',
-      color: '#44ff88', stroke: '#000000', strokeThickness: 2
+      fontFamily: 'Courier New, monospace', fontSize: '10px',
+      color: '#44ff88', stroke: '#000000', strokeThickness: 3
     }).setOrigin(0.5).setDepth(15);
   }
   // ── R08: DEPARTMENT + PUNCHCARD STATUS ──
   var deptData = DEPARTMENT.load();
   if (deptData.dept) {
     this.add.text(W / 2, H * 0.74, 'DEPARTMENT: ' + deptData.dept, {
-      fontFamily: 'Courier New, monospace', fontSize: '6px',
-      color: '#88ccff', stroke: '#000000', strokeThickness: 2
+      fontFamily: 'Courier New, monospace', fontSize: '10px',
+      color: '#88ccff', stroke: '#000000', strokeThickness: 3
     }).setOrigin(0.5).setDepth(15);
   }
   var punchData = PUNCHCARD.load();
@@ -18260,8 +18260,8 @@ TitleScene.prototype.create = function() {
       punchStr += pi2 < punchData.punches ? '\u25A0 ' : '\u25A1 ';
     }
     this.add.text(W / 2, H * 0.77, 'WAIVER: ' + punchStr + (PUNCHCARD.isReady() ? ' READY!' : ''), {
-      fontFamily: 'Courier New, monospace', fontSize: '6px',
-      color: PUNCHCARD.isReady() ? '#ffd700' : '#666666', stroke: '#000000', strokeThickness: 2
+      fontFamily: 'Courier New, monospace', fontSize: '10px',
+      color: PUNCHCARD.isReady() ? '#ffd700' : '#666666', stroke: '#000000', strokeThickness: 3
     }).setOrigin(0.5).setDepth(15);
   }
 
@@ -18289,7 +18289,7 @@ TitleScene.prototype.create = function() {
     var bt = this.add.text(20, 30 + bi * 18, '', {
       fontFamily: 'Courier New, monospace', fontSize: '10px',
       color: bi === bootMsgs.length - 1 ? '#ffd700' : '#44ff88',
-      stroke: '#000000', strokeThickness: 2
+      stroke: '#000000', strokeThickness: 3
     }).setDepth(10).setAlpha(0);
     this._bootTxts.push(bt);
   }
@@ -18303,7 +18303,7 @@ TitleScene.prototype.create = function() {
   }).setOrigin(0.5).setDepth(10).setAlpha(0);
 
   this._subTxt = this.add.text(W / 2, H * 0.50, 'A CIVIC ORIENTATION EXPERIENCE', {
-    fontFamily: 'Courier New, monospace', fontSize: '9px',
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
     color: '#88ccff', stroke: '#000000', strokeThickness: 3
   }).setOrigin(0.5).setDepth(10).setAlpha(0);
 
@@ -18314,8 +18314,8 @@ TitleScene.prototype.create = function() {
 
   // Institutional footer
   this._footerTxt = this.add.text(W / 2, H * 0.78, '© WELCOME & ADJUSTMENT BUREAU\nALL IDENTITIES RESERVED.', {
-    fontFamily: 'Courier New, monospace', fontSize: '7px',
-    color: '#555555', stroke: '#000000', strokeThickness: 2,
+    fontFamily: 'Courier New, monospace', fontSize: '10px',
+    color: '#999999', stroke: '#000000', strokeThickness: 3,
     align: 'center'
   }).setOrigin(0.5).setDepth(10).setAlpha(0);
 
@@ -18360,7 +18360,7 @@ TitleScene.prototype.create = function() {
     '',
     'PRESS Z TO RETURN TO ENROLLMENT'
   ].join('\n'), {
-    fontFamily: 'Courier New, monospace', fontSize: '9px',
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
     color: '#ffffff', stroke: '#000000', strokeThickness: 3,
     align: 'center', lineSpacing: 3
   }).setOrigin(0.5).setDepth(21).setAlpha(0);
@@ -18381,14 +18381,14 @@ TitleScene.prototype.create = function() {
     '',
     'PRESS Z TO ACCEPT THIS TRUTH'
   ].join('\n'), {
-    fontFamily: 'Courier New, monospace', fontSize: '9px',
+    fontFamily: 'Courier New, monospace', fontSize: '12px',
     color: '#88ccff', stroke: '#000000', strokeThickness: 3,
     align: 'center', lineSpacing: 2
   }).setOrigin(0.5).setDepth(21).setAlpha(0);
 
   // Achievement overlay
   this._achievementTxt = this.add.text(W / 2, H / 2, buildTitleAchievementsText(savedData), {
-    fontFamily: 'Courier New, monospace', fontSize: '8px',
+    fontFamily: 'Courier New, monospace', fontSize: '11px',
     color: '#ffd700', stroke: '#000000', strokeThickness: 3,
     align: 'left', lineSpacing: 2
   }).setOrigin(0.5).setDepth(21).setAlpha(0);
