@@ -18521,8 +18521,12 @@ TitleScene.prototype.update = function(time, delta) {
     this._coldSkip.setAlpha(0.5 + Math.sin(this._t * 0.005) * 0.3);
 
     // Any key press or auto-start after 3s
-    var anyKey = keys.z.isDown || keys.up.isDown || keys.left.isDown || keys.right.isDown ||
-      keys.down.isDown || keys.x.isDown || keys.c.isDown || keys.esc.isDown;
+    var anyKey = keys.z.isDown || keys.up.isDown || keys.down.isDown ||
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT).isDown ||
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT).isDown ||
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X).isDown ||
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C).isDown ||
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC).isDown;
     if (anyKey || this._coldOpenT >= 3000) {
       this._coldOpen = false;
       if (this._coldTitle) this._coldTitle.destroy();
