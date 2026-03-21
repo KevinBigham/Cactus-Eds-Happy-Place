@@ -419,6 +419,619 @@ var PERF = {
   }
 };
 
+// ── ANIMATED UI SYSTEM (Round 2: The Filing Cabinet) ──────────────────
+// Reusable animation utilities for institutional-themed UI motion
+var ANIM_UI = {
+  // Typewriter: reveals text char-by-char on a Phaser text object
+  // Returns controller { update(delta), skip(), done, textObj }
+  typewriter: function(textObj, fullText, opts) {
+    opts = opts || {};
+    var charDelay = opts.charDelay || 30;
+    var charIndex = 0;
+    var timer = 0;
+    var done = false;
+    textObj.setText('');
+    return {
+      textObj: textObj,
+      done: false,
+      update: function(delta) {
+        if (done) return;
+        timer += delta;
+        while (timer >= charDelay && charIndex < fullText.length) {
+          timer -= charDelay;
+          charIndex++;
+          textObj.setText(fullText.substring(0, charIndex));
+        }
+        if (charIndex >= fullText.length) {
+          done = true;
+          this.done = true;
+          if (opts.onComplete) opts.onComplete();
+        }
+      },
+      skip: function() {
+        charIndex = fullText.length;
+        textObj.setText(fullText);
+        done = true;
+        this.done = true;
+        if (opts.onComplete) opts.onComplete();
+      }
+    };
+  },
+
+  // SlideIn: moves a display object from offscreen with eased tween
+  // from = 'top'|'bottom'|'left'|'right', duration in ms
+  slideIn: function(scene, target, from, duration) {
+    duration = duration || 400;
+    var finalX = target.x;
+    var finalY = target.y;
+    if (from === 'top') { target.y = -target.height || -60; }
+    else if (from === 'bottom') { target.y = H + 60; }
+    else if (from === 'left') { target.x = -W; }
+    else if (from === 'right') { target.x = W + W; }
+    return scene.tweens.add({
+      targets: target,
+      x: finalX,
+      y: finalY,
+      duration: duration,
+      ease: 'Back.easeOut'
+    });
+  },
+
+  // StampIn: scale 0 → overshoot → 1.0 with alpha fade-in
+  stampIn: function(scene, target, delay) {
+    delay = delay || 0;
+    target.setScale(0);
+    target.setAlpha(0);
+    return scene.tweens.add({
+      targets: target,
+      scaleX: 1,
+      scaleY: 1,
+      alpha: 1,
+      duration: 180,
+      delay: delay,
+      ease: 'Back.easeOut'
+    });
+  },
+
+  // SlideOut: moves a display object offscreen (for dismissal)
+  slideOut: function(scene, target, to, duration, onComplete) {
+    duration = duration || 300;
+    var destX = target.x;
+    var destY = target.y;
+    if (to === 'top') { destY = -60; }
+    else if (to === 'bottom') { destY = H + 60; }
+    else if (to === 'left') { destX = -W; }
+    else if (to === 'right') { destX = W + W; }
+    return scene.tweens.add({
+      targets: target,
+      x: destX,
+      y: destY,
+      duration: duration,
+      ease: 'Cubic.easeIn',
+      onComplete: onComplete || function() {}
+    });
+  }
+};
+
+// ── AMBIENT LIGHT SYSTEM (Round 5: Ambient Pulse) ────────────
+// Dynamic pulsing light sources that respond to gameplay events
+var AMBIENT_LIGHT = {
+  _sources: [],  // { x, y, radius, color, baseAlpha, pulseSpeed, pulseRange, type, _born }
+  _flares: [],   // { x, y, color, radius, life, maxLife }
+  _globalT: 0,
+
+  register: function(x, y, radius, color, type) {
+    type = type || 'pickup';
+    var speeds = { ambient: 0.001, pickup: 0.003, entity: 0.005 };
+    var ranges = { ambient: 0.02, pickup: 0.03, entity: 0.04 };
+    var alphas = { ambient: 0.04, pickup: 0.06, entity: 0.05 };
+    if (AMBIENT_LIGHT._sources.length >= 20) return;
+    AMBIENT_LIGHT._sources.push({
+      x: x, y: y, radius: radius, color: color,
+      baseAlpha: alphas[type] || 0.05,
+      pulseSpeed: speeds[type] || 0.003,
+      pulseRange: ranges[type] || 0.03,
+      type: type, _born: AMBIENT_LIGHT._globalT
+    });
+  },
+
+  clear: function() {
+    AMBIENT_LIGHT._sources = [];
+    AMBIENT_LIGHT._flares = [];
+  },
+
+  flare: function(x, y, color, duration) {
+    duration = duration || 400;
+    AMBIENT_LIGHT._flares.push({
+      x: x, y: y, color: color,
+      radius: 8, maxRadius: 30,
+      life: duration, maxLife: duration
+    });
+  },
+
+  update: function(delta, time, camX) {
+    AMBIENT_LIGHT._globalT = time;
+    // Update flares
+    for (var fi = AMBIENT_LIGHT._flares.length - 1; fi >= 0; fi--) {
+      var f = AMBIENT_LIGHT._flares[fi];
+      f.life -= delta;
+      if (f.life <= 0) {
+        AMBIENT_LIGHT._flares.splice(fi, 1);
+      } else {
+        var progress = 1 - (f.life / f.maxLife);
+        f.radius = f.maxRadius * progress;
+      }
+    }
+  },
+
+  draw: function(g, time, camX, reduceFlash) {
+    if (!g) return;
+    var qualityScale = PERF._quality < 0.75 ? 0.5 : 1.0;
+    if (PERF._quality < 0.5) qualityScale = 0; // disable ambient at very low quality
+
+    // Draw persistent sources
+    if (qualityScale > 0) {
+      for (var si = 0; si < AMBIENT_LIGHT._sources.length; si++) {
+        if (qualityScale < 1 && si % 2 !== 0) continue; // skip every other at low quality
+        var s = AMBIENT_LIGHT._sources[si];
+        var screenX = s.x - camX;
+        if (screenX < -s.radius * 2 || screenX > W + s.radius * 2) continue; // cull offscreen
+        var pulse = s.baseAlpha + Math.sin(time * s.pulseSpeed + si * 1.7) * s.pulseRange;
+        // Outer glow
+        g.fillStyle(s.color, pulse * 0.3);
+        g.fillCircle(screenX, s.y, s.radius * 1.5);
+        // Inner glow
+        g.fillStyle(s.color, pulse * 0.6);
+        g.fillCircle(screenX, s.y, s.radius);
+        // Core
+        g.fillStyle(s.color, pulse);
+        g.fillCircle(screenX, s.y, s.radius * 0.4);
+      }
+    }
+
+    // Draw flares (always render, guarded by reduceFlash)
+    if (!reduceFlash) {
+      for (var fli = 0; fli < AMBIENT_LIGHT._flares.length; fli++) {
+        var fl = AMBIENT_LIGHT._flares[fli];
+        var flScreenX = fl.x - camX;
+        var flAlpha = fl.life / fl.maxLife;
+        g.fillStyle(fl.color, flAlpha * 0.3);
+        g.fillCircle(flScreenX, fl.y, fl.radius * 1.5);
+        g.fillStyle(fl.color, flAlpha * 0.15);
+        g.fillCircle(flScreenX, fl.y, fl.radius);
+      }
+    }
+  }
+};
+
+// ── BROADCAST STATE (Round 10: The Complete Broadcast) ───────
+// The game is a broadcast signal. Your behavior determines its integrity.
+var BROADCAST_STATE = {
+  signal: 1.0,       // 0.1 (destroyed) to 1.0 (pristine)
+  _current: 1.0,
+  _target: 1.0,
+  _channelIdTimer: 0,
+  _channelIdInterval: 120000, // 120 seconds between channel IDs
+  _channelIdShown: false,
+
+  update: function(behavior, mood, delta, time) {
+    var bInfo = getBehaviorIntensity(behavior);
+    var chaosWeight = bInfo.dominant === 'chaos' ? bInfo.intensity * 0.6 : 0;
+    var complianceWeight = bInfo.dominant === 'compliance' ? bInfo.intensity * 0.4 : 0;
+    var moodAlarm = (mood && mood.effect === 'alarm') ? 0.15 : 0;
+
+    BROADCAST_STATE._target = Math.max(0.1, Math.min(1.0, 1.0 - chaosWeight - moodAlarm + complianceWeight));
+    // Smooth lerp toward target
+    BROADCAST_STATE._current += (BROADCAST_STATE._target - BROADCAST_STATE._current) * 0.001 * delta;
+    BROADCAST_STATE.signal = BROADCAST_STATE._current;
+
+    // Channel ID timer
+    BROADCAST_STATE._channelIdTimer += delta;
+    if (BROADCAST_STATE._channelIdTimer >= BROADCAST_STATE._channelIdInterval) {
+      BROADCAST_STATE._channelIdTimer = 0;
+      BROADCAST_STATE._channelIdShown = true;
+    }
+  },
+
+  // Returns multipliers for other systems
+  getParams: function() {
+    var s = BROADCAST_STATE.signal;
+    return {
+      grainMult: 2.0 - s,              // low signal = more grain (1.0-1.9x)
+      tearMult: Math.max(0.3, s),       // low signal = more tears (faster interval)
+      transitionGlitchBias: 1.0 - s,    // low signal = more glitchy transitions
+      lightFlicker: s < 0.5 ? 0.3 : 0,  // low signal = light stutter
+      colorWarmth: (1.0 - s) * 0.04     // low signal = warm amber push
+    };
+  },
+
+  // Draw channel identification card
+  drawChannelId: function(g, scene, caseNumber, moodName) {
+    if (!BROADCAST_STATE._channelIdShown) return;
+    var s = BROADCAST_STATE.signal;
+    // Card opacity depends on signal
+    var cardAlpha = 0.7 + (1 - s) * 0.2;
+    g.fillStyle(0x1a1a2e, cardAlpha);
+    g.fillRect(W * 0.15, H * 0.35, W * 0.7, H * 0.3);
+    g.lineStyle(1, 0xffd700, 0.5 * s);
+    g.strokeRect(W * 0.15, H * 0.35, W * 0.7, H * 0.3);
+    // Low signal = glitch the card
+    if (s < 0.5 && Math.random() < 0.3) {
+      g.fillStyle(0xffffff, 0.08);
+      g.fillRect(W * 0.15, H * 0.35 + Math.random() * H * 0.3, W * 0.7, 2);
+    }
+    // Auto-dismiss after 1.5s (tracked externally via delayedCall)
+  }
+};
+
+// ── ENVIRONMENTAL FX (Round 6: Environmental Storytelling) ───
+// Zone-specific ambient overlays that tell the story of each space
+var ENV_FX = {
+  _effects: [],
+
+  register: function(zoneType, xStart, xEnd) {
+    ENV_FX._effects.push({ zoneType: zoneType, xStart: xStart, xEnd: xEnd, _particles: [] });
+  },
+
+  clear: function() { ENV_FX._effects = []; },
+
+  update: function(delta, time, camX) {
+    for (var ei = 0; ei < ENV_FX._effects.length; ei++) {
+      var eff = ENV_FX._effects[ei];
+      // Only update if camera overlaps this zone
+      if (camX + W < eff.xStart || camX > eff.xEnd) continue;
+
+      if (eff.zoneType === 'dream' || eff.zoneType === 'garden' || eff.zoneType === 'recovery') {
+        // Fog wisps — gentle drifting white rects
+        if (eff._particles.length < 5 && Math.random() < 0.02) {
+          eff._particles.push({ x: eff.xStart + Math.random() * (eff.xEnd - eff.xStart), y: H * 0.7 + Math.random() * 40, w: 3 + Math.random() * 6, speed: 8 + Math.random() * 12, alpha: 0 });
+        }
+      } else if (eff.zoneType === 'lesson' || eff.zoneType === 'testing') {
+        // Paper flutter — small rects drifting down diagonally
+        if (eff._particles.length < 3 && Math.random() < 0.01) {
+          eff._particles.push({ x: eff.xStart + Math.random() * (eff.xEnd - eff.xStart), y: H * 0.1, w: 4, speed: 15 + Math.random() * 10, alpha: 0, vy: 20 + Math.random() * 10 });
+        }
+      } else if (eff.zoneType === 'rupture' || eff.zoneType === 'maze' || eff.zoneType === 'pharmacy') {
+        // Heat shimmer — horizontal wobble lines at ground level
+        // No particles needed — drawn directly
+      } else if (eff.zoneType === 'afterglow' || eff.zoneType === 'lawn') {
+        // Data rain — ascending teal dots
+        if (eff._particles.length < 8 && Math.random() < 0.03) {
+          eff._particles.push({ x: eff.xStart + Math.random() * (eff.xEnd - eff.xStart), y: H * 0.8 + Math.random() * 40, speed: -25 - Math.random() * 15, alpha: 0 });
+        }
+      }
+
+      // Update particles
+      var dt = delta / 1000;
+      for (var pi = eff._particles.length - 1; pi >= 0; pi--) {
+        var p = eff._particles[pi];
+        p.alpha = Math.min(p.alpha + dt * 2, 0.06);
+        if (eff.zoneType === 'dream' || eff.zoneType === 'garden' || eff.zoneType === 'recovery') {
+          p.x += p.speed * dt;
+          if (p.x > eff.xEnd + 20) eff._particles.splice(pi, 1);
+        } else if (eff.zoneType === 'lesson' || eff.zoneType === 'testing') {
+          p.x += p.speed * dt * 0.5;
+          p.y += (p.vy || 20) * dt;
+          if (p.y > H * 0.85) eff._particles.splice(pi, 1);
+        } else if (eff.zoneType === 'afterglow' || eff.zoneType === 'lawn') {
+          p.y += p.speed * dt;
+          if (p.y < H * 0.05) eff._particles.splice(pi, 1);
+        }
+      }
+    }
+  },
+
+  draw: function(g, time, camX) {
+    for (var ei = 0; ei < ENV_FX._effects.length; ei++) {
+      var eff = ENV_FX._effects[ei];
+      if (camX + W < eff.xStart || camX > eff.xEnd) continue;
+
+      // Draw particles
+      for (var pi = 0; pi < eff._particles.length; pi++) {
+        var p = eff._particles[pi];
+        var sx = p.x - camX;
+        if (eff.zoneType === 'dream' || eff.zoneType === 'garden' || eff.zoneType === 'recovery') {
+          g.fillStyle(0xffffff, p.alpha);
+          g.fillRect(sx, p.y, p.w, 2);
+        } else if (eff.zoneType === 'lesson' || eff.zoneType === 'testing') {
+          g.fillStyle(0xffd700, p.alpha);
+          g.fillRect(sx, p.y, p.w || 4, 3);
+        } else if (eff.zoneType === 'afterglow' || eff.zoneType === 'lawn') {
+          g.fillStyle(0x66ccaa, p.alpha + 0.02);
+          g.fillRect(sx, p.y, 1, 3);
+        }
+      }
+
+      // Heat shimmer for rupture-type zones
+      if (eff.zoneType === 'rupture' || eff.zoneType === 'maze' || eff.zoneType === 'pharmacy') {
+        for (var shi = 0; shi < 3; shi++) {
+          var shimY = H * 0.83 + shi * 6;
+          var shimX = Math.sin(time * 0.004 + shi * 2) * 4;
+          g.fillStyle(0xff6b35, 0.03);
+          g.fillRect(shimX, shimY, W, 1);
+        }
+      }
+    }
+  }
+};
+
+// ── COLOR GRADING (Round 8) ──────────────────────────────────
+// Per-zone color treatment — each zone feels like a different broadcast era
+var COLOR_GRADE = {
+  // DemoScene zones
+  dream:     { overlay: 0x221100, alpha: 0.03, satShift: -0.1 },
+  lesson:    { overlay: 0x332200, alpha: 0.04, satShift: -0.15 },
+  rupture:   { overlay: 0x110022, alpha: 0.05, satShift: 0.1 },
+  afterglow: { overlay: 0x002211, alpha: 0.03, satShift: -0.2 },
+  // World2 zones
+  garden:    { overlay: 0x112200, alpha: 0.03, satShift: -0.05 },
+  testing:   { overlay: 0x222200, alpha: 0.04, satShift: -0.1 },
+  maze:      { overlay: 0x220011, alpha: 0.05, satShift: 0.05 },
+  lawn:      { overlay: 0x001122, alpha: 0.03, satShift: -0.15 },
+  // World3 zones
+  waiting:    { overlay: 0x001133, alpha: 0.04, satShift: -0.1 },
+  diagnostic: { overlay: 0x002233, alpha: 0.04, satShift: -0.05 },
+  pharmacy:   { overlay: 0x220033, alpha: 0.05, satShift: 0.05 },
+  recovery:   { overlay: 0x003322, alpha: 0.03, satShift: -0.2 },
+
+  _currentAlpha: 0,
+  _targetAlpha: 0,
+  _currentColor: 0x000000,
+  _targetColor: 0x000000,
+
+  setZone: function(zoneType) {
+    var grade = COLOR_GRADE[zoneType] || { overlay: 0x000000, alpha: 0, satShift: 0 };
+    COLOR_GRADE._targetAlpha = grade.alpha;
+    COLOR_GRADE._targetColor = grade.overlay;
+  },
+
+  update: function(delta) {
+    // Lerp alpha toward target
+    var lerpSpeed = 0.003;
+    COLOR_GRADE._currentAlpha += (COLOR_GRADE._targetAlpha - COLOR_GRADE._currentAlpha) * lerpSpeed * delta;
+    COLOR_GRADE._currentColor = COLOR_GRADE._targetColor; // instant color change, alpha lerps
+  },
+
+  draw: function(g) {
+    if (COLOR_GRADE._currentAlpha > 0.005) {
+      g.fillStyle(COLOR_GRADE._currentColor, COLOR_GRADE._currentAlpha);
+      g.fillRect(0, 0, W, H);
+    }
+  }
+};
+
+// ── INSTITUTIONAL TRANSITIONS (Round 4) ──────────────────────
+// Themed scene transitions that replace fade-to-black
+var TRANSITIONS = {
+  _active: false,
+  _phase: 0,
+  _timer: 0,
+  _type: 'fade',
+  _g: null,
+  _texts: [],
+  _onMidpoint: null,
+  _onComplete: null,
+  _scene: null,
+
+  start: function(scene, type, opts, onMidpoint, onComplete) {
+    if (TRANSITIONS._active) return;
+    opts = opts || {};
+    TRANSITIONS._active = true;
+    TRANSITIONS._phase = 0;
+    TRANSITIONS._timer = 0;
+    TRANSITIONS._type = type || 'fade';
+    TRANSITIONS._onMidpoint = onMidpoint;
+    TRANSITIONS._onComplete = onComplete;
+    TRANSITIONS._scene = scene;
+    TRANSITIONS._texts = [];
+    if (!TRANSITIONS._g) {
+      TRANSITIONS._g = scene.add.graphics().setScrollFactor(0).setDepth(250);
+    }
+    TRANSITIONS._g.clear().setAlpha(1);
+    // Start the update loop
+    TRANSITIONS._runFrame(scene);
+  },
+
+  _runFrame: function(scene) {
+    if (!TRANSITIONS._active) return;
+    scene.time.delayedCall(16, function() {
+      TRANSITIONS._update(16);
+      TRANSITIONS._draw();
+      TRANSITIONS._runFrame(scene);
+    });
+  },
+
+  _update: function(delta) {
+    TRANSITIONS._timer += delta;
+    var t = TRANSITIONS._timer;
+    var type = TRANSITIONS._type;
+
+    if (type === 'glitch') {
+      // Phase 0: 0-400ms tear buildup, Phase 1: 400-600ms flash, Phase 2: 600-1000ms clear
+      if (TRANSITIONS._phase === 0 && t >= 400) {
+        TRANSITIONS._phase = 1;
+        if (TRANSITIONS._onMidpoint) TRANSITIONS._onMidpoint();
+      }
+      if (TRANSITIONS._phase === 1 && t >= 600) { TRANSITIONS._phase = 2; }
+      if (t >= 1000) { TRANSITIONS._finish(); }
+
+    } else if (type === 'vhs_track') {
+      // Phase 0: 0-600ms tracking bars, Phase 1: 600-1000ms static+text, Phase 2: 1000-1500ms clear
+      if (TRANSITIONS._phase === 0 && t >= 600) {
+        TRANSITIONS._phase = 1;
+        if (TRANSITIONS._onMidpoint) TRANSITIONS._onMidpoint();
+      }
+      if (TRANSITIONS._phase === 1 && t >= 1000) { TRANSITIONS._phase = 2; }
+      if (t >= 1500) { TRANSITIONS._finish(); }
+
+    } else if (type === 'stamp') {
+      // Phase 0: 0-200ms dim, Phase 1: 200-500ms stamp, Phase 2: 500-900ms fade
+      if (TRANSITIONS._phase === 0 && t >= 200) {
+        TRANSITIONS._phase = 1;
+        if (TRANSITIONS._onMidpoint) TRANSITIONS._onMidpoint();
+      }
+      if (TRANSITIONS._phase === 1 && t >= 500) { TRANSITIONS._phase = 2; }
+      if (t >= 900) { TRANSITIONS._finish(); }
+
+    } else if (type === 'standby') {
+      // Phase 0: 0-200ms fade to card, Phase 1: 200-1000ms hold, Phase 2: 1000-1300ms fade out
+      if (TRANSITIONS._phase === 0 && t >= 200) { TRANSITIONS._phase = 1; }
+      if (TRANSITIONS._phase === 1 && t >= 500) {
+        if (TRANSITIONS._onMidpoint) { TRANSITIONS._onMidpoint(); TRANSITIONS._onMidpoint = null; }
+      }
+      if (TRANSITIONS._phase === 1 && t >= 1000) { TRANSITIONS._phase = 2; }
+      if (t >= 1300) { TRANSITIONS._finish(); }
+
+    } else {
+      // Default fade
+      if (TRANSITIONS._phase === 0 && t >= 400) {
+        TRANSITIONS._phase = 1;
+        if (TRANSITIONS._onMidpoint) TRANSITIONS._onMidpoint();
+      }
+      if (t >= 800) { TRANSITIONS._finish(); }
+    }
+  },
+
+  _draw: function() {
+    var g = TRANSITIONS._g;
+    if (!g) return;
+    g.clear();
+    var t = TRANSITIONS._timer;
+    var type = TRANSITIONS._type;
+    var phase = TRANSITIONS._phase;
+
+    if (type === 'glitch') {
+      if (phase === 0) {
+        // Tear bars building up
+        var tearCount = Math.floor((t / 400) * 10);
+        for (var ti = 0; ti < tearCount; ti++) {
+          var ty = (H / tearCount) * ti + Math.sin(t * 0.01 + ti) * 10;
+          var tearColors = [0xff0000, 0x00ff00, 0x0000ff];
+          g.fillStyle(tearColors[ti % 3], 0.15 + (t / 400) * 0.2);
+          g.fillRect(Math.sin(t * 0.005 + ti * 2) * 8, ty, W, 3 + ti);
+        }
+        // Building blackout
+        g.fillStyle(0x000000, (t / 400) * 0.7);
+        g.fillRect(0, 0, W, H);
+      } else if (phase === 1) {
+        // White flash
+        var flashProgress = (t - 400) / 200;
+        g.fillStyle(0xffffff, 0.8 * (1 - flashProgress));
+        g.fillRect(0, 0, W, H);
+        g.fillStyle(0x000000, 0.5 + flashProgress * 0.5);
+        g.fillRect(0, 0, W, H);
+      } else {
+        // Fade out
+        var fadeProgress = (t - 600) / 400;
+        g.fillStyle(0x000000, 1 - fadeProgress);
+        g.fillRect(0, 0, W, H);
+      }
+
+    } else if (type === 'vhs_track') {
+      if (phase === 0) {
+        // VHS tracking bars scrolling down
+        var barProgress = t / 600;
+        g.fillStyle(0x000000, barProgress * 0.8);
+        g.fillRect(0, 0, W, H);
+        for (var vbi = 0; vbi < 6; vbi++) {
+          var barY = ((t * 0.3 + vbi * 80) % (H + 40)) - 20;
+          g.fillStyle(0xffffff, 0.08 + barProgress * 0.12);
+          g.fillRect(0, barY, W, 25 + Math.sin(t * 0.01 + vbi) * 10);
+        }
+      } else if (phase === 1) {
+        // Static + PLEASE STAND BY
+        g.fillStyle(0x111111, 1);
+        g.fillRect(0, 0, W, H);
+        for (var si = 0; si < 200; si++) {
+          g.fillStyle(0xffffff, Math.random() * 0.3);
+          g.fillRect(Math.floor(Math.random() * W), Math.floor(Math.random() * H), 2, 2);
+        }
+        // Text is drawn by scene after midpoint callback
+      } else {
+        // Clear top-to-bottom
+        var clearProgress = (t - 1000) / 500;
+        var clearY = H * clearProgress;
+        g.fillStyle(0x111111, 1);
+        g.fillRect(0, clearY, W, H - clearY);
+      }
+
+    } else if (type === 'stamp') {
+      if (phase === 0) {
+        // Dim screen
+        g.fillStyle(0x000000, (t / 200) * 0.6);
+        g.fillRect(0, 0, W, H);
+      } else if (phase === 1) {
+        // Stamp visible
+        g.fillStyle(0x000000, 0.6);
+        g.fillRect(0, 0, W, H);
+        // Red stamp border
+        var stampScale = 1.0 + Math.max(0, (500 - t) / 300) * 2;
+        var stampW = 180 * (1 / stampScale);
+        var stampH = 50 * (1 / stampScale);
+        var stampX = (W - stampW) / 2;
+        var stampY = (H - stampH) / 2;
+        g.fillStyle(0x880000, 0.8);
+        g.fillRect(stampX, stampY, stampW, stampH);
+        g.lineStyle(2, 0xff0000, 0.9);
+        g.strokeRect(stampX, stampY, stampW, stampH);
+      } else {
+        // Fade out
+        var sFade = (t - 500) / 400;
+        g.fillStyle(0x000000, 0.6 * (1 - sFade));
+        g.fillRect(0, 0, W, H);
+      }
+
+    } else if (type === 'standby') {
+      if (phase === 0) {
+        // Fade to test card
+        g.fillStyle(0x1a1a2e, t / 200);
+        g.fillRect(0, 0, W, H);
+      } else if (phase === 1) {
+        // TV test card
+        g.fillStyle(0x1a1a2e, 1);
+        g.fillRect(0, 0, W, H);
+        // Color bars
+        var barColors = [0xffffff, 0xffff00, 0x00ffff, 0x00ff00, 0xff00ff, 0xff0000, 0x0000ff];
+        var barW = Math.ceil(W / barColors.length);
+        for (var cbi = 0; cbi < barColors.length; cbi++) {
+          g.fillStyle(barColors[cbi], 0.7);
+          g.fillRect(cbi * barW, H * 0.2, barW, H * 0.5);
+        }
+        // Center text area
+        g.fillStyle(0x000000, 0.8);
+        g.fillRect(W * 0.2, H * 0.38, W * 0.6, H * 0.24);
+        g.lineStyle(1, 0xffd700, 0.5);
+        g.strokeRect(W * 0.2, H * 0.38, W * 0.6, H * 0.24);
+      } else {
+        // Fade out
+        var sbFade = (t - 1000) / 300;
+        g.fillStyle(0x1a1a2e, 1 - sbFade);
+        g.fillRect(0, 0, W, H);
+      }
+
+    } else {
+      // Default fade
+      if (phase === 0) {
+        g.fillStyle(0x000000, Math.min(t / 400, 1));
+        g.fillRect(0, 0, W, H);
+      } else {
+        g.fillStyle(0x000000, Math.max(1 - (t - 400) / 400, 0));
+        g.fillRect(0, 0, W, H);
+      }
+    }
+  },
+
+  _finish: function() {
+    TRANSITIONS._active = false;
+    if (TRANSITIONS._g) { TRANSITIONS._g.clear().setAlpha(0); }
+    for (var ti = 0; ti < TRANSITIONS._texts.length; ti++) {
+      if (TRANSITIONS._texts[ti] && TRANSITIONS._texts[ti].destroy) TRANSITIONS._texts[ti].destroy();
+    }
+    TRANSITIONS._texts = [];
+    if (TRANSITIONS._onComplete) TRANSITIONS._onComplete();
+  }
+};
+
 // ── RECEIPT 2.0 — PROCEDURAL RECEIPT ENGINE ─────────────────
 // Template engine, archetype titles, near-miss callouts, counterfactuals
 
@@ -1208,6 +1821,56 @@ var MOOD_POOL = [
 function getMoodForCase(caseStr) {
   var rng = CASE_SEED.rng(caseStr);
   return MOOD_POOL[Math.floor(rng() * MOOD_POOL.length)];
+}
+
+// ── MOOD VISUAL PARAMETERS ──
+// Maps mood effect strings to visual modifiers for screen overlays, grain, and PostFX
+var MOOD_VISUALS = {
+  none:    { tintColor: 0x000000, tintAlpha: 0.0,  grainMult: 1.0, bloomStr: 1.15, vignetteRadius: 0.88, vignetteStr: 0.38 },
+  dim:     { tintColor: 0x000011, tintAlpha: 0.08, grainMult: 1.4, bloomStr: 1.05, vignetteRadius: 0.82, vignetteStr: 0.50 },
+  soft:    { tintColor: 0x110022, tintAlpha: 0.04, grainMult: 0.6, bloomStr: 1.25, vignetteRadius: 0.90, vignetteStr: 0.30 },
+  sterile: { tintColor: 0xdddddd, tintAlpha: 0.03, grainMult: 0.3, bloomStr: 1.30, vignetteRadius: 0.92, vignetteStr: 0.20 },
+  alarm:   { tintColor: 0x330000, tintAlpha: 0.06, grainMult: 1.8, bloomStr: 1.10, vignetteRadius: 0.80, vignetteStr: 0.45 },
+  clean:   { tintColor: 0x001100, tintAlpha: 0.02, grainMult: 0.5, bloomStr: 1.15, vignetteRadius: 0.88, vignetteStr: 0.35 },
+  bright:  { tintColor: 0x111100, tintAlpha: 0.03, grainMult: 0.7, bloomStr: 1.20, vignetteRadius: 0.92, vignetteStr: 0.28 }
+};
+
+function getMoodVisuals(mood) {
+  if (!mood || !mood.effect) return MOOD_VISUALS.none;
+  return MOOD_VISUALS[mood.effect] || MOOD_VISUALS.none;
+}
+
+// ── BEHAVIOR-DRIVEN VISUAL FX (Round 3: The Behavior Meter) ──
+// Maps dominant behavior axis to real-time screen effects
+var BEHAVIOR_FX = {
+  chaos:      { grainMult: 1.5, tearFreqMult: 2.0, scanWobble: true,  tintColor: 0xff0000, tintAlpha: 0.02 },
+  compliance: { grainMult: 0.4, tearFreqMult: 0.0, scanWobble: false, tintColor: 0xffffff, tintAlpha: 0.02 },
+  grace:      { grainMult: 0.7, tearFreqMult: 0.3, scanWobble: false, tintColor: 0xffd700, tintAlpha: 0.01 },
+  curiosity:  { grainMult: 1.1, tearFreqMult: 0.8, scanWobble: false, tintColor: 0x00ffff, tintAlpha: 0.01 },
+  efficiency: { grainMult: 0.6, tearFreqMult: 0.5, scanWobble: false, tintColor: 0x44ff44, tintAlpha: 0.01 },
+  intuition:  { grainMult: 0.9, tearFreqMult: 0.6, scanWobble: false, tintColor: 0xcc88ff, tintAlpha: 0.01 }
+};
+
+function getBehaviorIntensity(behavior) {
+  if (!behavior) return { dominant: 'compliance', intensity: 0, secondary: 'compliance' };
+  var axes = ['compliance', 'intuition', 'curiosity', 'grace', 'chaos', 'efficiency'];
+  var total = 0;
+  var maxVal = 0;
+  var dominant = 'compliance';
+  var secondVal = 0;
+  var secondary = 'compliance';
+  for (var i = 0; i < axes.length; i++) {
+    var v = behavior[axes[i]] || 0;
+    total += v;
+    if (v > maxVal) {
+      secondVal = maxVal; secondary = dominant;
+      maxVal = v; dominant = axes[i];
+    } else if (v > secondVal) {
+      secondVal = v; secondary = axes[i];
+    }
+  }
+  var intensity = total > 0 ? Math.min(maxVal / (total + 1), 1.0) : 0;
+  return { dominant: dominant, intensity: intensity, secondary: secondary, total: total };
 }
 
 // ── BEHAVIORAL REMIX LABELS ──
@@ -6291,6 +6954,11 @@ DemoScene.prototype.create = function() {
   this._lastZoneId = 'A';
   this._audioState = { current: 'dream', intensity: 0, recovering: false, receipt: false };
 
+  // ── REGISTER ENV_FX ZONES (Round 6: Environmental Storytelling) ──
+  for (var ezi = 0; ezi < this.zones.length; ezi++) {
+    ENV_FX.register(this.zones[ezi].type, this.zones[ezi].xStart, this.zones[ezi].xEnd);
+  }
+
   // ── TELEMETRY EVENT LOG (playtest analysis — tracks key moments) ──
   this._telemetry = {
     events: [],
@@ -6374,7 +7042,14 @@ DemoScene.prototype.create = function() {
 
   // ── R10: CASE SEED + MOOD + REMIX ──
   this._caseNumber = CASE_SEED.generate(this._runCount, this.behavior);
+  window._cactusEdCaseNumber = this._caseNumber; // Share case across scenes for mood continuity
+  // Restore broadcast signal from previous scene (Round 10)
+  if (window._cactusEdBroadcastSignal !== undefined) {
+    BROADCAST_STATE.signal = window._cactusEdBroadcastSignal;
+    BROADCAST_STATE._current = window._cactusEdBroadcastSignal;
+  }
   this._mood = getMoodForCase(this._caseNumber);
+  this._moodVisuals = getMoodVisuals(this._mood);
   this._remixLabel = getRemixLabel(this.behavior);
 
   // ── LO-FI CIVIC MUZAK (Web Audio — zone-reactive ambient tones) ──
@@ -6641,6 +7316,11 @@ DemoScene.prototype.create = function() {
   this.aloe = 200;
   this.health = 4;
   this.maxHealth = 4;
+
+  // ── REGISTER PICKUP LIGHT SOURCES (Round 5: Ambient Pulse) ──
+  for (var pli = 0; pli < this.pickups.length; pli++) {
+    AMBIENT_LIGHT.register(this.pickups[pli].x, this.pickups[pli].y, 12, 0x00e676, 'pickup');
+  }
 
   // ── R02: INSTITUTIONAL SIGNAGE TUTORIAL (first playthrough only) ──
   this._signs = [];
@@ -7380,6 +8060,18 @@ DemoScene.prototype.create = function() {
 
   // HUD
   this.hudG = this.add.graphics().setScrollFactor(0).setDepth(60);
+
+  // ── AMBIENT LIGHT LAYER (Round 5: Ambient Pulse) ──
+  this._lightG = this.add.graphics().setScrollFactor(0).setDepth(76);
+  AMBIENT_LIGHT.clear();
+
+  // ── ENVIRONMENTAL FX LAYER (Round 6: Environmental Storytelling) ──
+  this._envG = this.add.graphics().setScrollFactor(0).setDepth(77);
+  ENV_FX.clear();
+
+  // ── COLOR GRADE LAYER (Round 8: Color Grading) ──
+  this._gradeG = this.add.graphics().setScrollFactor(0).setDepth(90);
+
   this.aloeText = this.add.text(8, 6, '', {
     fontFamily: 'Press Start 2P, monospace', fontSize: '11px',
     color: '#00e676', stroke: '#000000', strokeThickness: 3
@@ -7552,10 +8244,11 @@ DemoScene.prototype.create = function() {
   this._tearTimer = 0;
   this._tearInterval = 18000 + Math.random() * 12000; // 18-30s
 
-  // Vignette + PostFX
+  // Vignette + PostFX (mood-driven parameters — Round 1: Mood Lighting)
+  var moodVis = getMoodVisuals(this._mood);
   if (IS_WEBGL) {
-    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.88, 0.38);
-    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 1.1, 1.15);
+    this.cameras.main.postFX.addVignette(0.5, 0.5, moodVis.vignetteRadius, moodVis.vignetteStr);
+    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, moodVis.bloomStr, moodVis.bloomStr + 0.05);
   } else {
     // Canvas fallback — manual vignette
     this.vignetteG = this.add.graphics().setScrollFactor(0).setDepth(92);
@@ -7569,6 +8262,15 @@ DemoScene.prototype.create = function() {
     this.vignetteG.fillRect(0, 0, 12, H);
     this.vignetteG.fillRect(W - 12, 0, 12, H);
   }
+
+  // ── MOOD OVERLAY (Round 1: Mood Lighting) ──
+  // Colored full-screen tint driven by institutional mood
+  this._moodOverlayG = this.add.graphics().setScrollFactor(0).setDepth(91);
+  if (moodVis.tintAlpha > 0) {
+    this._moodOverlayG.fillStyle(moodVis.tintColor, moodVis.tintAlpha);
+    this._moodOverlayG.fillRect(0, 0, W, H);
+  }
+  this._moodVisuals = moodVis;
 
   // ── MYSTICAL FONZ CAT — floats by on a cig smoke cloud every ~40s ──
   this.fonzCatG = this.add.graphics().setScrollFactor(0).setDepth(55);
@@ -7626,6 +8328,11 @@ DemoScene.prototype._flash = function(msg, dur) {
   var flashTxt = ensureSceneFlashText(this);
   if (!flashTxt) return;
   flashTxt.setText(msg).setAlpha(1);
+  // ── STAMP-IN FLASH (Round 2: The Filing Cabinet) ──
+  if (!(this._accessibility && this._accessibility.reduceFlash)) {
+    flashTxt.setScale(1.3);
+    this.tweens.add({ targets: flashTxt, scaleX: 1, scaleY: 1, duration: 150, ease: 'Back.easeOut' });
+  }
   this.tweens.add({ targets: flashTxt, alpha: 0, duration: dur || 2000, delay: 800 });
 };
 
@@ -7645,6 +8352,7 @@ DemoScene.prototype._triggerDeath = function(customMsg) {
   if (this._dying) return; // prevent double-fire
   this._dying = true;
   this._playSfx('death');
+  AMBIENT_LIGHT.flare(this.ep.x, this.ep.y, 0xff0000, 300); // Round 5: red death flare
 
   // Log telemetry
   var dZone = this._currentZone ? this._currentZone.name : 'UNKNOWN';
@@ -7844,6 +8552,16 @@ DemoScene.prototype._triggerDeath = function(customMsg) {
     wordWrap: { width: W - 110 }
   }).setScrollFactor(0).setDepth(86);
 
+  // ── SLIDE-IN ANIMATION (Round 2: The Filing Cabinet) ──
+  if (!(this._accessibility && this._accessibility.reduceFlash)) {
+    this._lessonCardG.setAlpha(0);
+    titleTxt.setAlpha(0);
+    bodyTxt.setAlpha(0);
+    this.tweens.add({ targets: this._lessonCardG, alpha: 1, duration: 200, ease: 'Cubic.easeOut' });
+    ANIM_UI.stampIn(this, titleTxt, 100);
+    ANIM_UI.stampIn(this, bodyTxt, 200);
+  }
+
   // Auto-dismiss after 2.5s
   this.time.delayedCall(2500, function() {
     self.tweens.add({
@@ -7873,6 +8591,7 @@ DemoScene.prototype._registerKill = function() {
   if (this._killCombo > this._telemetry.maxKillCombo) this._telemetry.maxKillCombo = this._killCombo;
   this._logEvent('kill', 'combo:' + this._killCombo);
   this._playSfx('kill', { intensity: Math.min(1 + this._killCombo * 0.1, 1.5) });
+  AMBIENT_LIGHT.flare(this.ep.x, this.ep.y, 0xffd700, 400); // Round 5: gold kill flare
 
   // ── R01 JUICE: Hit-stop freeze + screen shake on kills ──
   var combo = this._killCombo;
@@ -7997,6 +8716,45 @@ DemoScene.prototype._showReceipt = function() {
 
   // Full receipt terminal overlay
   var rG = this.add.graphics().setScrollFactor(0).setDepth(100);
+
+  // ── CRT POWER-ON ANIMATION (Round 9: The Printing Ceremony) ──
+  // Phase 1: white dot expands to horizontal line, then full screen
+  if (!(this._accessibility && this._accessibility.reduceFlash)) {
+    var rcSelf = this;
+    rG.fillStyle(0x000000, 1);
+    rG.fillRect(0, 0, W, H);
+    // White dot → line → expand
+    var rcPowerG = this.add.graphics().setScrollFactor(0).setDepth(105);
+    var rcPowerTimer = 0;
+    var rcPowerInterval = this.time.addEvent({
+      delay: 16, loop: true,
+      callback: function() {
+        rcPowerTimer += 16;
+        rcPowerG.clear();
+        if (rcPowerTimer < 150) {
+          // White dot
+          var dotSize = Math.min(rcPowerTimer / 150, 1) * 3;
+          rcPowerG.fillStyle(0xffffff, 0.9);
+          rcPowerG.fillCircle(W / 2, H / 2, dotSize);
+        } else if (rcPowerTimer < 300) {
+          // Horizontal line expanding
+          var lineW = ((rcPowerTimer - 150) / 150) * W;
+          rcPowerG.fillStyle(0xffffff, 0.8);
+          rcPowerG.fillRect((W - lineW) / 2, H / 2 - 1, lineW, 2);
+        } else if (rcPowerTimer < 500) {
+          // Vertical expand
+          var expandH = ((rcPowerTimer - 300) / 200) * H;
+          rcPowerG.fillStyle(0xffffff, 0.6 * (1 - (rcPowerTimer - 300) / 200));
+          rcPowerG.fillRect(0, (H - expandH) / 2, W, expandH);
+        } else {
+          // Done — clean up
+          rcPowerG.destroy();
+          rcPowerInterval.remove();
+        }
+      }
+    });
+  }
+
   // Dark background
   rG.fillStyle(0x020008, 0.95);
   rG.fillRect(0, 0, W, H);
@@ -8039,10 +8797,20 @@ DemoScene.prototype._showReceipt = function() {
     fontFamily: 'Courier New, monospace', fontSize: '10px',
     color: '#888888'
   }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
-  this.add.text(rX + rW / 2, rY + 36, archetype.toUpperCase(), {
+  var archetypeTxt = this.add.text(rX + rW / 2, rY + 36, archetype.toUpperCase(), {
     fontFamily: 'Press Start 2P, monospace', fontSize: '10px',
     color: '#1a0a2e'
   }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(101);
+  // ── ARCHETYPE STAMP-IN (Round 9: The Printing Ceremony) ──
+  if (!(this._accessibility && this._accessibility.reduceFlash)) {
+    ANIM_UI.stampIn(this, archetypeTxt, 600);
+    // Camera micro-shake on archetype reveal
+    if (!(this._accessibility && this._accessibility.reduceShake)) {
+      this.time.delayedCall(600, function() {
+        if (self.cameras && self.cameras.main) self.cameras.main.shake(80, 0.003);
+      });
+    }
+  }
 
   // Divider line
   rG.lineStyle(1, 0x333333, 0.5);
@@ -8720,8 +9488,9 @@ DemoScene.prototype._showReceipt = function() {
             }).setOrigin(0.5).setScrollFactor(0).setDepth(121);
             var showTransLine = function() {
               if (transIdx >= transTexts.length) {
-                self7.cameras.main.fadeOut(800, 0, 0, 0);
-                self7.cameras.main.once('camerafadeoutcomplete', function() {
+                // Round 4: Institutional Transition (W1 → W2)
+                window._cactusEdBroadcastSignal = BROADCAST_STATE.signal; // Round 10: persist signal
+                TRANSITIONS.start(self7, 'vhs_track', {}, function() {
                   try { self7.scene.start('World2'); } catch(e) { window.location.reload(); }
                 });
                 return;
@@ -9658,11 +10427,39 @@ DemoScene.prototype.update = function(time, delta) {
         fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#ffd700',
         stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5).setScrollFactor(0).setDepth(91));
+
+      // ── PAUSE ANIMATION (Round 2: The Filing Cabinet) ──
+      // StampIn each text element with staggered delays
+      if (!(this._accessibility && this._accessibility.reduceFlash)) {
+        for (var ptAnim = 0; ptAnim < this._pauseTexts.length; ptAnim++) {
+          ANIM_UI.stampIn(this, this._pauseTexts[ptAnim], ptAnim * 60);
+        }
+        // Slide the pause background from top
+        this._pauseG.setAlpha(0);
+        this.tweens.add({ targets: this._pauseG, alpha: 1, duration: 250, ease: 'Cubic.easeOut' });
+      }
     } else {
-      // Unpause — clear overlay
-      if (this._pauseG) this._pauseG.clear().setAlpha(0);
-      if (this._pauseEdSprite) { this._pauseEdSprite.destroy(); this._pauseEdSprite = null; }
-      this._clearPauseTexts();
+      // Unpause — animated dismissal (Round 2: The Filing Cabinet)
+      if (!(this._accessibility && this._accessibility.reduceFlash)) {
+        var selfPause = this;
+        if (this._pauseG) {
+          this.tweens.add({ targets: this._pauseG, alpha: 0, duration: 200, ease: 'Cubic.easeIn',
+            onComplete: function() { if (selfPause._pauseG) selfPause._pauseG.clear(); }
+          });
+        }
+        for (var ptOut = 0; ptOut < this._pauseTexts.length; ptOut++) {
+          this.tweens.add({ targets: this._pauseTexts[ptOut], alpha: 0, scaleX: 0.8, scaleY: 0.8,
+            duration: 150, delay: ptOut * 20 });
+        }
+        this.time.delayedCall(300, function() {
+          if (selfPause._pauseEdSprite) { selfPause._pauseEdSprite.destroy(); selfPause._pauseEdSprite = null; }
+          selfPause._clearPauseTexts();
+        });
+      } else {
+        if (this._pauseG) this._pauseG.clear().setAlpha(0);
+        if (this._pauseEdSprite) { this._pauseEdSprite.destroy(); this._pauseEdSprite = null; }
+        this._clearPauseTexts();
+      }
     }
   }
   if (this._paused) {
@@ -10076,10 +10873,68 @@ DemoScene.prototype.update = function(time, delta) {
     this.time.delayedCall(flashDuration, function() { sRef.setAlpha(0); });
   }
 
+  // ── AMBIENT LIGHT UPDATE + DRAW (Round 5: Ambient Pulse) ──
+  if (this._lightG) {
+    this._lightG.clear();
+    var camScrollX = this.cameras.main.scrollX || 0;
+    AMBIENT_LIGHT.update(delta, time, camScrollX);
+    AMBIENT_LIGHT.draw(this._lightG, time, camScrollX, this._accessibility && this._accessibility.reduceFlash);
+  }
+
+  // ── ENVIRONMENTAL FX UPDATE + DRAW (Round 6: Environmental Storytelling) ──
+  if (this._envG && !(this._accessibility && this._accessibility.reduceParticles)) {
+    this._envG.clear();
+    var envCamX = this.cameras.main.scrollX || 0;
+    ENV_FX.update(delta, time, envCamX);
+    ENV_FX.draw(this._envG, time, envCamX);
+  }
+
+  // ── COLOR GRADE UPDATE + DRAW (Round 8: Color Grading) ──
+  if (this._gradeG && zone) {
+    this._gradeG.clear();
+    COLOR_GRADE.setZone(zone.type);
+    COLOR_GRADE.update(delta);
+    COLOR_GRADE.draw(this._gradeG);
+  }
+
+  // ── BROADCAST STATE UPDATE (Round 10: The Complete Broadcast) ──
+  BROADCAST_STATE.update(this.behavior, this._mood, delta, time);
+  var broadcastParams = BROADCAST_STATE.getParams();
+  // Broadcast warmth overlay (low signal pushes warm amber)
+  if (broadcastParams.colorWarmth > 0.005 && this._gradeG) {
+    this._gradeG.fillStyle(0x332200, broadcastParams.colorWarmth);
+    this._gradeG.fillRect(0, 0, W, H);
+  }
+  // Channel ID card (every 120 seconds)
+  if (BROADCAST_STATE._channelIdShown && this._gradeG) {
+    BROADCAST_STATE.drawChannelId(this._gradeG, this, this._caseNumber, this._mood ? this._mood.name : 'STANDARD');
+    // Show channel ID text
+    if (!this._channelIdTxt) {
+      this._channelIdTxt = this.add.text(W / 2, H * 0.42, 'CEHP BROADCAST NETWORK', {
+        fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#ffd700',
+        stroke: '#000000', strokeThickness: 3
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(91);
+      this._channelIdSub = this.add.text(W / 2, H * 0.48, (this._caseNumber || '') + '  |  ' + (this._mood ? this._mood.name : 'STANDARD'), {
+        fontFamily: 'Courier New, monospace', fontSize: '10px', color: '#888888',
+        stroke: '#000000', strokeThickness: 3
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(91);
+      var cidSelf = this;
+      this.time.delayedCall(1500, function() {
+        BROADCAST_STATE._channelIdShown = false;
+        if (cidSelf._channelIdTxt) { cidSelf._channelIdTxt.destroy(); cidSelf._channelIdTxt = null; }
+        if (cidSelf._channelIdSub) { cidSelf._channelIdSub.destroy(); cidSelf._channelIdSub = null; }
+      });
+    }
+  }
+
   // ── WONDER SHOWZEN: SCREEN GRAIN (zone-intensity film noise) ──
   this.grainG.clear();
   // Grain density varies by zone — Dream: light, Rupture: heavy
+  // Mood multiplier from Round 1, Broadcast multiplier from Round 10
+  var moodGrainMult = this._moodVisuals ? this._moodVisuals.grainMult : 1.0;
+  var broadcastGrainMult = broadcastParams ? broadcastParams.grainMult : 1.0;
   var grainCount = zone.type === 'dream' ? 15 : zone.type === 'rupture' ? 50 : zone.type === 'afterglow' ? 10 : 30;
+  grainCount = Math.round(grainCount * moodGrainMult * broadcastGrainMult);
   var grainAlpha = zone.type === 'rupture' ? 0.06 : 0.03;
   for (var gri = 0; gri < grainCount; gri++) {
     var gx = Math.floor(Math.random() * W);
@@ -10107,10 +10962,69 @@ DemoScene.prototype.update = function(time, delta) {
     }
   }
 
+  // ── MOOD: EMERGENCY DRILL ALARM PULSE (Round 1: Mood Lighting) ──
+  if (this._mood && this._mood.effect === 'alarm' && !(this._accessibility && this._accessibility.reduceFlash)) {
+    var alarmPulse = 0.02 + Math.abs(Math.sin(time * 0.003)) * 0.04;
+    this.grainG.fillStyle(0xff0000, alarmPulse);
+    this.grainG.fillRect(0, 0, 20, H);
+    this.grainG.fillRect(W - 20, 0, 20, H);
+    this.grainG.fillRect(0, 0, W, 12);
+    this.grainG.fillRect(0, H - 12, W, 12);
+  }
+
+  // ── BEHAVIOR-DRIVEN VISUAL MODULATION (Round 3: The Behavior Meter) ──
+  var bIntensity = getBehaviorIntensity(this.behavior);
+  if (bIntensity.total > 3 && bIntensity.intensity > 0.3 && !(this._accessibility && this._accessibility.reduceFlash)) {
+    var bScale = (bIntensity.intensity - 0.3) / 0.7; // 0.0-1.0
+    var bfx = BEHAVIOR_FX[bIntensity.dominant] || BEHAVIOR_FX.compliance;
+    // Behavior grain modulation (adds to existing zone grain)
+    var bGrainExtra = Math.round(8 * bfx.grainMult * bScale);
+    if (PERF._quality < 0.75) bGrainExtra = Math.round(bGrainExtra * 0.5);
+    for (var bgi = 0; bgi < bGrainExtra; bgi++) {
+      this.grainG.fillStyle(bfx.tintColor, 0.03 + Math.random() * 0.03);
+      this.grainG.fillRect(Math.floor(Math.random() * W), Math.floor(Math.random() * H), 1 + Math.floor(Math.random() * 2), 1);
+    }
+    // Behavior tint overlay (very subtle colored vignette)
+    if (bScale > 0.3) {
+      var bTintA = bfx.tintAlpha * bScale;
+      this.grainG.fillStyle(bfx.tintColor, bTintA);
+      this.grainG.fillRect(0, 0, 15, H);
+      this.grainG.fillRect(W - 15, 0, 15, H);
+    }
+    // Chaos special: scanline wobble
+    if (bfx.scanWobble && bScale > 0.4) {
+      for (var bwi = 0; bwi < 3; bwi++) {
+        var wobbleY = Math.floor(Math.random() * H);
+        var wobbleX = Math.floor(Math.sin(time * 0.008 + wobbleY * 0.1) * 3 * bScale);
+        this.grainG.fillStyle(0xffffff, 0.04 * bScale);
+        this.grainG.fillRect(wobbleX, wobbleY, W, 1);
+      }
+    }
+    // Grace special: golden shimmer particles
+    if (bIntensity.dominant === 'grace' && bScale > 0.3 && Math.random() < 0.15 * bScale) {
+      if (!(this._accessibility && this._accessibility.reduceParticles)) {
+        SMOKE_POOL.push({
+          x: Math.random() * W + (this.cameras.main.scrollX || 0),
+          y: H * 0.3 + Math.random() * H * 0.5,
+          vx: (Math.random() - 0.5) * 10,
+          vy: -15 - Math.random() * 10,
+          life: 0.6 + Math.random() * 0.4,
+          r: 1 + Math.random(),
+          color: 0xffd700
+        });
+      }
+    }
+  }
+
   // ── WONDER SHOWZEN: SCREEN TEAR / COLOR SHIFT (Rupture zones only) ──
+  // Behavior chaos + broadcast signal modulate tear frequency (Round 3 + 10)
+  var tearFreqMod = broadcastParams ? broadcastParams.tearMult : 1.0;
+  if (bIntensity && bIntensity.dominant === 'chaos' && bIntensity.intensity > 0.3) {
+    tearFreqMod = Math.max(0.3, tearFreqMod - (bIntensity.intensity - 0.3) * 0.5);
+  }
   this._tearTimer += delta;
   this.tearG.clear();
-  if (!canDelayWeirdness(this, 'tear') && zone.type === 'rupture' && this._tearTimer > this._tearInterval) {
+  if (!canDelayWeirdness(this, 'tear') && zone.type === 'rupture' && this._tearTimer > this._tearInterval * tearFreqMod) {
     this._tearTimer = 0;
     this._tearInterval = 18000 + Math.random() * 14000;
     // Brief color overlay flash — deeply unsettling
@@ -11084,8 +11998,15 @@ DemoScene.prototype.update = function(time, delta) {
 
   // ── MOCHI AI ──
   this.mochiG.clear();
+  // ── ROUND 7: Zone-accent enemy halo (The Broadcast Identity) ──
+  var zoneAccentColor = zone ? (zone.type === 'dream' ? 0x88ff88 : zone.type === 'lesson' ? 0xffdd44 : zone.type === 'rupture' ? 0xff4444 : 0x66ccaa) : 0xffffff;
   for (var mi = 0; mi < this.mochiList.length; mi++) {
     var m = this.mochiList[mi];
+    // Zone-accent glow halo for alive enemies (Round 7)
+    if (m.dieT < 0 && !(this._accessibility && this._accessibility.reduceFlash)) {
+      this.mochiG.fillStyle(zoneAccentColor, 0.04 + Math.sin(time * 0.005 + mi) * 0.02);
+      this.mochiG.fillCircle(m.x, m.y - 4, 14);
+    }
     if (m.dieT >= 0) {
       m.dieT += dt;
       if (m.dieT > 0.8) { this.mochiList.splice(mi, 1); mi--; continue; }
@@ -11632,6 +12553,7 @@ DemoScene.prototype.update = function(time, delta) {
       if (pk._sprite) { pk._sprite.destroy(); pk._sprite = null; }
       this.aloe += 30;
       this._playSfx('collect');
+      AMBIENT_LIGHT.flare(pk.x, pk.y, 0x00e676, 500); // Round 5: green pickup flare
       // Collection particles (green burst)
       for (var pci = 0; pci < 6; pci++) {
         SMOKE_POOL.push({
@@ -14416,6 +15338,10 @@ World2Scene.prototype.create = function() {
   this._beaten = false;
   this._runStartTime = Date.now();
 
+  // ── MOOD (Round 1: Mood Lighting — inherit from W1 or generate fresh) ──
+  this._mood = getMoodForCase((window._cactusEdCaseNumber || 'W2-' + Date.now()));
+  this._moodVisuals = getMoodVisuals(this._mood);
+
   // ── WORLD 2 ZONE DEFINITIONS ──
   this._zones = [
     { name: 'ENROLLMENT GARDEN', type: 'garden', xStart: 0, xEnd: 640,
@@ -14626,9 +15552,12 @@ World2Scene.prototype.create = function() {
       // Header
       memoG.fillStyle(0x1a0a2e, 1);
       memoG.fillRect(mX, mY, mW, 22);
-      this.add.text(mX + 8, mY + 5, 'INTEROFFICE MEMO', {
+      var memoHeaderTxt = this.add.text(mX + 8, mY + 5, 'INTEROFFICE MEMO', {
         fontFamily: 'Courier New, monospace', fontSize: '11px', color: '#ffd700'
       }).setScrollFactor(0).setDepth(201);
+      // ── MEMO STAMP-IN (Round 2: The Filing Cabinet) ──
+      ANIM_UI.stampIn(this, memoG, 0);
+      ANIM_UI.stampIn(this, memoHeaderTxt, 80);
       // Body
       var memoLines = ['RE: SUBJECT ED \u2014 POLICY UPDATE', '',
         'Based on your previous evaluation,',
@@ -15097,10 +16026,18 @@ World2Scene.prototype.create = function() {
   this._camLookAhead = 0;
   this._camPeekY = 0;
 
-  // PostFX
+  // PostFX (mood-driven — Round 1: Mood Lighting)
+  var w2MoodVis = this._moodVisuals || MOOD_VISUALS.none;
   if (IS_WEBGL) {
-    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.85, 0.42);
-    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 1.15, 1.2);
+    this.cameras.main.postFX.addVignette(0.5, 0.5, Math.min(w2MoodVis.vignetteRadius, 0.85), Math.max(w2MoodVis.vignetteStr, 0.42));
+    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, w2MoodVis.bloomStr + 0.05, w2MoodVis.bloomStr + 0.10);
+  }
+
+  // ── MOOD OVERLAY (Round 1: Mood Lighting) ──
+  this._moodOverlayG = this.add.graphics().setScrollFactor(0).setDepth(91);
+  if (w2MoodVis.tintAlpha > 0) {
+    this._moodOverlayG.fillStyle(w2MoodVis.tintColor, w2MoodVis.tintAlpha);
+    this._moodOverlayG.fillRect(0, 0, W, H);
   }
 
   applyCertificationAidCheckpoint(this);
@@ -15857,8 +16794,8 @@ World2Scene.prototype.update = function(time, delta) {
               }).setOrigin(0.5).setScrollFactor(0).setDepth(121);
               var showTr = function() {
                 if (trI >= trLines.length) {
-                  selfW2C.cameras.main.fadeOut(800, 0, 0, 0);
-                  selfW2C.cameras.main.once('camerafadeoutcomplete', function() {
+                  // Round 4: Institutional Transition (W2 → W3)
+                  TRANSITIONS.start(selfW2C, 'glitch', {}, function() {
                     try { selfW2C.scene.start('World3'); } catch(e) { window.location.reload(); }
                   });
                   return;
@@ -16581,6 +17518,10 @@ World3Scene.prototype.create = function() {
   this._levelT = 0; this._dying = false; this._beaten = false;
   this._runStartTime = Date.now();
 
+  // ── MOOD (Round 1: Mood Lighting — inherit from W1 or generate fresh) ──
+  this._mood = getMoodForCase((window._cactusEdCaseNumber || 'W3-' + Date.now()));
+  this._moodVisuals = getMoodVisuals(this._mood);
+
   // ── WORLD 3 ZONES ──
   this._zones = [
     { name: 'THE WAITING ROOM', type: 'waiting', xStart: 0, xEnd: 640, bgCol: 0x0e0e14, tintCol: 0x4488cc, tintAlpha: 0.04, lookAhead: 25 },
@@ -16919,10 +17860,18 @@ World3Scene.prototype.create = function() {
   this.cameras.main.setBounds(0, 0, LW, H);
   this.cameras.main.startFollow({ x: 60, y: H / 2 }, false, 0.08, 0.08);
 
-  // PostFX
+  // PostFX (mood-driven — Round 1: Mood Lighting)
+  var w3MoodVis = this._moodVisuals || MOOD_VISUALS.none;
   if (IS_WEBGL) {
-    this.cameras.main.postFX.addVignette(0.5, 0.5, 0.82, 0.45);
-    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, 1.2, 1.25);
+    this.cameras.main.postFX.addVignette(0.5, 0.5, Math.min(w3MoodVis.vignetteRadius, 0.82), Math.max(w3MoodVis.vignetteStr, 0.45));
+    this.cameras.main.postFX.addBloom(0xffffff, 1, 1, w3MoodVis.bloomStr + 0.10, w3MoodVis.bloomStr + 0.15);
+  }
+
+  // ── MOOD OVERLAY (Round 1: Mood Lighting) ──
+  this._moodOverlayG = this.add.graphics().setScrollFactor(0).setDepth(91);
+  if (w3MoodVis.tintAlpha > 0) {
+    this._moodOverlayG.fillStyle(w3MoodVis.tintColor, w3MoodVis.tintAlpha);
+    this._moodOverlayG.fillRect(0, 0, W, H);
   }
 
   applyCertificationAidCheckpoint(this);
@@ -18176,8 +19125,8 @@ World3Scene.prototype._triggerEnding = function() {
                       var pF2 = function() {
                         if (fZ2.isDown) {
                           window._cactusEdRunCount = (window._cactusEdRunCount || 1) + 1;
-                          selfEnd.cameras.main.fadeOut(1200, 0, 0, 0);
-                          selfEnd.cameras.main.once('camerafadeoutcomplete', function() {
+                          // Round 4: Institutional Transition (End → Title)
+                          TRANSITIONS.start(selfEnd, 'standby', {}, function() {
                             try { selfEnd.scene.start('Title'); } catch(e) { window.location.reload(); }
                           });
                         } else { selfEnd.time.delayedCall(80, pF2); }
@@ -18628,15 +19577,15 @@ TitleScene.prototype.update = function(time, delta) {
           ASSIST.count();
         }
         var targetWorld = savedGame.world === 3 ? 'World3' : 'World2';
-        this.cameras.main.fadeOut(600, 0, 0, 0);
+        // Round 4: Institutional Transition (Title cold → saved world)
         var selfCold = this;
-        this.cameras.main.once('camerafadeoutcomplete', function() {
+        TRANSITIONS.start(this, 'vhs_track', {}, function() {
           selfCold.scene.start(targetWorld);
         });
       } else {
-        this.cameras.main.fadeOut(600, 0, 0, 0);
+        // Round 4: Institutional Transition (Title cold open → Demo)
         var selfCold2 = this;
-        this.cameras.main.once('camerafadeoutcomplete', function() {
+        TRANSITIONS.start(this, 'stamp', {}, function() {
           selfCold2.scene.start('Demo');
         });
       }
@@ -18736,14 +19685,14 @@ TitleScene.prototype.update = function(time, delta) {
               }
               var targetWorld = savedGame.world === 3 ? 'World3' : 'World2';
               var selfMenu = this;
-              this.cameras.main.fadeOut(600, 0, 0, 0);
-              this.cameras.main.once('camerafadeoutcomplete', function() {
+              // Round 4: Institutional Transition (Title → saved world)
+              TRANSITIONS.start(this, 'vhs_track', {}, function() {
                 selfMenu.scene.start(targetWorld);
               });
             } else {
+              // Round 4: Institutional Transition (Title menu → Demo)
               var selfMenu2 = this;
-              this.cameras.main.fadeOut(600, 0, 0, 0);
-              this.cameras.main.once('camerafadeoutcomplete', function() {
+              TRANSITIONS.start(this, 'stamp', {}, function() {
                 selfMenu2.scene.start('Demo');
               });
             }
@@ -18751,9 +19700,9 @@ TitleScene.prototype.update = function(time, delta) {
               SAVE.clear();
               window._cactusEdCarryover = null;
               window._cactusEdRunCount = 1;
+              // Round 4: Institutional Transition (Title new game → Demo)
               var selfMenu3 = this;
-              this.cameras.main.fadeOut(600, 0, 0, 0);
-              this.cameras.main.once('camerafadeoutcomplete', function() {
+              TRANSITIONS.start(this, 'stamp', {}, function() {
                 selfMenu3.scene.start('Demo');
               });
             } else if (action === 'controls') {
