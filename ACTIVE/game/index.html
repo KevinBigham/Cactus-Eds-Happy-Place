@@ -818,34 +818,57 @@ var TRANSITIONS = {
     TRANSITIONS._active = false;
     if (TRANSITIONS._g) { try { TRANSITIONS._g.destroy(); } catch(e) {} TRANSITIONS._g = null; }
     opts = opts || {};
-    TRANSITIONS._active = true;
-    TRANSITIONS._phase = 0;
-    TRANSITIONS._timer = 0;
-    TRANSITIONS._type = type || 'fade';
     TRANSITIONS._onMidpoint = onMidpoint;
     TRANSITIONS._onComplete = onComplete;
     TRANSITIONS._scene = scene;
     TRANSITIONS._texts = [];
-    TRANSITIONS._g = scene.add.graphics().setScrollFactor(0).setDepth(250);
-    TRANSITIONS._g.clear().setAlpha(1);
-    // Start the update loop
-    TRANSITIONS._runFrame(scene);
+
+    // Try to create transition graphics — if it fails, fall through to direct callback
+    try {
+      TRANSITIONS._g = scene.add.graphics().setScrollFactor(0).setDepth(250);
+      TRANSITIONS._g.clear().setAlpha(1);
+      TRANSITIONS._active = true;
+      TRANSITIONS._phase = 0;
+      TRANSITIONS._timer = 0;
+      TRANSITIONS._type = type || 'fade';
+      TRANSITIONS._runFrame(scene);
+      // Safety timeout: if transition hasn't fired midpoint in 3s, force it
+      var safetyMidpoint = onMidpoint;
+      scene.time.delayedCall(3000, function() {
+        if (TRANSITIONS._active && safetyMidpoint) {
+          TRANSITIONS._active = false;
+          TRANSITIONS._g = null;
+          safetyMidpoint();
+        }
+      });
+    } catch(e) {
+      // Fallback: skip transition, fire callback directly
+      TRANSITIONS._active = false;
+      TRANSITIONS._g = null;
+      if (onMidpoint) onMidpoint();
+    }
   },
 
   _runFrame: function(scene) {
     if (!TRANSITIONS._active) return;
     // Guard against destroyed scene (scene.start kills the source scene)
-    if (!scene || !scene.time || !scene.sys || !scene.sys.isActive()) {
+    if (!scene || !scene.time) {
       TRANSITIONS._active = false;
       TRANSITIONS._g = null;
       return;
     }
-    scene.time.delayedCall(16, function() {
-      if (!TRANSITIONS._active) return;
-      TRANSITIONS._update(16);
-      TRANSITIONS._draw();
-      TRANSITIONS._runFrame(scene);
-    });
+    try {
+      scene.time.delayedCall(16, function() {
+        if (!TRANSITIONS._active) return;
+        TRANSITIONS._update(16);
+        TRANSITIONS._draw();
+        TRANSITIONS._runFrame(scene);
+      });
+    } catch(e) {
+      // Scene was destroyed — clean up
+      TRANSITIONS._active = false;
+      TRANSITIONS._g = null;
+    }
   },
 
   _fireMidpoint: function() {
