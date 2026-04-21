@@ -1,0 +1,90 @@
+{
+  "role": "Claude Code collaborator for CEHP v2 discovery and implementation planning",
+  "mission": "Absorb the legacy CEHP repo deeply, then help Kevin design a cleaner, stronger next version of the game while preserving the best mechanics, tone, and research from the current project.",
+  "repo_root": "/Users/tkevinbigham/Projects/CEHP",
+  "must_read_first": [
+    "ACTIVE/docs/PROJECT_REDISCOVERY_AUDIT.md",
+    "ACTIVE/docs/CLAUDE_CODE_REDO_HANDOFF.json",
+    "README_Instructions on What To Do.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".codex/CEHP/status.md",
+    ".codex/CEHP/handoff.md",
+    "ACTIVE/GOAT_PLAN/00_GOAT_MASTER_PLAN.md",
+    "ACTIVE/GOAT_PLAN/SYNTHESIS.md",
+    "ACTIVE/knowledge/overflow/supporting-doctrine/DO_NOT_BREAK.md",
+    "ACTIVE/knowledge/overflow/supporting-doctrine/CACTUS_ED_GOAT_GUIDE.md"
+  ],
+  "ground_truth": {
+    "local_runtime_truth": "ACTIVE/game/index.html",
+    "public_repo": "https://github.com/KevinBigham/Cactus-Eds-Happy-Place",
+    "live_url": "https://kevinbigham.github.io/Cactus-Eds-Happy-Place/",
+    "warning": "Do not assume GitHub main or GitHub Pages are fully synchronized with the local workspace."
+  },
+  "verified_current_facts": [
+    "Local authored repo inventory contains 216 files excluding .git, node_modules, and .DS_Store.",
+    "Public GitHub main contains 219 tracked files.",
+    "Local ./scripts/verify-cehp.sh passes as of 2026-04-20.",
+    "Live GitHub Pages plain /index.html still fails with the old renderer.type null crash as of 2026-04-20.",
+    "Legacy CEHP already contains strong movement feel, behavior profiling, receipts, licensing/policy ideas, text banks, and a large GOAT-plan design corpus."
+  ],
+  "core_objective": [
+    "Treat the existing repo as a design/reference library, not as something that must be preserved verbatim.",
+    "Identify what should be preserved at the soul/mechanics/system/content levels.",
+    "Help propose a deliberate CEHP v2 direction instead of drifting into accidental legacy continuation."
+  ],
+  "non_negotiable_salvage_targets": [
+    "Institutional satire voice",
+    "Ed as calm deadpan center",
+    "Cigarette centrality",
+    "Movement feel quality",
+    "Behavior-tracking-to-receipt identity",
+    "The best GOAT-plan and synthesis ideas"
+  ],
+  "things_to_treat_as_reference_only": [
+    "Stale certification-era task docs",
+    "Old process-heavy dashboard/protocol machinery",
+    "Public live-site assumptions in older docs",
+    "Combat and racing archive branches unless explicitly revived"
+  ],
+  "hard_rules": [
+    "Start from the rediscovery audit and verified facts, not from stale docs.",
+    "If you reference the public live site, explicitly note that it is behind the local runtime.",
+    "Do not assume CEHP v2 should stay inside the legacy 19.8k-line file unless Kevin explicitly says so.",
+    "When proposing a new direction, separate salvageable legacy value from legacy baggage.",
+    "Bias toward a clean vertical-slice plan over a giant rewrite of the old runtime."
+  ],
+  "first_outputs_required": [
+    "A concise CEHP v2 north-star statement",
+    "A salvage matrix: keep, reinterpret, archive, discard",
+    "A proposed technical shape for CEHP v2",
+    "A first vertical-slice plan",
+    "Clear notes on which legacy files should be mined for content or mechanics"
+  ],
+  "best_source_banks": {
+    "mechanics": [
+      "ACTIVE/game/index.html"
+    ],
+    "design": [
+      "ACTIVE/GOAT_PLAN/00_GOAT_MASTER_PLAN.md",
+      "ACTIVE/GOAT_PLAN/SYNTHESIS.md",
+      "GAME_REVIEW_AND_GOAT_PLAN.md"
+    ],
+    "doctrine": [
+      "ACTIVE/knowledge/overflow/supporting-doctrine/DO_NOT_BREAK.md",
+      "ACTIVE/knowledge/overflow/supporting-doctrine/CACTUS_ED_GOAT_GUIDE.md"
+    ],
+    "content": [
+      "ARCHIVE/src/world1/text/world1_broadcast_copy.js",
+      "ARCHIVE/src/world1/text/world1_overlay_labels.js",
+      "ARCHIVE/src/world1/text/world1_receipt_templates.js"
+    ],
+    "history": [
+      ".codex/CEHP/changelog.md",
+      "ACTIVE/docs/SPRINT_LOG.md",
+      "ARCHIVE/legacy/quarantine/docs-archive/HANDOFF.md"
+    ]
+  },
+  "tone_for_your_work": "Be direct, practical, and ambitious. Preserve the weirdness that actually matters. Cut process noise. Build toward a better game, not a bigger legacy file."
+}
+

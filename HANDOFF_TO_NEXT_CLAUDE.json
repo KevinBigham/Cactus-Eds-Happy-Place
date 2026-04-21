@@ -1,0 +1,267 @@
+{
+  "handoff_version": "1.0",
+  "handoff_date": "2026-04-20",
+  "handoff_author": "Claude Opus 4.7",
+  "recipient": "Next Claude Code agent working on CEHP rebuild",
+  "director": "Kevin Bigham (tkb1230@gmail.com)",
+  "working_directory": "/Users/tkevinbigham/Projects/CEHP",
+  "github_repo": "https://github.com/KevinBigham/Cactus-Eds-Happy-Place",
+  "live_url": "https://kevinbigham.github.io/Cactus-Eds-Happy-Place/",
+
+  "mission": {
+    "headline": "REBUILD Cactus Ed's Happiest Place using everything in this repo as inspiration/baseline, but start fresh with a cleaner architecture that honors the creative bloodline and exploits the lessons from 10 shipped GOAT rounds.",
+    "kevin_energy": "LEGENDARY SPRINT — Kevin is fired up. Match that energy. Move fast, assume direction, ask forgiveness not permission on reversible calls.",
+    "what_kevin_wants": [
+      "A genuinely great indie platformer, not another prototype",
+      "To exploit the unique moat (silent 6-axis behavioral tracking + procedural receipts)",
+      "To honor the Counterfeit Educational Universe creative bloodline",
+      "To keep the zero-build-step single-HTML-file simplicity",
+      "To make this thing hard to put down AND hard to forget"
+    ],
+    "parallel_worker": "Codex is doing the same compendium/handoff task in parallel. Kevin will give both outputs to the next agent. Expect cross-pollination."
+  },
+
+  "read_first_in_this_order": [
+    "PROJECT_COMPENDIUM.md (at repo root — THE single source of truth, written 2026-04-20)",
+    "CLAUDE.md (root — durable project instructions)",
+    "ACTIVE/knowledge/overflow/supporting-doctrine/DO_NOT_BREAK.md (creative bloodline, 2026-03-09)",
+    "ACTIVE/knowledge/overflow/supporting-doctrine/CACTUS_ED_GOAT_GUIDE.md (sacred constraints)",
+    ".codex/CEHP/status.md (authoritative current state)",
+    ".codex/CEHP/changelog.md (full sprint history)",
+    "ACTIVE/GOAT_PLAN/00_GOAT_MASTER_PLAN.md + SYNTHESIS.md",
+    "ACTIVE/GOAT_PLAN/ROUND_01 through ROUND_10 (spec for each shipped round)",
+    "ACTIVE/docs/NEXT_TASK.md (the ONE active task, if any)",
+    "ACTIVE/docs/AGENTS.md (multi-agent role rules)"
+  ],
+
+  "project_identity": {
+    "name": "Cactus Ed's Happiest Place (CEHP)",
+    "genre": "2D browser platformer (single-file HTML)",
+    "concept": "You play Ed, a cigarette-smoking cactus navigating surreal institutional worlds (orientation bureau, school, medical pavilion). Bureaucratic-absurdist satire. The game silently tracks your playstyle across 6 behavioral axes and generates a personalized 'receipt' that reveals how the institution interpreted your behavior.",
+    "seven_word_version": "Ed is calm. The world is not.",
+    "resolution": "512x448 (SNES-authentic)",
+    "rendering": "Procedural canvas draw calls (fillRect/fillCircle). No sprite sheets.",
+    "current_state": "All 10 GOAT rounds shipped. Corrupted Broadcast visual evolution shipped 2026-03-21. 4 playable scenes. 19,835-line index.html. 3-5 minute total playtime.",
+    "direction": "REBUILD — fresh architecture, honor the creative bloodline, keep the crown jewels, rethink the code structure."
+  },
+
+  "tech_stack": {
+    "runtime": "Phaser 3 via CDN, ES5 JavaScript only, HTML5 Canvas, Web Audio API, localStorage",
+    "no_build_step": true,
+    "no_modules": true,
+    "no_transpilation": true,
+    "no_sprite_sheets": true,
+    "no_audio_files": true,
+    "tooling": "Playwright smoke tests, Node verification scripts, GitHub Pages deploy",
+    "save_schema_key": "cactusEd_save_v1",
+    "save_verify_command": "node ACTIVE/game/scripts/check_save_schema.js"
+  },
+
+  "sacred_constraints_do_not_violate": [
+    "Single HTML file — no build step, no bundler, no npm run to play",
+    "ES5 JavaScript only (no ES6 modules, no arrow functions in hot paths)",
+    "The cigarette is central to Ed's identity — weapon, helicopter (cig-copter), health indicator",
+    "Save compatibility (cactusEd_save_v1) — never break silently, migrate or version-bump",
+    "Institutional satire tone must remain consistent — Ed stays calm, world stays off",
+    "Behavioral tracking stays silent — no visible axis meters during play; the receipt is the reveal",
+    "Browser-playable — if it can't run from a URL, it doesn't ship"
+  ],
+
+  "creative_bloodline": {
+    "source": "ACTIVE/knowledge/overflow/supporting-doctrine/DO_NOT_BREAK.md",
+    "universe": "Counterfeit Educational Universe — the game world is a forgery of educational broadcast. Authentic-looking but slightly off. Signs contradict themselves. Lanyards are suspicious.",
+    "ed_voice_rules": [
+      "Deadpan. Never excited.",
+      "≤ 8 words per line.",
+      "No exclamation marks. Ever.",
+      "Ed is calm. The world is not. The tension is everything."
+    ],
+    "characters": {
+      "cats": "Philosophers. Not cute. They speak in paradoxes. They know things.",
+      "rasta_corp": "Sincere. Not the joke. The only honest institution.",
+      "institutional_enemies": "Safety cones, hall monitors, scantrons, pencils, pills, insurance adjusters. Sincere in their corruption."
+    },
+    "wonder_showzen_texts": ["CONSUME", "ARE YOU REAL?", "BIRTH SCHOOL WORK DEATH"],
+    "aloe_reward_tiers": [5, 15, 8, 50, 80, 300],
+    "world_1_canonical_levels": ["Ed Wakes Up", "Cat Rave", "After Dark", "Hippie Bus Highway", "Mochi HQ"],
+    "no_list": [
+      "No predatory retention (no FOMO timers, no loot boxes, no punishing streaks)",
+      "No breaking character (institutional voice never winks at player)",
+      "No visible behavioral meters",
+      "No tutorial pop-ups that contradict the world's tone"
+    ]
+  },
+
+  "crown_jewels_must_survive_rebuild": {
+    "1_behavioral_tracking": {
+      "description": "Silent 6-axis playstyle tracker: compliance, intuition, curiosity, grace, chaos, efficiency.",
+      "why_its_the_moat": "No other platformer does this. Players don't see axes → organic discovery. Receipts feel personal. Shareability. Replay incentive."
+    },
+    "2_procedural_receipts": {
+      "description": "End-of-world personalized summary generated from ~60 unique flavor texts across 6 axes. Mad-libs style.",
+      "example_grace": "NEAR-MISS COMMENDATION: You avoided harm at the last moment. Harm felt ignored.",
+      "example_chaos": "DISRUPTION REPORT: You solved a problem by breaking it. The problem has been archived as resolved.",
+      "example_curiosity": "UNSCHEDULED INQUIRY: You looked behind the sign. The sign has been coached to feel betrayed."
+    },
+    "3_case_seed_system": {
+      "description": "Every run gets a deterministic identifier: CASE-YYYYMMDD-RUN-AXIS (e.g. CASE-20260420-007-CURIOSITY). Shareable. Replayable."
+    },
+    "4_corrupted_broadcast_aesthetic": {
+      "shipped": "2026-03-21",
+      "description": "Game looks like a corrupted institutional TV broadcast. Scanlines, CRT rolls, chromatic aberration, per-axis color grading (compliance=sterile blue, chaos=magenta bleed, grace=warm amber). Signal glitches.",
+      "why_it_works": "Programmer-art canvas calls stop reading as 'prototype' and start reading as 'intentional lo-fi broadcast.' Biggest perceptual leap in the project."
+    },
+    "5_movement_engine": {
+      "quality": "Celeste-tier. This is the game's strongest asset.",
+      "current_live_constants": {
+        "walkSpeed": 74,
+        "runSpeed": 110,
+        "jumpVel": -275,
+        "coyoteMs": 100,
+        "jumpBufMs": 140,
+        "apexGravityMultiplier": 0.45,
+        "fallGravityMultiplier": 1.15,
+        "groundAccel": 1400,
+        "groundDecel": 2200,
+        "airControl": 0.82
+      },
+      "note_on_drift": "DO_NOT_BREAK.md lists OLDER/DRIFTED constants (walkSpeed 140, jumpVel -520) from 2026-03-09. The live-tuned values above are what players have been validating. Port the live values, not the drifted doctrine ones.",
+      "actions": ["move", "jump", "double jump", "triple jump", "wall slide/jump", "punch", "kick", "spin dash (3-tier charge)", "cig copter", "ground slam", "glide"]
+    },
+    "6_procedural_everything": {
+      "art": "All canvas draw calls (fillRect, fillCircle). 916 draw calls in current index.html.",
+      "audio": "Web Audio oscillators + filters, no samples.",
+      "seeding": "Deterministic via Case Seeds."
+    }
+  },
+
+  "what_to_rethink_in_rebuild": [
+    "Code architecture: 19,835 lines in one file. ES5 + single-file is sacred, but use IIFE modules or explicit section headers for internal structure.",
+    "World length: current worlds are 60-90s each. Expand to 3-5 min each without breaking receipt cadence.",
+    "Progressive ability introduction: Ed starts with 2 actions, institution 'trains' him into the other 11. Diegetic teaching.",
+    "Audio depth: procedural music (Web Audio oscillator-based ambient responding to behavioral state). Never audio files.",
+    "Content templates (Round 10): double down. A new world should take 1 focused sprint.",
+    "UX polish: wall-of-text controls screen → diegetic in-world teaching. Death → a tiny institutional form getting stamped.",
+    "Save schema v2: if new fields arrive, bump to cactusEd_save_v2 with explicit v1→v2 migration."
+  ],
+
+  "what_to_retire": [
+    "ACTIVE/docs/CURRENT_PASS.md (still references Sprint 006)",
+    "ACTIVE/docs/HANDOFF.md per-agent prompts (reference outdated tasks)",
+    "Empty asset scaffolds: ACTIVE/game/art, audio, content, ui (if assets stay procedural)",
+    "Pre-2026-03-20 changelog ALL/ path references (historical, leave as-is, don't retroactively update)"
+  ],
+
+  "multi_agent_workflow": {
+    "agents": {
+      "architect": "ChatGPT 5.4 Pro — design decisions, task definition, spec writing",
+      "builder": "Codex 5.4 — code implementation, diffs",
+      "reviewer": "Claude Code Sonnet 4.6 — code review, validation, save-schema checks",
+      "operations": "Claude Cowork Opus 4.6 — git ops, process, docs",
+      "director": "Kevin Bigham — final judgment, live-URL retesting"
+    },
+    "activation_key": "TASK_OWNER_ROLE in ACTIVE/docs/NEXT_TASK.md. Only the agent matching this role should act. Others propose via ACTIVE/docs/PROPOSED_NEXT_TASK.md.",
+    "canonical_memory": ".codex/CEHP/ is the ONLY authoritative cross-session memory. If chat and .codex/CEHP/ disagree, .codex/CEHP/ wins.",
+    "handoff_files_to_update_after_work": [
+      "ACTIVE/docs/NEXT_TASK.md",
+      ".codex/CEHP/status.md",
+      ".codex/CEHP/handoff.md",
+      ".codex/CEHP/changelog.md",
+      "README_Instructions on What To Do.md (Current State section)"
+    ]
+  },
+
+  "kevin_collaboration_rules": {
+    "match_his_energy": "When he's fired up, be fired up. When he's focused, be focused.",
+    "update_cadence": "Terse updates at milestones. No play-by-play. Don't summarize what you just did — he can read the diff.",
+    "permission_model": "Once direction is clear, don't ask for permission — assume, label, proceed.",
+    "interpretation": "'Not needed' = cut completely. 'AI decides' = full autonomy.",
+    "change_size": "Small, reviewable changes over giant rewrites.",
+    "code_style": [
+      "No emoji in UIs — use lucide-react icons where UI exists (but CEHP is canvas, so mostly N/A)",
+      "No unnecessary refactoring of unrelated code",
+      "No new libraries without justification",
+      "Boring code over clever code",
+      "Tests expected — 300-800+ tests in his other projects (CEHP has Playwright smoke tests)",
+      "No magic numbers — use named constants"
+    ],
+    "simulation_determinism": "If any sim/RNG code: seeded RNG only, NO Math.random(). Deterministic from Case Seed."
+  },
+
+  "known_bugs_and_patterns": {
+    "source": "ACTIVE/knowledge/STUDIO_KERNEL/bug_patterns.md",
+    "patterns_to_watch": [
+      "Canvas focus loss — clicking outside canvas steals input. Fix: explicit focus-return + key release on blur.",
+      "Text overlap — multiple HUD strings at same coords. Fix: z-layer discipline + coord reservations.",
+      "Camera snap on scene transitions — use smooth interpolation.",
+      "Stale progress — atomic save writes, debounced 250ms.",
+      "Query-param bleed (?start=w3 persisting in prod) — sanitize on load."
+    ]
+  },
+
+  "file_structure_quick_reference": {
+    "game_runtime": "ACTIVE/game/index.html (19,835 lines — DemoScene W1 at line 6939, World2Scene 15378, World3Scene 17569, TitleScene 19267+)",
+    "active_docs": "ACTIVE/docs/ (NEXT_TASK.md, AGENTS.md, BACKLOG.md, KNOWN_ISSUES.md, HANDOFF.md, SPRINT_LOG.md)",
+    "goat_plan": "ACTIVE/GOAT_PLAN/ (00_MASTER_PLAN, SYNTHESIS, ROUND_01 through ROUND_10)",
+    "creative_doctrine": "ACTIVE/knowledge/overflow/supporting-doctrine/ (DO_NOT_BREAK.md, CACTUS_ED_GOAT_GUIDE.md)",
+    "studio_kernel": "ACTIVE/knowledge/STUDIO_KERNEL/ (8 files: game_design_principles, lessons_learned, bug_patterns, architecture_patterns, BOOT_SEQUENCE, agent_protocol, dev_playbook, studio_rules)",
+    "ai_memory": ".codex/CEHP/ (status, handoff, changelog, plan, decisions, agent, open_questions, runbook)",
+    "historical": "ARCHIVE/ (AI brainstorms from Mistral/Meta/DeepSeek/ChatGPT, old handoffs — ignore by default)",
+    "deployment": ".github/workflows/static.yml → GitHub Pages"
+  },
+
+  "visual_systems_searchable_in_index_html": [
+    "ANIM_UI (animated UI)",
+    "AMBIENT_LIGHT (scene lighting)",
+    "BROADCAST_STATE (corrupted broadcast layer)",
+    "ENV_FX (environmental particles)",
+    "COLOR_GRADE (per-axis color grading)",
+    "TRANSITIONS (scene transitions)",
+    "RECEIPT_TEMPLATES (procedural receipt text)",
+    "POLICY_FLAGS (institutional messaging)",
+    "PUNCHCARD (end-of-run summary)",
+    "CASE_SEED (deterministic run ID)",
+    "MOOD_VISUALS (axis-driven palette)",
+    "BEHAVIOR_FX (behavioral feedback FX)"
+  ],
+
+  "suggested_first_hour_of_rebuild": [
+    "Read PROJECT_COMPENDIUM.md start to finish (~15 min)",
+    "Read DO_NOT_BREAK.md in full",
+    "Open ACTIVE/game/index.html in a browser and play World 1 through the receipt",
+    "Play World 2 and World 3. Note what feels magical, what feels tired",
+    "Read ACTIVE/GOAT_PLAN/SYNTHESIS.md for cross-AI convergence",
+    "Read .codex/CEHP/changelog.md to see the arc",
+    "ONLY THEN propose rebuild architecture in a new doc at ACTIVE/docs/REBUILD_PLAN.md",
+    "Do NOT start coding on day one. Understand before rebuilding."
+  ],
+
+  "first_proposed_task_after_onboarding": {
+    "task_id": "CEHP-REBUILD-001",
+    "title": "Draft REBUILD_PLAN.md and propose fresh architecture honoring the creative bloodline",
+    "deliverable": "A new file at ACTIVE/docs/REBUILD_PLAN.md that proposes: (a) internal structure for the new index.html (IIFE modules? section markers? file-concat?), (b) which existing systems port directly, (c) which get re-implemented cleaner, (d) a 5-10 sprint sequence to ship the rebuild, (e) a v1→v2 save migration plan if schema changes.",
+    "owner_role": "architect (ChatGPT 5.4 Pro) OR operations (Claude) — Kevin will decide",
+    "wait_for": "Kevin's direction on who owns the rebuild plan before implementing any code."
+  },
+
+  "absolutely_do_not": [
+    "Do NOT start a rebuild without reading PROJECT_COMPENDIUM.md and DO_NOT_BREAK.md first",
+    "Do NOT break save compatibility without an explicit v1→v2 migration",
+    "Do NOT add emoji to the game or UIs (Kevin's global rule)",
+    "Do NOT add exclamation marks to Ed's dialogue (voice rule)",
+    "Do NOT reveal the behavioral axes during play (silent tracking is the magic)",
+    "Do NOT add FOMO timers, daily streaks, or loot boxes (no predatory retention)",
+    "Do NOT introduce a build step, bundler, or npm-run-to-play workflow",
+    "Do NOT rewrite without understanding — the game is a living artifact, understand before you rebuild",
+    "Do NOT act if TASK_OWNER_ROLE doesn't match your role — propose, don't execute"
+  ],
+
+  "if_in_doubt": [
+    "Check PROJECT_COMPENDIUM.md first — it was written to answer the common questions.",
+    "Check .codex/CEHP/status.md for current state.",
+    "Ask Kevin terse, specific questions. He prefers proposals with tradeoffs over open-ended 'what should I do'.",
+    "Match his energy. If he says LFG!!!! — match that. If he says 'quick question' — be brief."
+  ],
+
+  "final_note": "Kevin has invested deeply in this project across many sprints. The creative bloodline is strong. The behavioral tracking + receipts is a genuinely original mechanic with breakout potential. The rebuild is not because the game failed — it's because the game is ready to become what it was always meant to be. Treat the existing work as a gift, not a burden. Make this SPRINT LEGENDARY."
+}

@@ -42,4 +42,14 @@ if [ ! -d node_modules/playwright ]; then
   exit 1
 fi
 
-node tests/cehp_boot_smoke.mjs
+echo "== CEHP rebuild logic =="
+node --test tests/rebuild_logic.test.mjs
+
+echo "== CEHP rebuild browser smoke =="
+node tests/cehp_rebuild_smoke.mjs
+
+echo "== CEHP accessibility settings =="
+node tests/cehp_accessibility_settings.mjs
+
+echo "== CEHP rebuild case runs =="
+node tests/cehp_rebuild_case_runs.mjs

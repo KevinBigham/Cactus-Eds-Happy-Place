@@ -1,0 +1,17 @@
+{
+  "name": "cehp-discord-sidecar",
+  "private": true,
+  "description": "Discord renderer for CEHP case receipts.",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "render": "node bot.js --render CASE-20260420-001-CURIOSITY-R2"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.99",
+    "discord.js": "^14.19.3"
+  },
+  "optionalDependencies": {
+    "canvas": "^2.11.2"
+  }
+}

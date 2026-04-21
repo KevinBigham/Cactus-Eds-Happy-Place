@@ -1,0 +1,225 @@
+[
+  {
+    "world": "orientation",
+    "style": "obedient",
+    "seed": "CASE-20260429-001-BOOT-R1",
+    "sourceDurationMs": 300000,
+    "captureIntervalMs": 10000,
+    "frames": 23,
+    "receipt": {
+      "seed": "CASE-20260429-001-BOOT-R1",
+      "lines": [
+        "INTAKE ACCEPTED YOUR SHOES.",
+        "THE BADGE PREFERRED YOUR RESTRAINT.",
+        "THE STAIRS RETURNED YOU QUIETLY."
+      ],
+      "fragmentIds": [
+        "VERDICT_ORIENTATION_01",
+        "TENSION_ORIENTATION_FOLLOW_01",
+        "CLOSER_ORIENTATION_FOLLOW_04"
+      ],
+      "cigaretteLit": true,
+      "axes": {
+        "primary": {
+          "compliance": 0.6850000000000003,
+          "intuition": 0.145,
+          "curiosity": 0.6600000000000001,
+          "grace": 0.255,
+          "chaos": 0.115,
+          "efficiency": 0.3700000000000001
+        },
+        "micro": {
+          "backtracks": 0,
+          "idleMs": 0,
+          "signPeeks": 11,
+          "nearMisses": 0,
+          "jumpCount": 3,
+          "kickCount": 1,
+          "punchCount": 1,
+          "wallJumps": 1,
+          "corrections": 0,
+          "contradictionFollow": 6,
+          "contradictionDefy": 0,
+          "signsRead": 11,
+          "signsIgnored": 0,
+          "secretsFound": 0,
+          "secretsMissed": 0,
+          "deaths": 0,
+          "respawns": 0,
+          "formsUsed": 3,
+          "damageDealt": 0,
+          "damageTaken": 0,
+          "hitStreak": 0,
+          "noHitMs": 0,
+          "speedrunMs": 0,
+          "revisits": 0,
+          "restsTaken": 0,
+          "cigBurnRate": 0,
+          "ashLength": 0,
+          "musicSync": 6,
+          "forbiddenTouched": 0,
+          "modulesPassed": 12,
+          "modulesSkipped": 0
+        }
+      },
+      "tensions": {
+        "obedience": 0.5700000000000003,
+        "style": 0.6250000000000001,
+        "auditRisk": 0.5150000000000001
+      },
+      "flags": {
+        "uninsuredVeteran": false,
+        "premiumSecured": false
+      }
+    }
+  },
+  {
+    "world": "benefits",
+    "style": "insured",
+    "seed": "CASE-20260506-001-BEN-R1",
+    "sourceDurationMs": 300000,
+    "captureIntervalMs": 10000,
+    "frames": 24,
+    "receipt": {
+      "seed": "CASE-20260506-001-BEN-R1",
+      "lines": [
+        "PREAUTHORIZATION LIKED YOUR PATIENCE.",
+        "THE NETWORK REWARDED EARLY SUBMISSION.",
+        "PAYMENT PURCHASED A SOFTER FLOOR."
+      ],
+      "fragmentIds": [
+        "VERDICT_BENEFITS_SECURED_04",
+        "TENSION_BENEFITS_SECURED_05",
+        "CLOSER_BENEFITS_SECURED_04"
+      ],
+      "cigaretteLit": true,
+      "axes": {
+        "primary": {
+          "compliance": 0.7700000000000004,
+          "intuition": 0.21000000000000005,
+          "curiosity": 1,
+          "grace": 0.09,
+          "chaos": 0,
+          "efficiency": 0.4900000000000001
+        },
+        "micro": {
+          "backtracks": 0,
+          "idleMs": 0,
+          "signPeeks": 19,
+          "nearMisses": 0,
+          "jumpCount": 0,
+          "kickCount": 0,
+          "punchCount": 0,
+          "wallJumps": 0,
+          "corrections": 0,
+          "contradictionFollow": 6,
+          "contradictionDefy": 0,
+          "signsRead": 19,
+          "signsIgnored": 0,
+          "secretsFound": 0,
+          "secretsMissed": 0,
+          "deaths": 0,
+          "respawns": 0,
+          "formsUsed": 14,
+          "damageDealt": 0,
+          "damageTaken": 1,
+          "hitStreak": 0,
+          "noHitMs": 0,
+          "speedrunMs": 0,
+          "revisits": 0,
+          "restsTaken": 0,
+          "cigBurnRate": 0,
+          "ashLength": 0,
+          "musicSync": 6,
+          "forbiddenTouched": 0,
+          "modulesPassed": 7,
+          "modulesSkipped": 0
+        }
+      },
+      "tensions": {
+        "obedience": 0.7700000000000004,
+        "style": 0.5800000000000001,
+        "auditRisk": 0.7899999999999999
+      },
+      "flags": {
+        "uninsuredVeteran": false,
+        "premiumSecured": true
+      }
+    }
+  },
+  {
+    "world": "rasta",
+    "style": "ambient",
+    "seed": "CASE-20260504-001-GRACE-R2",
+    "sourceDurationMs": 300000,
+    "captureIntervalMs": 10000,
+    "frames": 24,
+    "receipt": {
+      "seed": "CASE-20260504-001-GRACE-R2",
+      "lines": [
+        "THE FILE UNDERSTOOD.",
+        "PATIENCE MADE SPACE FOR YOU.",
+        "YOU WERE MET WITHOUT FIRE."
+      ],
+      "fragmentIds": [
+        "VERDICT_RASTA_REST_01",
+        "TENSION_RASTA_REST_01",
+        "CLOSER_RASTA_REST_04"
+      ],
+      "cigaretteLit": false,
+      "axes": {
+        "primary": {
+          "compliance": 0.32499999999999996,
+          "intuition": 0.17,
+          "curiosity": 0.7800000000000002,
+          "grace": 0.06,
+          "chaos": 0,
+          "efficiency": 0.06
+        },
+        "micro": {
+          "backtracks": 0,
+          "idleMs": 0,
+          "signPeeks": 13,
+          "nearMisses": 0,
+          "jumpCount": 0,
+          "kickCount": 0,
+          "punchCount": 0,
+          "wallJumps": 0,
+          "corrections": 0,
+          "contradictionFollow": 1,
+          "contradictionDefy": 0,
+          "signsRead": 13,
+          "signsIgnored": 0,
+          "secretsFound": 0,
+          "secretsMissed": 0,
+          "deaths": 0,
+          "respawns": 0,
+          "formsUsed": 0,
+          "damageDealt": 0,
+          "damageTaken": 0,
+          "hitStreak": 0,
+          "noHitMs": 0,
+          "speedrunMs": 0,
+          "revisits": 0,
+          "restsTaken": 0,
+          "cigBurnRate": 0,
+          "ashLength": 0,
+          "musicSync": 4,
+          "forbiddenTouched": 0,
+          "modulesPassed": 2,
+          "modulesSkipped": 0
+        }
+      },
+      "tensions": {
+        "obedience": 0.32499999999999996,
+        "style": 0.12,
+        "auditRisk": 0.6100000000000002
+      },
+      "flags": {
+        "restOpened": true,
+        "rushedRest": false,
+        "syncedFlow": true
+      }
+    }
+  }
+]

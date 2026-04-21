@@ -1,37 +1,73 @@
-# PROPOSED NEXT TASK
+# NEXT TASK (PROPOSED)
 
-This file is the **proposal lane**. If your role is not assigned in `ALL/NEXT_TASK.md`, write your proposal here instead of acting.
-
-**This file does NOT activate work.** Only Architect or Operations may promote a proposal into `ALL/NEXT_TASK.md`.
+This file is the proposal lane. Kevin can promote this to `ACTIVE/docs/NEXT_TASK.md` after signoff.
 
 ---
 
-## How to Write a Proposal
+## TASK_ID: CEHP-REBUILD-W6-LAUNCH
+## TITLE: Rebuild Week 6 — Launch Week / Cutover / Trailer Final / Outreach / Monitoring
+## TASK_OWNER_ROLE: Builder (Codex 5.4)
+## CURRENT_STAGE: Proposed overnight on 2026-04-20 for Kevin morning review
+## NEXT_HANDLER_ROLE: Kevin (signoff) -> Builder (Codex 5.4)
+## STATUS: PROPOSED
+## DEADLINE: 2026-05-29
 
-Copy this template and append it below the line:
+## CONTEXT
 
-```
-### PROPOSED BY: [Your Role]
-### DATE: [YYYY-MM-DD]
-### PROPOSED_TASK_ID: [e.g., CEHP-NNN or descriptive slug]
-### PROPOSED_TITLE: [Short title]
-### PROPOSED_OWNER_ROLE: [Builder / Reviewer / Operations]
-### RATIONALE: [Why this task matters — 1-3 sentences]
-### SCOPE: [What files/areas would be touched]
-### PRIORITY: [High / Medium / Low]
-### STATUS: PROPOSED
-```
+Week 5 is locally green and reviewer-cleared. Thermal receipts, THE DOCKET, delivery assets, launch docs, accessibility assist wiring, Discord bot hardening tests, and the Week 5 delivery bundle are in place. Launch week is now an execution week, not a feature week.
 
----
+This task exists to cut over safely, publish the launch-facing materials Kevin already owns, and keep rollback paths explicit. The public site, bot, and outreach all need to move in a controlled sequence.
 
-## Active Proposals
+## IN SCOPE
 
-### PROPOSED BY: Reviewer (Claude Code Sonnet 4.6)
-### DATE: 2026-03-16
-### PROPOSED_TASK_ID: CEHP-010-reviewer-readiness
-### PROPOSED_TITLE: Reviewer pre-reads for W2/W3 certification review pass
-### PROPOSED_OWNER_ROLE: Reviewer
-### RATIONALE: Once Kevin completes CEHP-008 retest and Operations classifies results in CEHP-009, a Reviewer pass will be needed to validate any Builder output before it can be merged. Reviewer should be queued and ready so the sprint does not stall at the review gate. This proposal flags that Reviewer is standing by and ready to run a review pass the moment a Builder task completes.
-### SCOPE: No files touched until a Builder task is assigned and completed. At that time: index.html (read-only review), KNOWN_ISSUES.md (verification), NEXT_TASK.md STATUS field update in place.
-### PRIORITY: Medium
-### STATUS: PROPOSED — no action until Operations completes CEHP-009 and Builder completes CEHP-010
+1. Final live-domain verification against `counterfeit-educational.org` once Kevin flips DNS
+2. Launch-day smoke pass on root route and `?docket=1`
+3. Discord bot live-domain verification and one real live-domain PNG render
+4. Trailer final packaging + upload support using the approved edit/export
+5. Critical Reflex outreach support package finalization
+6. Launch-day monitoring ticket / checklist / incident log prep
+7. Dry-run rollback rehearsal before public announce
+
+## OUT OF SCOPE
+
+1. Changing `cactusEd_save_v1` schema or v2 migration
+2. New worlds, new enemies, new mechanics
+3. Any receipt-weight rebalance without an explicit taste note
+4. DNS registrar changes without Kevin's direct action
+5. Sending public posts without Kevin's direct approval
+6. Steam packaging work beyond launch-facing asset prep
+
+## SACRED CONSTRAINTS
+
+- Single-file shipped `index.html` artifact. Source stays modular.
+- ES5 only. No `let`, `const`, arrow functions, template literals, spread, or destructuring.
+- Phaser 3 via CDN. No bundler.
+- `cactusEd_save_v1` contract preserved via v2 migration + archaeological layer.
+- Seeded LCG RNG only. Never `Math.random()`.
+- Ed voice remains deadpan, `<=8` words per line, no exclamation marks.
+- Cigarette stays unlit in all W3 paths.
+- `ns.TUNING.JUMP_VELOCITY` global stays untouched.
+- No predatory retention. No leaderboard drift. No streak mechanics.
+
+## DEFINITION OF DONE
+
+- [ ] DNS cutover verified on the live domain
+- [ ] Live-domain Discord render works end-to-end
+- [ ] Trailer published
+- [ ] Critical Reflex pitch sent and confirmed
+- [ ] Launch-day monitoring ticket is open
+- [ ] Rollback plan exercised in dry-run
+- [ ] Public announce thread posted
+
+## EXECUTION RULES
+
+- Kevin owns registrar changes, outbound pitch send, and public posting.
+- Codex may prepare, verify, rehearse, and document, but must stop at Kevin-gated actions.
+- Any launch regression with unclear rollback triggers an immediate stop-and-document response.
+
+## FIRST ACTIONS IF PROMOTED
+
+1. Re-run `cd ACTIVE/game && node build.js && node scripts/check_save_schema.js && bash scripts/verify-cehp.sh`
+2. Verify the final DNS values Kevin plans to apply against `ACTIVE/docs/LAUNCH_GO_NOGO.md`
+3. Perform live-domain smoke checks immediately after cutover
+4. Confirm bot render, trailer link, and outreach packet before Kevin sends anything

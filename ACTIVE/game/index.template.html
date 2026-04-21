@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cactus Ed's Happiest Place</title>
+<meta name="description" content="The platformer that files a report on you." />
+<style>
+  html, body { margin:0; padding:0; background:#000; color:#ddd;
+               font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+               overflow:hidden; height:100%; }
+  #cehp-host { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  #cehp-settings { display:none; position:fixed; inset:0; background:#0b0d12;
+                   color:#ddd; padding:2em; overflow:auto; z-index:9999; }
+  #cehp-docket { display:none; position:fixed; inset:0; background:#efe6d1;
+                 color:#221a13; padding:1.5em; overflow:auto; z-index:9998; }
+  #cehp-settings.on { display:block; }
+  #cehp-docket.on { display:block; }
+  #cehp-settings h2 { font-size:16px; letter-spacing:0.1em; }
+  #cehp-docket h2 { font-size:16px; letter-spacing:0.16em; margin:0 0 0.5em; }
+  #cehp-settings label { display:block; margin: 0.4em 0; }
+  #cehp-settings button { margin-top:1em; padding:0.5em 1em; }
+  #cehp-settings .note { color:#889; font-size:12px; margin-top:2em; }
+  #cehp-docket p { margin:0.35em 0; max-width:880px; }
+  #cehp-docket .note { color:#5f4d39; font-size:12px; }
+  #cehp-docket .docket-week { margin:1.5em 0 2em; padding-top:1em; border-top:1px solid #cdbb99; }
+  #cehp-docket .docket-week-head { display:flex; flex-wrap:wrap; gap:0.75em 1em; align-items:baseline; }
+  #cehp-docket .docket-week-head h3 { margin:0; font-size:14px; letter-spacing:0.08em; }
+  #cehp-docket .docket-link { color:#221a13; text-decoration:underline; }
+  #cehp-docket .receipt-card { display:block; margin:0.8em 0; max-width:360px; width:100%; height:auto; box-shadow:0 10px 24px rgba(34,26,19,0.15); }
+  #cehp-docket .receipt-grid { display:flex; flex-wrap:wrap; gap:1em; }
+</style>
+</head>
+<body>
+<div id="cehp-host" role="application" aria-label="Cactus Ed's Happiest Place"></div>
+<div id="cehp-settings" aria-hidden="true" aria-label="Plain HTML settings escape hatch">
+  <h2>SETTINGS — PLAIN HTML ESCAPE HATCH</h2>
+  <p>If any diegetic control is inaccessible, this form is the authoritative surface.</p>
+  <form id="cehp-settings-form">
+    <label><input type="checkbox" name="reduceFlash"/> Reduce flash</label>
+    <label><input type="checkbox" name="reduceShake"/> Reduce shake</label>
+    <label><input type="checkbox" name="reduceParticles"/> Reduce particles</label>
+    <label><input type="checkbox" name="biggerCoyote"/> Bigger coyote window</label>
+    <label><input type="checkbox" name="slowerGame"/> Slower game</label>
+    <button type="submit">Save</button>
+  </form>
+  <p class="note">Remove <code>?settings=1</code> to return to the normal surface.</p>
+</div>
+<div id="cehp-docket" aria-hidden="true" aria-label="THE DOCKET archive surface"></div>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+<!-- BUILD START -->
+<!-- Replaced by build.js — do not hand-edit. -->
+<!-- BUILD END -->
+</body>
+</html>

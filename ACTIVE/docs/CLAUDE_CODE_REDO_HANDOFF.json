@@ -1,0 +1,126 @@
+{
+  "project": {
+    "name": "Cactus Ed's Happiest Place",
+    "short_name": "CEHP",
+    "repo_root": "/Users/tkevinbigham/Projects/CEHP",
+    "runtime_truth": "ACTIVE/game/index.html",
+    "public_repo": "https://github.com/KevinBigham/Cactus-Eds-Happy-Place",
+    "live_url": "https://kevinbigham.github.io/Cactus-Eds-Happy-Place/"
+  },
+  "verified_on": "2026-04-20",
+  "read_first": [
+    "ACTIVE/docs/PROJECT_REDISCOVERY_AUDIT.md",
+    "README_Instructions on What To Do.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".codex/CEHP/status.md",
+    ".codex/CEHP/handoff.md",
+    "ACTIVE/GOAT_PLAN/00_GOAT_MASTER_PLAN.md",
+    "ACTIVE/GOAT_PLAN/SYNTHESIS.md",
+    "ACTIVE/knowledge/overflow/supporting-doctrine/DO_NOT_BREAK.md"
+  ],
+  "local_repo_state": {
+    "authored_file_count": 216,
+    "runtime_lines_approx": 19835,
+    "node_modules_present_locally": true,
+    "verification": {
+      "local_verify_cehp_sh": "PASS",
+      "local_save_schema": "PASS",
+      "local_browser_smoke": "PASS",
+      "plain_index_active_scene": "Title",
+      "certAid_w2_active_scene": "World2",
+      "certAid_w3_active_scene": "World3"
+    }
+  },
+  "public_repo_state": {
+    "default_branch": "main",
+    "tracked_file_count": 219,
+    "latest_commit_sha": "e4d440933d74075495adf8275af37ef7cd75c86e",
+    "latest_commit_date": "2026-03-21T18:21:06Z",
+    "latest_commit_subject": "fix: harden transition system - remove aggressive isActive check, add safety timeout",
+    "remote_only_files_vs_local": [
+      "00_HANDOFF_FROM_CLAUDE_CODE.md",
+      "GAME_REVIEW_AND_GOAT_PLAN.md",
+      "GOAT_GAME_BRAINSTORM_PROMPT.md",
+      "ACTIVE/game/package-lock.json"
+    ],
+    "local_only_file_vs_public": [
+      "AGENTS.md"
+    ]
+  },
+  "critical_facts": [
+    "Local runtime is ahead of public GitHub main and GitHub Pages.",
+    "Public main and live site still use the old boot-time IS_WEBGL line that can crash on plain /index.html.",
+    "Local workspace contains the safer IS_WEBGL guard plus title cold-open gating and related stability work.",
+    "Many docs still describe the older certification-first state and are partially stale.",
+    "The strongest reusable CEHP assets are movement feel, institutional satire voice, behavior tracking, receipt systems, and the GOAT-plan idea bank."
+  ],
+  "live_divergence": {
+    "public_pages_status": "FAIL_ON_TITLE_BOOT",
+    "public_smoke_error": "Cannot read properties of null (reading 'type')",
+    "meaning": "Do not assume live GitHub Pages reflects the local workspace."
+  },
+  "systems_to_salvage_first": [
+    "Movement feel and ED_MOVE / ED_ABILITIES philosophy",
+    "Behavior tracking feeding procedural receipts",
+    "Institutional language / bloodline doctrine",
+    "Hint escalation and protected readable-path teaching",
+    "GOAT rounds 01-10 as a feature menu, not a mandate",
+    "Shareable receipt framing and policy-drift ideas",
+    "World1 text banks in ARCHIVE/src/world1/text"
+  ],
+  "archive_banks": {
+    "high_value_design_research": [
+      "ACTIVE/GOAT_PLAN/*",
+      "ARCHIVE/legacy/quarantine/ai-artifacts/*",
+      "GAME_REVIEW_AND_GOAT_PLAN.md",
+      "GOAT_GAME_BRAINSTORM_PROMPT.md"
+    ],
+    "high_value_text_and_content": [
+      "ARCHIVE/src/world1/text/world1_broadcast_copy.js",
+      "ARCHIVE/src/world1/text/world1_overlay_labels.js",
+      "ARCHIVE/src/world1/text/world1_receipt_templates.js"
+    ],
+    "historical_runtime_snapshots": [
+      "ARCHIVE/legacy/quarantine/runtime-backups/*",
+      "ARCHIVE/legacy/quarantine/runtime-variants/*"
+    ],
+    "experimental_branches": [
+      "ARCHIVE/legacy/quarantine/combat/*",
+      "ARCHIVE/legacy/quarantine/racing/*"
+    ]
+  },
+  "stale_or_conflicting_docs": [
+    "ACTIVE/docs/CURRENT_PASS.md",
+    "ACTIVE/docs/HANDOFF.md",
+    "ACTIVE/docs/BACKLOG.md",
+    "ACTIVE/docs/STUDIO_DASHBOARD.md",
+    "Any doc that claims all local changes are already pushed/live"
+  ],
+  "redo_recommendation": {
+    "recommended_path": "Treat legacy CEHP as a reference library and design CEHP v2 intentionally from a fresh brief.",
+    "do_not_do": [
+      "Do not keep piling major redesign work directly into the 19.8k-line legacy runtime unless the explicit goal is legacy continuation.",
+      "Do not trust the public live site as current truth.",
+      "Do not copy the full process machinery into v2 unless it is explicitly wanted."
+    ],
+    "do_first": [
+      "Read the rediscovery audit and doctrine docs.",
+      "Decide whether CEHP v2 keeps single-file Phaser or moves to a cleaner architecture.",
+      "Write a concise CEHP v2 product brief and salvage plan before coding.",
+      "Pick one new vertical slice and build it cleanly."
+    ]
+  },
+  "suggested_next_steps": [
+    "Decide whether to push the local legacy stability patch before starting a redesign.",
+    "Freeze a legacy reference baseline.",
+    "Extract reusable text/data/mechanics into a clean salvage list.",
+    "Define CEHP v2 constraints and first vertical-slice goal."
+  ],
+  "commands": [
+    "cd /Users/tkevinbigham/Projects/CEHP/ACTIVE/game",
+    "./scripts/verify-cehp.sh",
+    "CEHP_BASE_URL='https://kevinbigham.github.io/Cactus-Eds-Happy-Place' node tests/cehp_boot_smoke.mjs"
+  ]
+}
+

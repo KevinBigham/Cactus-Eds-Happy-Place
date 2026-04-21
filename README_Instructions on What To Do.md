@@ -1,19 +1,19 @@
 # README — Instructions on What To Do
 
-> **Last updated**: 2026-03-21
-> **Updated by**: Claude Opus 4.6 (1M context) — "The Corrupted Broadcast" visual evolution
+> **Last updated**: 2026-04-21
+> **Updated by**: Codex 5.4 — W6 kickoff (launch runbook / rollback rehearsal / trailer package / CR packet)
 
 ---
 
 # Project Overview
 
-**Cactus Ed's Happiest Place (CEHP)** is a single-file browser platformer game built with Phaser (loaded via CDN), written in ES5 JavaScript, with no build step. The entire game runtime lives in one HTML file (`ACTIVE/game/index.html`, ~19,750+ lines).
+**Cactus Ed's Happiest Place (CEHP)** is currently being rebuilt as a single-file browser platformer shipped from `ACTIVE/game/index.html`, authored as ES5 `src/*.js` modules concatenated by `ACTIVE/game/build.js`. The current local runtime is **32 modules** -> **1 HTML file** (`ACTIVE/game/index.html`, 7,198 lines / 248,537 bytes).
 
-**Vision**: A living satirical machine that watches you and adapts. The institution doesn't just judge you — it RESPONDS. The game is a corrupted institutional broadcast — your behavior determines the signal integrity. Every run feels meaningfully different. Every receipt is shareable. Every player becomes a marketer.
+**Current rebuild shape**: Phaser 3 via CDN, ES5 only, deterministic seeded runtime, save v2 with archaeological v1 preserved under `legacy`, Boot / Play / Overlay / Receipt scenes, a plain-HTML `?docket=1` archive surface, shared receipt-card rendering, and Discord-side receipt PNG rendering under `ACTIVE/discord/`.
 
-**Four active scenes**: Title, Demo (World 1), World2, World3.
+**Active world slices**: Week 2 World 1 — **Orientation Bureau** remains the default boot and now includes deterministic applicant silhouette variation; Week 3 World 2 — **Benefits Enrollment Atrium** is playable via `?world=benefits`; and Week 4 World 3 — **Rasta Corp Logistics Hub** is now playable via `?world=rasta` with six authored rooms, deterministic Synchronicity platforms, a live REST HERE contradiction gate, polite sorting machines, and divergent ambient/impatient receipts on the same seed.
 
-**Play now**: https://kevinbigham.github.io/Cactus-Eds-Happy-Place/
+**Play now**: https://kevinbigham.github.io/Cactus-Eds-Happy-Place/ (legacy public fallback; `counterfeit-educational.org` is not resolving yet as of 2026-04-21)
 **Repo**: https://github.com/KevinBigham/Cactus-Eds-Happy-Place
 
 ---
@@ -21,15 +21,39 @@
 # Current State
 
 ## What exists and works
-- The full game runs from `ACTIVE/game/index.html` in any browser
-- Four scenes are playable: Title, Demo (World 1), World2, World3
+- **W6 kickoff execution is green locally** (2026-04-21): `cd ACTIVE/game && node build.js` still produces `248475` bytes, the Discord thermal render rewrites `ACTIVE/discord/output/CASE-20260504-001-GRACE-R2-thermal.png` at `116994` bytes, and the new `ACTIVE/game/scripts/verify_live_domain.mjs` smoke helper passes root/orientation/benefits/rasta/docket/settings against the local surface.
+- **Trailer final packaging is staged**: `bash ACTIVE/game/scripts/package_launch_trailer.sh` now writes `ACTIVE/delivery/w6_launch/cehp_launch_trailer_final.mp4` (`28.00s`, `1920x1080`, `24fps`, `597883` bytes), `cehp_launch_trailer_poster.png`, and `TRAILER_UPLOAD_DESCRIPTOR.md`.
+- **CR outreach is staged for Kevin review**: `ACTIVE/marketing/cr_pitch_v1/SEND_READY_PACKET.md` now lists the recommended attachment set and a draft note starter tied to the current W6 assets.
+- **Launch execution docs are now in place**: `ACTIVE/docs/LAUNCH_RUNBOOK_W6.md`, `ACTIVE/docs/LAUNCH_INCIDENT_LOG.md`, and `ACTIVE/docs/ROLLBACK_REHEARSAL_W6.md` cover the pre-flight, the post-flip smoke path, the incident log, and the pre-flip rollback drill.
+- **Week 5 Builder pass is implemented and green locally** (2026-04-20): shared receipt-card rendering now powers in-game receipts, `?thermal=1`, and the Discord sidecar `--thermal` path without changing receipt text or fragment IDs.
+- **Bedtime sprint follow-through is green locally** (2026-04-20): the appeals seam is now documented in `ACTIVE/docs/APPEALS_MECHANIC.md`, launch-week briefs/checklists are written, perf results are captured in `ACTIVE/docs/PERF_AUDIT_W5.md`, and the proposed W6 beacon lives in `ACTIVE/docs/PROPOSED_NEXT_TASK.md`.
+- **Accessibility escape hatch is now live end-to-end**: all 5 `?settings=1` toggles persist and affect runtime behavior, with keyboard-only coverage in `ACTIVE/game/tests/cehp_accessibility_settings.mjs`.
+- **Discord bot hardening is now covered**: `ACTIVE/discord/tests/bot_hardening.test.mjs` exercises missing-argument handling, bad-seed rejection, canvas fallback, output-path validation, and disk-write error wrapping.
+- **THE DOCKET is live locally**: `ACTIVE/game/src/81_docket.js` now derives one deterministic weekly seed from `(isoWeek, year)`, stores archived local receipts under `cactusEd_docket_week_v1`, and renders a read-only archive page at `?docket=1`.
+- **Domain cutover prep is in place**: `ACTIVE/game/CNAME` contains `counterfeit-educational.org`, the existing Pages workflow already serves `ACTIVE/game` at the root, and `ACTIVE/docs/DNS_CUTOVER.md` is ready for registrar handoff. DNS is still not flipped.
+- **Trailer/marketing assets are generated locally**: `ACTIVE/game/scripts/capture_trailer.mjs` writes deterministic frame sequences for W1/W2/W3 under `ACTIVE/delivery/w5_demo/trailer_frames/`, and `ACTIVE/game/scripts/generate_w5_assets.mjs` produces `ACTIVE/marketing/cr_pitch_v1/` plus the delivery bundle.
+- **Rebuild runtime is green locally**: `cd ACTIVE/game && node build.js` -> 32 modules -> `ACTIVE/game/index.html` (248,475-byte build output; 248,537 bytes on disk), and `bash scripts/verify-cehp.sh` passes end-to-end.
+- **Rebuild runtime is still green after the bedtime sprint**: `cd ACTIVE/game && node build.js` now produces a 32-module / 248,475-byte build and `bash scripts/verify-cehp.sh` passes with the new accessibility test included.
+- **Discord sidecar is green locally**: `cd ACTIVE/discord && node bot.js --render CASE-20260504-001-GRACE-R2 --world rasta --thermal` writes `ACTIVE/discord/output/CASE-20260504-001-GRACE-R2-thermal.png`.
+- The full rebuild runs from `ACTIVE/game/index.html` in any browser
+- Current rebuild surfaces are Boot / Play / Overlay / Receipt plus the plain-HTML `?docket=1` archive surface
+- The Week 1 throwaway `92_testroom.js` remains in-tree as a reference pattern and optional `?room=test` surface, but it is no longer the default boot target
+- Legacy runtime remains archived at `ARCHIVE/legacy_runtime_v1/index.html` and is reference-only
 - **All 10 GOAT rounds are implemented** (Rounds 01-03 were pre-existing; Rounds 04-10 built 2026-03-20)
 - **Visual upgrade shipped** (2026-03-21): WebGL PostFX (vignette, bloom, barrel distortion), smooth scene transitions, enhanced glow effects, dual-pass particles, VHS grain, RGB channel offset tears
 - **Text readability pass** (2026-03-21): All font sizes bumped (minimum 8px), stroke thickness ≥3, dim colors brightened
 - **"The Corrupted Broadcast" visual evolution shipped** (2026-03-21): 10-round visual overhaul adding interconnected systems that make the game react to player behavior in real-time
+- **Builder stability audit patch applied locally** (2026-03-21): boot-time `IS_WEBGL` null dereference fixed, title cold open now skips save-bearing returns and only auto-runs for first-time/no-save visits, title gamepad input is edge-triggered again and cold open accepts gamepad input
 - **Renderer**: WebGL via `Phaser.AUTO` with Canvas fallback (`IS_WEBGL` flag guards all PostFX code)
 - Save contract (`cactusEd_save_v1`) fully preserved across all changes
 - Zero ES6 syntax — pure ES5 JavaScript throughout
+- Verification now passing locally: `node scripts/check_save_schema.js`, syntax parse, and `node tests/cehp_boot_smoke.mjs`
+- **Rediscovery audit completed** (2026-04-20): full authored local inventory mapped (216 files), compared against GitHub `main` (219 tracked files), and summarized in `ACTIVE/docs/PROJECT_REDISCOVERY_AUDIT.md`
+- **Verified local/public divergence** (2026-04-20): local `./scripts/verify-cehp.sh` passes, but the live GitHub Pages build still reproduces the old plain-`/index.html` `renderer.type` null crash, so public deploy is not fully in sync with the local workspace
+- **Rebuild verification delivered** (2026-04-20): `node scripts/check_save_schema.js`, `./scripts/verify-cehp.sh`, and `cd ../discord && node bot.js --render CASE-20260427-001-COMPLIANCE-R2 --world benefits` all pass locally in the rebuild workspace
+
+## Historical note
+- The long GOAT / visual-evolution sections below describe the archived pre-rebuild runtime and prior design doctrine. They are useful reference, but the active gameplay surface is the rebuild under `ACTIVE/game/src/*.js`, not the legacy 19,835-line runtime.
 
 ## GOAT Plan Rounds — Feature Summary
 
@@ -171,6 +195,7 @@
 | File | Location | Why it matters |
 |---|---|---|
 | This file | Root | Project overview and task guidance |
+| PROJECT_REDISCOVERY_AUDIT.md | `ACTIVE/docs/` | Full repo + GitHub rediscovery map for CEHP redo work |
 | CLAUDE.md | Root | Durable instructions for Claude agents |
 | NEXT_TASK.md | `ACTIVE/docs/` | The ONE active task — always exactly one |
 | index.html | `ACTIVE/game/` | THE GAME — the entire runtime |
@@ -194,17 +219,17 @@
 
 # Current / Next Tasks
 
-## Current task: OPEN — All GOAT rounds + visual evolution complete
-- Rounds 04-10 shipped 2026-03-20
-- Visual upgrade (WebGL PostFX, text readability, scene transitions) shipped 2026-03-21
-- "The Corrupted Broadcast" 10-round visual evolution shipped 2026-03-21
-- TitleScene crash fix shipped 2026-03-21
-- All features are live and pushed to GitHub
+## Current task: CEHP-REBUILD-W6-LAUNCH — Launch week / cutover / trailer final / outreach / monitoring
+- Local kickoff is green on 2026-04-21: build, save/schema verify, full local suite, bot hardening, live-domain smoke helper, and local thermal receipt render all pass
+- Ready for Kevin's DNS flip tonight: rollback rehearsal is documented, trailer packaging is staged, CR packet is staged, and the launch runbook/incident log are in place
+- Overnight launch-prep follow-through is now also in place: appeals doc, Steam design brief, trailer edit brief, launch go/no-go checklist, perf audit, accessibility status, W6 draft beacon, and morning brief
+- Current reviewer-facing checks are green: build, save schema, browser smoke, keyboard-only settings coverage, deterministic benefits + rasta + docket case-runs, full `verify-cehp.sh`, bot hardening tests, and direct Discord thermal render
+- Remaining external gates are the Claude Opus 4.7 Week 5 review and Kevin's signoff on thermal feel, docket tone, and the `ACTIVE/delivery/w5_demo/` bundle
 
 ## Next likely tasks (in order)
-1. Kevin playtests all features on live URL
-2. Bug reports / polish pass based on playtest feedback
-3. Define next priority: new worlds, marketing, asset upgrade, etc.
+1. Reviewer pass on Week 5 (`80_receipts.js`, `81_docket.js`, `83_receipt_render.js`, `91_scenes.js`, `74_world_orientation_runtime.js`, and the Week 5 scripts/tests/docs)
+2. Kevin tone pass on the thermal receipt trio, docket snapshot, and `ACTIVE/delivery/w5_demo/`
+3. Week 6 launch prep: DNS flip, trailer final edit, public Discord bot handoff, and Critical Reflex outreach
 
 ---
 
@@ -236,6 +261,12 @@ The save schema key `cactusEd_save_v1` must be preserved across ALL changes. Run
 
 ## All changes pushed (2026-03-21)
 All local changes including GOAT rounds 04-10, visual upgrade, text readability pass, TitleScene crash fix, and "The Corrupted Broadcast" visual evolution have been pushed to GitHub. The live URL serves the latest version.
+
+## Verified deploy mismatch (2026-04-20)
+- The statement above is no longer safe to trust as written.
+- Local `ACTIVE/game/index.html` passes `./scripts/verify-cehp.sh` on `2026-04-20`.
+- Live GitHub Pages still fails plain `/index.html` boot with `Cannot read properties of null (reading 'type')`, which matches the old pre-stability-audit `IS_WEBGL` initialization bug.
+- Public GitHub `main` and live Pages should be treated as behind the local workspace until a new push/deploy pass proves otherwise.
 
 ## Key visual systems added (2026-03-21)
 The visual evolution added 10 new global systems: `MOOD_VISUALS`, `ANIM_UI`, `BEHAVIOR_FX`, `TRANSITIONS`, `AMBIENT_LIGHT`, `ENV_FX`, `COLOR_GRADE`, `BROADCAST_STATE`, plus `getBehaviorIntensity()` and `getMoodVisuals()` helpers. These are all defined near the top of the script block (after `PERF` and before `RECEIPT 2.0`). They use depth layers 76-91 and stack with existing grain (94), tear (93), CRT (95), and vignette (92) layers.
