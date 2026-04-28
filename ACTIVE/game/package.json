@@ -4,6 +4,7 @@
   "description": "Verification tooling for Cactus Ed's Happy Place.",
   "scripts": {
     "verify": "./scripts/verify-cehp.sh",
+    "verify:launch": "./scripts/verify-launch.sh",
     "verify:process": "node scripts/check_process_manifest.mjs",
     "verify:w10": "bash scripts/verify-w10-full.sh",
     "smoke": "node tests/cehp_boot_smoke.mjs",
