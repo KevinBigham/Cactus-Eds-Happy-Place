@@ -94,6 +94,7 @@ If the tech stack, project structure, folder layout, or collaboration rules chan
 ## Code changes
 - Prefer minimal, precise changes to `index.html`
 - Always run `node ACTIVE/game/scripts/check_save_schema.js` after code changes
+- Stop hook auto-runs build + behavior oracle, and adds the replay corpus when sim files change
 - Never break the save contract (`cactusEd_save_v1`)
 - If docs and code disagree, code wins
 - Scope changes tightly — the NEXT_TASK.md specifies what you may and may not touch

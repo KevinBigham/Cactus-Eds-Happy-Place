@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node build.js)",
+      "Bash(node scripts/check_save_schema.js)",
+      "Bash(node scripts/verify_art_assets.mjs)",
+      "Bash(node --test tests/rebuild_logic.test.mjs)",
+      "Bash(node tests/rebuild_logic.test.mjs)",
+      "Bash(mv /Users/tkevinbigham/Projects/CEHP_remote_temp/.git /Users/tkevinbigham/Projects/CEHP/.git)",
+      "Bash(rm -rf /Users/tkevinbigham/Projects/CEHP_remote_temp)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/check.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
