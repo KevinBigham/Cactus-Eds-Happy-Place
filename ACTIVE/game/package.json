@@ -10,6 +10,7 @@
     "smoke:rebuild": "node tests/cehp_rebuild_smoke.mjs",
     "smoke:rebuild:cases": "node tests/cehp_rebuild_case_runs.mjs",
     "test:rebuild": "node --test tests/rebuild_logic.test.mjs",
+    "test:replay": "node scripts/run_replays.mjs",
     "test:process": "node --test tests/process_manifest.test.mjs",
     "scan": "./scripts/studio-scan.sh"
   },

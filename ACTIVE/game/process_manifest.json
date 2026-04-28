@@ -14,6 +14,7 @@
     "scripts/check_save_schema.js",
     "scripts/verify_art_assets.mjs",
     "scripts/check_process_manifest.mjs",
+    "scripts/run_replays.mjs",
     "scripts/verify-cehp.sh",
     "scripts/verify-w10-full.sh",
     "tests/rebuild_logic.test.mjs",
@@ -24,6 +25,7 @@
     "verify:process": "node scripts/check_process_manifest.mjs",
     "verify:w10": "bash scripts/verify-w10-full.sh",
     "test:rebuild": "node --test tests/rebuild_logic.test.mjs",
+    "test:replay": "node scripts/run_replays.mjs",
     "test:process": "node --test tests/process_manifest.test.mjs"
   },
   "runtimeSource": {

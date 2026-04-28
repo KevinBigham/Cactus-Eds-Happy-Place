@@ -83,6 +83,16 @@ Each frame stores current boolean input state plus `justPressed:*` edge labels s
 - `CEHP.Replay.serialize(record)` and `CEHP.Replay.deserialize(json)` round-trip schema v1 records.
 - `CEHP.Replay.runReplay(fixture, scene)` compares expected checkpoint/final sections against an actual scene record and returns `{ passed, divergent_frame, expected, actual, field }`.
 
+## Runner
+
+From `ACTIVE/game`:
+
+```sh
+npm run test:replay
+```
+
+The runner loads every JSON fixture in `_canon/replays/cehp/`, runs each in headless Chromium, prints one `PASS` or `FAIL` line per fixture, and exits non-zero on any divergence. Failures include `frame`, `field`, `expected`, and `actual`.
+
 ## Baseline updates
 
 Golden replay files must not be regenerated blindly. To update a baseline:
