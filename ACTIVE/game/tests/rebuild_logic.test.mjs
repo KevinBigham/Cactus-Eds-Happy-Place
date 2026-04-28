@@ -83,6 +83,12 @@ const LOGIC_MODULES = [
   '82_appeals.js'
 ];
 
+const APPEALS_REPLAY_MODULES = [
+  '00_index.js',
+  '01_const.js',
+  '82_appeals.js'
+];
+
 const LENS_MODULES = [
   '00_index.js',
   '01_const.js',
@@ -129,6 +135,14 @@ const AIR_MODULES = [
 
 const SCENE_MODULES = [
   '00_index.js',
+  '80_receipts.js',
+  '91_scenes.js'
+];
+
+const FIXED_STEP_SCENE_MODULES = [
+  '00_index.js',
+  '03_events.js',
+  '04_fixed_step.js',
   '80_receipts.js',
   '91_scenes.js'
 ];
@@ -875,6 +889,241 @@ test('boot preload loads optional Track A art only for non-thermal runs', () => 
   assert.equal(thermalKeys.includes('paper_expired_id'), false);
   assert.equal(thermalKeys.includes('receipt_brand_mascot'), false);
   assert.equal(thermalKeys.includes('ed_sheet_60px'), false);
+});
+
+function makeScenePhaserStub() {
+  function Scene() {}
+  function Class(definition) {
+    function Klass() {
+      if (definition.initialize) definition.initialize.apply(this, arguments);
+    }
+    Klass.prototype = Object.create((definition.Extends || Scene).prototype);
+    Klass.prototype.constructor = Klass;
+    Object.keys(definition).forEach(function(key) {
+      if (key === 'Extends' || key === 'initialize') return;
+      Klass.prototype[key] = definition[key];
+    });
+    return Klass;
+  }
+  return { Scene, Class };
+}
+
+test('play scene fixed step drives sim while presentation stays render-delta', () => {
+  // Render-delta sim ticks let wall-edge contact sampling choose wallJump vs jump differently across replays.
+  const sandbox = loadSandbox(FIXED_STEP_SCENE_MODULES, {
+    location: { search: '' },
+    Phaser: makeScenePhaserStub()
+  });
+  const CEHP = sandbox.CEHP;
+  const PlayScene = CEHP.Scenes.list()[1];
+  const play = new PlayScene();
+  const calls = [];
+  const player = {
+    x: 10,
+    y: 20,
+    facing: 1,
+    body: {
+      velocity: { x: 5, y: 0 },
+      setVelocityX: function(value) {
+        this.velocity.x = value;
+        calls.push({ kind: 'setVelocityX', value: value });
+      }
+    }
+  };
+
+  CEHP.RunState = { ui: { open: false }, worldId: 'benefits' };
+  CEHP.Input = {
+    update: function() { calls.push({ kind: 'input:update' }); },
+    justPressed: function() { return false; }
+  };
+  CEHP.UI = { back: function() {}, openClipboard: function() {} };
+  CEHP.Movement = {
+    apply: function(actor, input, dtMs) {
+      calls.push({ kind: 'movement', dt: dtMs });
+      actor.x += 1;
+    },
+    respawn: function() { calls.push({ kind: 'respawn' }); }
+  };
+  CEHP.WorldBenefits = {
+    update: function(scene, dtMs) { calls.push({ kind: 'world', dt: dtMs }); }
+  };
+  CEHP.Metrics = {
+    tick: function(dtMs, payload) {
+      calls.push({ kind: 'metrics', dt: dtMs, moving: payload.moving });
+    }
+  };
+  CEHP.Axes = {
+    snapshot: function() {
+      calls.push({ kind: 'axes' });
+      return { primary: {} };
+    }
+  };
+  CEHP.FX = {
+    setAxes: function() { calls.push({ kind: 'fx:setAxes' }); },
+    update: function(scene, runState, dtMs) { calls.push({ kind: 'fx', dt: dtMs }); }
+  };
+  CEHP.Feel = { updateCamera: function(scene, dtMs) { calls.push({ kind: 'feel', dt: dtMs }); } };
+  CEHP.Ed = { update: function(scene, dtMs) { calls.push({ kind: 'ed', dt: dtMs }); } };
+  CEHP.Light = { update: function(scene, dtMs) { calls.push({ kind: 'light', dt: dtMs }); } };
+  CEHP.Lens = { update: function(scene, dtMs) { calls.push({ kind: 'lens', dt: dtMs }); } };
+  CEHP.Air = { update: function(scene, dtMs) { calls.push({ kind: 'air', dt: dtMs }); } };
+  CEHP.Audio = {
+    isRunning: function() { return true; },
+    updateFromAxes: function(axes, opts) { calls.push({ kind: 'audio', worldId: opts.worldId }); }
+  };
+
+  play._fixedStep = CEHP.FixedStep.create();
+  play.player = player;
+  play.pendingDeath = null;
+  play.runComplete = false;
+  play.room = { id: 'benefits-world' };
+  play.recorder = {
+    sampleInput: function(frame, input) {
+      calls.push({
+        kind: 'sampleInput',
+        frame: frame,
+        jump: input.justPressed('jump')
+      });
+    },
+    sample: function(t, x, y, facing) {
+      calls.push({
+        kind: 'sample',
+        t: Math.round(t * 1000) / 1000,
+        x: x,
+        y: y,
+        facing: facing
+      });
+    }
+  };
+  play.runStartMs = 9000;
+  play.queueDeath = function(source) { calls.push({ kind: 'death', source: source }); };
+
+  play.update(9000, 40);
+
+  const simKinds = calls
+    .filter(function(entry) {
+      return entry.kind === 'input:update' ||
+        entry.kind === 'movement' ||
+        entry.kind === 'world' ||
+        entry.kind === 'sampleInput' ||
+        entry.kind === 'sample';
+    })
+    .map(function(entry) { return entry.kind; });
+  const movement = calls.filter(function(entry) { return entry.kind === 'movement'; });
+  const world = calls.filter(function(entry) { return entry.kind === 'world'; });
+  const samples = calls.filter(function(entry) { return entry.kind === 'sample'; });
+  const presentationKinds = calls
+    .filter(function(entry) {
+      return entry.kind === 'metrics' || entry.kind === 'fx' || entry.kind === 'feel' ||
+        entry.kind === 'ed' || entry.kind === 'light' || entry.kind === 'lens' ||
+        entry.kind === 'air';
+    })
+    .map(function(entry) { return entry.kind + ':' + entry.dt; });
+
+  assert.deepEqual(simKinds, [
+    'input:update', 'movement', 'world', 'sampleInput', 'sample',
+    'input:update', 'movement', 'world', 'sampleInput', 'sample'
+  ]);
+  assert.equal(movement.length, 2);
+  assert.equal(world.length, 2);
+  assert.equal(Math.abs(movement[0].dt - CEHP.FixedStep.STEP_MS) < 0.0001, true);
+  assert.equal(Math.abs(world[1].dt - CEHP.FixedStep.STEP_MS) < 0.0001, true);
+  assert.deepEqual(samples.map(function(entry) { return entry.t; }), [16.667, 33.333]);
+  assert.deepEqual(presentationKinds, [
+    'metrics:40',
+    'fx:40',
+    'feel:40',
+    'ed:40',
+    'light:40',
+    'lens:40',
+    'air:40'
+  ]);
+  assert.equal(calls.filter(function(entry) { return entry.kind === 'audio'; }).length, 1);
+});
+
+test('appeals recorder preserves legacy path dump while recording per-frame input replay', () => {
+  const CEHP = loadModules(APPEALS_REPLAY_MODULES);
+  const recorder = new CEHP.Appeals.Recorder();
+  const input = {
+    down: function(action) {
+      return action === 'right' || action === 'jump';
+    },
+    justPressed: function(action) {
+      return action === 'jump';
+    },
+    justReleased: function() { return false; }
+  };
+
+  recorder.sample(0, 12.7, 34.2, 1);
+  recorder.sampleInput(7, input);
+
+  assert.deepEqual(JSON.parse(JSON.stringify(recorder.dump())), [[0, 12, 34, 1]]);
+  assert.deepEqual(JSON.parse(JSON.stringify(recorder.dumpReplay())), [{
+    frame: 7,
+    input: {
+      left: false,
+      right: true,
+      up: false,
+      down: false,
+      jump: true,
+      punch: false,
+      kick: false,
+      spinDash: false,
+      cigCopter: false,
+      groundSlam: false,
+      glide: false,
+      pause: false,
+      confirm: false,
+      back: false
+    },
+    edges: ['justPressed:jump']
+  }]);
+
+  recorder.clear();
+  assert.deepEqual(JSON.parse(JSON.stringify(recorder.dump())), []);
+  assert.deepEqual(JSON.parse(JSON.stringify(recorder.dumpReplay())), []);
+});
+
+test('replay run comparison reports first divergent checkpoint frame and field', () => {
+  const CEHP = loadModules(APPEALS_REPLAY_MODULES);
+  const fixture = {
+    schema_version: 1,
+    level_id: 'test-room',
+    expected_checkpoints: [
+      { frame: 10, x: 50, y: 300, facing: 1, signature: 'a' },
+      { frame: 20, x: 75, y: 300, facing: 1, signature: 'b' }
+    ],
+    expected_final: {
+      frame: 30,
+      recorder_signature: 'final-a',
+      axes_snapshot: { primary: { compliance: 1 } },
+      receipt_lines: ['A']
+    }
+  };
+  const scene = {
+    _replayActual: {
+      expected_checkpoints: [
+        { frame: 10, x: 50, y: 300, facing: 1, signature: 'a' },
+        { frame: 20, x: 76, y: 300, facing: 1, signature: 'b' }
+      ],
+      expected_final: {
+        frame: 30,
+        recorder_signature: 'final-a',
+        axes_snapshot: { primary: { compliance: 1 } },
+        receipt_lines: ['A']
+      }
+    }
+  };
+
+  const result = CEHP.Replay.runReplay(fixture, scene);
+
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), {
+    passed: false,
+    divergent_frame: 20,
+    expected: 75,
+    actual: 76,
+    field: 'expected_checkpoints[1].x'
+  });
 });
 
 test('build.js restores long-form bundle module banners in index.html', () => {
