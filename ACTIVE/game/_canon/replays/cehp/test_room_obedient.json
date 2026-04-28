@@ -1,0 +1,951 @@
+{
+  "schema_version": 1,
+  "level_id": "test-room",
+  "engine_version": "0.2.0-rebuild",
+  "ruleset": "R2",
+  "seed": "REPLAY-TESTROOM-OBEDIENT",
+  "initial_state": {
+    "x": 300,
+    "y": 396,
+    "facing": 1
+  },
+  "frames": [
+    {
+      "frame": 1,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": [
+        "justPressed:right"
+      ]
+    },
+    {
+      "frame": 2,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 3,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 4,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 5,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 6,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 7,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 8,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 9,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 10,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 11,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 12,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 13,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 14,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 15,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 16,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 17,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 18,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 19,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 20,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 21,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 22,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 23,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 24,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 25,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 26,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 27,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 28,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 29,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 30,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 31,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 32,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 33,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 34,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 35,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 36,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 37,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 38,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 39,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 40,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 41,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 42,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 43,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 44,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 45,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    }
+  ],
+  "expected_checkpoints": [
+    {
+      "frame": 15,
+      "x": 320,
+      "y": 384,
+      "facing": 1,
+      "signature": "03fa6242"
+    },
+    {
+      "frame": 30,
+      "x": 368,
+      "y": 384,
+      "facing": 1,
+      "signature": "22d143af"
+    },
+    {
+      "frame": 45,
+      "x": 400,
+      "y": 384,
+      "facing": 1,
+      "signature": "3393db70"
+    }
+  ],
+  "expected_final": {
+    "frame": 45,
+    "recorder_signature": "6f984d97",
+    "axes_snapshot": {},
+    "receipt_lines": []
+  },
+  "metadata": {
+    "corpus_version": "cehp-replay-v1",
+    "fixture_id": "test_room_obedient",
+    "generation_command": "node --input-type=module <fixture generator in Codex session>",
+    "notes": "Short fixed-frame TestRoom right-walk smoke fixture; 16px checkpoint buckets avoid render-timed Arcade-physics jitter."
+  }
+}
