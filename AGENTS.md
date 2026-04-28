@@ -156,6 +156,9 @@ Local tracks `origin/main` as of 2026-04-28 — full W10 sprint + art pipeline +
 ## Launch arc context
 The project is on a 5-week launch arc through **2026-05-29** (see `ACTIVE/docs/CEHP_LAUNCH_ARC.md`). Current sprint: **W10 feel pass** — architecture spine, verb set, forgiveness + hit-stop, camera/squash, sprite scale, CRT rim-light. Phases 1–5 ratified; Phase 6 jitter-fix attempt is blocked on a `movement:wallJump` autoplay divergence (see `.codex/CEHP/handoff.md` for the latest context). After W10 ratifies, the arc moves W11 (content) → W12 (polish + launch prep) → W13 (launch runway) → W14 (launch week).
 
+## Replay verification gates
+`cd ACTIVE/game && npm run verify:launch` is the single launch-readiness gate. `cd ACTIVE/game && npm run test:replay` runs the determinism replay corpus alone.
+
 ## Save schema verification
 Always run: `node ACTIVE/game/scripts/check_save_schema.js`
 This verifies the `cactusEd_save_v1` save contract is intact.

@@ -1,5 +1,41 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-28 — Scene fixed-step onStep activation + wallJump blocker cleared in current source · Codex GPT-5.5)
+
+**Session goal**: Execute CEHP-Sprint-NEXT+1: first verify/fix the W10 Phase 6 `movement:wallJump` autoplay divergence, then drive Play-scene sim work through the existing scene fixed-step `onStep` callback.
+
+### What shipped
+
+- Confirmed the historical W2 benefits `movement:wallJump` divergence does **not** reproduce in current source. The source already contains the jump-family single-owner state-machine fix and tests; three fresh `W2-benefits-A` movement-only autoplay reruns all MATCH.
+- Updated `ACTIVE/game/src/91_scenes.js`:
+  - Play `update(t, i)` now calls `CEHP.FixedStep.advance(this._fixedStep, i, onStep)`.
+  - `onStep` owns `Input.update`, pause/UI handling, `Movement.apply(player, Input, stepMs)`, pending-death/pit checks, world-runtime update, and recorder sampling.
+  - Recorder sampling now uses `frame * stepMs`.
+  - Presentation remains outside `onStep` and still consumes render delta `i`.
+  - `queueDeath()` uses the sim clock while inside a fixed sim step, with the old Phaser clock fallback.
+- Added `ACTIVE/game/tests/rebuild_logic.test.mjs` coverage: `play scene fixed step drives sim while presentation stays render-delta`. The test failed RED on the old render-delta path, then passed after the scene change.
+- Updated `ACTIVE/docs/verification/fixed-step.md` to remove the deferred caveat and describe the active scene/onStep contract.
+- Rebuilt `ACTIVE/game/index.html` from source.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `cd ACTIVE/game && node build.js && wc -c index.html` | PASS (`355338` reported / `355350` disk; under 358,400 B sprint cap) |
+| `cd ACTIVE/game && node --test tests/rebuild_logic.test.mjs --test-name-pattern "play scene fixed step"` | RED before scene edit, PASS after edit |
+| `cd ACTIVE/game && for i in 1 2 3; do node --test tests/rebuild_logic.test.mjs 2>&1 \| tail -3; done` | PASS all three runs (full suite now `79/79`) |
+| `cd ACTIVE/game && for i in 1 2 3; do node scripts/autoplay.mjs --world benefits --seed W2-benefits-A --count 2 --topics 'movement:*'; done` | PASS all three runs; each reported `determinism: MATCH` and `OK` |
+| `cd ACTIVE/game && node scripts/check_save_schema.js && node scripts/check_process_manifest.mjs && node --test tests/rebuild_logic.test.mjs` | PASS (schema OK, process `45/45`, logic `79/79`) |
+| `cd ACTIVE/game && for i in 1 2 3; do node tests/cehp_rebuild_case_runs.mjs 2>&1 \| grep 'receipt:'; done` | PASS; insured/uninsured/ambient/impatient receipt lines identical across all three reruns |
+| `cd ACTIVE/game && bash scripts/verify-cehp.sh` | PASS (build, process, save schema, art `33/33`, logic `79/79`, process `1/1`, smoke, accessibility, case runs) |
+
+### Notes for the next owner
+
+- P1 required no new tuning patch because the current source already had the wall-jump single-owner fix. Do not reopen `07_ed_state.js` or `21_movement.js` unless a fresh reproduction appears.
+- The likely original root cause is documented in the new test: render-delta sim ticks let wall-edge contact sampling choose `wallJump` vs primary `jump` differently across replays.
+- Sacred sweeps: touched runtime file remains ES5-only; no protected `TUNING.JUMP_VELOCITY` / `TUNING.GRAVITY` writes; `Date.now` count in `91_scenes.js` is unchanged from HEAD (`3` before / `3` after), and no `Math.random` or `performance.now` were added.
+- Existing unrelated dirty files from before this session remain: `CLAUDE.md`, `ACTIVE/docs/CLAUDE.md`, and `ACTIVE/game/CLAUDE.md`. I did not touch them.
+
 ## What Was Just Done (2026-04-28 — Cleanup PR C: delivery/marketing mirror consolidation, Strategy A · Claude Code reviewer/ops)
 
 **Session goal**: Execute audit's PR C class (duplicate marketing/delivery mirror consolidation) under the tar snapshot from PR A. Take the conservative path (delete the obvious mirror; surface cross-package duplicates for Kevin to decide).
@@ -2363,3 +2399,39 @@ Depth layer stack (bottom to top):
 - All visual effects have Canvas fallback and accessibility guards (reduceShake/reduceFlash/reduceParticles).
 
 Next owner: Architect. Phase 6 fully landed (60px Ed + collider split + rim-light + applyBodyShape cache + jump-family single-owner). Determinism contract restored. Ready for audio + receipt + trailer phase scoping.
+
+## What Was Just Done (2026-04-28 — Replay corpus Stop gate + launch verification loop · Codex GPT-5.5)
+
+**Session goal**: Turn the verified scene fixed-step seam into a permanent replay verification loop and launch-readiness command without touching save schema, RNG, movement decay paths, presentation modules, or game content.
+
+### What shipped
+
+- `CEHP.Appeals.Recorder` now keeps the legacy Appeals path dump unchanged and records fixed-frame input snapshots separately through `dumpReplay()`.
+- `CEHP.Replay` now exposes schema-v1 record helpers and reports `{ passed, divergent_frame, expected, actual, field }` on comparison.
+- Play scene `onStep` records per-frame input before the legacy position sample.
+- Three replay fixtures live under `ACTIVE/game/_canon/replays/cehp/`: `test_room_obedient.json`, `w2_benefits_insured.json`, and `w3_rasta_short.json`.
+- `ACTIVE/game/scripts/run_replays.mjs` and `npm run test:replay` run the corpus in headless Chromium and print one PASS/FAIL line per fixture.
+- `.claude/hooks/check.sh` is wired to Claude Stop. It runs build + behavior oracle always, and adds the replay corpus when sim files changed or were touched.
+- `ACTIVE/game/scripts/verify-launch.sh` and `npm run verify:launch` run the launch gate and end with `CEHP LAUNCH VERIFY: PASS` when green.
+- `ACTIVE/docs/verification/replay-format.md` and `ACTIVE/docs/verification/fixed-step.md` document the replay/fixed-step contract.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `cd ACTIVE/game && bash scripts/verify-cehp.sh` | PASS |
+| `cd ACTIVE/game && node --test tests/rebuild_logic.test.mjs` | PASS (`81/81`) |
+| `cd ACTIVE/game && npm run test:replay` | PASS (`3/3`) |
+| `cd ACTIVE/game && for i in 1 2 3; do npm run test:replay; done` | PASS all three runs |
+| `bash .claude/hooks/check.sh` | PASS, replay skipped on docs-only path |
+| `touch ACTIVE/game/src/21_movement.js && bash .claude/hooks/check.sh && git checkout -- ACTIVE/game/src/21_movement.js` | PASS, replay corpus ran |
+| `cd ACTIVE/game && npm run verify:launch` | PASS, final line `CEHP LAUNCH VERIFY: PASS` |
+| `cd ACTIVE/game && npm run verify:launch \| grep 'CEHP LAUNCH VERIFY'` | PASS |
+
+### Notes for the next owner
+
+- Current replay fixtures are deterministic rails, not broad content authoring. They lock frame inputs and velocity/signature checkpoints; Phaser Arcade physics remains the live boundary, so positions are intentionally coarse in these first fixtures.
+- A deliberate `RUN_SPEED` mutation was tested earlier in the sprint and made the replay runner fail with actionable frame/field output, then was reverted before commit.
+- Bundle is tight: `ACTIVE/game/index.html` is `358392` bytes on disk, only 8 bytes under the sprint cap. Any follow-up runtime edit needs a byte plan.
+- No save migration was needed. `cactusEd_save_v1` and `src/04_save.js` were untouched.
+- Next recommended task: Architect authors W11 content specs. Codex should wire content only after authored rooms/receipts/axes are approved.
