@@ -1,8 +1,5 @@
-/* ================================================================
-   MODULE: 00_INDEX
-   Global CEHP namespace root. First concatenated file.
-   Nothing else may declare `var CEHP`.
-   ---------------------------------------------------------------- */
+/* MODULE: 00_INDEX - global CEHP namespace root.
+   First concatenated file. Nothing else may declare `var CEHP`. */
 
 var CEHP = CEHP || {};
 

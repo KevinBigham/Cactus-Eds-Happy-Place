@@ -1,8 +1,5 @@
-/* ================================================================
-   MODULE: 05_CASESEED
-   Case Seed format: CASE-YYYYMMDD-NNN-AXIS-R2
-   Deterministic. URL-parseable. Every run has exactly one.
-   ---------------------------------------------------------------- */
+/* MODULE: 05_CASESEED - CASE-YYYYMMDD-NNN-AXIS-R2.
+   Deterministic, URL-parseable; one per run. */
 
 (function(ns){
   'use strict';

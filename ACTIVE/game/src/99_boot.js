@@ -1,9 +1,6 @@
-/* ================================================================
-   MODULE: 99_BOOT
-   Entry point. Must be last concatenated file.
-   Hydrates save, wires settings escape hatch, starts Phaser.
-   Safe to run headless (Node) — only touches window/document if present.
-   ---------------------------------------------------------------- */
+/* MODULE: 99_BOOT - entry point; must be last concatenated file.
+   Hydrates save, wires settings hatch, starts Phaser.
+   Headless-safe: only touches window/document if present. */
 
 (function(ns){
   'use strict';
@@ -37,6 +34,8 @@
       width:           ns.GAME_W,
       height:          ns.GAME_H,
       pixelArt:        true,
+      roundPixels:     true,
+      antialias:       false,
       backgroundColor: '#000',
       parent:          'cehp-host',
       physics: { default: 'arcade', arcade: { gravity: { y: ns.TUNING.GRAVITY }, debug: false } },

@@ -1,8 +1,6 @@
-/* ================================================================
-   MODULE: 71_WORLD_ORIENTATION — Week 2 target
+/* MODULE: 71_WORLD_ORIENTATION - W2 target.
    Teaches all 11 actions via mandatory compliance modules.
-   Establishes institution + tone.
-   ---------------------------------------------------------------- */
+   Establishes institution + tone. */
 
 (function(ns){
   'use strict';

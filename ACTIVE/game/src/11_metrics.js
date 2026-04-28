@@ -1,8 +1,5 @@
-/* ================================================================
-   MODULE: 11_METRICS
-   Recency-weighted micro-signal tracking. Feeds receipt text
-   selection; never surfaced to the player.
-   ---------------------------------------------------------------- */
+/* MODULE: 11_METRICS - recency-weighted micro-signal tracking.
+   Feeds receipt text selection; never surfaced to the player. */
 
 (function(ns){
   'use strict';

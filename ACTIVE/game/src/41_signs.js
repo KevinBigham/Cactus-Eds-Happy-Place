@@ -1,8 +1,5 @@
-/* ================================================================
-   MODULE: 41_SIGNS
-   Canvas-drawn diegetic signage. Ed-voice rule: max 8 words,
-   no exclamation marks, deadpan.
-   ---------------------------------------------------------------- */
+/* MODULE: 41_SIGNS - canvas-drawn diegetic signage.
+   Ed-voice: <=8 words, no "!", deadpan. */
 
 (function(ns){
   'use strict';

@@ -1,8 +1,6 @@
-/* ================================================================
-   MODULE: 76_WORLD_RASTA_RUNTIME
-   Week 4 playable world. Deterministic synchronicity platforms,
-   polite sorting helpers, and a sincere REST HERE contradiction.
-   ---------------------------------------------------------------- */
+/* MODULE: 76_WORLD_RASTA_RUNTIME - W4 playable world.
+   Deterministic synchronicity platforms, polite sorting helpers,
+   sincere REST HERE contradiction. */
 
 (function(ns){
   'use strict';
@@ -44,6 +42,22 @@
       color: color || '#f2e3c5',
       align: 'left'
     }).setDepth(depth == null ? 8 : depth);
+  }
+
+  function textureExists(scene, key){
+    return !!(scene && scene.textures && scene.textures.exists && scene.textures.exists(key));
+  }
+
+  function addBackdropImage(scene, key, x, y, w, h, depth, alpha){
+    var image;
+
+    if (!textureExists(scene, key) || !scene.add || !scene.add.image) return null;
+
+    image = scene.add.image(x, y, key).setDepth(depth == null ? 1.6 : depth);
+    if (image.setOrigin) image.setOrigin(0.5);
+    if (image.setDisplaySize) image.setDisplaySize(w, h);
+    if (image.setAlpha) image.setAlpha(alpha == null ? 1 : alpha);
+    return image;
   }
 
   function destroyThing(obj){
@@ -342,6 +356,8 @@
   function buildReceiving(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addBackdrop(world, room, 0x293122, 0xc49a4a);
+    addBackdropImage(world.scene, 'prop_archive_box', startX + 124, world.horizon - 44, 92, 62, 2.1, 0.78);
+    addBackdropImage(world.scene, 'prop_archive_box', startX + 220, world.horizon - 44, 84, 56, 2.1, 0.72);
     addSign(world, room, startX + 168, world.horizon - 84, spec.actionSigns[0], { id: room.id + '-sign-1' });
     addSign(world, room, startX + 732, world.horizon - 170, spec.actionSigns[1], { id: room.id + '-sign-2' });
     addPlatform(world, room, startX + 210, world.horizon - 10, 360, 18, 0x61784f, 1, 4);
@@ -413,6 +429,7 @@
   function buildSortingFloor(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addBackdrop(world, room, 0x24301f, 0xc49a4a);
+    addBackdropImage(world.scene, 'prop_archive_box', startX + 1110, world.horizon - 46, 88, 58, 2.1, 0.76);
     addSign(world, room, startX + 130, world.horizon - 84, spec.actionSigns[0], { id: room.id + '-sign-1' });
     addSign(world, room, startX + 792, world.horizon - 84, spec.actionSigns[1], { id: room.id + '-sign-2' });
     addPlatform(world, room, startX + 220, world.horizon - 10, 250, 18, 0x61784f, 1, 4);
@@ -742,6 +759,7 @@
     rememberRoom(world, manifest.rooms[0].id);
     world.currentRoom = world.rooms[0];
     setRoomRespawn(world, world.rooms[0]);
+    if (ns.Curiosity && ns.Curiosity.prime) ns.Curiosity.prime(scene, 'rasta');
     return world;
   }
 
@@ -753,6 +771,7 @@
     updateSyncPlatforms(world);
     updateSortingMachines(world);
     updateRestGate(world, dtMs);
+    if (ns.Curiosity && ns.Curiosity.update) ns.Curiosity.update(scene, dtMs);
   }
 
   function destroy(world){

@@ -76,7 +76,7 @@ try {
   const page = await context.newPage();
   const { consoleErrors, pageErrors } = collect(page);
 
-  await page.goto(buildUrl(`/index.html?case=${encodeURIComponent(seed)}`), { waitUntil: 'domcontentloaded' });
+  await page.goto(buildUrl(`/index.html?case=${encodeURIComponent(seed)}&splash=0`), { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => {
     return !!(
       window.CEHP &&

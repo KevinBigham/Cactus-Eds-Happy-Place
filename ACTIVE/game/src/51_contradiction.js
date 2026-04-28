@@ -1,9 +1,6 @@
-/* ================================================================
-   MODULE: 51_CONTRADICTION
-   Core mechanic: same sign, different behavior → different route.
-     `DO NOT JUMP` — jumping opens lower path; waiting opens upper.
-   Receipts: INSUBORDINATION NOTED / PATIENCE REWARDED.
-   ---------------------------------------------------------------- */
+/* MODULE: 51_CONTRADICTION - same sign different behavior > different route.
+   DO NOT JUMP: jump opens lower path, wait opens upper.
+   Receipts: INSUBORDINATION NOTED / PATIENCE REWARDED. */
 
 (function(ns){
   'use strict';

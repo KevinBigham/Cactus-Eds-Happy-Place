@@ -1,8 +1,5 @@
-/* ================================================================
-   MODULE: 02_RNG
-   Seeded Linear Congruential Generator. NEVER Math.random().
-   Determinism is sacred — same seed must produce same sequence.
-   ---------------------------------------------------------------- */
+/* MODULE: 02_RNG - seeded LCG. NEVER Math.random().
+   Determinism is sacred: same seed > same sequence. */
 
 (function(ns){
   'use strict';

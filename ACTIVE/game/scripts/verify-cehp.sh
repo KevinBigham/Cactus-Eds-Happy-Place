@@ -5,7 +5,10 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
 echo "== CEHP save contract =="
+node build.js
+node scripts/check_process_manifest.mjs
 node scripts/check_save_schema.js
+node scripts/verify_art_assets.mjs
 
 server_started=0
 server_pid=""
@@ -44,6 +47,9 @@ fi
 
 echo "== CEHP rebuild logic =="
 node --test tests/rebuild_logic.test.mjs
+
+echo "== CEHP process manifest =="
+node --test tests/process_manifest.test.mjs
 
 echo "== CEHP rebuild browser smoke =="
 node tests/cehp_rebuild_smoke.mjs

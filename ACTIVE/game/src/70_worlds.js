@@ -1,8 +1,6 @@
-/* ================================================================
-   MODULE: 70_WORLDS
-   World manifest container. Each world module registers under
-   CEHP.Worlds.MANIFEST.<id> with palette, signs, closers, overrides.
-   ---------------------------------------------------------------- */
+/* MODULE: 70_WORLDS - world manifest container.
+   Each world module registers under CEHP.Worlds.MANIFEST.<id>
+   with palette, signs, closers, overrides. */
 
 (function(ns){
   'use strict';

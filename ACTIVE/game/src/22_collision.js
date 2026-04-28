@@ -1,8 +1,5 @@
-/* ================================================================
-   MODULE: 22_COLLISION
-   Physics contact helpers, one-way platforms, form-as-object
-   trigger routing.
-   ---------------------------------------------------------------- */
+/* MODULE: 22_COLLISION - physics contact helpers, one-way
+   platforms, form-as-object trigger routing. */
 
 (function(ns){
   'use strict';

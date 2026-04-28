@@ -1,9 +1,6 @@
-/* ================================================================
-   MODULE: 40_FX
-   CRT roll, scanlines, chromatic aberration, per-axis grading.
-   All effects must respect reduceShake/reduceFlash/reduceParticles.
-   Canvas-only fallback path mandatory.
-   ---------------------------------------------------------------- */
+/* MODULE: 40_FX - CRT roll, scanlines, chromatic aberration,
+   per-axis grading. Respect reduceShake/reduceFlash/reduceParticles.
+   Canvas-only fallback path mandatory. */
 
 (function(ns){
   'use strict';

@@ -1,8 +1,6 @@
-/* ================================================================
-   MODULE: 75_WORLD_BENEFITS_RUNTIME
-   Week 3 playable world. Premium-gated upper routes, dangerous
-   uninsured lanes, three enemy types, and run-scoped jump shrink.
-   ---------------------------------------------------------------- */
+/* MODULE: 75_WORLD_BENEFITS_RUNTIME - W3 playable world.
+   Premium-gated upper routes, dangerous uninsured lanes,
+   three enemy types, run-scoped jump shrink. */
 
 (function(ns){
   'use strict';
@@ -34,6 +32,45 @@
       color: color || '#fff9e0',
       align: 'left'
     }).setDepth(depth == null ? 8 : depth);
+  }
+
+  function textureExists(scene, key){
+    return !!(scene && scene.textures && scene.textures.exists && scene.textures.exists(key));
+  }
+
+  function addBackdropImage(scene, key, x, y, w, h, depth, alpha){
+    var image;
+
+    if (!textureExists(scene, key) || !scene.add || !scene.add.image) return null;
+
+    image = scene.add.image(x, y, key).setDepth(depth == null ? 1.6 : depth);
+    if (image.setOrigin) image.setOrigin(0.5);
+    if (image.setDisplaySize) image.setDisplaySize(w, h);
+    if (image.setAlpha) image.setAlpha(alpha == null ? 1 : alpha);
+    return image;
+  }
+
+  function addOfficeDressing(world, room){
+    var scene = world.scene;
+    var width = room.endX - room.startX;
+    var i;
+    var tile;
+
+    if (textureExists(scene, 'carpet_tile_seamless') && scene.add && scene.add.tileSprite) {
+      tile = scene.add.tileSprite(room.startX + (width / 2), world.horizon + 4, width - 24, 40, 'carpet_tile_seamless').setDepth(1.5);
+      if (tile.setAlpha) tile.setAlpha(0.32);
+    }
+
+    if (textureExists(scene, 'fluorescent_light_fixture')) {
+      for (i = 0; i < 3; i++) {
+        addBackdropImage(scene, 'fluorescent_light_fixture', room.startX + 220 + (i * 350), 42, 150, 74, 1.55, 0.24);
+      }
+    }
+
+    addBackdropImage(scene, 'paper_safety_poster', room.startX + 110, 118, 74, 74, 1.6, 0.58);
+    addBackdropImage(scene, 'paper_expired_id', room.startX + 254, 130, 86, 58, 1.6, 0.5);
+    addBackdropImage(scene, 'prop_filing_cabinet', room.endX - 112, world.horizon - 70, 86, 128, 1.9, 0.58);
+    addBackdropImage(scene, 'prop_coffee_cup', room.endX - 82, world.horizon - 142, 30, 30, 2.1, 0.94);
   }
 
   function destroyThing(obj){
@@ -124,6 +161,7 @@
     var width = room.endX - room.startX;
     world.scene.add.rectangle(room.startX + (width / 2), ns.GAME_H / 2, width - 24, ns.GAME_H - 32, color, 1).setDepth(0);
     world.scene.add.rectangle(room.startX + 18, ns.GAME_H / 2, 16, ns.GAME_H - 32, accent, 1).setDepth(1);
+    addOfficeDressing(world, room);
     textLabel(world.scene, room.startX + 34, 22, room.title, 8, '#fff9e0', 8);
   }
 
@@ -167,14 +205,20 @@
       color: '#c23b3b',
       align: 'center'
     }).setOrigin(0.5).setDepth(13);
+    var pickupId = room.id + '|premium|' + room.premiums.length;
+    stamp.setVisible(false); mark.setVisible(false);
     var premium = {
       rect: stamp,
       label: mark,
       room: room,
+      pickupId: pickupId,
       collected: false,
       collect: function(){
         if (premium.collected) return;
         premium.collected = true;
+        if (ns.Feel && ns.Feel.onPickup) {
+          ns.Feel.onPickup(world.scene, x, y, world.runState.caseSeed || (ns.RunState && ns.RunState.caseSeed), premium.pickupId);
+        }
         premium.rect.setVisible(false);
         premium.label.setVisible(false);
         room.premiumCount += 1;
@@ -219,8 +263,14 @@
   function addEnemy(world, room, type, opts){
     opts = opts || {};
     opts.rng = opts.rng || world.enemyRng;
+    var d = ns.EncounterDirector;
+    if (d && d.admit && !d.admit({ type: type })) return null;
     var enemy = ns.Enemies && ns.Enemies.spawn ? ns.Enemies.spawn(world.scene, type, opts) : null;
     if (!enemy) return null;
+    if (d && d.release) {
+      var od = enemy.destroy;
+      enemy.destroy = function(){ d.release(enemy); od.call(enemy); };
+    }
     room.enemies.push(enemy);
     world.enemies.push(enemy);
     return enemy;
@@ -689,6 +739,9 @@
     runState.worldFlags = manifest || {};
     updateRunState(world);
 
+    if (ns.EncounterDirector && ns.EncounterDirector.prime) ns.EncounterDirector.prime(scene, 'benefits', manifest.rooms[0].id);
+    if (ns.Curiosity && ns.Curiosity.prime) ns.Curiosity.prime(scene, 'benefits');
+
     buildEnrollment(world, manifest.rooms[0], 0, roomWidth);
     buildPathways(world, manifest.rooms[1], roomWidth, roomWidth);
     buildNetwork(world, manifest.rooms[2], roomWidth * 2, roomWidth);
@@ -724,6 +777,8 @@
     updateGate(world);
     updateHazards(world);
     updateEnemies(world, dtMs);
+    if (ns.EncounterDirector && ns.EncounterDirector.tick) ns.EncounterDirector.tick(scene, dtMs);
+    if (ns.Curiosity && ns.Curiosity.update) ns.Curiosity.update(scene, dtMs);
   }
 
   function destroy(world){

@@ -1,8 +1,5 @@
-/* ================================================================
-   MODULE: 81_DOCKET
-   THE DOCKET — weekly curated global seed, permanently archived.
-   No timer. No streak. No reward. Shared text, not retention.
-   ---------------------------------------------------------------- */
+/* MODULE: 81_DOCKET - weekly curated global seed, archived.
+   No timer, no streak, no reward. Shared text, not retention. */
 
 (function(ns){
   'use strict';

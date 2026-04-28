@@ -1,9 +1,6 @@
-/* ================================================================
-   MODULE: 73_WORLD_RASTA — Week 4 target
-   Sincerity zone. The contrast engine. NO enemies.
-   The cigarette will NOT light here. Ed platforms raw.
-   Without this world CEHP is cynical; with it CEHP is tragic.
-   ---------------------------------------------------------------- */
+/* MODULE: 73_WORLD_RASTA - W4 target. Sincerity zone / contrast engine.
+   NO enemies. Cigarette will NOT light here. Ed platforms raw.
+   Without this world CEHP is cynical; with it CEHP is tragic. */
 
 (function(ns){
   'use strict';

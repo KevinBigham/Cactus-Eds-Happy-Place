@@ -1,29 +1,26 @@
-/* ================================================================
-   MODULE: 83_RECEIPT_RENDER
-   Shared receipt card renderer for Phaser, plain HTML, and Discord.
-   Presentation only — receipt text and fragment selection stay in
-   80_receipts.js so thermal mode cannot change verdict content.
-   ---------------------------------------------------------------- */
-
+/* MODULE: 83_RECEIPT_RENDER - shared receipt card renderer. */
 (function(ns){
   'use strict';
 
   var BASE_W = 1080;
   var BASE_H = 1350;
 
-  function makeCanvas(width, height, createCanvas){
+  function createCanvas(width, height, factory){
     var canvas;
-    if (createCanvas) return createCanvas(width, height);
+
+    if (factory) return factory(width, height);
+
     if (typeof document !== 'undefined' && document.createElement) {
       canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
       return canvas;
     }
+
     throw new Error('No canvas factory available for receipt rendering.');
   }
 
-  function fitHeight(width, height){
+  function resolveHeight(width, height){
     if (width && height) return height;
     return Math.round((width || BASE_W) * (BASE_H / BASE_W));
   }
@@ -35,158 +32,313 @@
     };
   }
 
-  function fontPx(scales, size){
-    return Math.max(10, Math.round(size * Math.min(scales.x, scales.y)));
+  function scaledFont(scale, size){
+    return Math.max(10, Math.round(size * Math.min(scale.x, scale.y)));
   }
 
-  function px(scales, value){
-    return Math.round(value * scales.x);
+  function scaledX(scale, value){
+    return Math.round(value * scale.x);
   }
 
-  function py(scales, value){
-    return Math.round(value * scales.y);
+  function scaledY(scale, value){
+    return Math.round(value * scale.y);
   }
 
-  function rngFor(model){
+  function receiptRng(model){
     if (!ns.makeRNG) return null;
-    return ns.makeRNG(String(model.seed || 'CASE-UNKNOWN') + '|' + String(model.theme.mode || 'normal') + '|receipt-render');
+    return ns.makeRNG(
+      String(model.seed || 'CASE-UNKNOWN') +
+      '|' +
+      String(model.theme.mode || 'normal') +
+      '|receipt-render'
+    );
   }
 
-  function wrapLines(ctx, text, maxWidth){
+  function wrapLine(context, text, maxWidth){
     var words = String(text || '').split(/\s+/);
     var lines = [];
     var line = '';
     var next;
     var i;
+
     for (i = 0; i < words.length; i++) {
       next = line ? (line + ' ' + words[i]) : words[i];
-      if (line && ctx.measureText(next).width > maxWidth) {
+      if (line && context.measureText(next).width > maxWidth) {
         lines.push(line);
         line = words[i];
       } else {
         line = next;
       }
     }
+
     if (line) lines.push(line);
     return lines.length ? lines : [''];
   }
 
-  function drawBanding(ctx, canvas, model, rng){
+  function drawThermalNoise(context, canvas, model, rng){
     var i;
     var y;
+
     if (!model.thermal) return;
-    ctx.save();
-    ctx.fillStyle = model.theme.band;
-    ctx.globalAlpha = 0.24;
+
+    context.save();
+    context.fillStyle = model.theme.band;
+    context.globalAlpha = 0.24;
+
     for (i = 0; i < 18; i++) {
       y = Math.round((canvas.height / 18) * i);
-      ctx.fillRect(0, y, canvas.width, Math.max(2, Math.round(canvas.height / 160)));
+      context.fillRect(0, y, canvas.width, Math.max(2, Math.round(canvas.height / 160)));
     }
-    ctx.globalAlpha = model.theme.noiseAlpha;
-    ctx.strokeStyle = model.theme.ink;
+
+    context.globalAlpha = model.theme.noiseAlpha;
+    context.strokeStyle = model.theme.ink;
+
     for (i = 0; i < 110; i++) {
-      y = rng ? (rng.int(0, canvas.height)) : ((i * 13) % canvas.height);
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(canvas.width, y + ((rng ? rng.int(-2, 3) : 0)));
-      ctx.stroke();
+      y = rng ? rng.int(0, canvas.height) : ((i * 13) % canvas.height);
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(canvas.width, y + (rng ? rng.int(-2, 3) : 0));
+      context.stroke();
     }
-    ctx.restore();
+
+    context.restore();
   }
 
-  function drawReceipt(ctx, canvas, model){
-    var scales = scaleFor(canvas);
-    var rng = rngFor(model);
-    var maxWidth = canvas.width - px(scales, 236);
-    var titleLines;
-    var i;
-    var j;
-    var y;
-    var blocks;
+  function crestKeyForWorld(worldId){
+    if (worldId === 'orientation') return 'receipt_crest_orientation';
+    if (worldId === 'benefits') return 'receipt_crest_benefits';
+    if (worldId === 'rasta') return 'receipt_crest_rasta';
+    return '';
+  }
+
+  function sourceImageForTexture(key){
+    var textures = ns._game && ns._game.textures;
+    var texture;
+    var sourceImage;
+
+    if (!key || !textures || !textures.exists || !textures.get) return null;
+    if (!textures.exists(key)) return null;
+
+    texture = textures.get(key);
+    if (!texture || !texture.getSourceImage) return null;
+
+    sourceImage = texture.getSourceImage();
+    if (!sourceImage || !sourceImage.width || !sourceImage.height) return null;
+
+    return sourceImage;
+  }
+
+  function drawWatermarkImage(context, source, x, y, maxWidth, maxHeight, alpha){
+    var scale;
+    var drawWidth;
+    var drawHeight;
+
+    if (!source || !source.width || !source.height || !maxWidth || !maxHeight || !alpha) return;
+
+    scale = Math.min(maxWidth / source.width, maxHeight / source.height);
+    drawWidth = Math.round(source.width * scale);
+    drawHeight = Math.round(source.height * scale);
+
+    context.save();
+    context.globalAlpha = alpha;
+    context.drawImage(
+      source,
+      Math.round(x - (drawWidth / 2)),
+      Math.round(y - (drawHeight / 2)),
+      drawWidth,
+      drawHeight
+    );
+    context.restore();
+  }
+
+  function drawWatermarks(context, model, scale){
+    var crestKey;
+    var crestImage;
+    var sealImage;
+    var mascotImage;
+
+    if (model.thermal) return;
+
+    crestKey = crestKeyForWorld(model.worldId);
+    crestImage = sourceImageForTexture(crestKey);
+    sealImage = sourceImageForTexture('receipt_seal');
+    mascotImage = sourceImageForTexture('receipt_brand_mascot');
+
+    if (crestKey === 'receipt_crest_rasta') {
+      drawWatermarkImage(
+        context,
+        crestImage,
+        scaledX(scale, 540),
+        scaledY(scale, 500),
+        scaledX(scale, 640),
+        scaledY(scale, 280),
+        0.12
+      );
+    } else {
+      drawWatermarkImage(
+        context,
+        crestImage,
+        scaledX(scale, 540),
+        scaledY(scale, 504),
+        scaledX(scale, 560),
+        scaledY(scale, 560),
+        crestKey === 'receipt_crest_orientation' ? 0.11 : 0.10
+      );
+    }
+
+    drawWatermarkImage(
+      context,
+      sealImage,
+      scaledX(scale, 540),
+      scaledY(scale, 1088),
+      scaledX(scale, 300),
+      scaledY(scale, 300),
+      0.10
+    );
+
+    drawWatermarkImage(
+      context,
+      mascotImage,
+      scaledX(scale, 83),
+      scaledY(scale, 132),
+      scaledX(scale, 54),
+      scaledY(scale, 80),
+      0.92
+    );
+  }
+
+  function drawReceipt(context, canvas, model){
+    var scale = scaleFor(canvas);
+    var rng = receiptRng(model);
+    var maxWidth = canvas.width - scaledX(scale, 236);
+    var textLines = model.lines && model.lines.length
+      ? model.lines
+      : ['FILE NOT FOUND.', 'THE RECEIPT REMAINED BLANK.', 'RETURN WITH A CASE.'];
+    var wrappedLines;
+    var footerLines;
     var lineY;
     var lineJitter;
-    var subline;
+    var footerY;
+    var i;
+    var j;
 
-    ctx.fillStyle = model.theme.paper;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawBanding(ctx, canvas, model, rng);
+    context.fillStyle = model.theme.paper;
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = model.theme.frame;
-    ctx.fillRect(px(scales, 44), py(scales, 44), canvas.width - px(scales, 88), canvas.height - py(scales, 88));
+    drawThermalNoise(context, canvas, model, rng);
 
-    ctx.fillStyle = model.theme.panel;
-    ctx.fillRect(px(scales, 72), py(scales, 72), canvas.width - px(scales, 144), canvas.height - py(scales, 144));
+    context.fillStyle = model.theme.frame;
+    context.fillRect(
+      scaledX(scale, 44),
+      scaledY(scale, 44),
+      canvas.width - scaledX(scale, 88),
+      canvas.height - scaledY(scale, 88)
+    );
 
-    ctx.fillStyle = model.theme.shadow;
-    ctx.fillRect(px(scales, 94), py(scales, 232), canvas.width - px(scales, 188), py(scales, 6));
+    context.fillStyle = model.theme.panel;
+    context.fillRect(
+      scaledX(scale, 72),
+      scaledY(scale, 72),
+      canvas.width - scaledX(scale, 144),
+      canvas.height - scaledY(scale, 144)
+    );
 
-    ctx.fillStyle = model.theme.ink;
-    ctx.font = 'bold ' + fontPx(scales, 34) + 'px monospace';
-    ctx.fillText('COUNTERFEIT EDUCATIONAL', px(scales, 118), py(scales, 156));
+    drawWatermarks(context, model, scale);
 
-    ctx.fillStyle = model.theme.subInk;
-    ctx.font = fontPx(scales, 22) + 'px monospace';
-    ctx.fillText(model.seed, px(scales, 118), py(scales, 204));
+    context.fillStyle = model.theme.shadow;
+    context.fillRect(
+      scaledX(scale, 94),
+      scaledY(scale, 232),
+      canvas.width - scaledX(scale, 188),
+      scaledY(scale, 6)
+    );
 
-    ctx.fillStyle = model.theme.ink;
-    ctx.font = 'bold ' + fontPx(scales, 58) + 'px monospace';
-    y = py(scales, 344);
-    titleLines = model.lines && model.lines.length ? model.lines : ['FILE NOT FOUND.', 'THE RECEIPT REMAINED BLANK.', 'RETURN WITH A CASE.'];
-    for (i = 0; i < titleLines.length; i++) {
-      blocks = wrapLines(ctx, titleLines[i], maxWidth);
-      for (j = 0; j < blocks.length; j++) {
-        lineJitter = model.thermal && rng ? rng.int(-model.theme.jitter, model.theme.jitter + 1) : 0;
-        ctx.fillText(blocks[j], px(scales, 118), y + py(scales, 84 * j) + lineJitter);
+    context.fillStyle = model.theme.ink;
+    context.font = 'bold ' + scaledFont(scale, 34) + 'px monospace';
+    context.fillText('COUNTERFEIT EDUCATIONAL', scaledX(scale, 118), scaledY(scale, 156));
+
+    context.fillStyle = model.theme.subInk;
+    context.font = scaledFont(scale, 22) + 'px monospace';
+    context.fillText(model.seed, scaledX(scale, 118), scaledY(scale, 204));
+
+    context.fillStyle = model.theme.ink;
+    context.font = 'bold ' + scaledFont(scale, 58) + 'px monospace';
+    lineY = scaledY(scale, 344);
+
+    for (i = 0; i < textLines.length; i++) {
+      wrappedLines = wrapLine(context, textLines[i], maxWidth);
+
+      for (j = 0; j < wrappedLines.length; j++) {
+        lineJitter = model.thermal && rng
+          ? rng.int(-model.theme.jitter, model.theme.jitter + 1)
+          : 0;
+        context.fillText(
+          wrappedLines[j],
+          scaledX(scale, 118),
+          lineY + scaledY(scale, 84 * j) + lineJitter
+        );
       }
-      y += py(scales, 120) + py(scales, 82 * (blocks.length - 1));
+
+      lineY += scaledY(scale, 120) + scaledY(scale, 82 * (wrappedLines.length - 1));
     }
 
-    ctx.fillStyle = model.theme.subInk;
-    ctx.font = fontPx(scales, 26) + 'px monospace';
-    ctx.fillText(model.worldLabel, px(scales, 118), py(scales, 708));
-    subline = wrapLines(ctx, 'PLAY ' + model.playUrl, maxWidth);
-    lineY = py(scales, 756);
-    for (i = 0; i < subline.length; i++) {
-      ctx.fillText(subline[i], px(scales, 118), lineY);
-      lineY += py(scales, 34);
+    context.fillStyle = model.theme.subInk;
+    context.font = scaledFont(scale, 26) + 'px monospace';
+    context.fillText(model.worldLabel, scaledX(scale, 118), scaledY(scale, 708));
+
+    wrappedLines = wrapLine(context, 'PLAY ' + model.playUrl, maxWidth);
+    lineY = scaledY(scale, 756);
+
+    for (i = 0; i < wrappedLines.length; i++) {
+      context.fillText(wrappedLines[i], scaledX(scale, 118), lineY);
+      lineY += scaledY(scale, 34);
     }
 
-    ctx.fillStyle = model.theme.divider;
-    ctx.fillRect(px(scales, 118), py(scales, 836), px(scales, 844), Math.max(2, py(scales, 2)));
+    context.fillStyle = model.theme.divider;
+    context.fillRect(
+      scaledX(scale, 118),
+      scaledY(scale, 836),
+      scaledX(scale, 844),
+      Math.max(2, scaledY(scale, 2))
+    );
 
-    ctx.fillStyle = model.theme.subInk;
-    ctx.font = fontPx(scales, 24) + 'px monospace';
-    ctx.fillText('FRAGMENTS ' + (model.fragmentIds || []).join(' / '), px(scales, 118), py(scales, 904));
-    ctx.fillText('OBEDIENCE ' + Number(model.tensions.obedience || 0).toFixed(2), px(scales, 118), py(scales, 956));
-    ctx.fillText('STYLE ' + Number(model.tensions.style || 0).toFixed(2), px(scales, 118), py(scales, 1006));
-    ctx.fillText('AUDIT ' + Number(model.tensions.auditRisk || 0).toFixed(2), px(scales, 118), py(scales, 1056));
+    context.fillStyle = model.theme.subInk;
+    context.font = scaledFont(scale, 24) + 'px monospace';
+    context.fillText('FRAGMENTS ' + (model.fragmentIds || []).join(' / '), scaledX(scale, 118), scaledY(scale, 904));
+    context.fillText('OBEDIENCE ' + Number(model.tensions.obedience || 0).toFixed(2), scaledX(scale, 118), scaledY(scale, 956));
+    context.fillText('STYLE ' + Number(model.tensions.style || 0).toFixed(2), scaledX(scale, 118), scaledY(scale, 1006));
+    context.fillText('AUDIT ' + Number(model.tensions.auditRisk || 0).toFixed(2), scaledX(scale, 118), scaledY(scale, 1056));
 
-    ctx.fillStyle = model.theme.ink;
-    ctx.font = 'bold ' + fontPx(scales, 28) + 'px monospace';
-    subline = wrapLines(ctx, model.footer, maxWidth);
-    lineY = py(scales, 1178);
-    for (i = 0; i < subline.length; i++) {
-      ctx.fillText(subline[i], px(scales, 118), lineY);
-      lineY += py(scales, 34);
+    context.fillStyle = model.theme.ink;
+    context.font = 'bold ' + scaledFont(scale, 28) + 'px monospace';
+    footerLines = wrapLine(context, model.footer, maxWidth);
+    footerY = scaledY(scale, 1178);
+
+    for (i = 0; i < footerLines.length; i++) {
+      context.fillText(footerLines[i], scaledX(scale, 118), footerY);
+      footerY += scaledY(scale, 34);
     }
   }
 
-  function ensureCardModel(receipt, opts){
+  function cardModel(receipt, options){
     if (receipt && receipt.theme && receipt.lines && receipt.seed) return receipt;
+
     if (!ns.Receipts || !ns.Receipts.cardModel) {
       throw new Error('Receipt card helpers unavailable.');
     }
-    return ns.Receipts.cardModel(receipt, opts || {});
+
+    return ns.Receipts.cardModel(receipt, options || {});
   }
 
-  function render(receipt, opts){
-    opts = opts || {};
+  function render(receipt, options){
+    var opts = options || {};
     var width = opts.width || BASE_W;
-    var height = opts.height || fitHeight(width, opts.height);
-    var canvas = makeCanvas(width, height, opts.createCanvas || null);
-    var ctx = canvas.getContext('2d');
-    var model = ensureCardModel(receipt, opts);
-    drawReceipt(ctx, canvas, model);
+    var height = resolveHeight(width, opts.height);
+    var canvas = createCanvas(width, height, opts.createCanvas || null);
+    var context = canvas.getContext('2d');
+    var model = cardModel(receipt, opts);
+
+    drawReceipt(context, canvas, model);
     return canvas;
   }
 

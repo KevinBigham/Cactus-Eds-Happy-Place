@@ -1,0 +1,142 @@
+{
+  "checkpoint": "W10 Phase 2 — Ed state machine (18 states)",
+  "task_id": "CEHP-REBUILD-W10-FEEL-PASS",
+  "phase_id": 2,
+  "phase_name": "Ed state machine (18 states)",
+  "produced_by": "Reviewer (Claude Code)",
+  "produced_at": "2026-04-23",
+  "status": "READY FOR KEVIN CHECKPOINT",
+  "checkpoint_prompt": "Build byte count, autoplay reports on all 3 worlds, one 30-second Playwright recording of W1 opener for visual parity check.",
+  "source_of_truth_docs": [
+    "ACTIVE/docs/W10_REDESIGN_SPRINT.md",
+    "ACTIVE/docs/NEXT_TASK.md",
+    ".codex/CEHP/status.md"
+  ],
+  "build": {
+    "command": "cd ACTIVE/game && node build.js",
+    "result_line": "Built 44 modules -> index.html (308216 bytes)",
+    "bundle_bytes": 308216,
+    "bundle_bytes_on_disk": 308228,
+    "ceiling_bytes": 358400,
+    "runway_bytes": 50184,
+    "runway_pct": 14.0,
+    "pre_phase2_bytes": 295563,
+    "delta_vs_pre_phase2_bytes": 12653,
+    "under_ceiling": true
+  },
+  "tests": {
+    "command": "cd ACTIVE/game && node --test tests/rebuild_logic.test.mjs",
+    "total": 52,
+    "pass": 52,
+    "fail": 0,
+    "duration_ms": 218.198125,
+    "new_in_phase_2": [
+      "phase 2 state module enter and exit preserve invariants",
+      "phase 2 state priority stack gives supremacy to death and hurt overrides",
+      "phase 2 state canTransition is driven by CancelMatrix rules only",
+      "phase 2 state module self-wires movement createEd apply and respawn"
+    ]
+  },
+  "save_schema": {
+    "command": "cd ACTIVE/game && node scripts/check_save_schema.js",
+    "result": "Rebuild save schema (v2 + archaeological v1) checks passed",
+    "v1_contract_frozen": true,
+    "v3_introduced": false
+  },
+  "art_assets": {
+    "command": "cd ACTIVE/game && node scripts/verify_art_assets.mjs",
+    "result": "32/32 expected assets OK"
+  },
+  "autoplay_reports": {
+    "orientation": {
+      "command": "cd ACTIVE/game && node scripts/autoplay.mjs --world orientation",
+      "report_path": "ACTIVE/game/output/autoplay/autoplay-orientation-2026-04-23T16-22-08-723Z.json",
+      "determinism": "MATCH",
+      "passed": true
+    },
+    "benefits": {
+      "command": "cd ACTIVE/game && node scripts/autoplay.mjs --world benefits",
+      "report_path": "ACTIVE/game/output/autoplay/autoplay-benefits-2026-04-23T16-22-35-685Z.json",
+      "determinism": "MATCH",
+      "passed": true,
+      "notes": "at least 1 enemy observed in scene"
+    },
+    "rasta": {
+      "command": "cd ACTIVE/game && node scripts/autoplay.mjs --world rasta",
+      "report_path": "ACTIVE/game/output/autoplay/autoplay-rasta-2026-04-23T16-23-02-591Z.json",
+      "determinism": "MATCH",
+      "passed": true
+    }
+  },
+  "visual_capture": {
+    "world": "orientation",
+    "seed": "CASE-20260429-001-BOOT-R1",
+    "duration_seconds": 30,
+    "input_pattern": "hold ArrowRight; tap Space every 1400ms (matches autoplay.mjs)",
+    "jumps_triggered": 21,
+    "video_path": "ACTIVE/delivery/w10_phase2_checkpoint/w1_orientation_30s.webm",
+    "video_bytes": 3745114,
+    "keyframes": [
+      "ACTIVE/delivery/w10_phase2_checkpoint/w1_keyframe_00.png",
+      "ACTIVE/delivery/w10_phase2_checkpoint/w1_keyframe_01.png",
+      "ACTIVE/delivery/w10_phase2_checkpoint/w1_keyframe_02.png",
+      "ACTIVE/delivery/w10_phase2_checkpoint/w1_keyframe_03.png",
+      "ACTIVE/delivery/w10_phase2_checkpoint/w1_keyframe_04.png",
+      "ACTIVE/delivery/w10_phase2_checkpoint/w1_keyframe_05.png"
+    ],
+    "keyframe_spacing_seconds": [0, 6, 12, 18, 24, 30]
+  },
+  "sacred_constraint_sweep": {
+    "es5_patterns_in_new_module": {
+      "pattern": "(=>|\\blet\\s|\\bconst\\s|\\bclass\\s|`|\\.\\.\\.|async\\s|await\\s)",
+      "file": "src/07_ed_state.js",
+      "matches": 0
+    },
+    "math_random_in_shipped_src": {
+      "matches_in_code": 0,
+      "matches_in_comments": ["src/02_rng.js (NEVER Math.random() warning comment)"]
+    },
+    "tuning_globals_mutations": {
+      "JUMP_VELOCITY_assignments": 0,
+      "GRAVITY_assignments": 0
+    },
+    "untouched_files_claim_verified": [
+      { "path": "ACTIVE/game/src/21_movement.js", "mtime": "2026-04-21 13:58", "note": "pre-dates phase-2 work by 2 days" },
+      { "path": "ACTIVE/game/src/50_forms.js", "mtime": "2026-04-23 07:23", "note": "pre-dates 07_ed_state.js create (11:14)" },
+      { "path": "ACTIVE/game/src/89_ed_perform.js", "mtime": "2026-04-23 07:08", "note": "pre-dates 07_ed_state.js create (11:14)" }
+    ]
+  },
+  "reviewer_flags": [
+    {
+      "level": "watch",
+      "topic": "bundle_growth_trajectory",
+      "detail": "+12,653 bytes in Phase 2 alone. W10 was estimated at ~17-21 KB total across all 7 phases. Phase 2 consumed roughly 60-75% of the W10 byte budget. Phase 6 (60 px sprite) is estimated at ~10 KB more. Recommend a per-phase byte budget recheck before Phase 6 starts, or a minification pass pre-Phase-7.",
+      "action": "track cumulative bytes after each subsequent phase; flag if runway < 20 KB"
+    },
+    {
+      "level": "note",
+      "topic": "phase_2_scope_variance",
+      "detail": "Original phase-2 plan modified src/50_forms.js and src/89_ed_perform.js. Builder instead elected to self-wire from 07_ed_state.js via ns.Movement.{createEd,apply,respawn} monkey-patch. Movement + perform files verified untouched in this pass. Deviation is a reduction in blast radius, not an expansion — logged for transparency.",
+      "action": "no action required; note for Phase 3 planning so Codex knows self-wiring is the established pattern"
+    }
+  ],
+  "kevin_checkpoint_decision_requested": {
+    "gate": "Phase 2 visual parity",
+    "question": "Does the 30s W1 capture look equivalent to pre-Phase-2 gameplay? Greenlight Phase 3?",
+    "options": [
+      "APPROVE — Phase 3 unlocked, Codex proceeds with verb set (ground dash, double jump, wall-slide+wall-jump, wall-climb, slide+jump-cancel, diagonal aim)",
+      "REJECT — name what looks off; reviewer triages to builder",
+      "HOLD — request additional capture (other world, different seed, headed playback mode)"
+    ]
+  },
+  "next_phase": {
+    "phase_id": 3,
+    "name": "Verb set",
+    "owner_role": "Codex 5.4 (builder)",
+    "est_bytes": 2048,
+    "est_days": 1.5,
+    "blocked_until": "Kevin approves W10 Phase 2 checkpoint",
+    "files_modified": ["src/07_ed_state.js", "src/50_forms.js", "src/89_ed_perform.js"],
+    "acceptance_summary": "Ground dash 260 px/s (167 ms active), double jump 82% impulse, wall-slide 40% fall clamp + wall-jump 115% run cap away impulse, wall-climb on marked surfaces only, slide/roll with jump-cancel final 100 ms window, diagonal aim +/-35 degrees, no air dash, no JUMP_VELOCITY/GRAVITY mutation"
+  }
+}

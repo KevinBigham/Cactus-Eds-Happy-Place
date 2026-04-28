@@ -1,9 +1,6 @@
-/* ================================================================
-   MODULE: 03_EVENTS
-   Tiny synchronous pub/sub. Topic keys are strings. Handlers fire
-   in subscription order. Errors are caught so one bad handler
-   never takes down the bus.
-   ---------------------------------------------------------------- */
+/* MODULE: 03_EVENTS - tiny synchronous pub/sub.
+   Topic keys are strings; handlers fire in subscription order;
+   errors are caught so one bad handler never takes down the bus. */
 
 (function(ns){
   'use strict';

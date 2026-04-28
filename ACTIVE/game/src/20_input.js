@@ -1,7 +1,5 @@
-/* ================================================================
-   MODULE: 20_INPUT
-   Keyboard + gamepad abstraction. Exposes justPressed/justReleased.
-   ---------------------------------------------------------------- */
+/* MODULE: 20_INPUT - keyboard + gamepad abstraction.
+   Exposes justPressed / justReleased. */
 
 (function(ns){
   'use strict';

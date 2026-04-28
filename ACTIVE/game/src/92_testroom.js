@@ -1,8 +1,5 @@
-/* ================================================================
-   MODULE: 92_TESTROOM
-   Throwaway Week 1 room exercising movement, contradiction gates,
-   forms-as-objects, audio, cigarette rendering, and receipts.
-   ---------------------------------------------------------------- */
+/* MODULE: 92_TESTROOM - throwaway W1 room exercising movement,
+   contradictions, forms, audio, cigarette, receipts. */
 
 (function(ns){
   'use strict';

@@ -1,8 +1,5 @@
-/* ================================================================
-   MODULE: 82_APPEALS
-   Seed deep-link replay + ghost movement recording + side-by-side
-   comparison. This is the discourse engine. Ships in rebuild.
-   ---------------------------------------------------------------- */
+/* MODULE: 82_APPEALS - seed deep-link replay + ghost movement
+   recording + side-by-side comparison. Discourse engine. */
 
 (function(ns){
   'use strict';

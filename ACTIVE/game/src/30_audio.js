@@ -1,13 +1,7 @@
-/* ================================================================
-   MODULE: 30_AUDIO
-   Four Web Audio layers, oscillators only — ZERO audio files.
-     hvacHymn          — two detuned triangles → lowpass
-     bureauPulse       — square-wave metronome @ 60 BPM base
-     curiosityShimmer  — high-passed partials + delay
-     incidentNoise     — filtered noise bursts + pitch wobble
-   Axis changes modulate filter/tempo/detune in real time.
-   Rasta Corp override: 72 BPM, warmer filter, noise layer off.
-   ---------------------------------------------------------------- */
+/* MODULE: 30_AUDIO - four Web Audio layers, oscillators only.
+   ZERO audio files. hvacHymn/bureauPulse/curiosityShimmer/incidentNoise;
+   axis changes modulate filter/tempo/detune in real time.
+   Rasta Corp override: 72 BPM, warmer filter, noise layer off. */
 
 (function(ns){
   'use strict';

@@ -10,11 +10,65 @@ var GAME = __dirname;
 var SRC  = path.join(GAME, 'src');
 var TMPL = path.join(GAME, 'index.template.html');
 var OUT  = path.join(GAME, 'index.html');
+var PRIORITY = [
+  '00_index.js',
+  '01_const.js',
+  '02_rng.js',
+  '03_events.js',
+  '04_fixed_step.js',
+  '04_save.js',
+  '05_caseseed.js',
+  '05_input_buffer.js',
+  '06_cancel_matrix.js',
+  '07_ed_state.js'
+];
 
-var files = fs.readdirSync(SRC).filter(function(f){ return /\.js$/.test(f); }).sort();
+function isModuleFile(file) {
+  return /\.js$/.test(file);
+}
+
+function bannerFor(file) {
+  return '/* =============== MODULE: ' + String(file || '').toUpperCase() + ' =============== */';
+}
+
+function stripLeadingModuleComment(source) {
+  if (!/^\/\*/.test(source || '')) return source;
+  return source.replace(/^\/\*[\s\S]*?MODULE:[\s\S]*?\*\/\s*/, '');
+}
+
+function normalizeBundleSource(source) {
+  return String(source || '').replace(/^  /gm, '').replace(/^  /gm, '');
+}
+
+function priorityIndex(file) {
+  var i;
+  for (i = 0; i < PRIORITY.length; i++) {
+    if (PRIORITY[i] === file) return i;
+  }
+  return -1;
+}
+
+function compareFiles(a, b) {
+  var aPriority = priorityIndex(a);
+  var bPriority = priorityIndex(b);
+
+  if (aPriority >= 0 || bPriority >= 0) {
+    if (aPriority < 0) return 1;
+    if (bPriority < 0) return -1;
+    return aPriority - bPriority;
+  }
+
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+}
+
+var files = fs.readdirSync(SRC).filter(isModuleFile).sort(compareFiles);
 var bundle = files.map(function(f){
-  return '\n/* =============== MODULE: ' + f.toUpperCase() + ' =============== */\n'
-       + fs.readFileSync(path.join(SRC, f), 'utf8');
+  var source = fs.readFileSync(path.join(SRC, f), 'utf8');
+  source = stripLeadingModuleComment(source);
+  source = normalizeBundleSource(source);
+  return bannerFor(f) + '\n' + source;
 }).join('\n');
 
 var tmpl  = fs.readFileSync(TMPL, 'utf8');

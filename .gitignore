@@ -6,3 +6,9 @@
 ACTIVE/game/node_modules/
 ACTIVE/game/playwright-report/
 ACTIVE/game/test-results/
+ACTIVE/game/output/autoplay/
+ACTIVE/game/art/_originals/
+
+# Discord sidecar
+ACTIVE/discord/node_modules/
+ACTIVE/discord/output/

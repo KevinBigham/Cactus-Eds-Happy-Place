@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "name": "CEHP process guard",
+  "purpose": "Executable checks for long-lived project rules that should not depend on memory or handoff prose.",
+  "shipArtifact": {
+    "file": "index.html",
+    "buildCommand": "node build.js",
+    "maxBytes": 409600
+  },
+  "worlds": ["orientation", "benefits", "rasta"],
+  "requiredFiles": [
+    "build.js",
+    "index.template.html",
+    "scripts/check_save_schema.js",
+    "scripts/verify_art_assets.mjs",
+    "scripts/check_process_manifest.mjs",
+    "scripts/verify-cehp.sh",
+    "scripts/verify-w10-full.sh",
+    "tests/rebuild_logic.test.mjs",
+    "tests/process_manifest.test.mjs"
+  ],
+  "requiredPackageScripts": {
+    "verify": "./scripts/verify-cehp.sh",
+    "verify:process": "node scripts/check_process_manifest.mjs",
+    "verify:w10": "bash scripts/verify-w10-full.sh",
+    "test:rebuild": "node --test tests/rebuild_logic.test.mjs",
+    "test:process": "node --test tests/process_manifest.test.mjs"
+  },
+  "runtimeSource": {
+    "dir": "src",
+    "minimumModuleCount": 44,
+    "requiredModules": [
+      "00_index.js",
+      "01_const.js",
+      "02_rng.js",
+      "03_events.js",
+      "04_fixed_step.js",
+      "04_save.js",
+      "05_input_buffer.js",
+      "06_cancel_matrix.js",
+      "07_ed_state.js",
+      "60_enemies.js",
+      "70_worlds.js",
+      "80_receipts.js",
+      "89_ed_perform.js",
+      "91_scenes.js",
+      "99_boot.js"
+    ],
+    "es5Only": true,
+    "rngModule": "02_rng.js",
+    "protectedTuningWrites": ["JUMP_VELOCITY", "GRAVITY"],
+    "saveKeys": {
+      "legacy": "cactusEd_save_v1",
+      "live": "cactusEd_save_v2"
+    }
+  },
+  "verificationScripts": {
+    "standard": {
+      "file": "scripts/verify-cehp.sh",
+      "mustContain": [
+        "node build.js",
+        "node scripts/check_process_manifest.mjs",
+        "node scripts/check_save_schema.js",
+        "node scripts/verify_art_assets.mjs",
+        "node --test tests/rebuild_logic.test.mjs",
+        "node --test tests/process_manifest.test.mjs"
+      ]
+    },
+    "w10Full": {
+      "file": "scripts/verify-w10-full.sh",
+      "mustContain": [
+        "bash scripts/verify-cehp.sh",
+        "node scripts/autoplay.mjs --world orientation",
+        "node scripts/autoplay.mjs --world benefits",
+        "node scripts/autoplay.mjs --world rasta"
+      ]
+    }
+  }
+}

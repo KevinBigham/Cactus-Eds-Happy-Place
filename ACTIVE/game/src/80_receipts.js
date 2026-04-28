@@ -1,12 +1,14 @@
 /* ================================================================
    MODULE: 80_RECEIPTS
    3-line format: [Primary Verdict] [Pairwise Tension] [World Closer]
-   Target: ~180 authored fragments → millions of combos.
-   Priority sort uses axes, tensions, micro-signals, and world context.
+   W8-R03 tone: nudge ties toward benign reframe (Perchtold 2019).
    ---------------------------------------------------------------- */
 
 (function(ns){
   'use strict';
+
+  var BENIGN_BIAS = 0.35;
+  var MALICIOUS_BIAS = -0.35;
 
   function makeFragment(id, text, opts){
     return {
@@ -18,7 +20,8 @@
       lowTensions: opts && opts.lowTensions ? opts.lowTensions : null,
       micro: opts && opts.micro ? opts.micro : null,
       worlds: opts && opts.worlds ? opts.worlds : null,
-      flags: opts && opts.flags ? opts.flags : null
+      flags: opts && opts.flags ? opts.flags : null,
+      tone: opts && opts.tone ? opts.tone : null
     };
   }
 
@@ -130,6 +133,7 @@
     'POLICY AND MOTION ALIGNED.',
     'MANDATE FULFILLED WITHOUT DRIFT.'
   ], {
+    tone: 'benign',
     axes: { compliance: 2.0, efficiency: 0.8 },
     tensions: { obedience: 1.1 },
     micro: { contradictionFollow: 0.6, modulesPassed: 0.4 }
@@ -147,6 +151,7 @@
     'CURIOSITY OUTRAN ADMINISTRATIVE INTENT.',
     'YOU ASKED THE ROOM BACK.'
   ], {
+    tone: 'benign',
     axes: { curiosity: 2.0, intuition: 0.8 },
     tensions: { auditRisk: 0.9 },
     micro: { signPeeks: 0.4, secretsFound: 0.6, signsRead: 0.2 }
@@ -164,6 +169,7 @@
     'RESTRAINT WAS DECLINED QUIETLY.',
     'FILE MOTION TURNED COMBATIVE.'
   ], {
+    tone: 'malicious',
     axes: { chaos: 2.0, curiosity: 0.5 },
     tensions: { obedience: -1.2 },
     micro: { contradictionDefy: 0.6, kickCount: 0.4, punchCount: 0.2 }
@@ -181,6 +187,7 @@
     'EVEN THE MISS LOOKED MEANT.',
     'MOTION STAYED SOFT UNDER PRESSURE.'
   ], {
+    tone: 'benign',
     axes: { grace: 2.0, intuition: 0.4 },
     tensions: { style: 0.8 },
     micro: { wallJumps: 0.5, nearMisses: 0.5, corrections: 0.4 }
@@ -198,6 +205,7 @@
     'THE ROUTE NEVER GOT LONELY.',
     'OUTPUT ARRIVED BEFORE OBJECTION.'
   ], {
+    tone: 'benign',
     axes: { efficiency: 2.0, compliance: 0.6 },
     tensions: { style: 0.6, obedience: 0.2 },
     micro: { modulesPassed: 0.5, formsUsed: 0.2 }
@@ -215,6 +223,7 @@
     'CAUTION ARRIVED WITHOUT PERMISSION.',
     'YOUR GUESS OUTRAN THE SCRIPT.'
   ], {
+    tone: 'benign',
     axes: { intuition: 2.0, grace: 0.4 },
     tensions: { auditRisk: -0.8 },
     micro: { damageTaken: 0.2, signsRead: 0.2, deaths: 0.1 }
@@ -232,6 +241,7 @@
     'COMPLIANCE LOOKED BETTER FROM INSIDE.',
     'THE STAMP SAW ENOUGH TODAY.'
   ], {
+    tone: 'benign',
     worlds: { orientation: 2.8 },
     axes: { compliance: 0.8, curiosity: 0.4, efficiency: 0.4 },
     micro: { modulesPassed: 0.7, signsRead: 0.2 }
@@ -261,6 +271,7 @@
     'PREAUTHORIZATION LIKED YOUR PATIENCE.',
     'THE ATRIUM OFFERED A SOFTER STAIR.'
   ], {
+    tone: 'benign',
     worlds: { benefits: 3.4 },
     flags: { premiumSecured: true },
     axes: { compliance: 0.8, efficiency: 0.4 },
@@ -274,6 +285,7 @@
     'YOUR FILE CONTINUED WITHOUT PROTECTION.',
     'BILLING PREFERRED THE RISKIER VERSION.'
   ], {
+    tone: 'malicious',
     worlds: { benefits: 3.4 },
     flags: { uninsuredVeteran: true },
     axes: { chaos: 0.8, intuition: 0.3 },
@@ -287,6 +299,7 @@
     'QUIET MOVED THE BELT.',
     'YOU ARRIVED WITHOUT DEFENSE.'
   ], {
+    tone: 'benign',
     worlds: { rasta: 3.4 },
     flags: { restOpened: true, cigaretteLit: false },
     axes: { intuition: 0.6, grace: 0.4 },
@@ -300,6 +313,7 @@
     'YOU FOUGHT A KIND DOOR.',
     'THE BELT KEPT LOVING YOU.'
   ], {
+    tone: 'benign',
     worlds: { rasta: 3.3 },
     flags: { rushedRest: true },
     axes: { intuition: 0.4, grace: 0.2, chaos: 0.2 },
@@ -318,6 +332,7 @@
     'STILLNESS KEPT ITS BADGE.',
     'FORM BEAT INSTINCT THIS TIME.'
   ], {
+    tone: 'benign',
     tensions: { obedience: 2.0 },
     axes: { compliance: 0.8 }
   });
@@ -334,6 +349,7 @@
     'COMPLIANCE READ AS TEMPORARY.',
     'OBEDIENCE NEVER FOUND PARKING.'
   ], {
+    tone: 'benign',
     tensions: { obedience: -2.0 },
     axes: { chaos: 0.8 }
   });
@@ -350,6 +366,7 @@
     'ACCURACY MET PRESENTATION HALFWAY.',
     'THE HALLWAY RESPECTED YOUR FORM.'
   ], {
+    tone: 'benign',
     tensions: { style: 1.1 },
     axes: { grace: 0.8, efficiency: 0.8 }
   });
@@ -399,6 +416,7 @@
     'YOU CHOSE SIGNAL OVER NOVELTY.',
     'NOT MUCH REQUIRED AN INVESTIGATION.'
   ], {
+    tone: 'benign',
     tensions: { auditRisk: -2.0 },
     axes: { intuition: 0.8 }
   });
@@ -427,6 +445,7 @@
     'THE UPPER FILE KEPT YOUR MANNERS.',
     'THE WINDOW RESPECTED YOUR DELAY.'
   ], {
+    tone: 'benign',
     worlds: { orientation: 3.0 },
     tensions: { obedience: 0.9, style: 0.2 },
     micro: { contradictionFollow: 1.2, modulesPassed: 0.4 },
@@ -440,6 +459,7 @@
     'PROTOCOL LOST THE ARGUMENT EARLY.',
     'THE BADGE MISSED YOUR BETTER IDEA.'
   ], {
+    tone: 'benign',
     worlds: { orientation: 3.0 },
     tensions: { obedience: -1.0, auditRisk: 0.5 },
     micro: { contradictionDefy: 1.2, modulesPassed: 0.4 },
@@ -470,6 +490,7 @@
     'THE SAFER HALLWAY CHARGED IN ADVANCE.',
     'THE NETWORK REWARDED EARLY SUBMISSION.'
   ], {
+    tone: 'benign',
     worlds: { benefits: 3.3 },
     flags: { premiumSecured: true },
     tensions: { obedience: 0.8, style: 0.4 },
@@ -496,6 +517,7 @@
     'THE FLOOR KEPT GENTLER TIME.',
     'YOU LET THE SIGNAL ARRIVE.'
   ], {
+    tone: 'benign',
     worlds: { rasta: 3.3 },
     flags: { restOpened: true, cigaretteLit: false },
     tensions: { obedience: 0.5, style: 0.4, auditRisk: -0.4 },
@@ -510,6 +532,7 @@
     'THE BELT RETURNED YOUR WEIGHT.',
     'THE MACHINES SOFTENED IMPACT.'
   ], {
+    tone: 'benign',
     worlds: { rasta: 3.2 },
     flags: { rushedRest: true },
     tensions: { obedience: -0.2, style: 0.1, auditRisk: -0.2 },
@@ -544,6 +567,7 @@
     'THE ROOM OPENED AFTER BREATHING.',
     'THE UPPER ROUTE CHOSE YOU.'
   ], {
+    tone: 'benign',
     micro: { contradictionFollow: 2.6 },
     axes: { compliance: 0.6 },
     worlds: { orientation: 0.2 }
@@ -561,6 +585,7 @@
     'THE HALLWAY MADE ROOM FOR NO.',
     'DISOBEDIENCE OPENED SOMETHING USEFUL.'
   ], {
+    tone: 'benign',
     micro: { contradictionDefy: 2.6 },
     axes: { chaos: 0.7, curiosity: 0.3 },
     worlds: { orientation: 0.2 }
@@ -578,6 +603,7 @@
     'THE HALLWAY STOPPED LYING BRIEFLY.',
     'YOU LEFT WITH BOTH SHOULDERS DOWN.'
   ], {
+    tone: 'benign',
     worlds: { rasta: 3.0 },
     flags: { cigaretteLit: false },
     axes: { intuition: 0.3, grace: 0.4 }
@@ -590,6 +616,7 @@
     'YOU WERE MET WITHOUT FIRE.',
     'THE FLOOR REMEMBERED GENTLY.'
   ], {
+    tone: 'benign',
     worlds: { rasta: 3.4 },
     flags: { restOpened: true, cigaretteLit: false },
     axes: { intuition: 0.4, grace: 0.4 },
@@ -603,6 +630,7 @@
     'YOU WERE TURNED, NOT JUDGED.',
     'THE HALLWAY STOOD NEARBY.'
   ], {
+    tone: 'benign',
     worlds: { rasta: 3.1 },
     flags: { rushedRest: true },
     axes: { intuition: 0.3, grace: 0.2 },
@@ -621,6 +649,7 @@
     'YOUR LOSSES ALTERED THE PAPERWORK.',
     'REPETITION SOFTENED THE STAMP.'
   ], {
+    tone: 'benign',
     micro: { deaths: 0.7, respawns: 0.5 },
     axes: { intuition: 0.3 }
   });
@@ -667,6 +696,7 @@
     'THE STAIRS RETURNED YOU QUIETLY.',
     'THE CLIPBOARD PREFERRED YOUR PAUSE.'
   ], {
+    tone: 'benign',
     worlds: { orientation: 3.4 },
     axes: { compliance: 0.4, intuition: 0.1 },
     micro: { contradictionFollow: 1.4, modulesPassed: 0.6 }
@@ -679,6 +709,7 @@
     'THE MONITOR FILED A COMPLAINT.',
     'CERTIFICATION LEFT BY SERVICE STAIRS.'
   ], {
+    tone: 'benign',
     worlds: { orientation: 3.4 },
     axes: { chaos: 0.5, curiosity: 0.2 },
     micro: { contradictionDefy: 1.4, modulesPassed: 0.6 }
@@ -707,6 +738,7 @@
     'PAYMENT PURCHASED A SOFTER FLOOR.',
     'THE ATRIUM RESPECTED YOUR RECEIPTS.'
   ], {
+    tone: 'benign',
     worlds: { benefits: 3.4 },
     flags: { premiumSecured: true },
     axes: { compliance: 0.3, efficiency: 0.2 },
@@ -808,6 +840,9 @@
         if (context.flags && context.flags[key] === fragment.flags[key]) score += 1.8;
       }
     }
+
+    if (fragment.tone === 'benign') score += BENIGN_BIAS;
+    else if (fragment.tone === 'malicious') score += MALICIOUS_BIAS;
 
     return score;
   }

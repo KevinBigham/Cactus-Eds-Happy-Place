@@ -1,11 +1,6 @@
-/* ================================================================
-   MODULE: 90_UI
-   Full-diegetic surfaces.
-     pause     → clipboard
-     save menu → locker
-     controls  → training poster
-   Plain-HTML escape hatch lives at `?settings=1` (not here).
-   ---------------------------------------------------------------- */
+/* MODULE: 90_UI - full-diegetic surfaces.
+   pause=clipboard, save=locker, controls=training poster.
+   Plain-HTML escape hatch at ?settings=1 (not here). */
 
 (function(ns){
   'use strict';

@@ -1,13 +1,13 @@
 # README — Instructions on What To Do
 
-> **Last updated**: 2026-04-21
-> **Updated by**: Codex 5.4 — W6 kickoff (launch runbook / rollback rehearsal / trailer package / CR packet)
+> **Last updated**: 2026-04-28
+> **Updated by**: Codex GPT-5.5 — codebase audit protocol documented
 
 ---
 
 # Project Overview
 
-**Cactus Ed's Happiest Place (CEHP)** is currently being rebuilt as a single-file browser platformer shipped from `ACTIVE/game/index.html`, authored as ES5 `src/*.js` modules concatenated by `ACTIVE/game/build.js`. The current local runtime is **32 modules** -> **1 HTML file** (`ACTIVE/game/index.html`, 7,198 lines / 248,537 bytes).
+**Cactus Ed's Happiest Place (CEHP)** is currently being rebuilt as a single-file browser platformer shipped from `ACTIVE/game/index.html`, authored as ES5 `src/*.js` modules concatenated by `ACTIVE/game/build.js`. The current local runtime is **44 modules** -> **1 HTML file** (`ACTIVE/game/index.html`, 11,453 lines / 355,187 bytes).
 
 **Current rebuild shape**: Phaser 3 via CDN, ES5 only, deterministic seeded runtime, save v2 with archaeological v1 preserved under `legacy`, Boot / Play / Overlay / Receipt scenes, a plain-HTML `?docket=1` archive surface, shared receipt-card rendering, and Discord-side receipt PNG rendering under `ACTIVE/discord/`.
 
@@ -21,6 +21,15 @@
 # Current State
 
 ## What exists and works
+- **Codebase audit protocol is now documented and first audit is complete** (2026-04-28): `ACTIVE/docs/CODEBASE_AUDIT.md` maps entry points, build/test/deploy commands, canonical/generated/archive lanes, runtime dependency graph, duplicate groups, large files, complex functions, TODO markers, runtime exclusions, and cleanup risk labels. No files were deleted or moved. Baseline verification is green: `node build.js`, save schema, process manifest `45/45`, rebuild logic `78/78`, process test `1/1`, and `bash scripts/verify-cehp.sh` all pass. Important blocker for future cleanup: this local folder is not currently a Git worktree, so cleanup must wait for a real snapshot or restored Git checkout.
+- **Process guard imported from Toprank audit is green locally** (2026-04-28): `ACTIVE/game/process_manifest.json` now acts as an executable process contract, `ACTIVE/game/scripts/check_process_manifest.mjs` validates required files/scripts/modules, ship-artifact byte cap, save keys, ES5 runtime source, seeded-RNG discipline, and protected tuning writes, and `ACTIVE/game/scripts/verify-w10-full.sh` provides a full W10 gate wrapper around standard verification plus orientation/benefits/rasta autoplay. `verify-cehp.sh` now rebuilds first and includes process, art, and process-test checks. Verification: process test RED first then GREEN, process guard `45/45`, standard verify PASS, W10 wrapper PASS with `CEHP_SKIP_AUTOPLAY=1`. Full autoplay was not run in this process-hardening pass.
+- **W8 sprint is fully staged, activates on Kevin's W7 close-out** (2026-04-21 late): Kevin approved `.claude/plans/mossy-stargazing-sloth.md` via ExitPlanMode — the canonical 5-phase W8 plan (R03 receipt tone bias → R04 Rayman camera → R01 enemy telegraph → R02 Encounter Director → R05 curiosity-pays-rent). Phase 0 byte-path resolved to **option (a) — minification approved** under Kevin's full-permission delegation (frees ~1,500–2,000B; retro-minifies existing AirKit/EdKit; W9 will queue a readability restoration pass). Actual on-disk `index.html` byte count corrected to **`299,934` bytes** (headroom vs. 300KB ceiling = 66B — Phase 0 required). New human-readable sprint doc at `ACTIVE/docs/W8_LENS_OF_RESEARCH_SPRINT.md`. `ACTIVE/docs/PROPOSED_NEXT_TASK.md` rewritten as the W8 beacon (`CEHP-REBUILD-W8-LENS-OF-RESEARCH`, owner Codex 5.4, STATUS PROPOSED, reviewer-suggested deadline 2026-05-05). `NEXT_TASK.md` still on W7 — Kevin promotes after W7 close-out. No code changed in this pass.
+- **W8 research synthesis remains the doctrine source** (2026-04-21): `ACTIVE/docs/W8_RESEARCH_SYNTHESIS.md` distills the 7 legacy research/guidance docs (Cactus Ed GOAT guide, Contra, Mega Man X, Rayman, game design research synthesis, Community Chaos humor addendum, Perchtold 2019 PLOS ONE humor paper) against the current 37-module runtime into six ranked candidates (`W8-R01` through `W8-R06`) with byte estimates, seams, and a sacred-constraint audit. The plan consumes this doc as spec input.
+- **W7 Phase 5 EdKit is reviewer-GREEN** (2026-04-22): Phase 6 AirKit is already shipped as `ACTIVE/game/src/8A_air.js` (paper-drift motes, dust motes confined to light cones, camera micro-sway when Ed idle >3s, global flicker beat every 7–14s — all LCG-seeded). Pending Kevin's byte-budget call (current build `296,057` bytes; `3,943` bytes headroom vs. 300KB soft ceiling): (a) minify AirKit, (b) raise soft ceiling to ~310KB, or (c) budget-optimize EdKit. Reviewer recommends (a).
+- **W7 Phase 4 FeelKit is green locally and pending reviewer** (2026-04-22): `ACTIVE/game/src/88_feel.js` now ships pickup pause/shake/fleck/flash/clack feedback, a scene-local `ShakeBudget`, camera deadzone + lookahead, landing settle hooks, and run-scoped gravity helpers. `ACTIVE/game/src/21_movement.js` preserves the coyote/buffer state machine while adding `gravityMultiplier`-driven early release, `ACTIVE/game/src/75_world_benefits_runtime.js` now emits direct FeelKit pickup calls from the premium collect seam, and `ACTIVE/game/src/91_scenes.js` adds `setDeadzone(48, 32)` plus `ns.Feel.updateCamera(...)` without replacing the existing `startFollow(...)`. Current byte count: `291425` from build output / `291487` on disk (`+13941` bytes from the Phase 3 baseline, inside the `+14 KB` stop line). Full local verify is green at logic `17/17`, bot hardening `5/5`, thermal PNG `116994` bytes, pickup probe `pause false->true->false / shakeCalls=1`, sign-read guard probe `shakeCalls=0`, jump apex delta `12.1083px` (80ms tap vs 500ms hold), 60s uncapped W1 FPS `avg 848.44 / min 722.86 / max 903.82`, and 10s pickup-stress FPS `avg 1022.08 / min 876.12 / max 1077.68`.
+- **W7 Phase 3 PropKit is green locally** (2026-04-22): `ACTIVE/game/src/87_props.js` now generates the five requested palette-locked `cehp:prop:*` paper-prop families, primes before runtime create, wraps `ns.WorldBenefits.create`, and decorates all 14 live benefits premiums as deterministic receipt-slip props with seeded wobble/flutter. `ACTIVE/game/src/75_world_benefits_runtime.js` keeps the old premium square + `$` label invisible so the colored-square collectible no longer leaks through the live build. Current byte count at the Phase 3 boundary was `277484` from build output / `277546` on disk (`+9998` bytes from the Phase 2 baseline). Phase 4 preserved that seam and left the prop families intact.
+- **W7 Phase 2 LightKit is green locally** (2026-04-21): `ACTIVE/game/src/86_light.js` now adds one off-screen ADD-blend ambient radial per world plus deterministic sign emissive flicker in `PlayScene` only, `ns.PALETTE` now includes `COOL_KIOSK` and `WARM_EXIT`, and `91_scenes.js` primes/attaches/updates LightKit without touching Overlay/Receipt. Current byte count: `267492` from build output / `267554` on disk. Full local verify + bot hardening + thermal Discord render are green, and the new LightKit logic count is `11/11`.
+- **W7 Phase 1 LensKit is green locally** (2026-04-21): `ACTIVE/game/src/85_lens.js` now adds a deterministic dither/scanline/vignette stack in PlayScene only, `ns.PALETTE` is locked in `01_const.js`, boot now enforces `roundPixels:true` + `antialias:false`, and the rebuilt runtime passes save/schema, full `verify-cehp.sh`, bot hardening, and thermal Discord render. Current byte count: `255425` from build output / `255487` on disk.
 - **W6 kickoff execution is green locally** (2026-04-21): `cd ACTIVE/game && node build.js` still produces `248475` bytes, the Discord thermal render rewrites `ACTIVE/discord/output/CASE-20260504-001-GRACE-R2-thermal.png` at `116994` bytes, and the new `ACTIVE/game/scripts/verify_live_domain.mjs` smoke helper passes root/orientation/benefits/rasta/docket/settings against the local surface.
 - **Trailer final packaging is staged**: `bash ACTIVE/game/scripts/package_launch_trailer.sh` now writes `ACTIVE/delivery/w6_launch/cehp_launch_trailer_final.mp4` (`28.00s`, `1920x1080`, `24fps`, `597883` bytes), `cehp_launch_trailer_poster.png`, and `TRAILER_UPLOAD_DESCRIPTOR.md`.
 - **CR outreach is staged for Kevin review**: `ACTIVE/marketing/cr_pitch_v1/SEND_READY_PACKET.md` now lists the recommended attachment set and a draft note starter tied to the current W6 assets.
@@ -219,17 +228,22 @@
 
 # Current / Next Tasks
 
-## Current task: CEHP-REBUILD-W6-LAUNCH — Launch week / cutover / trailer final / outreach / monitoring
-- Local kickoff is green on 2026-04-21: build, save/schema verify, full local suite, bot hardening, live-domain smoke helper, and local thermal receipt render all pass
-- Ready for Kevin's DNS flip tonight: rollback rehearsal is documented, trailer packaging is staged, CR packet is staged, and the launch runbook/incident log are in place
-- Overnight launch-prep follow-through is now also in place: appeals doc, Steam design brief, trailer edit brief, launch go/no-go checklist, perf audit, accessibility status, W6 draft beacon, and morning brief
-- Current reviewer-facing checks are green: build, save schema, browser smoke, keyboard-only settings coverage, deterministic benefits + rasta + docket case-runs, full `verify-cehp.sh`, bot hardening tests, and direct Discord thermal render
-- Remaining external gates are the Claude Opus 4.7 Week 5 review and Kevin's signoff on thermal feel, docket tone, and the `ACTIVE/delivery/w5_demo/` bundle
+## Current task: CEHP-REBUILD-W7-LENS-AND-FEEL — Lens / light / props / feel / Ed / air (Phase 5 GREEN, Phase 6 pending taste + close-out)
+- Phase 5 EdKit is **reviewer-GREEN** (2026-04-22). 24×32 three-value Ed actor with 2-frame idle breathe and seeded eye-blink replaces the yellow rectangle. FeelKit `onLanding` land-squash preserved. Build at `296,057` bytes from the Phase 5 baseline.
+- Phase 6 AirKit is **shipped as `ACTIVE/game/src/8A_air.js`** (paper-drift motes, dust motes in light cones, camera micro-sway after 3s idle, global flicker beat every 7–14s — all LCG-seeded) but **not yet reviewer-closed** and **not yet taste-passed by Kevin**.
+- **Current on-disk byte count: `299,934` bytes** (66 bytes headroom vs. 300KB soft ceiling). W8 Phase 0 approved option (a) minification to create runway; W7 close-out can proceed independent of that.
+- Full local verify is green: logic **19/19** (two new EdKit tests), bot hardening **5/5**, thermal PNG `116,994` bytes, deterministic replays stable.
+- Kevin-gated items remain held: push to `main`, domain purchase/DNS, trailer publish, CR send, public announce.
+- Next non-Kevin actions: Phase 6 AirKit reviewer close-out + W7 DoD report.
 
 ## Next likely tasks (in order)
-1. Reviewer pass on Week 5 (`80_receipts.js`, `81_docket.js`, `83_receipt_render.js`, `91_scenes.js`, `74_world_orientation_runtime.js`, and the Week 5 scripts/tests/docs)
-2. Kevin tone pass on the thermal receipt trio, docket snapshot, and `ACTIVE/delivery/w5_demo/`
-3. Week 6 launch prep: DNS flip, trailer final edit, public Discord bot handoff, and Critical Reflex outreach
+1. **Kevin**: W7 Phase 5 EdKit visual taste pass (`?world=benefits` — 3-frame Ed read, breathe + blink timing).
+2. **Reviewer**: Phase 6 AirKit close-out pass (sacred-constraint sweep, determinism probe, byte check, DoD).
+3. **Kevin**: W7 Phase 6 AirKit taste pass (paper motes + dust motes in light cones + camera micro-sway + flicker beat).
+4. **Kevin**: W7 close-out signoff (single line in `status.md`).
+5. **Kevin**: promote `ACTIVE/docs/PROPOSED_NEXT_TASK.md` → `ACTIVE/docs/NEXT_TASK.md` (single overwrite — the W8 beacon is already written and waiting).
+6. **Codex 5.4**: begin W8 Phase 1 — R03 receipt benign-reframe tone bias (~150B, `80_receipts.js` only) per `.claude/plans/mossy-stargazing-sloth.md` + `ACTIVE/docs/W8_LENS_OF_RESEARCH_SPRINT.md`.
+7. **Reviewer / Kevin**: per-phase sacred-constraint sweep + determinism probe + byte check + taste gate. Next phase unlocks only on Kevin GREEN.
 
 ---
 

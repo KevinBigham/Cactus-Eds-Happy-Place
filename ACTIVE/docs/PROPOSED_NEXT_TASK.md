@@ -1,73 +1,76 @@
 # NEXT TASK (PROPOSED)
 
-This file is the proposal lane. Kevin can promote this to `ACTIVE/docs/NEXT_TASK.md` after signoff.
+This file is the proposal lane for the post-W9 hand-back.
 
 ---
 
-## TASK_ID: CEHP-REBUILD-W6-LAUNCH
-## TITLE: Rebuild Week 6 — Launch Week / Cutover / Trailer Final / Outreach / Monitoring
-## TASK_OWNER_ROLE: Builder (Codex 5.4)
-## CURRENT_STAGE: Proposed overnight on 2026-04-20 for Kevin morning review
-## NEXT_HANDLER_ROLE: Kevin (signoff) -> Builder (Codex 5.4)
+## TASK_ID: CEHP-POST-W9-KEVIN-TASTEGATE-AND-POLISH
+## TITLE: Kevin visual pass on W9 art/readability sprint + focused polish follow-up
+## TASK_OWNER_ROLE: Kevin (taste gate) → Builder (Codex 5.4) for any approved follow-up polish
+## CURRENT_STAGE: Proposed 2026-04-23 after W9 closed locally green. Awaiting Kevin review of the shipped W9 work.
+## NEXT_HANDLER_ROLE: Kevin
 ## STATUS: PROPOSED
-## DEADLINE: 2026-05-29
+## DEADLINE: TBD — Kevin sets after the W9 visual pass.
 
 ## CONTEXT
 
-Week 5 is locally green and reviewer-cleared. Thermal receipts, THE DOCKET, delivery assets, launch docs, accessibility assist wiring, Discord bot hardening tests, and the Week 5 delivery bundle are in place. Launch week is now an execution week, not a feature week.
+W9 is complete locally:
+- `screen_unmasked_reveal.png` regenerated and approved by Kevin.
+- Canonical typo audit completed; only 4 PNGs regenerated.
+- Track B readability restore shipped for the 4 scoped modules.
+- Track A wired the remaining 12 art assets with procedural fallback preserved.
+- Full verification matrix green:
+  - `node build.js` → `287826` reported bytes / `287838` on disk
+  - `node scripts/check_save_schema.js` pass
+  - `node scripts/verify_art_assets.mjs` → `32/32`
+  - `node --test tests/rebuild_logic.test.mjs` → `45/45`
+  - autoplay `orientation` / `benefits` / `rasta` all MATCH + OK
 
-This task exists to cut over safely, publish the launch-facing materials Kevin already owns, and keep rollback paths explicit. The public site, bot, and outreach all need to move in a controlled sequence.
+The only thing missing is Kevin's human eye on the in-world art placements and a decision on whether a small W10 polish pass is needed.
 
 ## IN SCOPE
 
-1. Final live-domain verification against `counterfeit-educational.org` once Kevin flips DNS
-2. Launch-day smoke pass on root route and `?docket=1`
-3. Discord bot live-domain verification and one real live-domain PNG render
-4. Trailer final packaging + upload support using the approved edit/export
-5. Critical Reflex outreach support package finalization
-6. Launch-day monitoring ticket / checklist / incident log prep
-7. Dry-run rollback rehearsal before public announce
+1. Kevin runs three short visual checks:
+   - `ACTIVE/game/index.html?world=orientation`
+   - `ACTIVE/game/index.html?world=benefits`
+   - `ACTIVE/game/index.html?world=rasta`
+2. Kevin focuses on these W9 additions:
+   - W1 final-room `supervisor_silhouette`
+   - W1/W2 carpet tiles + fluorescent fixtures + office prop density
+   - benefits enemy skins + windup overlay readability
+   - W3 archive-box dressing
+   - corrected typo PNGs (`ui_locker`, `crest_orientation_bureau`, `crest_benefits_enrollment`, `env_w2_benefits_enrollment`)
+3. Kevin records one of three outcomes:
+   - `ACCEPT AS-IS`
+   - `SMALL POLISH PASS`
+   - `REJECT ONE OR MORE PLACEMENTS`
+4. If Kevin requests `SMALL POLISH PASS`, Builder executes only the requested placement/alpha/scale tweaks and re-runs the full verify matrix.
 
 ## OUT OF SCOPE
 
-1. Changing `cactusEd_save_v1` schema or v2 migration
-2. New worlds, new enemies, new mechanics
-3. Any receipt-weight rebalance without an explicit taste note
-4. DNS registrar changes without Kevin's direct action
-5. Sending public posts without Kevin's direct approval
-6. Steam packaging work beyond launch-facing asset prep
+1. New worlds, new enemies, new mechanics, or new save fields.
+2. Reopening W9 readability scope beyond the four restored modules plus `build.js`.
+3. Swapping in `cactus_ed_in_game_sprite.png` as the live gameplay sprite.
+4. Launch/push/deploy actions.
+5. Any new image generation unless Kevin explicitly rejects a specific asset and asks for a new render.
 
 ## SACRED CONSTRAINTS
 
-- Single-file shipped `index.html` artifact. Source stays modular.
-- ES5 only. No `let`, `const`, arrow functions, template literals, spread, or destructuring.
-- Phaser 3 via CDN. No bundler.
-- `cactusEd_save_v1` contract preserved via v2 migration + archaeological layer.
-- Seeded LCG RNG only. Never `Math.random()`.
-- Ed voice remains deadpan, `<=8` words per line, no exclamation marks.
-- Cigarette stays unlit in all W3 paths.
-- `ns.TUNING.JUMP_VELOCITY` global stays untouched.
-- No predatory retention. No leaderboard drift. No streak mechanics.
+- Keep `cactusEd_save_v1` intact.
+- Keep `ns.TUNING.JUMP_VELOCITY` and `ns.TUNING.GRAVITY` untouched.
+- ES5 only in shipped runtime code.
+- Seeded RNG only; no `Math.random`.
+- Procedural fallback must remain for every wired asset.
+- `COUNTEREEIT` stays canonical only on the seal + expired-ID callback.
+- No push to `main` without Kevin.
 
 ## DEFINITION OF DONE
 
-- [ ] DNS cutover verified on the live domain
-- [ ] Live-domain Discord render works end-to-end
-- [ ] Trailer published
-- [ ] Critical Reflex pitch sent and confirmed
-- [ ] Launch-day monitoring ticket is open
-- [ ] Rollback plan exercised in dry-run
-- [ ] Public announce thread posted
+- Kevin has rendered a verdict on the W9 art placements.
+- If no notes: W9 is accepted and the next content/launch task can be selected.
+- If notes exist: they are converted into a tightly-scoped polish task with exact assets/rooms listed.
+- No code begins until Kevin chooses whether there is a follow-up polish pass.
 
-## EXECUTION RULES
+## RECOMMENDED NEXT STEP
 
-- Kevin owns registrar changes, outbound pitch send, and public posting.
-- Codex may prepare, verify, rehearse, and document, but must stop at Kevin-gated actions.
-- Any launch regression with unclear rollback triggers an immediate stop-and-document response.
-
-## FIRST ACTIONS IF PROMOTED
-
-1. Re-run `cd ACTIVE/game && node build.js && node scripts/check_save_schema.js && bash scripts/verify-cehp.sh`
-2. Verify the final DNS values Kevin plans to apply against `ACTIVE/docs/LAUNCH_GO_NOGO.md`
-3. Perform live-domain smoke checks immediately after cutover
-4. Confirm bot render, trailer link, and outreach packet before Kevin sends anything
+Kevin should do the visual pass first. If the rooms feel right as-is, retire W9 and choose the next real task. If anything feels too loud, too muddy, or too "pasted on," request a short W10 polish pass against those exact placements instead of reopening the whole sprint.

@@ -1,6 +1,6 @@
 # AGENTS.md — Durable Project Instructions
 
-> **Last updated**: 2026-03-20
+> **Last updated**: 2026-04-28
 > **Purpose**: Permanent guidance file for Codex-family agents working in this repo
 
 ---
@@ -104,6 +104,26 @@ If the tech stack, project structure, folder layout, or collaboration rules chan
 - No "final_final_v2" naming — use clean, consistent names
 - UPPERCASE_SNAKE.md for active docs, lowercase for utility/reference dirs
 - When in doubt, archive rather than delete
+
+## Codebase audit protocol
+When Kevin asks for a codebase audit, create or update `ACTIVE/docs/CODEBASE_AUDIT.md` and keep the pass documentation-only unless a separate cleanup task is explicitly approved.
+
+Audit inventory must cover entry points, build/test/deploy commands, canonical files, generated files, mirrors, and archive lanes.
+
+Audit evidence must include the runtime module graph, likely dead exports, exact duplicate groups, large files, complex functions/modules, TODO/FIXME/HACK markers, stale files by available timestamp evidence, and files excluded from runtime.
+
+Use these labels consistently:
+- `SAFE DELETE`: proven unused and verification passes.
+- `REVIEW DELETE`: likely unused, but needs human check.
+- `KEEP`: runtime path, save data, migrations, config, deployment, active docs, or canonical assets.
+- `QUARANTINE`: move to `ARCHIVE/` first; do not delete yet.
+
+Cleanup discipline:
+- Never delete before a snapshot exists.
+- Keep one cleanup class per PR.
+- Do not mix behavior changes with cleanup.
+- Run build/tests before and after cleanup.
+- Commit messages must say exactly what was removed and why.
 
 ---
 

@@ -1,8 +1,6 @@
-/* ================================================================
-   MODULE: 72_WORLD_BENEFITS — Week 3 target
-   Pure institutional satire. Checkboxes as platforms.
-   Deductibles shrink jump height.
-   ---------------------------------------------------------------- */
+/* MODULE: 72_WORLD_BENEFITS - W3 target.
+   Institutional satire. Checkboxes as platforms.
+   Deductibles shrink jump height. */
 
 (function(ns){
   'use strict';
