@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "level_id": "test-room",
+  "level_id": "rasta",
   "engine_version": "0.2.0-rebuild",
   "ruleset": "R2",
-  "seed": "REPLAY-TESTROOM-OBEDIENT",
+  "seed": "REPLAY-W3-RASTA-SHORT",
   "initial_state": {
-    "x": 300,
+    "x": 72,
     "y": 396,
     "facing": 1
   },
@@ -239,7 +239,7 @@
         "right": true,
         "up": false,
         "down": false,
-        "jump": false,
+        "jump": true,
         "punch": false,
         "kick": false,
         "spinDash": false,
@@ -250,7 +250,9 @@
         "confirm": false,
         "back": false
       },
-      "edges": []
+      "edges": [
+        "justPressed:jump"
+      ]
     },
     {
       "frame": 13,
@@ -259,7 +261,7 @@
         "right": true,
         "up": false,
         "down": false,
-        "jump": false,
+        "jump": true,
         "punch": false,
         "kick": false,
         "spinDash": false,
@@ -279,7 +281,7 @@
         "right": true,
         "up": false,
         "down": false,
-        "jump": false,
+        "jump": true,
         "punch": false,
         "kick": false,
         "spinDash": false,
@@ -299,7 +301,7 @@
         "right": true,
         "up": false,
         "down": false,
-        "jump": false,
+        "jump": true,
         "punch": false,
         "kick": false,
         "spinDash": false,
@@ -319,7 +321,7 @@
         "right": true,
         "up": false,
         "down": false,
-        "jump": false,
+        "jump": true,
         "punch": false,
         "kick": false,
         "spinDash": false,
@@ -339,7 +341,7 @@
         "right": true,
         "up": false,
         "down": false,
-        "jump": false,
+        "jump": true,
         "punch": false,
         "kick": false,
         "spinDash": false,
@@ -359,7 +361,7 @@
         "right": true,
         "up": false,
         "down": false,
-        "jump": false,
+        "jump": true,
         "punch": false,
         "kick": false,
         "spinDash": false,
@@ -911,44 +913,644 @@
         "back": false
       },
       "edges": []
+    },
+    {
+      "frame": 46,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 47,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 48,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 49,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 50,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 51,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 52,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 53,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 54,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 55,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 56,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 57,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 58,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 59,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 60,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 61,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 62,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 63,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 64,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 65,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 66,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 67,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 68,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 69,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 70,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 71,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 72,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 73,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 74,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
+    },
+    {
+      "frame": 75,
+      "input": {
+        "left": false,
+        "right": true,
+        "up": false,
+        "down": false,
+        "jump": false,
+        "punch": false,
+        "kick": false,
+        "spinDash": false,
+        "cigCopter": false,
+        "groundSlam": false,
+        "glide": false,
+        "pause": false,
+        "confirm": false,
+        "back": false
+      },
+      "edges": []
     }
   ],
   "expected_checkpoints": [
     {
-      "frame": 15,
-      "x": 320,
+      "frame": 24,
+      "x": 128,
       "y": 0,
       "facing": 1,
-      "signature": "b96538c6",
+      "signature": "3a900984",
       "vx": 180
     },
     {
-      "frame": 30,
-      "x": 384,
+      "frame": 49,
+      "x": 192,
       "y": 0,
       "facing": 1,
-      "signature": "d15f5f0b",
+      "signature": "3f1576e8",
       "vx": 180
     },
     {
-      "frame": 45,
-      "x": 384,
+      "frame": 75,
+      "x": 256,
       "y": 0,
       "facing": 1,
-      "signature": "1351ec2f",
+      "signature": "c0e5deaa",
       "vx": 180
     }
   ],
   "expected_final": {
-    "frame": 45,
-    "recorder_signature": "6f984d97",
+    "frame": 75,
+    "recorder_signature": "ba474a43",
     "axes_snapshot": {},
     "receipt_lines": []
   },
   "metadata": {
     "corpus_version": "cehp-replay-v1",
-    "fixture_id": "test_room_obedient",
+    "fixture_id": "w3_rasta_short",
     "generation_command": "node --input-type=module <fixture generator in Codex session>",
-    "notes": "Short fixed-frame TestRoom right-walk smoke fixture; 64px rounded checkpoint buckets avoid render-timed Arcade-physics jitter. Y is intentionally non-authoritative in this tier because Arcade physics remains render-timed. Checkpoints include vx to catch Movement.apply speed drift."
+    "notes": "Short W3 Rasta fixed-frame right-walk with one jump tap; 64px rounded checkpoint buckets. Y is intentionally non-authoritative in this tier because Arcade physics remains render-timed. Checkpoints include vx to catch Movement.apply speed drift."
   }
 }
