@@ -149,11 +149,11 @@ This project uses 4 AI agents with defined roles: Architect (ChatGPT 5.4 Pro), B
 ## GitHub Pages deployment
 The `.github/workflows/static.yml` deploys the entire repo to GitHub Pages on push to `main`. The game is accessed at `ACTIVE/game/index.html` relative to the Pages URL. The workflow may need its `path` updated to `ACTIVE/game` if the game should be served at the root URL.
 
-## Unpushed state (as of 2026-03-20)
-Local workspace has changes since 2026-03-14 that have not been pushed to GitHub. The live site is serving a pre-patch version. Pushing is the most critical operational task after CEHP-010 review.
+## Sync state
+Local tracks `origin/main` as of 2026-04-28 — full W10 sprint + art pipeline + codebase audit + cleanup pushed in two reviewable commits. Going forward, commit in small reviewable units rather than letting the workspace drift offline again. The remote is `git@github.com:KevinBigham/Cactus-Eds-Happy-Place.git` (public, deploys to GitHub Pages on push to `main`).
 
-## Certification context
-The project is mid-certification for W2/W3 first-session trust paths. CEHP-010 (W2 quiz fix) is built and awaiting review. After review + push + human retest, certification can close out.
+## Launch arc context
+The project is on a 5-week launch arc through **2026-05-29** (see `ACTIVE/docs/CEHP_LAUNCH_ARC.md`). Current sprint: **W10 feel pass** — architecture spine, verb set, forgiveness + hit-stop, camera/squash, sprite scale, CRT rim-light. Phases 1–5 ratified; Phase 6 jitter-fix attempt is blocked on a `movement:wallJump` autoplay divergence (see `.codex/CEHP/handoff.md` for the latest context). After W10 ratifies, the arc moves W11 (content) → W12 (polish + launch prep) → W13 (launch runway) → W14 (launch week).
 
 ## Save schema verification
 Always run: `node ACTIVE/game/scripts/check_save_schema.js`
