@@ -614,6 +614,193 @@ test('W11 rasta rushed path does not receive rest-only verdict bias', () => {
   assert.equal(receipt.fragmentIds.includes('W11_RASTA_TENSION_DOOR_01'), true, receipt.fragmentIds.join(', '));
 });
 
+function matchingPathFragments(CEHP, poolName, pathSpec) {
+  const required = pathSpec.flags || {};
+  const requiredKeys = Object.keys(required);
+  const pool = CEHP.Receipts.POOLS[poolName];
+
+  return pool.filter(function(fragment) {
+    const flags = fragment.flags || {};
+    const flagKeys = Object.keys(flags);
+
+    if (!fragment.worlds || !fragment.worlds[pathSpec.worldId]) return false;
+    if (flagKeys.length !== requiredKeys.length) return false;
+    return requiredKeys.every(function(key) {
+      return flags[key] === required[key];
+    });
+  }).map(function(fragment) {
+    return fragment.id;
+  });
+}
+
+test('W12 P2 receipt completion paths have registered verdict tension and closer coverage', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const paths = [
+    {
+      label: 'orientation completion',
+      worldId: 'orientation',
+      flags: {},
+      expected: {
+        VERDICTS: ['VERDICT_ORIENTATION_01'],
+        TENSIONS: ['TENSION_ORIENTATION_01'],
+        CLOSERS: ['CLOSER_ORIENTATION_01']
+      }
+    },
+    {
+      label: 'benefits default completion',
+      worldId: 'benefits',
+      flags: {},
+      expected: {
+        VERDICTS: ['VERDICT_BENEFITS_01', 'W11_BENEFITS_VERDICT_ATRIUM_01'],
+        TENSIONS: ['TENSION_BENEFITS_01', 'W11_BENEFITS_TENSION_BRANCH_01'],
+        CLOSERS: ['CLOSER_BENEFITS_01', 'W11_BENEFITS_CLOSER_BILLING_01']
+      }
+    },
+    {
+      label: 'benefits premium-secured completion',
+      worldId: 'benefits',
+      flags: { premiumSecured: true },
+      expected: {
+        VERDICTS: ['VERDICT_BENEFITS_SECURED_01', 'W11_BENEFITS_VERDICT_AUTH_01'],
+        TENSIONS: ['TENSION_BENEFITS_SECURED_01'],
+        CLOSERS: ['CLOSER_BENEFITS_SECURED_01', 'W11_BENEFITS_CLOSER_PLAN_01']
+      }
+    },
+    {
+      label: 'benefits uninsured completion',
+      worldId: 'benefits',
+      flags: { uninsuredVeteran: true },
+      expected: {
+        VERDICTS: ['VERDICT_BENEFITS_UNINSURED_01'],
+        TENSIONS: ['TENSION_BENEFITS_UNINSURED_01', 'W11_BENEFITS_TENSION_EXPOSED_01'],
+        CLOSERS: ['CLOSER_BENEFITS_UNINSURED_01']
+      }
+    },
+    {
+      label: 'rasta dark-cigarette baseline completion',
+      worldId: 'rasta',
+      flags: { cigaretteLit: false },
+      expected: {
+        VERDICTS: ['W12_RASTA_VERDICT_DARK_01'],
+        TENSIONS: ['W12_RASTA_TENSION_DARK_01'],
+        CLOSERS: ['CLOSER_WARMTH_01']
+      }
+    },
+    {
+      label: 'rasta rest-open completion',
+      worldId: 'rasta',
+      flags: { restOpened: true, cigaretteLit: false },
+      expected: {
+        VERDICTS: ['VERDICT_RASTA_REST_01', 'W11_RASTA_VERDICT_BELT_01'],
+        TENSIONS: ['TENSION_RASTA_REST_01'],
+        CLOSERS: ['CLOSER_RASTA_REST_01', 'W11_RASTA_CLOSER_FLOOR_01']
+      }
+    },
+    {
+      label: 'rasta rushed completion',
+      worldId: 'rasta',
+      flags: { rushedRest: true },
+      expected: {
+        VERDICTS: ['VERDICT_RASTA_RUSH_01'],
+        TENSIONS: ['TENSION_RASTA_RUSH_01', 'W11_RASTA_TENSION_DOOR_01'],
+        CLOSERS: ['CLOSER_RASTA_RUSH_01', 'W11_RASTA_CLOSER_NAME_01']
+      }
+    }
+  ];
+
+  paths.forEach(function(pathSpec) {
+    ['VERDICTS', 'TENSIONS', 'CLOSERS'].forEach(function(poolName) {
+      const ids = matchingPathFragments(CEHP, poolName, pathSpec);
+      assert.equal(ids.length >= 1, true, pathSpec.label + ' missing ' + poolName + ' coverage');
+      pathSpec.expected[poolName].forEach(function(expectedId) {
+        assert.equal(ids.includes(expectedId), true, pathSpec.label + ' missing ' + expectedId);
+      });
+    });
+  });
+});
+
+test('W12 P2 completion paths resolve to expected flag-state receipt fragments', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const cases = [
+    {
+      label: 'benefits default completion',
+      expectedIds: ['W11_BENEFITS_VERDICT_NETWORK_01', 'W11_BENEFITS_TENSION_SLOW_01', 'W11_BENEFITS_CLOSER_BILLING_01'],
+      opts: {
+        seed: 'CASE-W12-P2-BENEFITS-DEFAULT',
+        worldId: 'benefits',
+        axes: { primary: { compliance: 0.8, intuition: 0.8, efficiency: 0.8, chaos: 0.4, grace: 0.6 }, micro: { modulesPassed: 3, nearMisses: 3 } },
+        tensions: { obedience: 0.5, style: 0.5, auditRisk: 0.5 },
+        flags: {}
+      }
+    },
+    {
+      label: 'benefits premium completion',
+      expectedIds: ['W11_BENEFITS_VERDICT_AUTH_01', 'TENSION_BENEFITS_SECURED_01', 'W11_BENEFITS_CLOSER_PLAN_01'],
+      opts: {
+        seed: 'CASE-W12-P2-BENEFITS-PREMIUM',
+        worldId: 'benefits',
+        axes: { primary: { compliance: 1, efficiency: 1, intuition: 0.5 }, micro: { contradictionFollow: 3 } },
+        tensions: { obedience: 1, style: 0.5, auditRisk: 0 },
+        flags: { premiumSecured: true }
+      }
+    },
+    {
+      label: 'benefits uninsured completion',
+      expectedIds: ['VERDICT_BENEFITS_UNINSURED_01', 'W11_BENEFITS_TENSION_EXPOSED_01', 'CLOSER_BENEFITS_UNINSURED_04'],
+      opts: {
+        seed: 'CASE-W12-P2-BENEFITS-UNINSURED',
+        worldId: 'benefits',
+        axes: { primary: { chaos: 1, intuition: 1, compliance: 0.2 }, micro: { damageTaken: 3 } },
+        tensions: { obedience: -1, style: 0, auditRisk: 1 },
+        flags: { uninsuredVeteran: true }
+      }
+    },
+    {
+      label: 'rasta dark-cigarette baseline completion',
+      expectedIds: ['W12_RASTA_VERDICT_DARK_01', 'W12_RASTA_TENSION_DARK_01'],
+      opts: {
+        seed: 'CASE-W12-P2-RASTA-DARK',
+        worldId: 'rasta',
+        axes: { primary: { intuition: 1, grace: 1 }, micro: { musicSync: 1 } },
+        tensions: { obedience: 0, style: 0, auditRisk: -1 },
+        flags: { cigaretteLit: false },
+        cigaretteLit: false
+      }
+    },
+    {
+      label: 'rasta rest-open completion',
+      expectedIds: ['VERDICT_RASTA_REST_01', 'TENSION_RASTA_REST_04', 'CLOSER_RASTA_REST_01'],
+      opts: {
+        seed: 'CASE-W12-P2-RASTA-REST',
+        worldId: 'rasta',
+        axes: { primary: { intuition: 1, grace: 1 }, micro: { musicSync: 3, contradictionFollow: 3 } },
+        tensions: { obedience: 0.5, style: 0.5, auditRisk: -1 },
+        flags: { restOpened: true, cigaretteLit: false },
+        cigaretteLit: false
+      }
+    },
+    {
+      label: 'rasta rushed completion',
+      expectedIds: ['VERDICT_RASTA_RUSH_04', 'W11_RASTA_TENSION_DOOR_01', 'CLOSER_RASTA_RUSH_01'],
+      opts: {
+        seed: 'CASE-W12-P2-RASTA-RUSHED',
+        worldId: 'rasta',
+        axes: { primary: { intuition: 1, grace: 0.7, chaos: 0.3 }, micro: { contradictionDefy: 3, modulesSkipped: 3 } },
+        tensions: { obedience: -0.5, style: 0.2, auditRisk: -0.5 },
+        flags: { rushedRest: true, cigaretteLit: false },
+        cigaretteLit: false
+      }
+    }
+  ];
+
+  cases.forEach(function(entry) {
+    const receipt = CEHP.Receipts.generate(entry.opts);
+    entry.expectedIds.forEach(function(expectedId) {
+      assert.equal(receipt.fragmentIds.includes(expectedId), true, entry.label + ' got ' + receipt.fragmentIds.join(', '));
+    });
+  });
+});
+
 test('W11_CONTENT_BIAS favors equivalent W11 fragments when flags match', () => {
   const CEHP = loadModules(LOGIC_MODULES);
   const seed = 'CASE-W11-BIAS-0';

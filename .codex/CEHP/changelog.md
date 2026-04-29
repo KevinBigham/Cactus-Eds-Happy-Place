@@ -2643,3 +2643,19 @@ Plan specifies: read 5 receipts from the same 5 case seeds before + after. Does 
 - summary: started W12 Polish + Launch Prep from Kevin/Architect packet, saved the packet copy, raised launch byte cap enforcement from `372000` to `409600`, and kept the hardened server poll-loop unchanged.
 - verification: `node ACTIVE/game/build.js` PASS (`350844` reported / `350854` disk); `bash ACTIVE/game/scripts/verify-launch.sh` PASS (`CEHP LAUNCH VERIFY: PASS`, process cap `350854 <= 409600`, oracle `111/111`, replay `7/7`); `npm run --prefix ACTIVE/game test:replay` PASS (`7/7`).
 - notes: no save schema, RNG, W11 content, or pre-session dirty-file edits.
+
+## 2026-04-29 - W12 P2 Receipt Flag Audit GREEN
+- files changed:
+  - `ACTIVE/game/src/80_receipts.js`
+  - `ACTIVE/game/tests/rebuild_logic.test.mjs`
+  - `ACTIVE/game/index.html`
+  - `ACTIVE/docs/BACKLOG.md`
+  - `.codex/CEHP/w12_packet.md`
+  - `.codex/CEHP/w12_receipt_audit.md`
+  - `.codex/CEHP/status.md`
+  - `.codex/CEHP/handoff.md`
+  - `.codex/CEHP/changelog.md`
+  - `ACTIVE/docs/NEXT_TASK.md`
+- summary: applied Revision 2 from P2 forward, moved unbuilt W11 launch-arc mini-bosses/setpieces/Reply-All Locust/parallax to W15+ backlog, audited the actual receipt flag-state completion model, added missing Rasta dark-cigarette verdict/tension fragments, and made receipt scoring reject incompatible flag-specific fragments before scoring.
+- verification: `node ACTIVE/game/build.js` PASS (`351292` reported / `351302` disk); `bash ACTIVE/game/scripts/verify-launch.sh` PASS (`CEHP LAUNCH VERIFY: PASS`, oracle `113/113`, replay `7/7`, bundle `351302 / 409600`); `npm run --prefix ACTIVE/game test:replay` PASS (`7/7`); save schema PASS; sacred sweep clean on `80_receipts.js`.
+- notes: no save schema, RNG, deferred mechanics, new rooms, new runtime dependencies, or pre-session dirty-file edits.

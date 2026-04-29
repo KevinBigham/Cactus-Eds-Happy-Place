@@ -1,5 +1,42 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-29 - W12 P2 Receipt Flag Audit GREEN - Codex GPT-5.5)
+
+**Session goal**: Apply Kevin/Architect W12 Revision 2 from P2 forward, audit actual receipt completion flags instead of unbuilt mini-boss/setpiece events, and keep the launch gate green.
+
+### What shipped
+
+- Added the Revision 2 deferral block to `ACTIVE/docs/BACKLOG.md` under post-launch W15+ for:
+  - Supervisor / Enrollment Officer / Logistics Foreman mini-bosses.
+  - Trust Fall / Open Concept / Supply Chain setpieces.
+  - Reply-All Locust enemy system.
+  - 2-layer parallax shipped-state verification.
+- Appended the Revision 2 addendum to `.codex/CEHP/w12_packet.md`.
+- Added `.codex/CEHP/w12_receipt_audit.md` documenting the actual receipt flag keys and seven meaningful completion paths.
+- Verified no shipped world parallax system exists. Current `setScrollFactor` and `tileSprite` usage is overlays, light/air props, carpet tiling, and presentation helpers.
+- Updated `ACTIVE/game/src/80_receipts.js` so `scoreFragment` rejects incompatible flagged fragments through the existing `allFlagsMatch` helper before scoring.
+- Added the only missing path coverage:
+  - `W12_RASTA_VERDICT_DARK_01`
+  - `W12_RASTA_TENSION_DARK_01`
+- Added behavior-oracle coverage for exact V/T/C registration coverage and end-to-end generated fragment ids across the shipped completion paths.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `node ACTIVE/game/build.js` | PASS (`351292` reported / `351302` disk) |
+| `bash ACTIVE/game/scripts/verify-launch.sh` | PASS; bundle `351302 / 409600`, oracle `113/113`, replay `7/7`, final line `CEHP LAUNCH VERIFY: PASS` |
+| `npm run --prefix ACTIVE/game test:replay` | PASS (`7/7`) |
+| `node ACTIVE/game/scripts/check_save_schema.js` | PASS |
+| Sacred sweep on `ACTIVE/game/src/80_receipts.js` | PASS; no `Math.random`, `Date.now`, arrows, `let`, `const`, or template literals |
+
+### Notes for the next owner
+
+- Continue with P3 revised scope: enemies that actually exist in `ACTIVE/game/src/60_enemies.js`; do not audit unbuilt mini-bosses.
+- Behavior oracle is now `113/113`.
+- Replay corpus is still `7/7`; P6 will add the three revised completion-path fixtures after P3-P5.
+- No save schema, RNG, deferred mechanics, new rooms, new runtime dependencies, or pre-session dirty files were touched.
+
 ## What Was Just Done (2026-04-28 — W11 byte recovery + receipt API prep; content spec blocked · Codex GPT-5.5)
 
 **Session goal**: Start CEHP-Sprint-NEXT+3 by recovering bundle headroom, then wire Architect's W11 Benefits/Rasta content exactly as specified.

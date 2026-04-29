@@ -159,3 +159,44 @@ After each phase:
 ## Kickoff
 
 Read order -> P1 -> P2 -> P3 -> P4 -> P5 -> P6 -> P7. Verify after each. School-hours autonomy: do not stop for ACK between phases. Stop only on RED - oracle break, replay drift, sacred-constraint violation, or true scope ambiguity.
+
+## Revision 2 Addendum - 2026-04-29
+
+Apply this addendum over the original packet from P2 forward.
+
+### Deferred To Post-Launch W15+
+
+Architect decision: the original packet referenced W11 launch-arc content that was not shipped. The following are explicitly deferred to post-launch:
+
+- W1 Supervisor mini-boss, 3-phase.
+- W2 Enrollment Officer mini-boss, 3-phase.
+- W3 Logistics Foreman mini-boss, 3-phase.
+- W1 Trust Fall setpiece.
+- W2 Open Concept setpiece.
+- W3 Supply Chain setpiece.
+- W3 Reply-All Locust enemy.
+- 2-layer parallax unless already shipped; P2 verification found no shipped world parallax system.
+
+Game ships with 3 worlds, branching flag-state completion paths, W11's 4 rooms plus 12 fragments, procedural audio, receipt reveal, and the docket meta-loop.
+
+### P2 Revised - Receipt Completion-Flag Audit
+
+- Enumerate all completion-flag keys registered in `80_receipts.js`.
+- For each meaningful flag combination per world, confirm at least one `VERDICTS`, one `TENSIONS`, and one `CLOSERS` fragment.
+- Fill gaps with voice-safe receipt fragments only.
+- Add behavior-oracle coverage for every completion path end-to-end, mapping path to expected fragment ids.
+
+### P3 Revised - Existing Enemy Telegraph Audit
+
+- Scope only enemies present in `60_enemies.js`, including Compliance Auditor and Deadline Wraith.
+- Drop mini-boss scope.
+- Apply `120ms <= windup <= 400ms`.
+- Document the audit table in `.codex/CEHP/w12_telegraph_audit.md`.
+- Add oracle tests asserting the bounds.
+
+### P6 Revised - Under-Covered Completion Replay Fixtures
+
+- Add 3 replay fixtures for actual completion paths surfaced by the P2 audit.
+- Codex chooses targets based on real gaps, not deferred mini-bosses.
+- Pin md5s in `.codex/CEHP/w12_replay_hashes.md`.
+- Verify 3 cold runs produce identical hashes.

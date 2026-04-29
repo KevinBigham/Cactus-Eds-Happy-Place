@@ -6216,6 +6216,7 @@ return false;
 return true;
 }
 function scoreFragment(fragment, axes, tensions, context){
+if (!allFlagsMatch(fragment, context)) return -9999;
 var score = 0;
 var key;
 var value;
@@ -6356,6 +6357,8 @@ registerFragment('TENSIONS', 'W11_BENEFITS_TENSION_SLOW_01', 'THE CLAIM REWARDED
 registerFragment('TENSIONS', 'W11_BENEFITS_TENSION_EXPOSED_01', 'YOUR EXPOSURE IMPROVED THE MARGIN.', {worlds:{benefits:3.2}, flags:{uninsuredVeteran:true}, tensions:{obedience:-0.6, auditRisk:0.4}, micro:{damageTaken:0.6}});
 registerFragment('CLOSERS', 'W11_BENEFITS_CLOSER_PLAN_01', 'THE PLAN CLOSED WITHOUT LOOKING DOWN.', {worlds:{benefits:3.2}, flags:{premiumSecured:true}, axes:{compliance:0.3}, tone:'benign'});
 registerFragment('CLOSERS', 'W11_BENEFITS_CLOSER_BILLING_01', 'THE EXIT KEPT A BILLING ADDRESS.', {worlds:{benefits:3.0}, axes:{efficiency:0.2, chaos:0.2}});
+registerFragment('VERDICTS', 'W12_RASTA_VERDICT_DARK_01', 'THE CIGARETTE STAYED OFF DUTY.', {worlds:{rasta:3.5}, flags:{cigaretteLit:false}, axes:{intuition:0.4, grace:0.3}, tone:'benign'});
+registerFragment('TENSIONS', 'W12_RASTA_TENSION_DARK_01', 'NO FIRE IMPROVED THE ROUTE.', {worlds:{rasta:3.5}, flags:{cigaretteLit:false}, tensions:{auditRisk:-0.4}, axes:{intuition:0.3}, tone:'benign'});
 registerFragment('VERDICTS', 'W11_RASTA_VERDICT_BELT_01', 'THE BELT ACCEPTED YOUR STILLNESS.', {worlds:{rasta:3.3}, flags:{restOpened:true, cigaretteLit:false}, axes:{intuition:0.5, grace:0.3}, micro:{musicSync:0.5}, tone:'benign'});
 registerFragment('TENSIONS', 'W11_RASTA_TENSION_DOOR_01', 'THE KIND DOOR REASSESSED URGENCY.', {worlds:{rasta:3.2}, flags:{rushedRest:true}, micro:{contradictionDefy:0.6}, axes:{intuition:0.3}, tone:'benign'});
 registerFragment('CLOSERS', 'W11_RASTA_CLOSER_FLOOR_01', 'THE FLOOR RELEASED YOUR BREATH.', {worlds:{rasta:3.3}, flags:{restOpened:true, cigaretteLit:false}, axes:{grace:0.4}, tone:'benign'});

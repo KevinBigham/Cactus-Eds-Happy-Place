@@ -29,16 +29,17 @@
 Parked until after 2026-05-29 launch. Do not touch during W10-W14 arc.
 
 ### Content expansion (W15+)
-1. **Hub-and-spoke elevator macro** — ChatGPT DR + Gemini DR structural redesign: persistent hub floor with elevator portals to W1/W2/W3; shared save breadcrumbs; sets up HR Expansion later.
-2. **RPS boss weakness pattern** — ChatGPT DR meta-loop: each boss has a rock/paper/scissors weakness telegraphed by room decor (posters, HR memos, elevator panel). Not in W11 mini-bosses (those are telegraph-based only).
-3. **6 secret paths** (2 per world) — Meta Muse phenomenology: hidden routes that reward curiosity-pays-rent subscribers. Receipt fragments flagged `secretPath:true`.
-4. **5 remaining corporate-horror enemies** — ChatGPT DR Sycophant (flatters Ed until he reads as doing bad work), Time-Thief (steals action-history), Severance (cuts trailing save fragments), CC'd (broadcast attack), PIP (Performance Improvement Plan — enters room with 3-strike countdown).
-5. **3 rideable contraptions** — ChatGPT DR Pneumatic Tube (vertical fast-travel), Floor Buffer (horizontal sweeper + temporary shield), Document Shredder (destructible platform + timing hazard).
-6. **Performance Reviews → DOCKET meta-loop** — weekly review aggregates runs; affects hub elevator panel; feeds into Corporate Assets temporary verbs economy.
-7. **Corporate Assets temporary verbs** — single-run power-ups (Coffee Mug +dash range, Stapler +attack, Laminator +iframe) earned from Performance Review passes.
-8. **3 per-world signature setpieces (full-throated)** — post-launch expansion of W11 mini-setpieces: Trust Fall (vertical gauntlet), Open Concept (maze-of-mirrors chase), Supply Chain (conveyor-over-incinerator sequence).
-9. **5-layer parallax expansion** — Gemini Pro aesthetic spec: far cubicles / mid fluorescents / mid props / near dust / near foreground. W11 ships 2-layer only.
-10. **Encounter Director caps revision** — enemies 15 → 20 / projectiles 8 → 12 / angles 2 → 3 spike once new enemy types land.
+1. **W11 launch-arc deferred content (Architect call 2026-04-29)** — 3 mini-bosses (Supervisor / Enrollment Officer / Logistics Foreman); 3 setpieces (Trust Fall / Open Concept / Supply Chain); Reply-All Locust enemy system; 2-layer parallax (verify shipped state). Why deferred: shipped W11 = 4 rooms + 12 fragments; remaining launch-arc items would require ~5-7 days build, blowing W12 polish window. Game is narrative-complete on shipped content.
+2. **Hub-and-spoke elevator macro** — ChatGPT DR + Gemini DR structural redesign: persistent hub floor with elevator portals to W1/W2/W3; shared save breadcrumbs; sets up HR Expansion later.
+3. **RPS boss weakness pattern** — ChatGPT DR meta-loop: each boss has a rock/paper/scissors weakness telegraphed by room decor (posters, HR memos, elevator panel). Not in W11 mini-bosses (those are telegraph-based only).
+4. **6 secret paths** (2 per world) — Meta Muse phenomenology: hidden routes that reward curiosity-pays-rent subscribers. Receipt fragments flagged `secretPath:true`.
+5. **5 remaining corporate-horror enemies** — ChatGPT DR Sycophant (flatters Ed until he reads as doing bad work), Time-Thief (steals action-history), Severance (cuts trailing save fragments), CC'd (broadcast attack), PIP (Performance Improvement Plan — enters room with 3-strike countdown).
+6. **3 rideable contraptions** — ChatGPT DR Pneumatic Tube (vertical fast-travel), Floor Buffer (horizontal sweeper + temporary shield), Document Shredder (destructible platform + timing hazard).
+7. **Performance Reviews → DOCKET meta-loop** — weekly review aggregates runs; affects hub elevator panel; feeds into Corporate Assets temporary verbs economy.
+8. **Corporate Assets temporary verbs** — single-run power-ups (Coffee Mug +dash range, Stapler +attack, Laminator +iframe) earned from Performance Review passes.
+9. **3 per-world signature setpieces (full-throated)** — post-launch expansion of W11 mini-setpieces: Trust Fall (vertical gauntlet), Open Concept (maze-of-mirrors chase), Supply Chain (conveyor-over-incinerator sequence).
+10. **5-layer parallax expansion** — Gemini Pro aesthetic spec: far cubicles / mid fluorescents / mid props / near dust / near foreground. Prior W11 2-layer target is deferred until shipped-state verification closes item 1.
+11. **Encounter Director caps revision** — enemies 15 → 20 / projectiles 8 → 12 / angles 2 → 3 spike once new enemy types land.
 
 ### Polish / content continuity
 1. **Hand-pixeled final Ed sprite** — if procedural 60px (W10 Phase 6) isn't enough post-launch.
