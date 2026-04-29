@@ -2777,3 +2777,22 @@ Next owner: Architect. Phase 6 fully landed (60px Ed + collider split + rim-ligh
 - P7 installed `pngquant` on the workstation through Homebrew only; no project dependency or play-path library was added.
 - Existing `ACTIVE/game/art/_originals/` backups remain in place. No backup asset was deleted.
 - Next step is the W12 end-of-sprint handoff JSON, followed by final full verification.
+
+## What Was Just Done (2026-04-29 - W12 Handoff JSON Ready - Codex GPT-5.5)
+
+**Session goal**: Close W12 with the required portfolio handoff artifact and set the task beacon for the next sprint owner.
+
+### What shipped
+
+- Added `.codex/CEHP/w12_handoff.json` with:
+  - P1-P7 commit hashes.
+  - Full file inventory from `d422b77..HEAD`.
+  - Bundle, oracle, replay, asset, and md5 verification summary.
+  - Regression summary, risks, and W13 launch runway handoff.
+- Updated `ACTIVE/docs/NEXT_TASK.md` to queue `CEHP-REBUILD-W13-LAUNCH-RUNWAY` for Architect/Kevin packet authoring.
+
+### Notes for the next owner
+
+- W12 build work is complete; Codex should wait for the W13 builder handoff before making launch-runway changes.
+- Final post-handoff verification is green: `verify-launch.sh` PASS with oracle `117/117`, replay `10/10`, art `25/25`, bundle `354011 / 409600`; replay-only pass `10/10`.
+- Kevin-gated launch actions remain locked: public deploy, DNS flip, trailer publish, Critical Reflex send, and announce thread.

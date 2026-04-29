@@ -1,0 +1,186 @@
+{
+  "sprint": "W12 Polish + Launch Prep",
+  "architect": "Claude Code",
+  "builder": "Codex",
+  "sprint_window": "2026-04-29 to 2026-05-06",
+  "launch_lock": "2026-05-29",
+  "plan": ".codex/CEHP/w12_packet.md",
+  "branch": "codex/cehp-w12-polish-launch-prep",
+  "base_commit": "d422b778d54c4c54ac81aa96a5f7ba622102b143",
+  "phases_completed": [
+    {
+      "phase": "P1",
+      "summary": "Raised W12 launch byte cap to 409600 in verify-launch and process manifest.",
+      "commit": "b3a5bb0"
+    },
+    {
+      "phase": "P2",
+      "summary": "Applied Revision 2 receipt flag audit, deferred unbuilt launch-arc content, filled Rasta dark-cigarette receipt coverage, and pinned path coverage.",
+      "commit": "5e814f7"
+    },
+    {
+      "phase": "P3",
+      "summary": "Audited shipped enemy telegraphs only and tuned pizzaParty windup into the 120-400ms effective range.",
+      "commit": "f078189"
+    },
+    {
+      "phase": "P4",
+      "summary": "Added static density analyzer and verify-launch component for the <=5 threats per 960px viewport rule.",
+      "commit": "f1646c0"
+    },
+    {
+      "phase": "P5",
+      "summary": "Shipped deterministic procedural Web Audio ambient beds, event hits, ducking, scene aliases, and oracle coverage.",
+      "commit": "743cdc9"
+    },
+    {
+      "phase": "P6",
+      "summary": "Expanded replay corpus from 7 to 10 fixtures for actual under-covered completion paths and pinned md5s.",
+      "commit": "d88a372"
+    },
+    {
+      "phase": "P7",
+      "summary": "Moved 8 orphan PNGs to art/_orphans and compressed 30 oversize PNGs with pngquant quality 70-85.",
+      "commit": "d45215b"
+    }
+  ],
+  "files_changed": [
+    ".codex/CEHP/changelog.md",
+    ".codex/CEHP/handoff.md",
+    ".codex/CEHP/status.md",
+    ".codex/CEHP/w12_packet.md",
+    ".codex/CEHP/w12_receipt_audit.md",
+    ".codex/CEHP/w12_replay_hashes.md",
+    ".codex/CEHP/w12_telegraph_audit.md",
+    "ACTIVE/docs/BACKLOG.md",
+    "ACTIVE/docs/NEXT_TASK.md",
+    "ACTIVE/game/_canon/replays/cehp/w2_benefits_default_completion.json",
+    "ACTIVE/game/_canon/replays/cehp/w3_rasta_dark_cigarette.json",
+    "ACTIVE/game/_canon/replays/cehp/w3_rasta_rest_open.json",
+    "ACTIVE/game/art/_orphans/cactus_ed_in_game_sprite.png",
+    "ACTIVE/game/art/_orphans/cactus_ed_portraits_masked.png",
+    "ACTIVE/game/art/_orphans/cactus_ed_portraits_unmasked.png",
+    "ACTIVE/game/art/_orphans/paper_hr_memo.png",
+    "ACTIVE/game/art/_orphans/stamps_sheet.png",
+    "ACTIVE/game/art/_orphans/ui_clipboard.png",
+    "ACTIVE/game/art/_orphans/ui_locker.png",
+    "ACTIVE/game/art/_orphans/ui_training_poster.png",
+    "ACTIVE/game/art/cactus_ed_brand_mascot.png",
+    "ACTIVE/game/art/cactus_ed_portraits_masked.png",
+    "ACTIVE/game/art/cactus_ed_portraits_unmasked.png",
+    "ACTIVE/game/art/carpet_tile_seamless.png",
+    "ACTIVE/game/art/coworker_mascot_variants.png",
+    "ACTIVE/game/art/crest_benefits_enrollment.png",
+    "ACTIVE/game/art/crest_orientation_bureau.png",
+    "ACTIVE/game/art/enemy_compliance_auditor.png",
+    "ACTIVE/game/art/enemy_deadline_wraith.png",
+    "ACTIVE/game/art/enemy_telegraph_windup.png",
+    "ACTIVE/game/art/env_w1_orientation_bureau.png",
+    "ACTIVE/game/art/env_w2_benefits_enrollment.png",
+    "ACTIVE/game/art/env_w3_rasta_corp.png",
+    "ACTIVE/game/art/fluorescent_light_fixture.png",
+    "ACTIVE/game/art/paper_expired_id.png",
+    "ACTIVE/game/art/paper_hr_memo.png",
+    "ACTIVE/game/art/paper_safety_poster.png",
+    "ACTIVE/game/art/prop_archive_box.png",
+    "ACTIVE/game/art/prop_coffee_cup.png",
+    "ACTIVE/game/art/prop_filing_cabinet.png",
+    "ACTIVE/game/art/prop_stamp_pad.png",
+    "ACTIVE/game/art/screen_end_of_shift.png",
+    "ACTIVE/game/art/screen_unmasked_reveal.png",
+    "ACTIVE/game/art/seal_counterfeit_educational_org.png",
+    "ACTIVE/game/art/stamps_sheet.png",
+    "ACTIVE/game/art/supervisor_silhouette.png",
+    "ACTIVE/game/art/title_cold_open.png",
+    "ACTIVE/game/art/ui_clipboard.png",
+    "ACTIVE/game/art/ui_locker.png",
+    "ACTIVE/game/art/ui_training_poster.png",
+    "ACTIVE/game/index.html",
+    "ACTIVE/game/process_manifest.json",
+    "ACTIVE/game/scripts/check_density.mjs",
+    "ACTIVE/game/scripts/run_replays.mjs",
+    "ACTIVE/game/scripts/verify-launch.sh",
+    "ACTIVE/game/scripts/verify_art_assets.mjs",
+    "ACTIVE/game/src/30_audio.js",
+    "ACTIVE/game/src/60_enemies.js",
+    "ACTIVE/game/src/80_receipts.js",
+    "ACTIVE/game/tests/rebuild_logic.test.mjs"
+  ],
+  "verification": {
+    "bundle_bytes": {
+      "reported_by_build_js": 354001,
+      "on_disk": 354011,
+      "cap": 409600
+    },
+    "behavior_oracle": {
+      "passing": 117,
+      "total": 117
+    },
+    "replay_corpus": {
+      "passing": 10,
+      "total": 10,
+      "three_run_md5_stability": "PASS"
+    },
+    "replay_md5s": {
+      "test_room_obedient.json": "8ed8ad52b7cf5d9527f6ffa72acc50a2",
+      "w1_orientation_obedient.json": "959e9ea8165a6e07ba7f88086c87e363",
+      "w2_benefits_atrium_partial.json": "83350e61d274787443ea882bccf1eb19",
+      "w2_benefits_default_completion.json": "37fee2643be901fa1757daa996e36d9e",
+      "w2_benefits_insured.json": "bbacf3e1b817827f3391e01f17bd4f26",
+      "w2_benefits_uninsured.json": "33ead17d29a3429bb07e77a7e8b852ef",
+      "w3_rasta_dark_cigarette.json": "4bc2b923c92d76c903468c7acb081150",
+      "w3_rasta_rest_open.json": "31cff301a90e4e1fd32ee45625d92bc0",
+      "w3_rasta_rushed.json": "a412c8427605feef317987764b0a018b",
+      "w3_rasta_short.json": "6812183919a381e6dc1f4e6e05febbf7"
+    },
+    "gate_runs": [
+      {
+        "phase": "P5",
+        "command": "bash ACTIVE/game/scripts/verify-launch.sh",
+        "result": "PASS",
+        "details": "CEHP LAUNCH VERIFY: PASS; oracle 117/117; replay 7/7; bundle 354011/409600"
+      },
+      {
+        "phase": "P6",
+        "command": "bash ACTIVE/game/scripts/verify-launch.sh",
+        "result": "PASS",
+        "details": "CEHP LAUNCH VERIFY: PASS; oracle 117/117; replay 10/10; bundle 354011/409600"
+      },
+      {
+        "phase": "P7",
+        "command": "bash ACTIVE/game/scripts/verify-launch.sh",
+        "result": "PASS",
+        "details": "CEHP LAUNCH VERIFY: PASS; oracle 117/117; replay 10/10; bundle 354011/409600; art assets 25/25"
+      }
+    ],
+    "asset_cleanup": {
+      "active_plus_orphan_png_bytes_before": 7759150,
+      "active_plus_orphan_png_bytes_after": 1957754,
+      "reduction_percent": 74.8,
+      "verify_art_assets": "PASS 25/25"
+    }
+  },
+  "regression_summary": {
+    "oracle_delta": "111/111 to 117/117",
+    "replay_delta": "7/7 to 10/10",
+    "bundle_delta_on_disk": "350854 to 354011",
+    "save_schema": "unchanged",
+    "runtime_dependencies": "unchanged"
+  },
+  "risks": [
+    "P7 used lossy pngquant compression; verify_art_assets and browser smoke pass, but Kevin may still want a quick visual taste check on launch-critical art.",
+    "Unbuilt W11 launch-arc mini-bosses, setpieces, Reply-All Locust, and 2-layer parallax are explicitly deferred to W15+.",
+    "Procedural audio is API- and oracle-covered, but browser autoplay rules mean ambient starts on input as designed; Kevin should listen during W13 taste pass.",
+    "pngquant was installed on this workstation through Homebrew for P7; it is not a project dependency."
+  ],
+  "handoff": {
+    "next_sprint": "W13 Launch Runway",
+    "recommended_owner": "Architect/Kevin for W13 packet, then Codex for scoped implementation",
+    "state": "Game is narrative-complete on shipped W11 content; W12 polish gates are green; launch runway can focus on trailer, CR pitch, DNS/runbook, known issues, accessibility refresh, and final Kevin taste gate.",
+    "do_not_forget": [
+      "No public deploy, DNS flip, trailer publish, Critical Reflex send, or announce thread without Kevin approval.",
+      "Keep save schema cactusEd_save_v1 immutable unless a future task explicitly authorizes migration work.",
+      "Treat W15+ deferred content as post-launch unless Kevin overrides."
+    ]
+  }
+}

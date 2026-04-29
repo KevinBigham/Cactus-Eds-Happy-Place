@@ -2733,3 +2733,14 @@ Plan specifies: read 5 receipts from the same 5 case seeds before + after. Does 
 - summary: quarantined 8 orphan PNGs under `art/_orphans/`, narrowed the art verifier to 25 active expected assets, and compressed all 30 oversize active/orphan PNGs with `pngquant --quality=70-85`.
 - verification: `node ACTIVE/game/scripts/verify_art_assets.mjs` PASS after orphan move, after active compression, and after orphan compression; active-plus-orphan PNG bytes dropped from `7,759,150` to `1,957,754` (74.8% reduction).
 - notes: no bundled runtime source, save schema edit, authored content, replay fixture, or pre-session dirty-file edit.
+
+## 2026-04-29 - W12 Sprint Handoff JSON
+- files changed:
+  - `.codex/CEHP/w12_handoff.json`
+  - `.codex/CEHP/status.md`
+  - `.codex/CEHP/handoff.md`
+  - `.codex/CEHP/changelog.md`
+  - `ACTIVE/docs/NEXT_TASK.md`
+- summary: saved the W12 portfolio handoff JSON with phase commits, full file inventory, replay md5s, verification summary, regression summary, risks, and W13 runway state; promoted the task beacon to queued W13 launch runway ownership for Architect/Kevin.
+- verification: `node ACTIVE/game/build.js` PASS (`354001` reported / `354011` disk); `node ACTIVE/game/scripts/check_save_schema.js` PASS; `.codex/CEHP/w12_handoff.json` parses as valid JSON; `bash ACTIVE/game/scripts/verify-launch.sh` PASS (`CEHP LAUNCH VERIFY: PASS`, oracle `117/117`, replay `10/10`, art `25/25`, bundle `354011 / 409600`); `npm run --prefix ACTIVE/game test:replay` PASS (`10/10`).
+- notes: no runtime source, save schema, asset, replay, or dependency change.

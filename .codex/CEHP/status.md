@@ -242,3 +242,17 @@ Phase 6 wall-jump single-owner landed 2026-04-24 per architect call (ChatGPT 5.4
   - `node ACTIVE/game/scripts/verify_art_assets.mjs` PASS after active PNG compression (`25/25`).
   - `node ACTIVE/game/scripts/verify_art_assets.mjs` PASS after orphan PNG compression (`25/25`).
 - Notes: no runtime source, save schema, replay fixture, authored content, or pre-session dirty-file edit was changed in P7.
+
+## 2026-04-29 - W12 Sprint Handoff Ready
+
+- Current state: W12 P1-P7 are complete and committed. Portfolio handoff JSON is saved at `.codex/CEHP/w12_handoff.json`.
+- Phase commits:
+  - P1 `b3a5bb0`
+  - P2 `5e814f7`
+  - P3 `f078189`
+  - P4 `f1646c0`
+  - P5 `743cdc9`
+  - P6 `d88a372`
+  - P7 `d45215b`
+- Final recorded gate after handoff JSON: `bash ACTIVE/game/scripts/verify-launch.sh` PASS with `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, oracle `117/117`, replay `10/10`, and art assets `25/25`; final replay-only pass also ended `SUMMARY PASS 10/10`.
+- `ACTIVE/docs/NEXT_TASK.md` now points at queued W13 launch runway ownership: Architect/Kevin authors the W13 packet; Codex waits for scoped builder handoff.

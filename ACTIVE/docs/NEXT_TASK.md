@@ -11,17 +11,17 @@ When this task is complete, the completing agent updates this file with the next
 
 ---
 
-## TASK_ID: CEHP-REBUILD-W12-POLISH-PREP
-## TITLE: W12 polish + launch prep specification
-## TASK_OWNER_ROLE: Codex (builder)
-## CURRENT_STAGE: 2026-04-29 — W12 P7 asset cleanup GREEN; bundle 354,011 / 409,600, oracle 117/117, replay 10/10
-## NEXT_HANDLER_ROLE: Codex prepares W12 handoff JSON
-## STATUS: ACTIVE
-## DEADLINE: W12 polish prep window; no public deploy without Kevin approval
+## TASK_ID: CEHP-REBUILD-W13-LAUNCH-RUNWAY
+## TITLE: W13 launch runway specification
+## TASK_OWNER_ROLE: Architect/Kevin
+## CURRENT_STAGE: 2026-04-29 — W12 complete GREEN; handoff JSON saved at `.codex/CEHP/w12_handoff.json`
+## NEXT_HANDLER_ROLE: Architect authors W13 launch runway packet; Codex waits for scoped builder handoff
+## STATUS: QUEUED
+## DEADLINE: W13 launch runway; no public deploy without Kevin approval
 
 ## CONTEXT
 
-W11 Benefits + Rasta content wiring is GREEN locally, and the W11.5 infrastructure hardening marathon is also GREEN. Codex did not author new content.
+W12 Polish + Launch Prep is complete on branch `codex/cehp-w12-polish-launch-prep`.
 
 Completed W11 work:
 
@@ -48,7 +48,7 @@ Completed W11.5 hardening:
 
 Final W11.5 verification is recorded in `.codex/CEHP/handoff.md` and the Codex final response.
 
-## W12 PACKET NOW ACTIVE
+## W12 PACKET COMPLETE
 
 Kevin/Architect supplied the W12 builder handoff on 2026-04-29. A copy is saved at `.codex/CEHP/w12_packet.md`.
 
@@ -66,10 +66,13 @@ Completed W12 work:
 - P5 procedural Web Audio is GREEN; `ACTIVE/game/src/30_audio.js` now exposes `Audio.playAmbient(worldKey)`, `Audio.stopAmbient()`, and `Audio.event(eventKey)` with legacy `start`/`stop` aliases, three deterministic ambient beds, six <=300ms event hits, and 300ms ambient ducking.
 - P6 replay fixture expansion is GREEN; corpus is now 10 fixtures, with new coverage for Benefits default completion, Rasta dark-cigarette baseline, and Rasta rest-open completion. Gold md5s are pinned in `.codex/CEHP/w12_replay_hashes.md`.
 - P7 asset cleanup is GREEN; 8 orphan PNGs moved to `ACTIVE/game/art/_orphans/`, all 30 oversize PNGs were compressed with `pngquant --quality=70-85`, active-plus-orphan PNG bytes dropped from `7,759,150` to `1,957,754` (74.8% reduction), and `verify_art_assets` now checks 25 active expected assets.
+- End-of-sprint handoff JSON is saved at `.codex/CEHP/w12_handoff.json`.
 
-Current W12 builder lanes:
+Current W13 queue:
 
-1. Prepare end-of-sprint handoff JSON.
+1. Architect/Kevin authors the W13 launch runway packet.
+2. Codex executes only after a scoped W13 builder handoff arrives.
+3. Kevin-gated launch actions remain locked: public deploy, DNS flip, trailer publish, Critical Reflex send, and announce thread.
 
 ## ACCEPTANCE GATES
 
