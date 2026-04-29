@@ -2659,3 +2659,17 @@ Plan specifies: read 5 receipts from the same 5 case seeds before + after. Does 
 - summary: applied Revision 2 from P2 forward, moved unbuilt W11 launch-arc mini-bosses/setpieces/Reply-All Locust/parallax to W15+ backlog, audited the actual receipt flag-state completion model, added missing Rasta dark-cigarette verdict/tension fragments, and made receipt scoring reject incompatible flag-specific fragments before scoring.
 - verification: `node ACTIVE/game/build.js` PASS (`351292` reported / `351302` disk); `bash ACTIVE/game/scripts/verify-launch.sh` PASS (`CEHP LAUNCH VERIFY: PASS`, oracle `113/113`, replay `7/7`, bundle `351302 / 409600`); `npm run --prefix ACTIVE/game test:replay` PASS (`7/7`); save schema PASS; sacred sweep clean on `80_receipts.js`.
 - notes: no save schema, RNG, deferred mechanics, new rooms, new runtime dependencies, or pre-session dirty-file edits.
+
+## 2026-04-29 - W12 P3 Telegraph Audit GREEN
+- files changed:
+  - `ACTIVE/game/src/60_enemies.js`
+  - `ACTIVE/game/tests/rebuild_logic.test.mjs`
+  - `ACTIVE/game/index.html`
+  - `.codex/CEHP/w12_telegraph_audit.md`
+  - `.codex/CEHP/status.md`
+  - `.codex/CEHP/handoff.md`
+  - `.codex/CEHP/changelog.md`
+  - `ACTIVE/docs/NEXT_TASK.md`
+- summary: audited only shipped enemy archetypes in `60_enemies.js`, documented their effective jittered windup ranges, raised `pizzaParty` windup from `140ms` to `160ms` so seeded `-40ms` jitter cannot fall below `120ms`, and added oracle coverage for `120-400ms` bounds.
+- verification: `node ACTIVE/game/build.js` PASS (`351292` reported / `351302` disk); `bash ACTIVE/game/scripts/verify-launch.sh` PASS (`CEHP LAUNCH VERIFY: PASS`, oracle `114/114`, replay `7/7`, bundle `351302 / 409600`); `npm run --prefix ACTIVE/game test:replay` PASS (`7/7`); save schema PASS; sacred sweep clean on `60_enemies.js`.
+- notes: no save schema, RNG, mini-boss, setpiece, or pre-session dirty-file edits.

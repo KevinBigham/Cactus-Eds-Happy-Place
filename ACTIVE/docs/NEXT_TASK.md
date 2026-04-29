@@ -14,8 +14,8 @@ When this task is complete, the completing agent updates this file with the next
 ## TASK_ID: CEHP-REBUILD-W12-POLISH-PREP
 ## TITLE: W12 polish + launch prep specification
 ## TASK_OWNER_ROLE: Codex (builder)
-## CURRENT_STAGE: 2026-04-29 — W12 P2 receipt flag audit GREEN; bundle 351,302 / 409,600, oracle 113/113, replay 7/7
-## NEXT_HANDLER_ROLE: Codex executes P3 existing-enemy telegraph audit and bounds coverage
+## CURRENT_STAGE: 2026-04-29 — W12 P3 telegraph audit GREEN; bundle 351,302 / 409,600, oracle 114/114, replay 7/7
+## NEXT_HANDLER_ROLE: Codex executes P4 static density analysis and launch-gate hook
 ## STATUS: ACTIVE
 ## DEADLINE: W12 polish prep window; no public deploy without Kevin approval
 
@@ -61,20 +61,20 @@ Completed W12 work:
 - Revision 2 is active from P2 forward; unbuilt W11 launch-arc mini-bosses, setpieces, Reply-All Locust, and 2-layer parallax verification are deferred to W15+ backlog.
 - P2 receipt completion-flag audit is GREEN; actual registered flag keys are `premiumSecured`, `uninsuredVeteran`, `restOpened`, `cigaretteLit`, and `rushedRest`.
 - P2 added `W12_RASTA_VERDICT_DARK_01` and `W12_RASTA_TENSION_DARK_01`, made receipt scoring reject incompatible flag-specific fragments, and documented coverage in `.codex/CEHP/w12_receipt_audit.md`.
+- P3 existing-enemy telegraph audit is GREEN; `pizzaParty` windup is tuned from `140ms` to `160ms` so jittered restarts stay within `120-400ms`, and `.codex/CEHP/w12_telegraph_audit.md` documents all shipped enemy ranges.
 
 Current W12 builder lanes:
 
-1. P3 telegraph windup audit/tune with `120 <= windup <= 400 ms` for enemies that exist in `60_enemies.js` only.
-2. P4 static density script and launch-gate hook.
-3. P5 procedural Web Audio API and deterministic event hits.
-4. P6 replay fixture expansion for under-covered actual completion paths from the P2 audit.
-5. P7 asset orphan quarantine and PNG compression.
+1. P4 static density script and launch-gate hook.
+2. P5 procedural Web Audio API and deterministic event hits.
+3. P6 replay fixture expansion for under-covered actual completion paths from the P2 audit.
+4. P7 asset orphan quarantine and PNG compression.
 
 ## ACCEPTANCE GATES
 
 - `cd ACTIVE/game && node build.js && wc -c index.html` stays under the active cap; current bundle is `351,302 / 409,600`.
 - `cd ACTIVE/game && node scripts/check_save_schema.js` passes.
-- `cd ACTIVE/game && node --test tests/rebuild_logic.test.mjs` passes; current oracle is `113/113`.
+- `cd ACTIVE/game && node --test tests/rebuild_logic.test.mjs` passes; current oracle is `114/114`.
 - `cd ACTIVE/game && npm run test:replay` passes deterministic corpus; current replay corpus is `7/7`.
 - `cd ACTIVE/game && npm run verify:launch` ends with `CEHP LAUNCH VERIFY: PASS`.
 - No save schema change.

@@ -1,5 +1,36 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-29 - W12 P3 Telegraph Audit GREEN - Codex GPT-5.5)
+
+**Session goal**: Execute revised P3 against shipped enemies only, document timing ranges, and keep the launch gate green.
+
+### What shipped
+
+- Added `.codex/CEHP/w12_telegraph_audit.md`.
+- Audited the three shipped enemy archetypes in `ACTIVE/game/src/60_enemies.js`:
+  - `scantron` using Compliance Auditor art: `220ms` base, `180-260ms` effective range after jitter.
+  - `pizzaParty`: `140ms` base before P3, tuned to `160ms`, `120-200ms` effective range after jitter.
+  - `deductibleWeight` using Deadline Wraith art: `180ms` base, `140-220ms` effective range after jitter.
+- Added a behavior-oracle test asserting every shipped archetype stays inside the `120-400ms` telegraph band after the existing `+/-40ms` seeded jitter.
+- Updated the older Pizza active-gating test to reflect the `160ms` base windup while preserving active-only damage behavior.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `node ACTIVE/game/build.js` | PASS (`351292` reported / `351302` disk) |
+| `bash ACTIVE/game/scripts/verify-launch.sh` | PASS; bundle `351302 / 409600`, oracle `114/114`, replay `7/7`, final line `CEHP LAUNCH VERIFY: PASS` |
+| `npm run --prefix ACTIVE/game test:replay` | PASS (`7/7`) |
+| `node ACTIVE/game/scripts/check_save_schema.js` | PASS |
+| Sacred sweep on `ACTIVE/game/src/60_enemies.js` | PASS; no `Math.random`, `Date.now`, arrows, `let`, `const`, or template literals |
+
+### Notes for the next owner
+
+- Continue with P4 density static analysis and `verify-launch.sh` hook.
+- No mini-bosses were audited because none are present in source.
+- Behavior oracle is now `114/114`.
+- Replay corpus is still `7/7`.
+
 ## What Was Just Done (2026-04-29 - W12 P2 Receipt Flag Audit GREEN - Codex GPT-5.5)
 
 **Session goal**: Apply Kevin/Architect W12 Revision 2 from P2 forward, audit actual receipt completion flags instead of unbuilt mini-boss/setpiece events, and keep the launch gate green.

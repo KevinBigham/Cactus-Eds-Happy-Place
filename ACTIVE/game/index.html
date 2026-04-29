@@ -3403,7 +3403,7 @@ return enemy;
 function spawnPizza(scene, opts){
 opts = opts || {};
 var rect = makeRect(scene, opts.x || 0, opts.y || 0, 24, 16, 0xf0c46c, 0.95, 12);
-var enemy = mkEnemy('pizzaParty', rect, makeLabel(scene, rect.x, rect.y - 16, 'PIZZA', '#221111'), 140, 60, 120, 0, 1, 'ambusher');
+var enemy = mkEnemy('pizzaParty', rect, makeLabel(scene, rect.x, rect.y - 16, 'PIZZA', '#221111'), 160, 60, 120, 0, 1, 'ambusher');
 enemy.labelOffsetY = 16;
 attachTelegraph(scene, enemy, 58, 42, -4);
 enemy.originY = rect.y;

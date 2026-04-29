@@ -3416,6 +3416,24 @@ function makeEnemyWorld() {
   };
 }
 
+test('W12 P3 enemy telegraph windup bases stay inside launch bounds after jitter', () => {
+  const CEHP = loadModules(ENEMY_MODULES);
+  const scene = makeEnemyScene();
+  const specs = [
+    { type: 'scantron', opts: { teleportPoints: [{ x: 0, y: 0 }, { x: 32, y: 0 }] } },
+    { type: 'pizzaParty', opts: { x: 0, y: 0 } },
+    { type: 'deductibleWeight', opts: { x: 0, y: 0 } }
+  ];
+
+  specs.forEach(function(spec) {
+    const enemy = CEHP.Enemies.spawn(scene, spec.type, spec.opts);
+    assert.equal(enemy.wBase - 40 >= 120, true,
+      spec.type + ' jittered windup lower bound below 120ms: ' + (enemy.wBase - 40));
+    assert.equal(enemy.wBase + 40 <= 400, true,
+      spec.type + ' jittered windup upper bound above 400ms: ' + (enemy.wBase + 40));
+  });
+});
+
 test('W8-R01 enemy telegraph windup gates damage intersection', () => {
   const CEHP = loadModules(ENEMY_MODULES);
   CEHP.Collision = { intersects: function() { return true; } };
@@ -3427,14 +3445,14 @@ test('W8-R01 enemy telegraph windup gates damage intersection', () => {
   const player = makeEnemyPlayer();
   const world = makeEnemyWorld();
 
-  // Pizza initial windupMs = 140 (no jitter on initial spawn).
-  // 8 frames * 16ms = 128ms -> still windup.
+  // Pizza initial windupMs = 160 (no jitter on initial spawn).
+  // 9 frames * 16ms = 144ms -> still windup.
   let f;
-  for (f = 0; f < 8; f++) enemy.update(player, world, 16);
-  assert.equal(enemy.phase, 'windup', 'enemy must stay in windup through 128ms');
+  for (f = 0; f < 9; f++) enemy.update(player, world, 16);
+  assert.equal(enemy.phase, 'windup', 'enemy must stay in windup through 144ms');
   assert.equal(world.pizzaHits, 0, 'damage must not fire while phase is windup');
 
-  // 9th frame: 144ms -> windupMs = -4 -> transition to active -> intersect fires.
+  // 10th frame: 160ms -> windupMs = 0 -> transition to active -> intersect fires.
   enemy.update(player, world, 16);
   assert.equal(world.pizzaHits, 1, 'damage must fire when phase transitions to active');
   assert.equal(enemy.dead, true, 'Pizza destroys itself on active-phase hit');
@@ -3524,9 +3542,9 @@ test('W8-R01 enemy telegraph jitter stays within plus or minus 40ms of archetype
   assert.ok(windupStarts.length >= 50,
     'expected >=50 cycle restarts across 4000 frames; got ' + windupStarts.length);
   for (i = 0; i < windupStarts.length; i++) {
-    assert.ok(windupStarts[i] >= 140 - 40,
+    assert.ok(windupStarts[i] >= enemy.wBase - 40,
       'windup ' + windupStarts[i] + ' below wBase-40');
-    assert.ok(windupStarts[i] <= 140 + 40,
+    assert.ok(windupStarts[i] <= enemy.wBase + 40,
       'windup ' + windupStarts[i] + ' above wBase+40');
   }
   const unique = {};
