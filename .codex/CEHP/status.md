@@ -170,3 +170,25 @@ Phase 6 wall-jump single-owner landed 2026-04-24 per architect call (ChatGPT 5.4
   - `node scripts/check_save_schema.js` PASS.
   - `node scripts/verify_art_assets.mjs` PASS (`33/33`).
 - Next task: `ACTIVE/docs/NEXT_TASK.md` remains `CEHP-REBUILD-W12-POLISH-PREP`, Architect/Kevin-owned, now refreshed with W11.5 bundle/oracle/replay numbers.
+
+## 2026-04-29 - W12 P5 Procedural Audio GREEN
+
+- Current state: W12 P1-P5 are GREEN on branch `codex/cehp-w12-polish-launch-prep`; P6 replay fixture expansion is next.
+- Bundle: `ACTIVE/game/index.html` is `354,011 / 409,600` bytes after P5.
+- Oracle: `ACTIVE/game/tests/rebuild_logic.test.mjs` passes `117/117` through `verify-launch.sh`.
+- Replay: `npm run --prefix ACTIVE/game test:replay` passes `7/7`.
+- What changed:
+  - Replaced the old four-layer Web Audio module with deterministic procedural ambient beds.
+  - Added public API `CEHP.Audio.playAmbient(worldKey)`, `CEHP.Audio.stopAmbient()`, and `CEHP.Audio.event(eventKey)`.
+  - Kept legacy scene aliases `start`, `stop`, `updateFromAxes`, and `isRunning`.
+  - Added three ambient beds: Orientation `60Hz/LP200/LFO0.05`, Benefits `90Hz/LP250/LFO0.08`, Rasta `50Hz/LP180/LFO0.035`.
+  - Added six <=300ms procedural event hits: `door_open`, `door_close`, `stamp_thud`, `paper_rustle`, `receipt_print`, and `boss_telegraph`.
+  - Added 300ms ambient ducking at 50% under event hits and wired shipped game events to procedural hits.
+  - Added behavior-oracle coverage for API shape, ambient bed parameters, event envelope duration, ducking, and event-bus triggers.
+- Final P5 verification:
+  - `node ACTIVE/game/build.js` PASS (`354001` reported / `354011` on disk).
+  - `bash ACTIVE/game/scripts/verify-launch.sh` PASS (`CEHP LAUNCH VERIFY: PASS`, oracle `117/117`, replay `7/7`, bundle `354011 / 409600`).
+  - `npm run --prefix ACTIVE/game test:replay` PASS (`7/7`).
+  - `node ACTIVE/game/scripts/check_save_schema.js` PASS.
+  - Sacred sweep on `ACTIVE/game/src/30_audio.js` found no `Math.random`, `Date.now`, `performance.now`, `const`, `let`, or arrow syntax.
+- Notes: no audio files, no runtime dependency, no save schema change, no new mechanics, no deferred mini-boss/setpiece work, and no pre-session dirty-file edits.

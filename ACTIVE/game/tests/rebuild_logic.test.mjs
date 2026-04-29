@@ -178,6 +178,112 @@ const FORMS_MODULES = [
   '50_forms.js'
 ];
 
+const AUDIO_MODULES = [
+  '00_index.js',
+  '03_events.js',
+  '30_audio.js'
+];
+
+function makeFakeAudioEnvironment() {
+  const contexts = [];
+
+  function makeParam(value) {
+    return {
+      value,
+      events: [],
+      setValueAtTime(next, time) {
+        this.value = next;
+        this.events.push({ kind: 'set', value: next, time });
+      },
+      linearRampToValueAtTime(next, time) {
+        this.value = next;
+        this.events.push({ kind: 'linear', value: next, time });
+      },
+      exponentialRampToValueAtTime(next, time) {
+        this.value = next;
+        this.events.push({ kind: 'exponential', value: next, time });
+      },
+      cancelScheduledValues(time) {
+        this.events.push({ kind: 'cancel', time });
+      }
+    };
+  }
+
+  function connectable(node) {
+    node.connections = [];
+    node.disconnects = 0;
+    node.connect = function(target) {
+      this.connections.push(target);
+      return target;
+    };
+    node.disconnect = function() {
+      this.disconnects += 1;
+    };
+    return node;
+  }
+
+  function FakeAudioContext() {
+    this.currentTime = 12;
+    this.state = 'running';
+    this.destination = connectable({ kind: 'destination' });
+    this.oscillators = [];
+    this.gains = [];
+    this.filters = [];
+    this.resumes = 0;
+    contexts.push(this);
+  }
+
+  FakeAudioContext.prototype.createGain = function() {
+    const gain = connectable({ kind: 'gain', gain: makeParam(1) });
+    this.gains.push(gain);
+    return gain;
+  };
+
+  FakeAudioContext.prototype.createBiquadFilter = function() {
+    const filter = connectable({
+      kind: 'filter',
+      type: 'lowpass',
+      frequency: makeParam(0),
+      Q: makeParam(0)
+    });
+    this.filters.push(filter);
+    return filter;
+  };
+
+  FakeAudioContext.prototype.createOscillator = function() {
+    const oscillator = connectable({
+      kind: 'oscillator',
+      type: 'sine',
+      frequency: makeParam(0),
+      starts: [],
+      stops: [],
+      start(when) {
+        this.starts.push(when == null ? null : when);
+      },
+      stop(when) {
+        this.stops.push(when == null ? null : when);
+      }
+    });
+    this.oscillators.push(oscillator);
+    return oscillator;
+  };
+
+  FakeAudioContext.prototype.resume = function() {
+    this.resumes += 1;
+  };
+
+  return {
+    contexts,
+    extra: {
+      AudioContext: FakeAudioContext,
+      webkitAudioContext: FakeAudioContext,
+      matchMedia: function() {
+        return { matches: false };
+      }
+    }
+  };
+}
+
 const STATE_MODULES = [
   '00_index.js',
   '01_const.js',
@@ -1638,6 +1744,113 @@ test('boot preload loads optional Track A art only for non-thermal runs', () => 
   assert.equal(thermalKeys.includes('paper_expired_id'), false);
   assert.equal(thermalKeys.includes('receipt_brand_mascot'), false);
   assert.equal(thermalKeys.includes('ed_sheet_60px'), false);
+});
+
+test('W12 P5 procedural audio exposes ambient beds and legacy aliases', () => {
+  const harness = makeFakeAudioEnvironment();
+  const CEHP = loadModules(AUDIO_MODULES, harness.extra);
+  const expected = {
+    orientation: { fundamental: 60, filter: 200, lfo: 0.05 },
+    benefits: { fundamental: 90, filter: 250, lfo: 0.08 },
+    rasta: { fundamental: 50, filter: 180, lfo: 0.035 }
+  };
+
+  assert.equal(typeof CEHP.Audio.playAmbient, 'function');
+  assert.equal(typeof CEHP.Audio.stopAmbient, 'function');
+  assert.equal(typeof CEHP.Audio.event, 'function');
+  assert.equal(typeof CEHP.Audio.start, 'function');
+  assert.equal(typeof CEHP.Audio.stop, 'function');
+
+  Object.keys(expected).forEach(function(worldKey) {
+    const context = harness.contexts[0];
+    const oscCount = context ? context.oscillators.length : 0;
+    const filterCount = context ? context.filters.length : 0;
+
+    assert.equal(CEHP.Audio.playAmbient(worldKey), true);
+    assert.equal(CEHP.Audio.isRunning(), true);
+    assert.ok(CEHP.Audio.layers.ambient, worldKey + ' missing ambient layer');
+
+    const activeContext = harness.contexts[0];
+    const oscillators = activeContext.oscillators.slice(oscCount);
+    const filters = activeContext.filters.slice(filterCount);
+    assert.equal(
+      oscillators.some(function(node) { return node.frequency.value === expected[worldKey].fundamental; }),
+      true,
+      worldKey + ' missing fundamental'
+    );
+    assert.equal(
+      oscillators.some(function(node) { return node.frequency.value === expected[worldKey].lfo; }),
+      true,
+      worldKey + ' missing LFO'
+    );
+    assert.equal(
+      filters.some(function(node) { return node.type === 'lowpass' && node.frequency.value === expected[worldKey].filter; }),
+      true,
+      worldKey + ' missing low-pass'
+    );
+    CEHP.Audio.stopAmbient();
+    assert.equal(CEHP.Audio.isRunning(), false);
+  });
+
+  assert.equal(CEHP.Audio.start('orientation'), true);
+  assert.equal(CEHP.Audio.isRunning(), true);
+  CEHP.Audio.stop();
+  assert.equal(CEHP.Audio.isRunning(), false);
+});
+
+test('W12 P5 procedural audio events duck ambient and stay under 300ms', () => {
+  const harness = makeFakeAudioEnvironment();
+  const CEHP = loadModules(AUDIO_MODULES, harness.extra);
+  const eventKeys = ['door_open', 'door_close', 'stamp_thud', 'paper_rustle', 'receipt_print', 'boss_telegraph'];
+
+  assert.equal(CEHP.Audio.playAmbient('benefits'), true);
+  const context = harness.contexts[0];
+  const ambientGain = CEHP.Audio.layers.ambient.gain;
+
+  eventKeys.forEach(function(eventKey) {
+    context.currentTime += 1;
+    const oscCount = context.oscillators.length;
+    const eventNow = context.currentTime;
+
+    assert.equal(CEHP.Audio.event(eventKey), true, eventKey + ' did not play');
+    const oscillator = context.oscillators.slice(oscCount)[0];
+    assert.ok(oscillator, eventKey + ' missing oscillator');
+    assert.equal(oscillator.stops.length, 1, eventKey + ' missing stop envelope');
+    assert.equal(oscillator.stops[0] - eventNow <= 0.3, true, eventKey + ' exceeds 300ms');
+  });
+
+  const duckSet = ambientGain.events.find(function(entry) {
+    return entry.kind === 'set' && entry.time === context.currentTime;
+  });
+  const duckRestore = ambientGain.events.find(function(entry) {
+    return entry.kind === 'linear' && Math.abs(entry.time - (context.currentTime + 0.3)) < 0.0001;
+  });
+  assert.ok(duckSet, 'missing duck set');
+  assert.ok(duckRestore, 'missing duck restore');
+  assert.equal(Math.round(duckSet.value * 10000), Math.round(duckRestore.value * 0.5 * 10000));
+  assert.equal(CEHP.Audio.event('unknown_event'), false);
+});
+
+test('W12 P5 audio maps shipped game events to procedural hits', () => {
+  const harness = makeFakeAudioEnvironment();
+  const CEHP = loadModules(AUDIO_MODULES, harness.extra);
+
+  assert.equal(CEHP.Audio.playAmbient('orientation'), true);
+  const context = harness.contexts[0];
+  const before = context.oscillators.length;
+
+  CEHP.Events.emit('module:passed', {});
+  CEHP.Events.emit('run:complete', {});
+  CEHP.Events.emit('camera:shake', {});
+
+  const eventOscillators = context.oscillators.slice(before);
+  assert.equal(eventOscillators.length, 3);
+  assert.equal(
+    eventOscillators.every(function(node) {
+      return node.stops.length === 1 && node.stops[0] - context.currentTime <= 0.3;
+    }),
+    true
+  );
 });
 
 function makeScenePhaserStub() {

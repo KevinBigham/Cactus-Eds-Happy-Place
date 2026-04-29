@@ -2684,3 +2684,38 @@ Next owner: Architect. Phase 6 fully landed (60px Ed + collider split + rim-ligh
 ### Notes for the next owner
 
 - P2 has a local-source mismatch to resolve conservatively: the packet references W11 mini-boss defeat completions and setpiece completions, but current source searches found no shipped systems named Supervisor / Enrollment / Logistics or Trust Fall / Open Concept / Supply Chain. Do not invent new mechanics or rooms; only add completion-event receipt coverage for seams that exist or can be proven from source.
+
+## What Was Just Done (2026-04-29 - W12 P5 Procedural Audio GREEN - Codex GPT-5.5)
+
+**Session goal**: Continue W12 after P4, implement procedural Web Audio per Revision 2 scope, preserve determinism and the existing scene audio aliases, and keep replay stable.
+
+### What shipped
+
+- Replaced `ACTIVE/game/src/30_audio.js` with a deterministic procedural Web Audio module.
+- Public API now includes `CEHP.Audio.playAmbient(worldKey)`, `CEHP.Audio.stopAmbient()`, and `CEHP.Audio.event(eventKey)`.
+- Legacy scene-facing aliases remain: `start`, `stop`, `updateFromAxes`, and `isRunning`.
+- Ambient beds now match the P5 spec:
+  - W1 Orientation: `60Hz` fundamental, low-pass `200Hz`, LFO `0.05Hz`.
+  - W2 Benefits: `90Hz` fundamental, low-pass `250Hz`, LFO `0.08Hz`.
+  - W3 Rasta: `50Hz` fundamental, low-pass `180Hz`, LFO `0.035Hz`.
+- Added six procedural event hits with envelopes at or below 300ms: `door_open`, `door_close`, `stamp_thud`, `paper_rustle`, `receipt_print`, and `boss_telegraph`.
+- Ambient gain ducks to 50% for 300ms under event hits.
+- Existing shipped event topics now trigger diegetic hits: signs/forms/modules/run-complete/camera-shake.
+- Added three P5 oracle tests covering API compatibility, bed parameters, event duration, ducking, and event-bus mapping.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `node --test --test-name-pattern "W12 P5" ACTIVE/game/tests/rebuild_logic.test.mjs` before implementation | RED, old module lacked `playAmbient` / `event` |
+| `node --test --test-name-pattern "W12 P5" ACTIVE/game/tests/rebuild_logic.test.mjs` after implementation | PASS (`3/3`) |
+| `node ACTIVE/game/build.js` | PASS, `354001` reported / `354011` on disk |
+| `bash ACTIVE/game/scripts/verify-launch.sh` | PASS, oracle `117/117`, replay `7/7`, bundle `354011 / 409600`, final line `CEHP LAUNCH VERIFY: PASS` |
+| `npm run --prefix ACTIVE/game test:replay` | PASS (`7/7`) |
+| `node ACTIVE/game/scripts/check_save_schema.js` | PASS |
+
+### Notes for the next owner
+
+- P6 remains the next W12 phase: add three replay fixtures for actual under-covered completion paths from the P2 receipt audit, not the deferred mini-boss/setpiece language from the original packet.
+- `boss_telegraph` uses a 290ms envelope to stay safely under the 300ms requirement without depending on exact floating-point equality at `0.30`.
+- No save schema, runtime dependency, MP3/chiptune asset, `Math.random`, wall-clock time, new room, or deferred W11 mechanic was added.

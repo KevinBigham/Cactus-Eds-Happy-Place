@@ -2685,3 +2685,16 @@ Plan specifies: read 5 receipts from the same 5 case seeds before + after. Does 
 - summary: added a static density analyzer that loads world manifests, models decision-grade threats from runtime room builders, checks every 960px camera window against the `<=5` limit, and wired it into `verify-launch.sh` between `art_assets` and `behavior_oracle`.
 - verification: `node ACTIVE/game/scripts/check_density.mjs` PASS (Orientation `1/5`, Benefits `4/5`, Rasta `0/5`, 25 threats modeled); `node ACTIVE/game/build.js` PASS (`351292` reported / `351302` disk); `bash ACTIVE/game/scripts/verify-launch.sh` PASS with `check_density` included (`CEHP LAUNCH VERIFY: PASS`, oracle `114/114`, replay `7/7`, bundle `351302 / 409600`); `npm run --prefix ACTIVE/game test:replay` PASS (`7/7`); save schema PASS.
 - notes: no bundled runtime source, save schema, RNG, room layout, or pre-session dirty-file edits.
+
+## 2026-04-29 - W12 P5 Procedural Audio GREEN
+- files changed:
+  - `ACTIVE/game/src/30_audio.js`
+  - `ACTIVE/game/tests/rebuild_logic.test.mjs`
+  - `ACTIVE/game/index.html`
+  - `.codex/CEHP/status.md`
+  - `.codex/CEHP/handoff.md`
+  - `.codex/CEHP/changelog.md`
+  - `ACTIVE/docs/NEXT_TASK.md`
+- summary: replaced the legacy four-layer Web Audio module with deterministic procedural ambient beds and event hits, added `playAmbient` / `stopAmbient` / `event` while preserving scene aliases, wired shipped event topics to diegetic hits, and added oracle coverage for ambient parameters, <=300ms envelopes, 300ms ducking, and event-bus triggers.
+- verification: focused P5 tests first failed against the old module, then passed after implementation; `node ACTIVE/game/build.js` PASS (`354001` reported / `354011` disk); `bash ACTIVE/game/scripts/verify-launch.sh` PASS (`CEHP LAUNCH VERIFY: PASS`, oracle `117/117`, replay `7/7`, bundle `354011 / 409600`); `npm run --prefix ACTIVE/game test:replay` PASS (`7/7`); save schema PASS; sacred sweep clean on `30_audio.js`.
+- notes: no audio files, MP3/chiptune assets, runtime dependency, save schema change, RNG/time violation, deferred W11 mechanics, or pre-session dirty-file edits.
