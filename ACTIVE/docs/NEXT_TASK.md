@@ -14,7 +14,7 @@ When this task is complete, the completing agent updates this file with the next
 ## TASK_ID: CEHP-REBUILD-W13-LAUNCH-RUNWAY
 ## TITLE: W13 launch runway execution
 ## TASK_OWNER_ROLE: Codex
-## CURRENT_STAGE: 2026-04-29 — W13 P1-P2 complete; P3 W14 runbook in progress
+## CURRENT_STAGE: 2026-04-29 — W13 P1-P3 complete; P4 CR pitch packet refresh in progress
 ## NEXT_HANDLER_ROLE: Codex executes P1-P6; Claude Code reviews after build; Kevin owns launch-day actions
 ## STATUS: ACTIVE
 ## DEADLINE: W13 launch freeze by 2026-05-04; no public launch action without Kevin approval

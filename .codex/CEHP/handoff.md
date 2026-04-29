@@ -1,5 +1,32 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-29 - W13 P4 CR Pitch Packet - Codex GPT-5.5)
+
+**Session goal**: Refresh the Critical Reflex send-ready packet without building a screenshot pipeline.
+
+### What shipped
+
+- Rewrote `ACTIVE/marketing/cr_pitch_v1/SEND_READY_PACKET.md`:
+  - current post-W10/W11/W12 build state
+  - verified GitHub Pages fallback URL
+  - custom-domain caveat for W14
+  - replacement markers for stale trailer/poster/docket/capsule/header/screenshots/receipts
+  - updated Kevin draft starter and send order
+- Updated `ACTIVE/docs/NEXT_TASK.md` and `.codex/CEHP/status.md` for P4 progress.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `curl -I https://kevinbigham.github.io/Cactus-Eds-Happy-Place/` | HTTP `200`, content-length `354011` |
+| `curl -I https://counterfeit-educational.org/` | DNS resolution failed; custom domain remains W14-gated |
+| `bash ACTIVE/game/scripts/verify-launch.sh` | PASS; final line `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, oracle `117/117`, replay `10/10` |
+
+### Notes for the next owner
+
+- P5 should run the cold-clone rehearsal and write actual wall-clock timings.
+- No screenshots were generated in P4 by design.
+
 ## What Was Just Done (2026-04-29 - W13 P3 W14 Runbook - Codex GPT-5.5)
 
 **Session goal**: Author launch-day operations docs that Kevin can execute without chat lookup.

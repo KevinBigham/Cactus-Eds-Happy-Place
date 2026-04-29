@@ -1,5 +1,24 @@
 # CEHP Changelog
 
+## 2026-04-29 — W13 P4 CR pitch packet refresh · Codex GPT-5.5
+
+**Context**: W13 P4 required the Critical Reflex send-ready packet to reflect the current W10-W12 build and mark stale media for Kevin replacement.
+
+**What changed**:
+- Rewrote `ACTIVE/marketing/cr_pitch_v1/SEND_READY_PACKET.md` with current launch-runway state, the verified GitHub Pages fallback URL, custom-domain caveat, updated draft copy, and explicit send order.
+- Marked stale trailer, poster, docket, capsule/header, gameplay screenshots, and receipt PNGs with `[REPLACE: ...]` markers.
+- Updated `ACTIVE/docs/NEXT_TASK.md`, `.codex/CEHP/status.md`, and `.codex/CEHP/handoff.md` for P4 progress.
+
+**Verification**:
+- Public fallback check: `curl -I https://kevinbigham.github.io/Cactus-Eds-Happy-Place/` returned HTTP `200` with `content-length: 354011`.
+- Custom domain check: `curl -I https://counterfeit-educational.org/` failed DNS resolution.
+- `bash ACTIVE/game/scripts/verify-launch.sh` PASS: final line `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, behavior oracle `117/117`, replay corpus `10/10`.
+
+**Notes**:
+- No runtime source, scripts, tests, replay fixtures, save schema, art, or pre-session dirty files were changed.
+
+---
+
 ## 2026-04-29 — W13 P3 W14 runbook and incident log template · Codex GPT-5.5
 
 **Context**: W13 P3 required a fresh W14 launch-day runbook and launch incident template. `LAUNCH_RUNBOOK_W6.md` is historical and was not edited.
