@@ -1,5 +1,22 @@
 # CEHP Changelog
 
+## 2026-04-29 — W13 P3 W14 runbook and incident log template · Codex GPT-5.5
+
+**Context**: W13 P3 required a fresh W14 launch-day runbook and launch incident template. `LAUNCH_RUNBOOK_W6.md` is historical and was not edited.
+
+**What changed**:
+- Added `ACTIVE/docs/LAUNCH_RUNBOOK_W14.md` with T-1 checklist, T-0 time-stamped launch sequence, per-step GREEN output and RED mode, rollback procedures, monitoring check-ins, and launch-blocking definition.
+- Refreshed `ACTIVE/docs/LAUNCH_INCIDENT_LOG.md` as an empty W14 template with quick status, incident entries, scheduled check-ins, DNS rollback notes, and resolution notes.
+- Updated `ACTIVE/docs/NEXT_TASK.md`, `.codex/CEHP/status.md`, and `.codex/CEHP/handoff.md` for P3 progress.
+
+**Verification**:
+- `bash ACTIVE/game/scripts/verify-launch.sh` PASS: final line `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, behavior oracle `117/117`, replay corpus `10/10`.
+
+**Notes**:
+- No runtime source, scripts, tests, replay fixtures, save schema, art, or pre-session dirty files were changed.
+
+---
+
 ## 2026-04-29 — W13 P2 known-issues and accessibility refresh · Codex GPT-5.5
 
 **Context**: W13 P2 required `KNOWN_ISSUES.md` and `A11Y_STATUS.md` to match the W12-complete runtime rather than the older March certification flow.

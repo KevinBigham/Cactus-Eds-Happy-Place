@@ -1,5 +1,32 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-29 - W13 P3 W14 Runbook - Codex GPT-5.5)
+
+**Session goal**: Author launch-day operations docs that Kevin can execute without chat lookup.
+
+### What shipped
+
+- Added `ACTIVE/docs/LAUNCH_RUNBOOK_W14.md`:
+  - T-1 dress rehearsal reuse
+  - T-0 launch sequence from morning cold clone through trailer publish
+  - command, GREEN output, and RED mode for each verification step
+  - rollback procedures for broken link, missing asset, and save corruption
+  - monitoring schedule for T-0, T+1h, T+4h, and T+24h
+  - launch-blocking definition
+- Refreshed `ACTIVE/docs/LAUNCH_INCIDENT_LOG.md` as an empty W14 template.
+- Updated `ACTIVE/docs/NEXT_TASK.md` and `.codex/CEHP/status.md` for P3 progress.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `bash ACTIVE/game/scripts/verify-launch.sh` | PASS; final line `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, oracle `117/117`, replay `10/10` |
+
+### Notes for the next owner
+
+- P4 is `ACTIVE/marketing/cr_pitch_v1/SEND_READY_PACKET.md` only.
+- W6 runbook stayed untouched.
+
 ## What Was Just Done (2026-04-29 - W13 P2 Known Issues + A11Y Refresh - Codex GPT-5.5)
 
 **Session goal**: Refresh launch-current known issues and accessibility docs without changing runtime code.
