@@ -14,9 +14,9 @@ When this task is complete, the completing agent updates this file with the next
 ## TASK_ID: CEHP-REBUILD-W13-LAUNCH-RUNWAY
 ## TITLE: W13 launch runway execution
 ## TASK_OWNER_ROLE: Codex
-## CURRENT_STAGE: 2026-04-29 — W13 P1-P5 complete; P6 final freeze in progress
-## NEXT_HANDLER_ROLE: Codex executes P1-P6; Claude Code reviews after build; Kevin owns launch-day actions
-## STATUS: ACTIVE
+## CURRENT_STAGE: 2026-04-29 — W13 P1-P6 complete; Claude Code review next
+## NEXT_HANDLER_ROLE: Claude Code reviews W13; Kevin owns W14 launch-day actions
+## STATUS: REVIEW
 ## DEADLINE: W13 launch freeze by 2026-05-04; no public launch action without Kevin approval
 
 ## CONTEXT
@@ -76,7 +76,7 @@ Current W13 runway packet:
 4. P3 authors a fresh `ACTIVE/docs/LAUNCH_RUNBOOK_W14.md` and refreshes `ACTIVE/docs/LAUNCH_INCIDENT_LOG.md`; `LAUNCH_RUNBOOK_W6.md` stays historical.
 5. P4 refreshes `ACTIVE/marketing/cr_pitch_v1/SEND_READY_PACKET.md` with current state and replacement markers.
 6. P5 performed a cold-clone dress rehearsal and wrote `ACTIVE/docs/LAUNCH_DRESS_REHEARSAL.md`; result GREEN with actual wall-clock timings.
-7. P6 writes `ACTIVE/docs/LAUNCH_FREEZE.md`, saves `.codex/CEHP/w13_handoff.json`, creates the `launch-freeze` tag, and pushes the tag per packet.
+7. P6 wrote `ACTIVE/docs/LAUNCH_FREEZE.md`, saved `.codex/CEHP/w13_handoff.json`, and completed the `launch-freeze` tag path per packet.
 8. Kevin-gated launch actions remain locked: DNS flip, trailer publish, Critical Reflex send, public announce, and T-0 trigger.
 
 ## ACCEPTANCE GATES

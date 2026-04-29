@@ -1,5 +1,40 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-29 - W13 P6 Launch Freeze - Codex GPT-5.5)
+
+**Session goal**: Close W13 Launch Runway with a freeze record, durable handoff JSON, and launch-freeze tag.
+
+### What shipped
+
+- Added `ACTIVE/docs/LAUNCH_FREEZE.md`.
+- Added `.codex/CEHP/w13_handoff.json`.
+- Updated `ACTIVE/docs/NEXT_TASK.md` to REVIEW for Claude Code.
+- Updated `.codex/CEHP/status.md` and `.codex/CEHP/changelog.md` for W13 completion.
+
+### Freeze state
+
+| Item | Value |
+|---|---|
+| Frozen playable baseline | `fb5f1b06c2dcb94b8a4f2a7533c514e48754f73d` |
+| Bundle | `354011 / 409600` |
+| Oracle | `117/117` |
+| Replay corpus | `10/10` |
+| Tag | `launch-freeze` |
+| Soak contract | `2026-05-04` to `2026-05-29`; only launch-blocking fixes go to main |
+
+### Verification
+
+| Check | Result |
+|---|---|
+| Replay md5 check | PASS; all 10 fixture md5s match `.codex/CEHP/w12_replay_hashes.md` |
+| `bash ACTIVE/game/scripts/verify-launch.sh` | PASS; `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, oracle `117/117`, replay `10/10` |
+
+### Notes for the next owner
+
+- W13 is complete. Claude Code should review W13 docs and freeze state.
+- Kevin-owned actions are trailer capture, CR media replacement, optional domain purchase/config, T-1 dress rehearsal, final taste-gate, and T-0 runbook execution.
+- Runtime code remains frozen. Only game will not start, save corruption, security issue, or Chrome stable broken qualifies as launch-blocking during soak.
+
 ## What Was Just Done (2026-04-29 - W13 P5 Launch Dress Rehearsal - Codex GPT-5.5)
 
 **Session goal**: Execute the launch dress rehearsal once from a cold clone and capture the T-1 recipe with actual timings.

@@ -1,5 +1,25 @@
 # CEHP Changelog
 
+## 2026-04-29 — W13 P6 launch freeze · Codex GPT-5.5
+
+**Context**: W13 P6 required the final launch-freeze record, W13 handoff JSON, soak contract, and `launch-freeze` tag.
+
+**What changed**:
+- Added `ACTIVE/docs/LAUNCH_FREEZE.md` with the frozen playable baseline commit, bundle/oracle/replay state, all 10 replay md5s, sacred-constraint reaffirmation, soak-period contract, launch-blocking definition, and Kevin-owned launch actions.
+- Added `.codex/CEHP/w13_handoff.json` with phase summaries, changed-file list, verification state, dress-rehearsal timings, freeze status, Kevin action items, risks, and W14 handoff.
+- Updated `ACTIVE/docs/NEXT_TASK.md`, `.codex/CEHP/status.md`, and `.codex/CEHP/handoff.md` for W13 completion.
+
+**Verification**:
+- `md5 -q ACTIVE/game/_canon/replays/cehp/*.json` matched the 10 gold md5s from `.codex/CEHP/w12_replay_hashes.md`.
+- `bash ACTIVE/game/scripts/verify-launch.sh` PASS: final line `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, behavior oracle `117/117`, replay corpus `10/10`.
+
+**Notes**:
+- Frozen playable baseline is `fb5f1b06c2dcb94b8a4f2a7533c514e48754f73d`.
+- P6 is docs/freeze metadata only; no runtime source, scripts, tests, replay fixtures, save schema, art, marketing assets, or pre-session dirty files were changed.
+- `launch-freeze` tag uses message `W13 launch freeze 2026-05-04`.
+
+---
+
 ## 2026-04-29 — W13 P5 launch dress rehearsal · Codex GPT-5.5
 
 **Context**: W13 P5 required Codex to execute a cold-clone launch rehearsal once and write the T-1 recipe Kevin reruns on Thursday 2026-05-28.

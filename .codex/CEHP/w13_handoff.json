@@ -1,0 +1,181 @@
+{
+  "sprint": "W13 Launch Runway",
+  "architect": "Claude Code",
+  "builder": "Codex",
+  "reviewer": "Claude Code",
+  "sprint_window": "2026-04-29 to 2026-05-04",
+  "launch_lock": "2026-05-29",
+  "plan": ".codex/CEHP/w13_packet.json",
+  "base_commit": "5ee7e99",
+  "frozen_playable_baseline_commit": "fb5f1b06c2dcb94b8a4f2a7533c514e48754f73d",
+  "phase_commit_note": "P6 cannot embed the hash of the same commit that contains this JSON. The final P6 docs commit is the launch-freeze tag target; inspect git tag launch-freeze after push.",
+  "phases_completed": [
+    {
+      "phase": "P1",
+      "summary": "Saved the W13 packet and authored TRAILER_SHOT_LIST.md for Kevin-owned capture.",
+      "commit": "ff8343a7f4b282e24c2f7a2f7cb5a789085f19f9"
+    },
+    {
+      "phase": "P2",
+      "summary": "Refreshed KNOWN_ISSUES.md and A11Y_STATUS.md against the W12-complete runtime.",
+      "commit": "29b1e3a3d120283fc4f750e5ceb4c61b09e6bba4"
+    },
+    {
+      "phase": "P3",
+      "summary": "Authored LAUNCH_RUNBOOK_W14.md and refreshed LAUNCH_INCIDENT_LOG.md.",
+      "commit": "4988627e262b2698b23cd8a774e73f41a058090d"
+    },
+    {
+      "phase": "P4",
+      "summary": "Refreshed the CR pitch packet with current launch-runway state and replacement markers.",
+      "commit": "ffdfe34a568b32217815a30e2281c159cf2c25cc"
+    },
+    {
+      "phase": "P5",
+      "summary": "Executed the cold-clone launch dress rehearsal and documented actual timings.",
+      "commit": "fb5f1b06c2dcb94b8a4f2a7533c514e48754f73d"
+    },
+    {
+      "phase": "P6",
+      "summary": "Creates LAUNCH_FREEZE.md, this W13 handoff, and the launch-freeze tag.",
+      "commit": "launch-freeze tag target"
+    }
+  ],
+  "files_changed": [
+    ".codex/CEHP/changelog.md",
+    ".codex/CEHP/handoff.md",
+    ".codex/CEHP/status.md",
+    ".codex/CEHP/w13_handoff.json",
+    ".codex/CEHP/w13_packet.json",
+    "ACTIVE/docs/A11Y_STATUS.md",
+    "ACTIVE/docs/KNOWN_ISSUES.md",
+    "ACTIVE/docs/LAUNCH_DRESS_REHEARSAL.md",
+    "ACTIVE/docs/LAUNCH_FREEZE.md",
+    "ACTIVE/docs/LAUNCH_INCIDENT_LOG.md",
+    "ACTIVE/docs/LAUNCH_RUNBOOK_W14.md",
+    "ACTIVE/docs/NEXT_TASK.md",
+    "ACTIVE/docs/TRAILER_SHOT_LIST.md",
+    "ACTIVE/marketing/cr_pitch_v1/SEND_READY_PACKET.md"
+  ],
+  "verification": {
+    "bundle_bytes": {
+      "reported_by_build_js": 354001,
+      "on_disk": 354011,
+      "cap": 409600
+    },
+    "behavior_oracle": {
+      "passing": 117,
+      "total": 117
+    },
+    "replay_corpus": {
+      "passing": 10,
+      "total": 10,
+      "three_cold_reruns": "PASS",
+      "cold_rerun_wall_clock_seconds": [9.12, 9.20, 9.12]
+    },
+    "replay_md5s": {
+      "test_room_obedient.json": "8ed8ad52b7cf5d9527f6ffa72acc50a2",
+      "w1_orientation_obedient.json": "959e9ea8165a6e07ba7f88086c87e363",
+      "w2_benefits_atrium_partial.json": "83350e61d274787443ea882bccf1eb19",
+      "w2_benefits_default_completion.json": "37fee2643be901fa1757daa996e36d9e",
+      "w2_benefits_insured.json": "bbacf3e1b817827f3391e01f17bd4f26",
+      "w2_benefits_uninsured.json": "33ead17d29a3429bb07e77a7e8b852ef",
+      "w3_rasta_dark_cigarette.json": "4bc2b923c92d76c903468c7acb081150",
+      "w3_rasta_rest_open.json": "31cff301a90e4e1fd32ee45625d92bc0",
+      "w3_rasta_rushed.json": "a412c8427605feef317987764b0a018b",
+      "w3_rasta_short.json": "6812183919a381e6dc1f4e6e05febbf7"
+    },
+    "gate_runs": [
+      {
+        "phase": "P1",
+        "command": "bash ACTIVE/game/scripts/verify-launch.sh",
+        "result": "PASS",
+        "details": "CEHP LAUNCH VERIFY: PASS; oracle 117/117; replay 10/10; bundle 354011/409600"
+      },
+      {
+        "phase": "P2",
+        "command": "bash ACTIVE/game/scripts/verify-launch.sh",
+        "result": "PASS",
+        "details": "CEHP LAUNCH VERIFY: PASS; oracle 117/117; replay 10/10; bundle 354011/409600"
+      },
+      {
+        "phase": "P3",
+        "command": "bash ACTIVE/game/scripts/verify-launch.sh",
+        "result": "PASS",
+        "details": "CEHP LAUNCH VERIFY: PASS; oracle 117/117; replay 10/10; bundle 354011/409600"
+      },
+      {
+        "phase": "P4",
+        "command": "bash ACTIVE/game/scripts/verify-launch.sh",
+        "result": "PASS",
+        "details": "CEHP LAUNCH VERIFY: PASS; oracle 117/117; replay 10/10; bundle 354011/409600"
+      },
+      {
+        "phase": "P5",
+        "command": "Cold clone plus launch gate plus replay reruns",
+        "result": "PASS",
+        "details": "Clone 0.93s; npm install 0.90s; build plus verify-launch 28.94s; replay reruns 9.12s, 9.20s, 9.12s; Chrome/Chromium/WebKit/Firefox quick checks GREEN"
+      },
+      {
+        "phase": "P6",
+        "command": "bash ACTIVE/game/scripts/verify-launch.sh",
+        "result": "PASS",
+        "details": "CEHP LAUNCH VERIFY: PASS; oracle 117/117; replay 10/10; bundle 354011/409600"
+      }
+    ],
+    "dress_rehearsal_wall_clock_times": {
+      "clone_seconds": 0.93,
+      "npm_install_seconds": 0.90,
+      "build_plus_launch_gate_seconds": 28.94,
+      "replay_rerun_seconds": [9.12, 9.20, 9.12],
+      "default_browser_open_seconds": 0.13,
+      "chrome_stable_probe_seconds": 2.08,
+      "chromium_probe_seconds": 1.32,
+      "webkit_probe_seconds": 9.52,
+      "firefox_probe_seconds": 3.91
+    },
+    "browser_checks": {
+      "google_chrome_stable": "GREEN",
+      "playwright_chromium": "GREEN",
+      "playwright_webkit": "GREEN",
+      "playwright_firefox": "GREEN with standard AudioContext/WebGL warnings only"
+    }
+  },
+  "freeze_status": {
+    "frozen_playable_baseline_commit": "fb5f1b06c2dcb94b8a4f2a7533c514e48754f73d",
+    "freeze_tag": "launch-freeze",
+    "soak_period": "2026-05-04 to 2026-05-29",
+    "launch_blocking_definition": [
+      "game will not start",
+      "save corruption",
+      "security issue",
+      "Chrome stable broken"
+    ],
+    "post_freeze_rule": "Beyond the W13 freeze, only launch-blocking-bug fixes go to main."
+  },
+  "kevin_action_items": [
+    "Record trailer takes using ACTIVE/docs/TRAILER_SHOT_LIST.md.",
+    "Replace every stale CR media asset marked [REPLACE: ...] in ACTIVE/marketing/cr_pitch_v1/SEND_READY_PACKET.md.",
+    "Purchase and configure the custom domain if going beyond GitHub Pages.",
+    "Re-run ACTIVE/docs/LAUNCH_DRESS_REHEARSAL.md on Thursday 2026-05-28.",
+    "Perform the final taste-gate on launch day.",
+    "Execute ACTIVE/docs/LAUNCH_RUNBOOK_W14.md on T-0."
+  ],
+  "risks": [
+    "P5 installed Playwright WebKit and Firefox browser binaries into the user cache for rehearsal automation; this did not change project dependencies.",
+    "Firefox produced standard AudioContext/WebGL warnings in the automated probe, but no visible failure.",
+    "counterfeit-educational.org did not resolve during P4; GitHub Pages fallback was verified and custom-domain cutover remains Kevin/W14-gated.",
+    "W11_CONTENT_BIAS = 1.1 remains tracked as a post-launch cleanup item.",
+    "Deferred mini-bosses, setpieces, Reply-All Locust, and parallax expansion remain W15+ backlog, not W13 scope."
+  ],
+  "handoff": {
+    "next_sprint": "W14 Launch Week",
+    "recommended_owner": "Kevin for launch-day execution with Claude Code review/ops support",
+    "state": "Game remains shippable. W13 runway docs, rehearsal, CR packet refresh, and freeze record are complete. Soak should be quiet unless a launch-blocking bug appears.",
+    "do_not_forget": [
+      "Do not mutate ACTIVE/docs/LAUNCH_RUNBOOK_W6.md; W14 runbook is ACTIVE/docs/LAUNCH_RUNBOOK_W14.md.",
+      "Do not touch runtime code during soak unless the issue matches the launch-blocking definition.",
+      "Do not perform DNS flip, trailer publish, Critical Reflex send, or public announce without Kevin."
+    ]
+  }
+}
