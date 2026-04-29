@@ -1,5 +1,24 @@
 # CEHP Changelog
 
+## 2026-04-29 — W13 P1 trailer shot list and runway activation · Codex GPT-5.5
+
+**Context**: Kevin/Architect supplied the W13 Launch Runway packet. W13 is documentation, rehearsal, and freeze work only; runtime code remains frozen unless P5 surfaces a launch blocker.
+
+**What changed**:
+- Saved the packet at `.codex/CEHP/w13_packet.json`.
+- Added `ACTIVE/docs/TRAILER_SHOT_LIST.md` with 10 concrete takes Kevin can record: cold-open title, W1 intake and verb montage, W2 benefits atrium/claim/network pressure, W3 `rasta-soft-belt`, receipt reveal, and THE DOCKET.
+- Promoted `ACTIVE/docs/NEXT_TASK.md` from Architect-owned W13 packet authoring to Codex-owned W13 execution.
+- Prepended W13 P1 state to `.codex/CEHP/status.md` and `.codex/CEHP/handoff.md`.
+
+**Verification**:
+- `bash ACTIVE/game/scripts/verify-launch.sh` PASS: final line `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, behavior oracle `117/117`, replay corpus `10/10`.
+
+**Notes**:
+- No runtime source, scripts, tests, replay fixtures, save schema, art, or pre-session dirty files were changed.
+- Kevin owns trailer capture and final assembly at `ACTIVE/delivery/w14_launch/cehp_launch_trailer_v2.mp4`.
+
+---
+
 ## 2026-04-28 — W11 byte recovery + receipt API prep; content spec blocked · Codex GPT-5.5
 
 **Context**: Kevin provided CEHP-Sprint-NEXT+3 to wire Architect's W11 Benefits/Rasta content after mandatory bundle headroom recovery. The exact Architect content spec was referenced as pasted at the top of the session, but it was not present in the visible context or repo search results.

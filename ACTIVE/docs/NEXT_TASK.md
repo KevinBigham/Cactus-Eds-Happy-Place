@@ -12,12 +12,12 @@ When this task is complete, the completing agent updates this file with the next
 ---
 
 ## TASK_ID: CEHP-REBUILD-W13-LAUNCH-RUNWAY
-## TITLE: W13 launch runway specification
-## TASK_OWNER_ROLE: Architect/Kevin
-## CURRENT_STAGE: 2026-04-29 — W12 complete GREEN; handoff JSON saved at `.codex/CEHP/w12_handoff.json`
-## NEXT_HANDLER_ROLE: Architect authors W13 launch runway packet; Codex waits for scoped builder handoff
-## STATUS: QUEUED
-## DEADLINE: W13 launch runway; no public deploy without Kevin approval
+## TITLE: W13 launch runway execution
+## TASK_OWNER_ROLE: Codex
+## CURRENT_STAGE: 2026-04-29 — W13 packet received; P1 trailer shot list in progress
+## NEXT_HANDLER_ROLE: Codex executes P1-P6; Claude Code reviews after build; Kevin owns launch-day actions
+## STATUS: ACTIVE
+## DEADLINE: W13 launch freeze by 2026-05-04; no public launch action without Kevin approval
 
 ## CONTEXT
 
@@ -68,11 +68,16 @@ Completed W12 work:
 - P7 asset cleanup is GREEN; 8 orphan PNGs moved to `ACTIVE/game/art/_orphans/`, all 30 oversize PNGs were compressed with `pngquant --quality=70-85`, active-plus-orphan PNG bytes dropped from `7,759,150` to `1,957,754` (74.8% reduction), and `verify_art_assets` now checks 25 active expected assets.
 - End-of-sprint handoff JSON is saved at `.codex/CEHP/w12_handoff.json`.
 
-Current W13 queue:
+Current W13 runway packet:
 
-1. Architect/Kevin authors the W13 launch runway packet.
-2. Codex executes only after a scoped W13 builder handoff arrives.
-3. Kevin-gated launch actions remain locked: public deploy, DNS flip, trailer publish, Critical Reflex send, and announce thread.
+1. W13 builder packet is saved at `.codex/CEHP/w13_packet.json`.
+2. P1 creates `ACTIVE/docs/TRAILER_SHOT_LIST.md`; Kevin records and edits the trailer outside Codex.
+3. P2 refreshes `ACTIVE/docs/KNOWN_ISSUES.md` and `ACTIVE/docs/A11Y_STATUS.md`.
+4. P3 authors a fresh `ACTIVE/docs/LAUNCH_RUNBOOK_W14.md` and refreshes `ACTIVE/docs/LAUNCH_INCIDENT_LOG.md`; `LAUNCH_RUNBOOK_W6.md` stays historical.
+5. P4 refreshes `ACTIVE/marketing/cr_pitch_v1/SEND_READY_PACKET.md` with current state and replacement markers.
+6. P5 performs a cold-clone dress rehearsal and writes `ACTIVE/docs/LAUNCH_DRESS_REHEARSAL.md`.
+7. P6 writes `ACTIVE/docs/LAUNCH_FREEZE.md`, saves `.codex/CEHP/w13_handoff.json`, creates the `launch-freeze` tag, and pushes the tag per packet.
+8. Kevin-gated launch actions remain locked: DNS flip, trailer publish, Critical Reflex send, public announce, and T-0 trigger.
 
 ## ACCEPTANCE GATES
 

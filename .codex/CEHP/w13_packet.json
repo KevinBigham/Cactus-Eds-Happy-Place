@@ -1,0 +1,206 @@
+{
+  "sprint": "W13",
+  "name": "Launch Runway",
+  "agents": {
+    "architect": "Claude Code (Architect-promoted by Kevin 2026-04-29)",
+    "builder": "Codex",
+    "reviewer": "Claude Code (post-build trust-but-verify)"
+  },
+  "sprint_window": "2026-04-29 to 2026-05-04 (5-6 days; pulled forward from launch-arc 2026-05-18 because W11 + W12 closed early)",
+  "launch_lock": "2026-05-29",
+  "state_of_world": {
+    "bundle_bytes": "354,011 / 409,600 (55,589 B runway)",
+    "oracle": "117/117 passing",
+    "replay_corpus": "10/10 deterministic across 3 cold runs",
+    "w12_status": "complete on commit 5ee7e99 - procedural Web Audio, density check, telegraph tune, receipt-selector bleed-fix, 30 oversize PNGs compressed",
+    "worlds": "1-3 narrative-complete on flag-state completion paths",
+    "save_schema": "cactusEd_save_v1 immutable",
+    "tracking_items": ["W11_CONTENT_BIAS = 1.1 (post-launch cleanup, separate)"],
+    "working_tree_dirty_dont_touch": [
+      ".claude/settings.local.json",
+      "ACTIVE/docs/CLAUDE.md",
+      "CLAUDE.md",
+      "README_Instructions on What To Do.md",
+      ".codex/config.toml",
+      "ACTIVE/game/CLAUDE.md"
+    ]
+  },
+  "sprint_thesis": "W13 is launch runway, not new code. The game is shippable today. W13 makes the launch SAFE: docs current, runbook accurate, trailer shot-list ready for Kevin to record, dress-rehearsal proves cold-clone deploy works. After W13 lands -> ~25 days of soak before T-0. Not a content sprint, not a polish sprint, runway only. No src/*.js changes unless P5 dress rehearsal surfaces a launch-blocking bug.",
+  "architect_decisions_locked": [
+    {
+      "id": "trailer_owned_by_kevin",
+      "summary": "Codex delivers TRAILER_SHOT_LIST.md only. Kevin records via QuickTime/OBS, assembles in iMovie. Final at ACTIVE/delivery/w14_launch/cehp_launch_trailer_v2.mp4 (Kevin owns). Building Phaser-in-Playwright video capture is 1-2 days of net-new engineering with zero post-launch value."
+    },
+    {
+      "id": "fresh_w14_runbook",
+      "summary": "Author LAUNCH_RUNBOOK_W14.md fresh. Do NOT mutate LAUNCH_RUNBOOK_W6.md (historical, pre-rebuild)."
+    },
+    {
+      "id": "cr_pitch_screenshots_flagged",
+      "summary": "Audit SEND_READY_PACKET.md, mark stale images with [REPLACE: <description>] markers for Kevin to swap manually. Not building a screenshot pipeline."
+    },
+    {
+      "id": "dress_rehearsal_includes_cross_browser",
+      "summary": "P5 includes Chrome / Safari / Firefox quick check (whatever is installed). Per launch arc Risk 2: Firefox/Safari regressions = KNOWN_ISSUES.md entry, NOT launch blocker. Chrome stable regression = blocker."
+    },
+    {
+      "id": "freeze_with_git_tag",
+      "summary": "After P5 GREEN, create LAUNCH_FREEZE.md with commit hash + bundle bytes + oracle count + 10 replay md5s + soak-period contract. Tag launch-freeze, push tag."
+    }
+  ],
+  "sacred_constraints_unchanged": [
+    "ES5 only in src/*.js",
+    "Single HTML shipped artifact via node ACTIVE/game/build.js",
+    "Phaser 3 via CDN, no npm in play path",
+    "Save schema cactusEd_save_v1 immutable",
+    "Behavioral axes invisible (no HUD bars/meters)",
+    "Voice rule: deadpan, <=8 words/line, no '!', ALL CAPS for receipt text",
+    "Seeded LCG RNG only in sim/state - Date.now allowed only in archival timestamps (04_save.js, 81_docket.js)",
+    "Bundle <= 409,600 B",
+    "No predatory retention"
+  ],
+  "phases": [
+    {
+      "id": "P1",
+      "title": "TRAILER_SHOT_LIST.md",
+      "duration": "4-6 hr",
+      "new_files": ["ACTIVE/docs/TRAILER_SHOT_LIST.md"],
+      "scope": [
+        "8-12 takes covering: cold-open title moment, W1 first verb usage, W2 atrium dread, W3 rasta-soft-belt warmth, receipt reveal, docket meta-loop tease",
+        "Per take: shot purpose, entry conditions (seed / room / approach), expected duration, 'you'll know it's the take when X'",
+        "60px Ed, CRT rim-light visible, 60fps run, deadpan tone (no exclamation marks even in shot descriptions)"
+      ],
+      "acceptance": "Kevin can pick takes from list and record without further guidance"
+    },
+    {
+      "id": "P2",
+      "title": "KNOWN_ISSUES.md + A11Y_STATUS.md refresh",
+      "duration": "4-6 hr",
+      "files_touched": [
+        "ACTIVE/docs/KNOWN_ISSUES.md",
+        "ACTIVE/docs/A11Y_STATUS.md"
+      ],
+      "scope": [
+        "KNOWN_ISSUES: audit against git log since launch arc was written. Close W10-W12-fixed items. Surface unresolved.",
+        "KNOWN_ISSUES: add new section 'W12-shipped: known limitations' covering W11_CONTENT_BIAS = 1.1 + deferred mini-bosses/setpieces/parallax (with backlog pointer)",
+        "A11Y_STATUS: refresh for current verbs - ground dash 260px/s, double jump 82%, wall-slide + wall-jump, slide/roll with jump-cancel, diagonal aim +/-35 degrees",
+        "A11Y_STATUS: forgiveness windows - coyote 100ms, jump buffer 100ms, variable jump cut, corner forgive 6px, ledge snap 8x10px",
+        "A11Y_STATUS: audio = procedural Web Audio (W12); 'ambient drone, no music score; events are diegetic hits'",
+        "A11Y_STATUS: acknowledge no remappable controls UI in v1 (defer to post-launch)"
+      ],
+      "acceptance": "Both docs current as of 5ee7e99; no claim contradicted by code"
+    },
+    {
+      "id": "P3",
+      "title": "LAUNCH_RUNBOOK_W14.md authored + LAUNCH_INCIDENT_LOG.md template",
+      "duration": "6-8 hr (longest phase)",
+      "new_files": [
+        "ACTIVE/docs/LAUNCH_RUNBOOK_W14.md",
+        "ACTIVE/docs/LAUNCH_INCIDENT_LOG.md (template if not exists, refresh otherwise)"
+      ],
+      "scope": [
+        "Pre-launch checklist (T-1 day): runs P5 dress-rehearsal procedure",
+        "Launch sequence (T-0, time-stamped): morning cold-clone gauntlet -> midday final taste-gate (Kevin) -> 5pm CT push to main -> DNS flip -> CR send (if not Monday) -> announce thread -> trailer publish",
+        "Per-step verification: command + GREEN-output + RED-mode",
+        "Rollback procedures: 3 scenarios (broken link, missing asset, save-corruption) with exact revert commands",
+        "Post-launch monitoring: T-0 + T+1h + T+4h + T+24h check-ins",
+        "Reference but DO NOT reproduce LAUNCH_RUNBOOK_W6.md",
+        "LAUNCH_INCIDENT_LOG.md = empty template Kevin fills during launch day with timestamps + status"
+      ],
+      "acceptance": "Kevin can execute W14 launch day from these two docs alone, no chat lookup needed"
+    },
+    {
+      "id": "P4",
+      "title": "CR pitch packet refresh",
+      "duration": "3-4 hr",
+      "files_touched": ["ACTIVE/marketing/cr_pitch_v1/SEND_READY_PACKET.md"],
+      "scope": [
+        "Refresh cover note: post-W10/W11/W12 game state (1-2 paragraphs); current public URL",
+        "Mark stale images with [REPLACE: <description>] for Kevin to swap manually",
+        "If directory layout differs from expected, surface and pause"
+      ],
+      "acceptance": "Cover note current; replace-list documented"
+    },
+    {
+      "id": "P5",
+      "title": "Launch dress rehearsal",
+      "duration": "4-6 hr",
+      "new_files": ["ACTIVE/docs/LAUNCH_DRESS_REHEARSAL.md"],
+      "scope": [
+        "Codex executes once during P5; this doc IS the T-1 recipe Kevin re-runs Thursday 2026-05-28",
+        "Step 1: git clone <origin-or-local> /tmp/cehp-rehearsal-$(date +%s)",
+        "Step 2: cd .../ACTIVE/game && npm install",
+        "Step 3: node build.js && bash scripts/verify-launch.sh (capture wall-clock)",
+        "Step 4: npm run test:replay 3x cold (capture wall-clock per run)",
+        "Step 5: open ACTIVE/game/index.html in default browser, W1 entry, confirm: procedural ambient plays, Ed at 60px with CRT rim-light, first receipt fragment fires at end of run",
+        "Step 6: cross-browser quick check (whatever's installed) - Chrome / Safari / Firefox. Visible regressions go to KNOWN_ISSUES.md (non-blocker per launch arc unless Chrome stable breaks)",
+        "Document each step's actual wall-clock time (not estimates)"
+      ],
+      "acceptance": "Rehearsal completes GREEN end-to-end on first try; doc captures actual times"
+    },
+    {
+      "id": "P6",
+      "title": "Final freeze + git tag",
+      "duration": "2-3 hr",
+      "new_files": ["ACTIVE/docs/LAUNCH_FREEZE.md"],
+      "scope": [
+        "Freeze commit hash (commit immediately after P5 lands)",
+        "Bundle bytes, oracle count, all 10 replay md5s (copy from .codex/CEHP/w12_replay_hashes.md + earlier hash docs)",
+        "Sacred constraint reaffirmation",
+        "Soak period contract: '2026-05-04 -> 2026-05-29. Beyond this point: only launch-blocking-bug fixes go to main.'",
+        "Launch-blocking definition: game won't start, save corruption, security issue, Chrome stable broken. Anything else = post-launch.",
+        "git tag -a launch-freeze -m 'W13 launch freeze 2026-05-04'",
+        "git push origin launch-freeze"
+      ],
+      "acceptance": "Freeze doc + tag both on origin/main"
+    }
+  ],
+  "read_order": [
+    "This packet (read fully)",
+    "ACTIVE/docs/CEHP_LAUNCH_ARC.md section W13 + W14 - original launch-arc framing",
+    "ACTIVE/docs/LAUNCH_RUNBOOK_W6.md - historical reference for runbook shape (DO NOT MUTATE)",
+    "ACTIVE/docs/A11Y_STATUS.md (current - refresh in P2)",
+    "ACTIVE/docs/KNOWN_ISSUES.md (current - refresh in P2)",
+    ".codex/CEHP/w12_handoff.json - what just shipped",
+    "git log --oneline -25 - sprint history for KNOWN_ISSUES audit"
+  ],
+  "dont_touch": [
+    "ACTIVE/game/src/** - runtime code FROZEN through W13. ONLY exception: launch-blocking bug surfaced by P5. Flag + stop, do NOT self-land.",
+    "ACTIVE/game/scripts/** - utility scripts frozen.",
+    "ACTIVE/game/tests/** - test suite frozen.",
+    "ACTIVE/game/_canon/replays/cehp/** - replay corpus frozen at 10 fixtures.",
+    "W11_CONTENT_BIAS = 1.1 - still tracked separately, do not touch in W13.",
+    "LAUNCH_RUNBOOK_W6.md - historical, do not mutate. Author W14 fresh instead.",
+    "Pre-session dirty files (see state_of_world.working_tree_dirty_dont_touch)"
+  ],
+  "per_phase_verification_gates": [
+    "bash ACTIVE/game/scripts/verify-launch.sh - gate stays GREEN (sanity check that doc work didn't accidentally break anything)",
+    "Sacred-constraint sweep on touched files (only relevant if code edited; W13 is doc-heavy)",
+    "Update .codex/CEHP/status.md + .codex/CEHP/changelog.md + ACTIVE/docs/NEXT_TASK.md",
+    "Commit with message: 'W13 P{N}: {short summary}'"
+  ],
+  "end_of_sprint_deliverable": {
+    "file": ".codex/CEHP/w13_handoff.json",
+    "fields": [
+      "plan: pointer to .codex/CEHP/w13_packet.json (save a copy of this packet there)",
+      "phases_completed: P1-P6 with per-phase commit hash",
+      "files_changed: full list (mostly docs)",
+      "verification: oracle count, replay md5s, bundle bytes (all unchanged from W12), gate runs, dress-rehearsal wall-clock times",
+      "freeze_status: freeze commit hash, freeze tag, soak period dates",
+      "kevin_action_items: explicit list - record trailer takes per shot list, replace stale CR screenshots, purchase domain (if going beyond GH Pages), execute T-1 dress rehearsal, final taste-gate, T-0 launch sequence",
+      "risks: anything Kevin should know for soak / launch",
+      "handoff: state for W14 launch week (mostly Kevin-owned)"
+    ]
+  },
+  "kickoff": {
+    "order": "Read order -> P1 -> P2 -> P3 (longest) -> P4 -> P5 -> P6. Verify after each.",
+    "school_hours_autonomy": "Do NOT stop for ACK between phases.",
+    "stop_conditions": [
+      "Launch-blocking bug surfaced in P5",
+      "Doc claim contradicted by current code (flag + stop, do not paper over)",
+      "Scope ambiguity (continue the W12 'do not invent' rule)"
+    ],
+    "ambiguity_default": "Conservative reading of sacred constraints + reality (greppable code wins over launch-arc fiction)."
+  },
+  "go": true
+}

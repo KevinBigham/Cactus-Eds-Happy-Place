@@ -1,5 +1,37 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-29 - W13 P1 Launch Runway Activation - Codex GPT-5.5)
+
+**Session goal**: Start W13 Launch Runway from Kevin/Architect packet without touching frozen runtime code.
+
+### What shipped
+
+- Saved the W13 packet at `.codex/CEHP/w13_packet.json`.
+- Added `ACTIVE/docs/TRAILER_SHOT_LIST.md` with 10 recordable takes:
+  - cold-open title hold
+  - W1 intake first movement
+  - W1 eleven-things montage
+  - W1 aerial exception float
+  - W2 benefits atrium choice
+  - W2 claim window denial
+  - W2 network narrow hazard
+  - W3 rasta soft belt
+  - W3 warm exit receipt reveal
+  - THE DOCKET meta-loop
+- Updated `ACTIVE/docs/NEXT_TASK.md` so the beacon now matches the received W13 builder handoff: Codex owns P1-P6, Claude Code reviews afterward, Kevin owns launch-day actions.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `bash ACTIVE/game/scripts/verify-launch.sh` | PASS; final line `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, oracle `117/117`, replay `10/10` |
+
+### Notes for the next owner
+
+- Runtime code remains frozen through W13.
+- Do not mutate `ACTIVE/docs/LAUNCH_RUNBOOK_W6.md`; P3 authors `LAUNCH_RUNBOOK_W14.md` fresh.
+- The pre-session dirty files listed in the packet remain untouched.
+
 ## What Was Just Done (2026-04-29 - W12 P4 Density Check GREEN - Codex GPT-5.5)
 
 **Session goal**: Add the revised W12 static density guard and wire it into the launch gate.
