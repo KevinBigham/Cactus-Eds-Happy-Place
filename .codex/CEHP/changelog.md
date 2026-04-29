@@ -1,5 +1,22 @@
 # CEHP Changelog
 
+## 2026-04-29 — W13 P2 known-issues and accessibility refresh · Codex GPT-5.5
+
+**Context**: W13 P2 required `KNOWN_ISSUES.md` and `A11Y_STATUS.md` to match the W12-complete runtime rather than the older March certification flow.
+
+**What changed**:
+- Rewrote `ACTIVE/docs/KNOWN_ISSUES.md` around launch-current state: no confirmed launch blockers, W12-shipped limitations, closed W10-W12 items, retired pre-rebuild certification defects, and P5 browser-watch logging.
+- Rewrote `ACTIVE/docs/A11Y_STATUS.md` around the current verb set, forgiveness windows, five `?settings=1` assist toggles, keyboard/gamepad input, procedural Web Audio, and no remappable-controls UI in v1.
+- Updated `ACTIVE/docs/NEXT_TASK.md` and `.codex/CEHP/status.md` for P2 progress.
+
+**Verification**:
+- `bash ACTIVE/game/scripts/verify-launch.sh` PASS: final line `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, behavior oracle `117/117`, replay corpus `10/10`.
+
+**Notes**:
+- No runtime source, scripts, tests, replay fixtures, save schema, art, or pre-session dirty files were changed.
+
+---
+
 ## 2026-04-29 — W13 P1 trailer shot list and runway activation · Codex GPT-5.5
 
 **Context**: Kevin/Architect supplied the W13 Launch Runway packet. W13 is documentation, rehearsal, and freeze work only; runtime code remains frozen unless P5 surfaces a launch blocker.

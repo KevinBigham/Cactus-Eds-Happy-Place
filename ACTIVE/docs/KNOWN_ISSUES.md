@@ -1,62 +1,62 @@
 # KNOWN ISSUES
 
-## Open Issues — Confirmed Defects
+Date: `2026-04-29`
+Runtime baseline: W12 complete on `5ee7e99`; W13 P1 docs on `ff8343a`.
 
-- `World 2 pop-quiz auto-dismisses on first trigger (~0.2s)`
-  - Status: CONFIRMED GAMEPLAY DEFECT (2026-03-16 human retest)
-  - Evidence: Kevin reports first quiz appears for ~0.2 seconds and auto-dismisses before it can be read or answered. On retry, quiz returns and accepts input normally.
-  - Prior patch: canvas.focus() added 2026-03-14 but NOT deployed (CEHP-007 push pending). This timing bug is likely a separate issue from focus loss.
-  - Next action: CEHP-010 — Builder investigates quiz auto-dismiss timing on first trigger. Smallest safe fix only.
+## Launch-Blocking Issues
 
-## Open Issues — Still Unclear
+None confirmed.
 
-- `World 3 certAid panel occludes lamp area`
-  - Status: STILL UNCLEAR (2026-03-16 human retest)
-  - Evidence: Kevin understood the lamp objective ("I can tell I'm supposed to be doing something with the lamps") and completed all 4 checkpoints. Complaint was that the certAid text panel blocked visibility in the lamp zone, not that the route itself was unclear.
-  - Assessment: This may be a certAid overlay positioning issue, not a game design problem. Route clarity is adequate — player completed the section. Needs a second retest after CEHP-007 push (which includes readability patches) to confirm.
+Chrome stable remains the blocking browser for launch. If P5 dress rehearsal finds a Chrome stable boot, save, asset, or receipt failure, stop W13 and treat it as launch-blocking. Firefox or Safari presentation regressions should be logged here as known limitations unless they also reproduce in Chrome stable.
 
-## Closed Issues — Passed Retest
+## W12-Shipped Known Limitations
 
-- `World 2 checkpoint chain after the trellis perch`
-  - Status: PASSED (2026-03-16 human retest)
-  - Evidence: Kevin hit momentary route confusion at trellis height (couldn't move forward at that elevation, found path below) but completed W2 graduation with full grades (D, B, A, A — GPA 3.0/4.0). Checkpoint chain is functional.
+### `W11_CONTENT_BIAS = 1.1`
 
-- `World 3 checkpoint chain after the recovery/pre-auth approach`
-  - Status: PASSED (2026-03-16 human retest)
-  - Evidence: All 4 items checked (Lamp 1, Lamp 2, Pre-Auth Complete, Physician Threshold). Boss defeated. No chain issues.
+- Status: KNOWN POST-LAUNCH CLEANUP ITEM.
+- Evidence: `ACTIVE/game/src/80_receipts.js` still applies the narrow `W11_CONTENT_BIAS = 1.1` boost only when W11 fragment flags match the current context.
+- Launch read: acceptable. It keeps the new W11 authored fragments traceable without broad receipt-scoring churn.
+- Next action: post-launch cleanup or re-tune only after launch receipts soak.
 
-## No-Patch / Presentation Notes
+### Deferred W11 launch-arc content
 
-- `World 2 boss appears to have no legs`
-  - Status: no patch in certification flow
-  - Reason: presentation note, not yet a confirmed gameplay/trust blocker
+- Status: INTENTIONAL DEFER.
+- Deferred items: Supervisor / Enrollment Officer / Logistics Foreman mini-bosses; Trust Fall / Open Concept / Supply Chain setpieces; Reply-All Locust enemy system; 2-layer parallax verification.
+- Evidence: W12 P2 audit found no shipped runtime systems for those items, and `ACTIVE/docs/BACKLOG.md` parks them under W15+ content expansion.
+- Launch read: acceptable. Worlds 1-3 are narrative-complete on current flag-state completion paths, with 4 shipped W11 rooms and 12 W11 receipt fragments.
 
-- `World 2 pencils should be upside down`
-  - Status: presentation note (2026-03-16 human feedback)
-  - Reason: Kevin notes it doesn't make sense to defeat pencils by jumping on their pointy side up
+### Custom-domain launch path
 
-- `Closing screen font unreadable`
-  - Status: presentation note (2026-03-16 human feedback)
-  - Reason: "THE FILES HAVE BEEN TABBED" end screen text is too small/unclear to read
+- Status: KEVIN-GATED.
+- Evidence: current verified public fallback is `https://kevinbigham.github.io/Cactus-Eds-Happy-Place/`; custom domain cutover remains W14 launch work.
+- Launch read: not a game blocker. If domain purchase or DNS stalls, launch on the GitHub Pages fallback and move domain flip to post-launch.
 
-## Recently Fixed
+## Closed Since Launch-Arc Draft
 
-- `W2/W3 camera direction-change snap`
-  - Fixed: `2026-03-14`
-  - What changed: W2 and W3 update now apply `_camLookAhead` lerp (factor 0.05) instead of directly using `es.facing * zone.lookAhead`. W3 create initializes `_camLookAhead = 0`.
-- `CertAid goals text too hard to read (W2 and W3)`
-  - Fixed: `2026-03-14`
-  - What changed: certAid hint text 7px→9px, step texts 8px→9px with brighter color (#999→#bbb), controls 7px→8px, panel height 156→175, step spacing 14→16px.
-- `W3 lesson readout and pre-auth gate notice too small`
-  - Fixed: `2026-03-14`
-  - What changed: `_lessonReadoutTxt` fontSize 8px→10px; pre-auth block notice fontSize 8px→10px.
-- `World 2 pop-quiz canvas focus (partial)`
-  - Fixed: `2026-03-14`
-  - What changed: `canvas.focus()` called on quiz trigger to re-claim keyboard focus.
-- `W2/W3 checkpoint/readout text was too hard to read after the lo-fi pass`
-  - Fixed: `2026-03-13`
+### W10 feel-pass surface
 
-## Workflow Issue
+- Status: CLOSED.
+- Evidence: current runtime ships 60px Ed (`ED_RENDER_H = 60`), 48x64 sprite frames, split colliders, CRT rim-light, fixed-step sim, 18-state verb handling, camera lead, squash/stretch, and forgiveness windows. W12 launch gate remains green at `117/117` behavior oracle.
 
-- Disposable smoke harness under `/tmp/codex-playwright-cert/` may not exist in every session.
-  - Use `./scripts/verify-cehp.sh` plus direct browser checks when it is missing.
+### W11 content shipment
+
+- Status: CLOSED FOR LAUNCH SCOPE.
+- Evidence: Benefits starts with `benefits-risk-atrium`, `benefits-claim-window`, and `benefits-network-narrow`; Rasta includes `rasta-soft-belt` before `warm-exit`; W11 receipt fragments are covered by oracle tests. Unbuilt launch-arc items are explicitly deferred above.
+
+### W12 polish prep
+
+- Status: CLOSED.
+- Evidence: W12 shipped receipt-selector bleed fix, telegraph timing audit, density check, procedural Web Audio, replay expansion to 10 fixtures, and art compression. Current launch gate remains under `409600` bytes.
+
+### Legacy March certification defects
+
+- Status: RETIRED WITH PRE-REBUILD RUNTIME.
+- Items retired: W2 pop-quiz auto-dismiss, W3 certAid panel occlusion, W2 pencil presentation, W2 boss legs, and closing-screen font note.
+- Evidence: those items refer to the old certification/certAid flow and legacy surfaces. The active rebuild uses the current W1/W2/W3 runtime, receipt reveal, THE DOCKET, and `?settings=1` escape hatch.
+- Archive pointer: original notes remain in `ACTIVE/docs/PLAYTEST_LOG.md` and older changelog history.
+
+## Watch During P5 Dress Rehearsal
+
+- Browser quick check: Chrome stable, Safari, Firefox, or whatever is installed.
+- Default-browser manual check: W1 entry, procedural ambient starts on input, 60px Ed and CRT rim-light are visible, and the first receipt appears after a debug-completed run.
+- Any visible non-Chrome issue: add a dated note here with browser, URL, symptom, and whether Chrome stable reproduces it.

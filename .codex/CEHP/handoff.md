@@ -1,5 +1,37 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-29 - W13 P2 Known Issues + A11Y Refresh - Codex GPT-5.5)
+
+**Session goal**: Refresh launch-current known issues and accessibility docs without changing runtime code.
+
+### What shipped
+
+- Rewrote `ACTIVE/docs/KNOWN_ISSUES.md`:
+  - no confirmed launch blockers
+  - W12-shipped known limitations
+  - closed W10-W12 items
+  - retired March pre-rebuild certification defects
+  - P5 browser-watch logging guidance
+- Rewrote `ACTIVE/docs/A11Y_STATUS.md`:
+  - current W10 movement verbs
+  - forgiveness windows
+  - five `?settings=1` assist toggles
+  - keyboard/gamepad bindings
+  - procedural Web Audio status
+  - no remappable-controls UI in v1
+- Updated `ACTIVE/docs/NEXT_TASK.md` and `.codex/CEHP/status.md` for P2 progress.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `bash ACTIVE/game/scripts/verify-launch.sh` | PASS; final line `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, oracle `117/117`, replay `10/10` |
+
+### Notes for the next owner
+
+- P3 should author `ACTIVE/docs/LAUNCH_RUNBOOK_W14.md` fresh and only reference `ACTIVE/docs/LAUNCH_RUNBOOK_W6.md`.
+- Runtime code remains frozen.
+
 ## What Was Just Done (2026-04-29 - W13 P1 Launch Runway Activation - Codex GPT-5.5)
 
 **Session goal**: Start W13 Launch Runway from Kevin/Architect packet without touching frozen runtime code.
