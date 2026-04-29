@@ -180,6 +180,9 @@ try {
   assert(insuredA.worldId === 'benefits', `expected insured world benefits, got ${insuredA.worldId}`);
   assert(uninsured.worldId === 'benefits', `expected uninsured world benefits, got ${uninsured.worldId}`);
   assert(JSON.stringify(insuredA.roomOrder) === JSON.stringify([
+    'benefits-risk-atrium',
+    'benefits-claim-window',
+    'benefits-network-narrow',
     'enrollment-intake',
     'premium-pathways',
     'network-validation',
@@ -188,6 +191,9 @@ try {
     'final-processing'
   ]), `unexpected insured room order: ${JSON.stringify(insuredA.roomOrder)}`);
   assert(JSON.stringify(uninsured.roomOrder) === JSON.stringify([
+    'benefits-risk-atrium',
+    'benefits-claim-window',
+    'benefits-network-narrow',
     'enrollment-intake',
     'premium-pathways',
     'network-validation',
@@ -226,6 +232,7 @@ try {
     'rest-landing',
     'sorting-floor',
     'humming-mezzanine',
+    'rasta-soft-belt',
     'warm-exit'
   ]), `unexpected ambient room order: ${JSON.stringify(ambientA.roomOrder)}`);
   assert(JSON.stringify(impatient.roomOrder) === JSON.stringify([
@@ -234,6 +241,7 @@ try {
     'rest-landing',
     'sorting-floor',
     'humming-mezzanine',
+    'rasta-soft-belt',
     'warm-exit'
   ]), `unexpected impatient room order: ${JSON.stringify(impatient.roomOrder)}`);
   assert(ambientA.receipt && ambientA.receipt.cigaretteLit === false, `expected ambient cigaretteLit false, got ${JSON.stringify(ambientA.receipt)}`);

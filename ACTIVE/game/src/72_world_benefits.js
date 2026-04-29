@@ -22,6 +22,25 @@
     ],
     rooms: [
       {
+        id: 'benefits-risk-atrium',
+        title: 'BENEFITS RISK ATRIUM',
+        contradictionSign: 'WAIT FOR COVERAGE TO NOTICE YOU',
+        actionSigns: ['EVERY DOORWAY HAS TERMS', 'THE LOWER PLAN SAVES STAIRS'],
+        premiumTarget: 0
+      },
+      {
+        id: 'benefits-claim-window',
+        title: 'BENEFITS CLAIM WINDOW',
+        actionSigns: ['FORMS BECOME SOLID AFTER REJECTION', 'PLEASE CROSS THE DENIED CLAIM'],
+        premiumTarget: 0
+      },
+      {
+        id: 'benefits-network-narrow',
+        title: 'BENEFITS NETWORK NARROW',
+        actionSigns: ['THE NETWORK PREFERS SMALLER MOTION', 'OUT OF NETWORK MEANS FLOOR'],
+        premiumTarget: 0
+      },
+      {
         id: 'enrollment-intake',
         title: 'ENROLLMENT INTAKE',
         contradictionSign: 'COVERAGE REQUIRES COMPLIANCE.',

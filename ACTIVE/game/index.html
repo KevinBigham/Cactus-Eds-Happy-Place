@@ -4111,6 +4111,25 @@ closerFragments: [
 ],
 rooms: [
   {
+    id: 'benefits-risk-atrium',
+    title: 'BENEFITS RISK ATRIUM',
+    contradictionSign: 'WAIT FOR COVERAGE TO NOTICE YOU',
+    actionSigns: ['EVERY DOORWAY HAS TERMS', 'THE LOWER PLAN SAVES STAIRS'],
+    premiumTarget: 0
+  },
+  {
+    id: 'benefits-claim-window',
+    title: 'BENEFITS CLAIM WINDOW',
+    actionSigns: ['FORMS BECOME SOLID AFTER REJECTION', 'PLEASE CROSS THE DENIED CLAIM'],
+    premiumTarget: 0
+  },
+  {
+    id: 'benefits-network-narrow',
+    title: 'BENEFITS NETWORK NARROW',
+    actionSigns: ['THE NETWORK PREFERS SMALLER MOTION', 'OUT OF NETWORK MEANS FLOOR'],
+    premiumTarget: 0
+  },
+  {
     id: 'enrollment-intake',
     title: 'ENROLLMENT INTAKE',
     contradictionSign: 'COVERAGE REQUIRES COMPLIANCE.',
@@ -4209,6 +4228,12 @@ rooms: [
     actionSigns: ['LET THE PLATFORM ARRIVE.', 'THE CEILING IS NOT A JUDGE.']
   },
   {
+    id: 'rasta-soft-belt',
+    title: 'RASTA SOFT BELT',
+    contradictionSign: 'REST UNTIL THE BELT BELIEVES YOU',
+    actionSigns: ['THE KIND DOOR HATES SPEED', 'NO FIRE IS ALSO COVERAGE']
+  },
+  {
     id: 'warm-exit',
     title: 'WARM EXIT',
     contradictionSign: 'REST HERE.',
@@ -4221,1004 +4246,7 @@ rooms: [
 CEHP._register('73_world_rasta');
 
 /* =============== MODULE: 74_WORLD_ORIENTATION_RUNTIME.JS =============== */
-(function(ns){
-'use strict';
-
-function staticRect(scene, x, y, w, h, color, alpha, depth){
-var rect = scene.add.rectangle(x, y, w, h, color || 0x44546a, alpha == null ? 1 : alpha).setDepth(depth == null ? 4 : depth);
-scene.physics.add.existing(rect, true);
-rect.body.allowGravity = false;
-rect.body.updateFromGameObject();
-return rect;
-}
-
-function sensorZone(scene, x, y, w, h){
-var zone = scene.add.zone(x, y, w, h).setDepth(3);
-scene.physics.add.existing(zone, true);
-zone.body.allowGravity = false;
-zone.body.moves = false;
-return zone;
-}
-
-function textLabel(scene, x, y, text, size, color, depth){
-return scene.add.text(x, y, text, {
-  fontFamily: 'monospace',
-  fontSize: (size || 8) + 'px',
-  color: color || '#dfe6ef',
-  align: 'left'
-}).setDepth(depth == null ? 8 : depth);
-}
-
-function applicantSilhouette(scene, x, y, variant){
-var g = scene.add.graphics().setDepth(3);
-var ink = 0x263246;
-var accent = 0x5f748f;
-g.fillStyle(ink, 0.84);
-g.fillCircle(x, y - 54, 12);
-if (variant === 1) {
-  g.fillRect(x - 18, y - 38, 36, 58);
-  g.fillStyle(accent, 0.32);
-  g.fillRect(x + 10, y - 26, 14, 30);
-  g.fillStyle(ink, 0.84);
-  g.fillRect(x - 26, y - 14, 10, 34);
-  g.fillRect(x + 16, y - 14, 10, 34);
-} else if (variant === 2) {
-  g.beginPath();
-  g.moveTo(x - 22, y - 34);
-  g.lineTo(x + 16, y - 34);
-  g.lineTo(x + 28, y + 18);
-  g.lineTo(x - 28, y + 18);
-  g.closePath();
-  g.fillPath();
-  g.fillStyle(accent, 0.32);
-  g.fillRect(x - 32, y - 8, 12, 28);
-  g.fillStyle(ink, 0.84);
-  g.fillRect(x - 18, y + 18, 10, 34);
-  g.fillRect(x + 8, y + 18, 10, 34);
-} else {
-  g.beginPath();
-  g.moveTo(x - 24, y - 34);
-  g.lineTo(x + 24, y - 34);
-  g.lineTo(x + 18, y + 22);
-  g.lineTo(x - 18, y + 22);
-  g.closePath();
-  g.fillPath();
-  g.fillStyle(accent, 0.32);
-  g.fillRect(x - 34, y - 18, 12, 34);
-  g.fillStyle(ink, 0.84);
-  g.fillRect(x - 14, y + 22, 10, 30);
-  g.fillRect(x + 4, y + 22, 10, 30);
-}
-return g;
-}
-
-function placeApplicants(world, room, specs){
-var i;
-for (i = 0; i < specs.length; i++) {
-  applicantSilhouette(world.scene, specs[i].x, specs[i].y, specs[i].variant);
-}
-}
-
-function placeMascotTableau(scene, x, y){
-if (!scene || !scene.textures || !scene.textures.exists || !scene.textures.exists('coworker_mascot_variants')) return null;
-return scene.add.image(x, y, 'coworker_mascot_variants').setDisplaySize(196, 98).setAlpha(0.28).setDepth(1.5);
-}
-
-function textureExists(scene, key){
-return !!(scene && scene.textures && scene.textures.exists && scene.textures.exists(key));
-}
-
-function addBackdropImage(scene, key, x, y, w, h, depth, alpha){
-var image;
-
-if (!textureExists(scene, key) || !scene.add || !scene.add.image) return null;
-
-image = scene.add.image(x, y, key).setDepth(depth == null ? 1.6 : depth);
-if (image.setOrigin) image.setOrigin(0.5);
-if (image.setDisplaySize) image.setDisplaySize(w, h);
-if (image.setAlpha) image.setAlpha(alpha == null ? 1 : alpha);
-return image;
-}
-
-function addOfficeDressing(world, room){
-var scene = world.scene;
-var width = room.endX - room.startX;
-var i;
-var tile;
-
-if (textureExists(scene, 'carpet_tile_seamless') && scene.add && scene.add.tileSprite) {
-  tile = scene.add.tileSprite(room.startX + (width / 2), world.horizon + 4, width - 24, 40, 'carpet_tile_seamless').setDepth(1.5);
-  if (tile.setAlpha) tile.setAlpha(0.34);
-}
-
-if (textureExists(scene, 'fluorescent_light_fixture')) {
-  for (i = 0; i < 3; i++) {
-    addBackdropImage(scene, 'fluorescent_light_fixture', room.startX + 220 + (i * 350), 42, 150, 74, 1.55, 0.26);
-  }
-}
-
-addBackdropImage(scene, 'paper_safety_poster', room.startX + 108, 118, 74, 74, 1.6, 0.56);
-addBackdropImage(scene, 'paper_expired_id', room.startX + 248, 128, 86, 58, 1.6, 0.48);
-addBackdropImage(scene, 'prop_filing_cabinet', room.endX - 114, world.horizon - 70, 86, 128, 1.9, 0.56);
-addBackdropImage(scene, 'prop_coffee_cup', room.endX - 82, world.horizon - 142, 30, 30, 2.1, 0.94);
-}
-
-function destroyThing(obj){
-if (obj && obj.destroy) obj.destroy();
-}
-
-function clone(obj){
-return JSON.parse(JSON.stringify(obj));
-}
-
-function containsPoint(area, x, y){
-if (!area) return false;
-return x >= (area.x - (area.width / 2)) &&
-  x <= (area.x + (area.width / 2)) &&
-  y >= (area.y - (area.height / 2)) &&
-  y <= (area.y + (area.height / 2));
-}
-
-function intersects(player, area){
-return ns.Collision && ns.Collision.intersects ? ns.Collision.intersects(player, area) : false;
-}
-
-function rememberRoom(world, roomId){
-if (world.visitedRooms[roomId]) return;
-world.visitedRooms[roomId] = true;
-world.roomOrder.push(roomId);
-}
-
-function learnAction(world, actionName){
-if (!actionName || world.learnedMap[actionName]) return;
-world.learnedMap[actionName] = true;
-world.actionsLearned.push(actionName);
-world.actionsLearned.sort(function(a, b){
-  var list = ns.Movement && ns.Movement.ACTIONS ? ns.Movement.ACTIONS : [];
-  return list.indexOf(a) - list.indexOf(b);
-});
-}
-
-function markModule(world, room, moduleId){
-if (world.completedModules[moduleId]) return;
-world.completedModules[moduleId] = true;
-if (ns.Events && ns.Events.emit) ns.Events.emit('module:passed', {
-  roomId: room.id,
-  moduleId: moduleId
-});
-}
-
-function readSign(world, sign){
-if (!sign || !world.player || !sign.sensor) return;
-if (intersects(world.player, sign.sensor)) {
-  sign.peek({ signId: sign.id, words: sign.text.split(/\s+/).length });
-  if (ns.Input.justPressed('up')) {
-    sign.read({ signId: sign.id, words: sign.text.split(/\s+/).length });
-  }
-}
-}
-
-function trimActions(world){
-var now = world.scene.time.now;
-var keep = [];
-for (var i = 0; i < world.actionQueue.length; i++) {
-  if ((now - world.actionQueue[i].at) <= 320) keep.push(world.actionQueue[i]);
-}
-world.actionQueue = keep;
-}
-
-function consumeAction(world, actionName, area){
-for (var i = 0; i < world.actionQueue.length; i++) {
-  var item = world.actionQueue[i];
-  var px = item.payload && item.payload.x != null ? item.payload.x : world.player.x;
-  var py = item.payload && item.payload.y != null ? item.payload.y : world.player.y;
-  if (item.action !== actionName) continue;
-  if (area && !containsPoint(area, px, py)) continue;
-  world.actionQueue.splice(i, 1);
-  return true;
-}
-return false;
-}
-
-function addPlatform(world, room, x, y, w, h, color, alpha, depth){
-var rect = staticRect(world.scene, x, y, w, h, color, alpha, depth);
-world.platforms.push(rect);
-room.platforms.push(rect);
-return rect;
-}
-
-function addBackdrop(world, room, color, accent){
-var width = room.endX - room.startX;
-world.scene.add.rectangle(room.startX + (width / 2), ns.GAME_H / 2, width - 24, ns.GAME_H - 32, color, 1).setDepth(0);
-world.scene.add.rectangle(room.startX + 18, ns.GAME_H / 2, 16, ns.GAME_H - 32, accent, 1).setDepth(1);
-addOfficeDressing(world, room);
-textLabel(world.scene, room.startX + 34, 22, room.title, 8, '#e8e3d1', 8);
-}
-
-function makeRoom(world, spec, startX, width){
-var room = {
-  id: spec.id,
-  title: spec.title,
-  startX: startX,
-  endX: startX + width,
-  platforms: [],
-  modules: [],
-  contradictions: [],
-  contradictionOutcome: '',
-  completeX: startX + width - 88
-};
-world.rooms.push(room);
-return room;
-}
-
-function makeActionGate(world, room, cfg){
-var scene = world.scene;
-var sign = ns.Signs.place(scene, cfg.signX, cfg.signY, cfg.text, { id: cfg.id + '-sign' });
-var sensor = sensorZone(scene, cfg.sensorX, cfg.sensorY, cfg.sensorW || 100, cfg.sensorH || 70);
-var blocker = cfg.blocker ? staticRect(scene, cfg.blocker.x, cfg.blocker.y, cfg.blocker.w, cfg.blocker.h, cfg.blocker.color || 0xc23b3b, 1, 6) : null;
-var lamp = scene.add.rectangle(cfg.signX + 62, cfg.signY - 8, 10, 10, 0x6c7078, 1).setDepth(11);
-var gate = {
-  id: cfg.id,
-  actionName: cfg.actionName,
-  sign: sign,
-  sensor: sensor,
-  blocker: blocker,
-  lamp: lamp,
-  resolved: false,
-  note: cfg.note || '',
-  onResolve: cfg.onResolve || null,
-  resolve: function(reason){
-    if (gate.resolved) return;
-    gate.resolved = true;
-    destroyThing(gate.blocker);
-    gate.lamp.fillColor = 0x5b8f6a;
-    learnAction(world, gate.actionName);
-    markModule(world, room, gate.id);
-    if (gate.onResolve) gate.onResolve(reason || 'live', gate);
-  }
-};
-
-room.modules.push(gate);
-world.modules.push(gate);
-return gate;
-}
-
-function makeContradictionFork(world, room, cfg){
-var scene = world.scene;
-var horizon = world.horizon;
-var baseX = cfg.baseX;
-var sign = ns.Signs.place(scene, baseX + 28, horizon - 78, cfg.text, { id: cfg.id + '-sign' });
-var trigger = sensorZone(scene, baseX + 86, horizon - 40, 120, 80);
-var lamp = scene.add.rectangle(baseX + 96, horizon - 94, 10, 10, 0x6c7078, 1).setDepth(11);
-
-addPlatform(world, room, baseX + 166, horizon - 36, 86, 14, 0x56657b, 1, 4);
-addPlatform(world, room, baseX + 236, horizon - 68, 86, 14, 0x56657b, 1, 4);
-addPlatform(world, room, baseX + 306, horizon - 100, 86, 14, 0x56657b, 1, 4);
-addPlatform(world, room, baseX + 470, horizon - 116, 260, 18, 0x6a7890, 1, 4);
-
-var upperDoor = staticRect(scene, baseX + 564, horizon - 145, 18, 60, 0xc23b3b, 1, 6);
-var lowerDoor = staticRect(scene, baseX + 564, horizon - 30, 18, 60, 0xc23b3b, 1, 6);
-
-var fork = {
-  id: cfg.id,
-  sign: sign,
-  trigger: trigger,
-  lamp: lamp,
-  upperDoor: upperDoor,
-  lowerDoor: lowerDoor,
-  defyAction: cfg.defyAction || 'move',
-  enteredAt: 0,
-  applied: false,
-  gate: ns.Contradiction.gate({
-    sign: { id: sign.id },
-    expectedBehavior: 'wait',
-    windowMs: cfg.windowMs || 900,
-    onFollow: function(){ return 'upper'; },
-    onDefy: function(){ return 'lower'; }
-  }),
-  applyOutcome: function(){
-    if (fork.applied || !fork.gate.resolved) return;
-    fork.applied = true;
-    room.contradictionOutcome = fork.gate.outcome || '';
-    world.lastContradictionOutcome = room.contradictionOutcome;
-    if (fork.gate.outcome === 'follow') {
-      destroyThing(fork.upperDoor);
-      fork.lamp.fillColor = 0x5b8f6a;
-    } else {
-      destroyThing(fork.lowerDoor);
-      fork.lamp.fillColor = 0xe04a3a;
-    }
-  },
-  follow: function(){
-    fork.gate.evaluate({ action: 'wait', elapsedMs: (cfg.windowMs || 900) + 20 });
-    fork.applyOutcome();
-  },
-  defy: function(){
-    fork.gate.evaluate({ action: fork.defyAction, elapsedMs: 120 });
-    fork.applyOutcome();
-  }
-};
-
-room.contradictions.push(fork);
-world.contradictions.push(fork);
-return fork;
-}
-
-function gateCondition(world, gate){
-if (!intersects(world.player, gate.sensor)) return false;
-switch (gate.actionName) {
-  case 'move':
-    return Math.abs(world.player.body.velocity.x) > 20;
-  case 'jump':
-    return consumeAction(world, 'jump', gate.sensor);
-  case 'doubleJump':
-    return consumeAction(world, 'doubleJump', gate.sensor);
-  case 'tripleJump':
-    return consumeAction(world, 'tripleJump', gate.sensor);
-  case 'wallSlideJump':
-    return consumeAction(world, 'wallSlideJump', gate.sensor);
-  case 'punch':
-    return consumeAction(world, 'punch', gate.sensor);
-  case 'kick':
-    return consumeAction(world, 'kick', gate.sensor);
-  case 'spinDash':
-    return consumeAction(world, 'spinDash', gate.sensor);
-  case 'cigCopter':
-    return consumeAction(world, 'cigCopter', gate.sensor);
-  case 'groundSlam':
-    return consumeAction(world, 'groundSlam', gate.sensor);
-  case 'glide':
-    return consumeAction(world, 'glide', gate.sensor);
-  default:
-    return false;
-}
-}
-
-function syncCurrentRoom(world){
-var x = world.player.x;
-for (var i = 0; i < world.rooms.length; i++) {
-  if (x >= world.rooms[i].startX && x < world.rooms[i].endX) {
-    world.currentRoomId = world.rooms[i].id;
-    world.runState.roomId = world.rooms[i].id;
-    rememberRoom(world, world.rooms[i].id);
-    return;
-  }
-}
-if (world.rooms.length) {
-  world.currentRoomId = world.rooms[world.rooms.length - 1].id;
-  world.runState.roomId = world.currentRoomId;
-}
-}
-
-function updateContradictions(world, time){
-var player = world.player;
-for (var i = 0; i < world.contradictions.length; i++) {
-  var fork = world.contradictions[i];
-  readSign(world, fork.sign);
-  if (fork.applied) continue;
-  if (!intersects(player, fork.trigger)) {
-    fork.enteredAt = 0;
-    continue;
-  }
-  if (!fork.enteredAt) fork.enteredAt = time;
-
-  var action = '';
-  if (fork.defyAction === 'move') {
-    if (Math.abs(player.body.velocity.x) > 18) action = 'move';
-  } else if (consumeAction(world, fork.defyAction, fork.trigger)) {
-    action = fork.defyAction;
-  }
-
-  fork.gate.evaluate({
-    action: action,
-    elapsedMs: time - fork.enteredAt
-  });
-  fork.applyOutcome();
-}
-}
-
-function updateModules(world){
-for (var i = 0; i < world.modules.length; i++) {
-  readSign(world, world.modules[i].sign);
-  if (world.modules[i].resolved) continue;
-  if (gateCondition(world, world.modules[i])) world.modules[i].resolve('live');
-}
-}
-
-function unlockFinalDoor(world){
-if (world.finalDoorUnlocked) return;
-if (world.actionsLearned.length < ns.Movement.ACTIONS.length) return;
-world.finalDoorUnlocked = true;
-destroyThing(world.finalDoor);
-world.finalLamp.fillColor = 0x5b8f6a;
-}
-
-function queueAction(world, action, payload){
-world.actionQueue.push({
-  action: action,
-  payload: payload || {},
-  at: world.scene.time.now
-});
-}
-
-function bindActionQueue(world){
-var topics = [
-  ['movement:jump', 'jump'],
-  ['movement:doubleJump', 'doubleJump'],
-  ['movement:tripleJump', 'tripleJump'],
-  ['movement:wallJump', 'wallSlideJump'],
-  ['movement:punch', 'punch'],
-  ['movement:kick', 'kick'],
-  ['movement:spinDash', 'spinDash'],
-  ['movement:cigCopter', 'cigCopter'],
-  ['movement:groundSlam', 'groundSlam'],
-  ['movement:glide', 'glide']
-];
-for (var i = 0; i < topics.length; i++) {
-  (function(topic, actionName){
-    world.offFns.push(ns.Events.on(topic, function(payload){
-      queueAction(world, actionName, payload);
-    }));
-  })(topics[i][0], topics[i][1]);
-}
-}
-
-function buildIntake(world, spec, startX, width){
-var room = makeRoom(world, spec, startX, width);
-addBackdrop(world, room, 0x172238, 0x3a5ca8);
-placeMascotTableau(world.scene, startX + 564, world.horizon - 104);
-placeApplicants(world, room, [
-  { x: startX + 188, y: world.horizon - 8, variant: 0 },
-  { x: startX + 842, y: world.horizon - 8, variant: 1 }
-]);
-addPlatform(world, room, startX + 180, world.horizon, width - 80, 28, 0x44546a, 1, 2);
-makeActionGate(world, room, {
-  id: 'intake-move',
-  actionName: 'move',
-  text: spec.actionSigns[0],
-  signX: startX + 120,
-  signY: world.horizon - 78,
-  sensorX: startX + 190,
-  sensorY: world.horizon - 24,
-  blocker: { x: startX + 254, y: world.horizon - 32, w: 18, h: 66 }
-});
-makeContradictionFork(world, room, {
-  id: 'intake-badge',
-  baseX: startX + 330,
-  text: spec.contradictionSign,
-  defyAction: 'move',
-  windowMs: 850
-});
-makeActionGate(world, room, {
-  id: 'intake-jump',
-  actionName: 'jump',
-  text: spec.actionSigns[1],
-  signX: startX + 968,
-  signY: world.horizon - 78,
-  sensorX: startX + 1030,
-  sensorY: world.horizon - 38,
-  blocker: { x: startX + 1102, y: world.horizon - 32, w: 18, h: 66 }
-});
-return room;
-}
-
-function buildBase(world, spec, startX, width){
-var room = makeRoom(world, spec, startX, width);
-addBackdrop(world, room, 0x141e30, 0x52657a);
-placeApplicants(world, room, [
-  { x: startX + 218, y: world.horizon - 8, variant: 2 },
-  { x: startX + 918, y: world.horizon - 8, variant: 0 }
-]);
-addPlatform(world, room, startX + 180, world.horizon, width - 80, 28, 0x44546a, 1, 2);
-makeContradictionFork(world, room, {
-  id: 'base-turnstile',
-  baseX: startX + 80,
-  text: spec.contradictionSign,
-  defyAction: 'move',
-  windowMs: 860
-});
-
-room.bridge = ns.Forms.bridge(world.scene, { x: startX + 650, y: world.horizon - 10, width: 132, height: 14 });
-world.platforms.push(room.bridge.rect);
-room.platforms.push(room.bridge.rect);
-
-makeActionGate(world, room, {
-  id: 'base-kick',
-  actionName: 'kick',
-  text: spec.actionSigns[0],
-  signX: startX + 620,
-  signY: world.horizon - 80,
-  sensorX: startX + 690,
-  sensorY: world.horizon - 28,
-  blocker: { x: startX + 766, y: world.horizon - 32, w: 18, h: 66 }
-});
-
-makeActionGate(world, room, {
-  id: 'base-spin',
-  actionName: 'spinDash',
-  text: spec.actionSigns[1],
-  signX: startX + 936,
-  signY: world.horizon - 80,
-  sensorX: startX + 1040,
-  sensorY: world.horizon - 28,
-  sensorW: 170,
-  blocker: { x: startX + 1166, y: world.horizon - 32, w: 18, h: 66 }
-});
-
-return room;
-}
-
-function buildVertical(world, spec, startX, width){
-var room = makeRoom(world, spec, startX, width);
-addBackdrop(world, room, 0x162232, 0x88aacc);
-placeApplicants(world, room, [
-  { x: startX + 342, y: world.horizon - 8, variant: 1 },
-  { x: startX + 1546, y: world.horizon - 104, variant: 2 }
-]);
-addPlatform(world, room, startX + 300, world.horizon, 560, 28, 0x44546a, 1, 2);
-addPlatform(world, room, startX + 760, world.horizon, 360, 28, 0x44546a, 1, 2);
-addPlatform(world, room, startX + 940, world.horizon - 96, 110, 18, 0x60728a, 1, 4);
-addPlatform(world, room, startX + 1120, world.horizon - 148, 110, 18, 0x60728a, 1, 4);
-addPlatform(world, room, startX + 1300, world.horizon - 196, 140, 18, 0x60728a, 1, 4);
-addPlatform(world, room, startX + 1466, world.horizon - 110, 160, 18, 0x60728a, 1, 4);
-addPlatform(world, room, startX + 1602, world.horizon - 48, 180, 18, 0x60728a, 1, 4);
-
-room.trampoline = ns.Forms.trampoline(world.scene, { x: startX + 290, y: world.horizon - 16, width: 74, height: 12, power: 420 });
-world.platforms.push(room.trampoline.rect);
-room.platforms.push(room.trampoline.rect);
-
-makeContradictionFork(world, room, {
-  id: 'vertical-elevator',
-  baseX: startX + 210,
-  text: spec.contradictionSign,
-  defyAction: 'move',
-  windowMs: 900
-});
-
-makeActionGate(world, room, {
-  id: 'vertical-double',
-  actionName: 'doubleJump',
-  text: spec.actionSigns[0],
-  signX: startX + 620,
-  signY: world.horizon - 82,
-  sensorX: startX + 740,
-  sensorY: world.horizon - 84,
-  sensorW: 180,
-  sensorH: 180,
-  blocker: { x: startX + 896, y: world.horizon - 96, w: 18, h: 66 }
-});
-
-makeActionGate(world, room, {
-  id: 'vertical-triple',
-  actionName: 'tripleJump',
-  text: spec.actionSigns[1],
-  signX: startX + 990,
-  signY: world.horizon - 176,
-  sensorX: startX + 1080,
-  sensorY: world.horizon - 150,
-  sensorW: 220,
-  sensorH: 200,
-  blocker: { x: startX + 1210, y: world.horizon - 148, w: 18, h: 66 }
-});
-
-addPlatform(world, room, startX + 1360, world.horizon - 118, 18, 188, 0x7184a0, 1, 4);
-addPlatform(world, room, startX + 1438, world.horizon - 118, 18, 188, 0x7184a0, 1, 4);
-
-makeActionGate(world, room, {
-  id: 'vertical-wall',
-  actionName: 'wallSlideJump',
-  text: spec.actionSigns[2],
-  signX: startX + 1502,
-  signY: world.horizon - 208,
-  sensorX: startX + 1398,
-  sensorY: world.horizon - 132,
-  sensorW: 120,
-  sensorH: 220,
-  blocker: { x: startX + 1516, y: world.horizon - 146, w: 18, h: 66 }
-});
-
-return room;
-}
-
-function buildCorrective(world, spec, startX, width){
-var room = makeRoom(world, spec, startX, width);
-addBackdrop(world, room, 0x191f2f, 0xe04a3a);
-placeApplicants(world, room, [
-  { x: startX + 214, y: world.horizon - 8, variant: 0 },
-  { x: startX + 944, y: world.horizon - 138, variant: 2 }
-]);
-addPlatform(world, room, startX + 180, world.horizon, width - 80, 28, 0x44546a, 1, 2);
-addPlatform(world, room, startX + 910, world.horizon - 130, 180, 18, 0x60728a, 1, 4);
-addPlatform(world, room, startX + 1110, world.horizon - 130, 140, 18, 0x60728a, 1, 4);
-
-makeContradictionFork(world, room, {
-  id: 'corrective-review',
-  baseX: startX + 80,
-  text: spec.contradictionSign,
-  defyAction: 'move',
-  windowMs: 880
-});
-
-makeActionGate(world, room, {
-  id: 'corrective-punch',
-  actionName: 'punch',
-  text: spec.actionSigns[0],
-  signX: startX + 638,
-  signY: world.horizon - 80,
-  sensorX: startX + 720,
-  sensorY: world.horizon - 28,
-  blocker: { x: startX + 794, y: world.horizon - 32, w: 18, h: 66 }
-});
-
-room.blade = ns.Forms.blade(world.scene, { x: startX + 876, y: world.horizon - 110, width: 40, height: 14 });
-
-makeActionGate(world, room, {
-  id: 'corrective-slam',
-  actionName: 'groundSlam',
-  text: spec.actionSigns[1],
-  signX: startX + 1016,
-  signY: world.horizon - 208,
-  sensorX: startX + 1100,
-  sensorY: world.horizon - 106,
-  sensorW: 140,
-  sensorH: 220,
-  blocker: { x: startX + 1188, y: world.horizon - 32, w: 18, h: 66 }
-});
-
-return room;
-}
-
-function buildAerial(world, spec, startX, width){
-var room = makeRoom(world, spec, startX, width);
-addBackdrop(world, room, 0x16253a, 0x88aacc);
-placeApplicants(world, room, [
-  { x: startX + 208, y: world.horizon - 8, variant: 1 },
-  { x: startX + 1240, y: world.horizon - 170, variant: 0 }
-]);
-addPlatform(world, room, startX + 170, world.horizon, 360, 28, 0x44546a, 1, 2);
-addPlatform(world, room, startX + 664, world.horizon - 118, 180, 18, 0x60728a, 1, 4);
-addPlatform(world, room, startX + 930, world.horizon - 72, 150, 18, 0x60728a, 1, 4);
-addPlatform(world, room, startX + 1180, world.horizon - 162, 130, 18, 0x60728a, 1, 4);
-
-room.trampoline = ns.Forms.trampoline(world.scene, { x: startX + 314, y: world.horizon - 16, width: 74, height: 12, power: 430 });
-world.platforms.push(room.trampoline.rect);
-room.platforms.push(room.trampoline.rect);
-
-makeContradictionFork(world, room, {
-  id: 'aerial-clearance',
-  baseX: startX + 44,
-  text: spec.contradictionSign,
-  defyAction: 'move',
-  windowMs: 840
-});
-
-makeActionGate(world, room, {
-  id: 'aerial-glide',
-  actionName: 'glide',
-  text: spec.actionSigns[0],
-  signX: startX + 524,
-  signY: world.horizon - 178,
-  sensorX: startX + 620,
-  sensorY: world.horizon - 120,
-  sensorW: 220,
-  sensorH: 180,
-  blocker: { x: startX + 812, y: world.horizon - 72, w: 18, h: 66 }
-});
-
-makeActionGate(world, room, {
-  id: 'aerial-copter',
-  actionName: 'cigCopter',
-  text: spec.actionSigns[1],
-  signX: startX + 1038,
-  signY: world.horizon - 214,
-  sensorX: startX + 1110,
-  sensorY: world.horizon - 138,
-  sensorW: 160,
-  sensorH: 220,
-  blocker: { x: startX + 1246, y: world.horizon - 164, w: 18, h: 66 }
-});
-
-return room;
-}
-
-function buildFinal(world, spec, startX, width){
-var room = makeRoom(world, spec, startX, width);
-addBackdrop(world, room, 0x151d2a, 0xe04a3a);
-addBackdropImage(world.scene, 'supervisor_silhouette', startX + 1012, world.horizon - 146, 188, 188, 1.8, 0.26);
-placeApplicants(world, room, [
-  { x: startX + 248, y: world.horizon - 8, variant: 2 },
-  { x: startX + 814, y: world.horizon - 8, variant: 1 }
-]);
-addPlatform(world, room, startX + 170, world.horizon, width - 120, 28, 0x44546a, 1, 2);
-makeContradictionFork(world, room, {
-  id: 'final-protocol',
-  baseX: startX + 120,
-  text: spec.contradictionSign,
-  defyAction: 'move',
-  windowMs: 900
-});
-
-room.finalSign = ns.Signs.place(world.scene, startX + 784, world.horizon - 84, spec.actionSigns[0], { id: 'final-cert-sign' });
-room.finalLamp = world.scene.add.rectangle(startX + 848, world.horizon - 92, 10, 10, 0x6c7078, 1).setDepth(11);
-world.finalLamp = room.finalLamp;
-world.finalDoor = staticRect(world.scene, startX + 926, world.horizon - 34, 18, 72, 0xc23b3b, 1, 6);
-world.goal = sensorZone(world.scene, startX + 1120, world.horizon - 88, 140, 180);
-
-return room;
-}
-
-function emitAction(actionName, payload){
-payload = payload || {};
-if (!ns.Events || !ns.Events.emit) return;
-switch (actionName) {
-  case 'jump':
-    ns.Events.emit('movement:jump', payload);
-    return;
-  case 'doubleJump':
-    ns.Events.emit('movement:doubleJump', payload);
-    return;
-  case 'tripleJump':
-    ns.Events.emit('movement:tripleJump', payload);
-    return;
-  case 'wallSlideJump':
-    ns.Events.emit('movement:wallJump', payload);
-    return;
-  case 'punch':
-    ns.Events.emit('movement:punch', payload);
-    return;
-  case 'kick':
-    ns.Events.emit('movement:kick', payload);
-    return;
-  case 'spinDash':
-    ns.Events.emit('movement:spinDash', payload);
-    return;
-  case 'cigCopter':
-    ns.Events.emit('movement:cigCopter', payload);
-    return;
-  case 'groundSlam':
-    ns.Events.emit('movement:groundSlam', payload);
-    return;
-  case 'glide':
-    ns.Events.emit('movement:glide', payload);
-    return;
-  default:
-    return;
-}
-}
-
-function resetDebug(world){
-ns.Axes.reset();
-if (ns.Metrics && ns.Metrics.reset) ns.Metrics.reset();
-world.actionQueue = [];
-world.visitedRooms = {};
-world.learnedMap = {};
-world.completedModules = {};
-world.roomOrder.length = 0;
-world.actionsLearned.length = 0;
-world.runState.roomOrder = world.roomOrder;
-world.runState.actionsLearned = world.actionsLearned;
-world.runState.roomId = 'intake';
-world.runState.receipt = null;
-world.lastContradictionOutcome = '';
-world.scene.runComplete = false;
-world.scene.pendingDeath = null;
-world.scene.runStartMs = world.scene.time.now;
-world.scene.recorder.clear();
-ns.Movement.respawn(world.player);
-rememberRoom(world, 'intake');
-}
-
-function actionPayload(room, index, style){
-var biasY = style === 'obedient' ? worldYForStyle(room, 'upper') : worldYForStyle(room, 'lower');
-return {
-  x: room.startX + 300 + (index * 96),
-  y: biasY
-};
-}
-
-function worldYForStyle(room, lane){
-if (room.id === 'vertical-compliance') {
-  return lane === 'upper' ? 238 : 330;
-}
-if (room.id === 'aerial-exception') {
-  return lane === 'upper' ? 248 : 346;
-}
-return lane === 'upper' ? 276 : 392;
-}
-
-function scriptRoom(world, room, style, recorderMs){
-var lane = style === 'obedient' ? 'upper' : 'lower';
-var xBase = room.startX + 64;
-world.player.x = xBase;
-world.player.y = worldYForStyle(room, lane);
-syncCurrentRoom(world);
-world.scene.recorder.mark(recorderMs[0], room.startX + 64, worldYForStyle(room, lane), 1);
-
-if (room.contradictions.length) {
-  if (style === 'obedient') room.contradictions[0].follow();
-  else room.contradictions[0].defy();
-}
-
-for (var i = 0; i < room.modules.length; i++) {
-  readSign(world, room.modules[i].sign);
-  room.modules[i].sign.peek({ signId: room.modules[i].sign.id, words: room.modules[i].sign.text.split(/\s+/).length });
-  room.modules[i].sign.read({ signId: room.modules[i].sign.id, words: room.modules[i].sign.text.split(/\s+/).length });
-  emitAction(room.modules[i].actionName, actionPayload(room, i, style));
-  if (room.modules[i].actionName === 'move') {
-    world.player.body.setVelocityX(style === 'obedient' ? 120 : 180);
-  }
-  room.modules[i].resolve('debug');
-  world.scene.recorder.mark(recorderMs[i + 1], room.startX + 220 + (i * 120), worldYForStyle(room, lane), 1);
-}
-
-if (room.bridge && room.bridge.activate) room.bridge.activate(world.player);
-if (room.trampoline && room.trampoline.activate) room.trampoline.activate(world.player);
-if (room.blade && style === 'defiant' && room.blade.activate) {
-  if (ns.Events && ns.Events.emit) ns.Events.emit('movement:nearMiss', { x: room.blade.rect.x, y: room.blade.rect.y });
-}
-if (ns.Events && ns.Events.emit) ns.Events.emit('music:sync', { x: room.endX - 120, y: worldYForStyle(room, lane) });
-
-world.player.x = room.endX - 90;
-world.player.y = worldYForStyle(room, lane);
-syncCurrentRoom(world);
-world.scene.recorder.mark(recorderMs[recorderMs.length - 1], room.endX - 90, worldYForStyle(room, lane), 1);
-}
-
-function runStyle(world, scene, style){
-if (scene.runComplete && world.runState.receipt) {
-  return {
-    receipt: clone(world.runState.receipt),
-    axes: clone(ns.Axes.snapshot()),
-    frames: clone(scene.recorder.dump()),
-    contradictionOutcome: world.lastContradictionOutcome || '',
-    worldId: world.runState.worldId,
-    roomOrder: clone(world.roomOrder),
-    actionsLearned: clone(world.actionsLearned)
-  };
-}
-
-style = style || 'obedient';
-resetDebug(world);
-
-var markers = [
-  [0, 110, 220, 360],
-  [420, 560, 720, 880],
-  [920, 1180, 1360, 1540, 1720],
-  [1760, 1960, 2140, 2320],
-  [2360, 2560, 2740, 2920],
-  [2960, 3160, 3340]
-];
-
-for (var i = 0; i < world.rooms.length; i++) {
-  scriptRoom(world, world.rooms[i], style, markers[i]);
-}
-
-unlockFinalDoor(world);
-if (world.finalSign) {
-  world.finalSign.peek({ signId: world.finalSign.id, words: world.finalSign.text.split(/\s+/).length });
-  world.finalSign.read({ signId: world.finalSign.id, words: world.finalSign.text.split(/\s+/).length });
-}
-world.player.x = world.goal.x;
-world.player.y = world.goal.y;
-syncCurrentRoom(world);
-scene.completeRun('debug:' + style);
-
-return {
-  receipt: clone(world.runState.receipt),
-  axes: clone(ns.Axes.snapshot()),
-  frames: clone(scene.recorder.dump()),
-  contradictionOutcome: world.lastContradictionOutcome || '',
-  worldId: world.runState.worldId,
-  roomOrder: clone(world.roomOrder),
-  actionsLearned: clone(world.actionsLearned)
-};
-}
-
-function create(scene, runState){
-var manifest = ns.Worlds && ns.Worlds.get ? ns.Worlds.get('orientation') : null;
-var horizon = ns.GAME_H - 24;
-var roomWidth = 1320;
-var sceneWorld = {
-  id: 'orientation-world',
-  worldId: 'orientation',
-  scene: scene,
-  runState: runState,
-  manifest: manifest,
-  horizon: horizon,
-  width: roomWidth * 6,
-  rooms: [],
-  modules: [],
-  contradictions: [],
-  platforms: [],
-  actionQueue: [],
-  offFns: [],
-  visitedRooms: {},
-  learnedMap: {},
-  completedModules: {},
-  roomOrder: [],
-  actionsLearned: [],
-  currentRoomId: 'intake',
-  finalDoor: null,
-  finalDoorUnlocked: false,
-  finalLamp: null,
-  goal: null,
-  lastContradictionOutcome: ''
-};
-
-scene.cameras.main.setBackgroundColor('#101824');
-scene.physics.world.setBounds(0, 0, sceneWorld.width, ns.GAME_H);
-scene.cameras.main.setBounds(0, 0, sceneWorld.width, ns.GAME_H);
-
-sceneWorld.player = ns.Movement.createEd(scene, 72, horizon - 28);
-scene.player = sceneWorld.player;
-
-runState.worldId = 'orientation';
-runState.roomId = 'intake';
-runState.roomOrder = sceneWorld.roomOrder;
-runState.actionsLearned = sceneWorld.actionsLearned;
-runState.worldFlags = manifest || {};
-
-buildIntake(sceneWorld, manifest.rooms[0], 0, roomWidth);
-buildBase(sceneWorld, manifest.rooms[1], roomWidth, roomWidth);
-buildVertical(sceneWorld, manifest.rooms[2], roomWidth * 2, roomWidth);
-buildCorrective(sceneWorld, manifest.rooms[3], roomWidth * 3, roomWidth);
-buildAerial(sceneWorld, manifest.rooms[4], roomWidth * 4, roomWidth);
-buildFinal(sceneWorld, manifest.rooms[5], roomWidth * 5, roomWidth);
-
-for (var i = 0; i < sceneWorld.platforms.length; i++) {
-  scene.physics.add.collider(sceneWorld.player, sceneWorld.platforms[i], function(player, platform){
-    if (sceneWorld.player !== player) return;
-    if (sceneWorld.rooms[1].bridge && platform === sceneWorld.rooms[1].bridge.rect) sceneWorld.rooms[1].bridge.activate(player);
-    if (sceneWorld.rooms[2].trampoline && platform === sceneWorld.rooms[2].trampoline.rect && player.body.velocity.y >= 0) sceneWorld.rooms[2].trampoline.activate(player);
-    if (sceneWorld.rooms[4].trampoline && platform === sceneWorld.rooms[4].trampoline.rect && player.body.velocity.y >= 0) sceneWorld.rooms[4].trampoline.activate(player);
-  });
-}
-
-if (sceneWorld.rooms[3].blade) {
-  scene.physics.add.overlap(sceneWorld.player, sceneWorld.rooms[3].blade.rect, function(){
-    sceneWorld.rooms[3].blade.activate(sceneWorld.player);
-  });
-}
-
-scene.physics.add.overlap(sceneWorld.player, sceneWorld.goal, function(){
-  if (sceneWorld.finalDoorUnlocked) scene.completeRun('goal');
-});
-
-bindActionQueue(sceneWorld);
-rememberRoom(sceneWorld, 'intake');
-if (ns.Curiosity && ns.Curiosity.prime) ns.Curiosity.prime(scene, 'orientation');
-return sceneWorld;
-}
-
-function update(scene, dtMs){
-var world = scene.room;
-if (!world || !world.player) return;
-trimActions(world);
-syncCurrentRoom(world);
-updateContradictions(world, scene.time.now);
-updateModules(world);
-unlockFinalDoor(world);
-if (world.finalSign) readSign(world, world.finalSign);
-if (ns.Curiosity && ns.Curiosity.update) ns.Curiosity.update(scene, dtMs);
-}
-
-function destroy(world){
-if (!world || !world.offFns) return;
-for (var i = 0; i < world.offFns.length; i++) {
-  if (typeof world.offFns[i] === 'function') world.offFns[i]();
-}
-world.offFns = [];
-}
-
-ns.WorldOrientation = {
-create: create,
-update: update,
-destroy: destroy,
-runStyle: runStyle
-};
-})(CEHP);
-CEHP._register('74_world_orientation_runtime');
-
+(function(e){"use strict";function o(e,o,n,t,r,i,a,s){var l=e.add.rectangle(o,n,t,r,i||4478058,a==null?1:a).setDepth(s==null?4:s);e.physics.add.existing(l,true);l.body.allowGravity=false;l.body.updateFromGameObject();return l}function n(e,o,n,t,r){var i=e.add.zone(o,n,t,r).setDepth(3);e.physics.add.existing(i,true);i.body.allowGravity=false;i.body.moves=false;return i}function t(e,o,n,t,r,i,a){return e.add.text(o,n,t,{fontFamily:"monospace",fontSize:(r||8)+"px",color:i||"#dfe6ef",align:"left"}).setDepth(a==null?8:a)}function r(e,o,n,t){var r=e.add.graphics().setDepth(3);var i=2503238;var a=6255759;r.fillStyle(i,.84);r.fillCircle(o,n-54,12);if(t===1){r.fillRect(o-18,n-38,36,58);r.fillStyle(a,.32);r.fillRect(o+10,n-26,14,30);r.fillStyle(i,.84);r.fillRect(o-26,n-14,10,34);r.fillRect(o+16,n-14,10,34)}else if(t===2){r.beginPath();r.moveTo(o-22,n-34);r.lineTo(o+16,n-34);r.lineTo(o+28,n+18);r.lineTo(o-28,n+18);r.closePath();r.fillPath();r.fillStyle(a,.32);r.fillRect(o-32,n-8,12,28);r.fillStyle(i,.84);r.fillRect(o-18,n+18,10,34);r.fillRect(o+8,n+18,10,34)}else{r.beginPath();r.moveTo(o-24,n-34);r.lineTo(o+24,n-34);r.lineTo(o+18,n+22);r.lineTo(o-18,n+22);r.closePath();r.fillPath();r.fillStyle(a,.32);r.fillRect(o-34,n-18,12,34);r.fillStyle(i,.84);r.fillRect(o-14,n+22,10,30);r.fillRect(o+4,n+22,10,30)}return r}function i(e,o,n){var t;for(t=0;t<n.length;t++){r(e.scene,n[t].x,n[t].y,n[t].variant)}}function a(e,o,n){if(!e||!e.textures||!e.textures.exists||!e.textures.exists("coworker_mascot_variants"))return null;return e.add.image(o,n,"coworker_mascot_variants").setDisplaySize(196,98).setAlpha(.28).setDepth(1.5)}function s(e,o){return!!(e&&e.textures&&e.textures.exists&&e.textures.exists(o))}function l(e,o,n,t,r,i,a,l){var c;if(!s(e,o)||!e.add||!e.add.image)return null;c=e.add.image(n,t,o).setDepth(a==null?1.6:a);if(c.setOrigin)c.setOrigin(.5);if(c.setDisplaySize)c.setDisplaySize(r,i);if(c.setAlpha)c.setAlpha(l==null?1:l);return c}function c(e,o){var n=e.scene;var t=o.endX-o.startX;var r;var i;if(s(n,"carpet_tile_seamless")&&n.add&&n.add.tileSprite){i=n.add.tileSprite(o.startX+t/2,e.horizon+4,t-24,40,"carpet_tile_seamless").setDepth(1.5);if(i.setAlpha)i.setAlpha(.34)}if(s(n,"fluorescent_light_fixture")){for(r=0;r<3;r++){l(n,"fluorescent_light_fixture",o.startX+220+r*350,42,150,74,1.55,.26)}}l(n,"paper_safety_poster",o.startX+108,118,74,74,1.6,.56);l(n,"paper_expired_id",o.startX+248,128,86,58,1.6,.48);l(n,"prop_filing_cabinet",o.endX-114,e.horizon-70,86,128,1.9,.56);l(n,"prop_coffee_cup",o.endX-82,e.horizon-142,30,30,2.1,.94)}function d(e){if(e&&e.destroy)e.destroy()}function u(e){return JSON.parse(JSON.stringify(e))}function m(e,o,n){if(!e)return false;return o>=e.x-e.width/2&&o<=e.x+e.width/2&&n>=e.y-e.height/2&&n<=e.y+e.height/2}function p(o,n){return e.Collision&&e.Collision.intersects?e.Collision.intersects(o,n):false}function f(e,o){if(e.visitedRooms[o])return;e.visitedRooms[o]=true;e.roomOrder.push(o)}function h(o,n){if(!n||o.learnedMap[n])return;o.learnedMap[n]=true;o.actionsLearned.push(n);o.actionsLearned.sort((function(o,n){var t=e.Movement&&e.Movement.ACTIONS?e.Movement.ACTIONS:[];return t.indexOf(o)-t.indexOf(n)}))}function v(o,n,t){if(o.completedModules[t])return;o.completedModules[t]=true;if(e.Events&&e.Events.emit)e.Events.emit("module:passed",{roomId:n.id,moduleId:t})}function g(o,n){if(!n||!o.player||!n.sensor)return;if(p(o.player,n.sensor)){n.peek({signId:n.id,words:n.text.split(/\s+/).length});if(e.Input.justPressed("up")){n.read({signId:n.id,words:n.text.split(/\s+/).length})}}}function y(e){var o=e.scene.time.now;var n=[];for(var t=0;t<e.actionQueue.length;t++){if(o-e.actionQueue[t].at<=320)n.push(e.actionQueue[t])}e.actionQueue=n}function x(e,o,n){for(var t=0;t<e.actionQueue.length;t++){var r=e.actionQueue[t];var i=r.payload&&r.payload.x!=null?r.payload.x:e.player.x;var a=r.payload&&r.payload.y!=null?r.payload.y:e.player.y;if(r.action!==o)continue;if(n&&!m(n,i,a))continue;e.actionQueue.splice(t,1);return true}return false}function w(e,n,t,r,i,a,s,l,c){var d=o(e.scene,t,r,i,a,s,l,c);e.platforms.push(d);n.platforms.push(d);return d}function z(o,n,r,i){var a=n.endX-n.startX;o.scene.add.rectangle(n.startX+a/2,e.GAME_H/2,a-24,e.GAME_H-32,r,1).setDepth(0);o.scene.add.rectangle(n.startX+18,e.GAME_H/2,16,e.GAME_H-32,i,1).setDepth(1);c(o,n);t(o.scene,n.startX+34,22,n.title,8,"#e8e3d1",8)}function b(e,o,n,t){var r={id:o.id,title:o.title,startX:n,endX:n+t,platforms:[],modules:[],contradictions:[],contradictionOutcome:"",completeX:n+t-88};e.rooms.push(r);return r}function S(t,r,i){var a=t.scene;var s=e.Signs.place(a,i.signX,i.signY,i.text,{id:i.id+"-sign"});var l=n(a,i.sensorX,i.sensorY,i.sensorW||100,i.sensorH||70);var c=i.blocker?o(a,i.blocker.x,i.blocker.y,i.blocker.w,i.blocker.h,i.blocker.color||12729147,1,6):null;var u=a.add.rectangle(i.signX+62,i.signY-8,10,10,7106680,1).setDepth(11);var m={id:i.id,actionName:i.actionName,sign:s,sensor:l,blocker:c,lamp:u,resolved:false,note:i.note||"",onResolve:i.onResolve||null,resolve:function(e){if(m.resolved)return;m.resolved=true;d(m.blocker);m.lamp.fillColor=6000490;h(t,m.actionName);v(t,r,m.id);if(m.onResolve)m.onResolve(e||"live",m)}};r.modules.push(m);t.modules.push(m);return m}function X(t,r,i){var a=t.scene;var s=t.horizon;var l=i.baseX;var c=e.Signs.place(a,l+28,s-78,i.text,{id:i.id+"-sign"});var u=n(a,l+86,s-40,120,80);var m=a.add.rectangle(l+96,s-94,10,10,7106680,1).setDepth(11);w(t,r,l+166,s-36,86,14,5662075,1,4);w(t,r,l+236,s-68,86,14,5662075,1,4);w(t,r,l+306,s-100,86,14,5662075,1,4);w(t,r,l+470,s-116,260,18,6977680,1,4);var p=o(a,l+564,s-145,18,60,12729147,1,6);var f=o(a,l+564,s-30,18,60,12729147,1,6);var h={id:i.id,sign:c,trigger:u,lamp:m,upperDoor:p,lowerDoor:f,defyAction:i.defyAction||"move",enteredAt:0,applied:false,gate:e.Contradiction.gate({sign:{id:c.id},expectedBehavior:"wait",windowMs:i.windowMs||900,onFollow:function(){return"upper"},onDefy:function(){return"lower"}}),applyOutcome:function(){if(h.applied||!h.gate.resolved)return;h.applied=true;r.contradictionOutcome=h.gate.outcome||"";t.lastContradictionOutcome=r.contradictionOutcome;if(h.gate.outcome==="follow"){d(h.upperDoor);h.lamp.fillColor=6000490}else{d(h.lowerDoor);h.lamp.fillColor=14699066}},follow:function(){h.gate.evaluate({action:"wait",elapsedMs:(i.windowMs||900)+20});h.applyOutcome()},defy:function(){h.gate.evaluate({action:h.defyAction,elapsedMs:120});h.applyOutcome()}};r.contradictions.push(h);t.contradictions.push(h);return h}function k(e,o){if(!p(e.player,o.sensor))return false;switch(o.actionName){case"move":return Math.abs(e.player.body.velocity.x)>20;case"jump":return x(e,"jump",o.sensor);case"doubleJump":return x(e,"doubleJump",o.sensor);case"tripleJump":return x(e,"tripleJump",o.sensor);case"wallSlideJump":return x(e,"wallSlideJump",o.sensor);case"punch":return x(e,"punch",o.sensor);case"kick":return x(e,"kick",o.sensor);case"spinDash":return x(e,"spinDash",o.sensor);case"cigCopter":return x(e,"cigCopter",o.sensor);case"groundSlam":return x(e,"groundSlam",o.sensor);case"glide":return x(e,"glide",o.sensor);default:return false}}function M(e){var o=e.player.x;for(var n=0;n<e.rooms.length;n++){if(o>=e.rooms[n].startX&&o<e.rooms[n].endX){e.currentRoomId=e.rooms[n].id;e.runState.roomId=e.rooms[n].id;f(e,e.rooms[n].id);return}}if(e.rooms.length){e.currentRoomId=e.rooms[e.rooms.length-1].id;e.runState.roomId=e.currentRoomId}}function O(e,o){var n=e.player;for(var t=0;t<e.contradictions.length;t++){var r=e.contradictions[t];g(e,r.sign);if(r.applied)continue;if(!p(n,r.trigger)){r.enteredAt=0;continue}if(!r.enteredAt)r.enteredAt=o;var i="";if(r.defyAction==="move"){if(Math.abs(n.body.velocity.x)>18)i="move"}else if(x(e,r.defyAction,r.trigger)){i=r.defyAction}r.gate.evaluate({action:i,elapsedMs:o-r.enteredAt});r.applyOutcome()}}function A(e){for(var o=0;o<e.modules.length;o++){g(e,e.modules[o].sign);if(e.modules[o].resolved)continue;if(k(e,e.modules[o]))e.modules[o].resolve("live")}}function C(o){if(o.finalDoorUnlocked)return;if(o.actionsLearned.length<e.Movement.ACTIONS.length)return;o.finalDoorUnlocked=true;d(o.finalDoor);o.finalLamp.fillColor=6000490}function D(e,o,n){e.actionQueue.push({action:o,payload:n||{},at:e.scene.time.now})}function E(o){var n=[["movement:jump","jump"],["movement:doubleJump","doubleJump"],["movement:tripleJump","tripleJump"],["movement:wallJump","wallSlideJump"],["movement:punch","punch"],["movement:kick","kick"],["movement:spinDash","spinDash"],["movement:cigCopter","cigCopter"],["movement:groundSlam","groundSlam"],["movement:glide","glide"]];for(var t=0;t<n.length;t++){(function(n,t){o.offFns.push(e.Events.on(n,(function(e){D(o,t,e)})))})(n[t][0],n[t][1])}}function _(e,o,n,t){var r=b(e,o,n,t);z(e,r,1516088,3824808);a(e.scene,n+564,e.horizon-104);i(e,r,[{x:n+188,y:e.horizon-8,variant:0},{x:n+842,y:e.horizon-8,variant:1}]);w(e,r,n+180,e.horizon,t-80,28,4478058,1,2);S(e,r,{id:"intake-move",actionName:"move",text:o.actionSigns[0],signX:n+120,signY:e.horizon-78,sensorX:n+190,sensorY:e.horizon-24,blocker:{x:n+254,y:e.horizon-32,w:18,h:66}});X(e,r,{id:"intake-badge",baseX:n+330,text:o.contradictionSign,defyAction:"move",windowMs:850});S(e,r,{id:"intake-jump",actionName:"jump",text:o.actionSigns[1],signX:n+968,signY:e.horizon-78,sensorX:n+1030,sensorY:e.horizon-38,blocker:{x:n+1102,y:e.horizon-32,w:18,h:66}});return r}function I(o,n,t,r){var a=b(o,n,t,r);z(o,a,1318448,5399930);i(o,a,[{x:t+218,y:o.horizon-8,variant:2},{x:t+918,y:o.horizon-8,variant:0}]);w(o,a,t+180,o.horizon,r-80,28,4478058,1,2);X(o,a,{id:"base-turnstile",baseX:t+80,text:n.contradictionSign,defyAction:"move",windowMs:860});a.bridge=e.Forms.bridge(o.scene,{x:t+650,y:o.horizon-10,width:132,height:14});o.platforms.push(a.bridge.rect);a.platforms.push(a.bridge.rect);S(o,a,{id:"base-kick",actionName:"kick",text:n.actionSigns[0],signX:t+620,signY:o.horizon-80,sensorX:t+690,sensorY:o.horizon-28,blocker:{x:t+766,y:o.horizon-32,w:18,h:66}});S(o,a,{id:"base-spin",actionName:"spinDash",text:n.actionSigns[1],signX:t+936,signY:o.horizon-80,sensorX:t+1040,sensorY:o.horizon-28,sensorW:170,blocker:{x:t+1166,y:o.horizon-32,w:18,h:66}});return a}function Y(o,n,t,r){var a=b(o,n,t,r);z(o,a,1450546,8956620);i(o,a,[{x:t+342,y:o.horizon-8,variant:1},{x:t+1546,y:o.horizon-104,variant:2}]);w(o,a,t+300,o.horizon,560,28,4478058,1,2);w(o,a,t+760,o.horizon,360,28,4478058,1,2);w(o,a,t+940,o.horizon-96,110,18,6320778,1,4);w(o,a,t+1120,o.horizon-148,110,18,6320778,1,4);w(o,a,t+1300,o.horizon-196,140,18,6320778,1,4);w(o,a,t+1466,o.horizon-110,160,18,6320778,1,4);w(o,a,t+1602,o.horizon-48,180,18,6320778,1,4);a.trampoline=e.Forms.trampoline(o.scene,{x:t+290,y:o.horizon-16,width:74,height:12,power:420});o.platforms.push(a.trampoline.rect);a.platforms.push(a.trampoline.rect);X(o,a,{id:"vertical-elevator",baseX:t+210,text:n.contradictionSign,defyAction:"move",windowMs:900});S(o,a,{id:"vertical-double",actionName:"doubleJump",text:n.actionSigns[0],signX:t+620,signY:o.horizon-82,sensorX:t+740,sensorY:o.horizon-84,sensorW:180,sensorH:180,blocker:{x:t+896,y:o.horizon-96,w:18,h:66}});S(o,a,{id:"vertical-triple",actionName:"tripleJump",text:n.actionSigns[1],signX:t+990,signY:o.horizon-176,sensorX:t+1080,sensorY:o.horizon-150,sensorW:220,sensorH:200,blocker:{x:t+1210,y:o.horizon-148,w:18,h:66}});w(o,a,t+1360,o.horizon-118,18,188,7439520,1,4);w(o,a,t+1438,o.horizon-118,18,188,7439520,1,4);S(o,a,{id:"vertical-wall",actionName:"wallSlideJump",text:n.actionSigns[2],signX:t+1502,signY:o.horizon-208,sensorX:t+1398,sensorY:o.horizon-132,sensorW:120,sensorH:220,blocker:{x:t+1516,y:o.horizon-146,w:18,h:66}});return a}function R(o,n,t,r){var a=b(o,n,t,r);z(o,a,1646383,14699066);i(o,a,[{x:t+214,y:o.horizon-8,variant:0},{x:t+944,y:o.horizon-138,variant:2}]);w(o,a,t+180,o.horizon,r-80,28,4478058,1,2);w(o,a,t+910,o.horizon-130,180,18,6320778,1,4);w(o,a,t+1110,o.horizon-130,140,18,6320778,1,4);X(o,a,{id:"corrective-review",baseX:t+80,text:n.contradictionSign,defyAction:"move",windowMs:880});S(o,a,{id:"corrective-punch",actionName:"punch",text:n.actionSigns[0],signX:t+638,signY:o.horizon-80,sensorX:t+720,sensorY:o.horizon-28,blocker:{x:t+794,y:o.horizon-32,w:18,h:66}});a.blade=e.Forms.blade(o.scene,{x:t+876,y:o.horizon-110,width:40,height:14});S(o,a,{id:"corrective-slam",actionName:"groundSlam",text:n.actionSigns[1],signX:t+1016,signY:o.horizon-208,sensorX:t+1100,sensorY:o.horizon-106,sensorW:140,sensorH:220,blocker:{x:t+1188,y:o.horizon-32,w:18,h:66}});return a}function J(o,n,t,r){var a=b(o,n,t,r);z(o,a,1451322,8956620);i(o,a,[{x:t+208,y:o.horizon-8,variant:1},{x:t+1240,y:o.horizon-170,variant:0}]);w(o,a,t+170,o.horizon,360,28,4478058,1,2);w(o,a,t+664,o.horizon-118,180,18,6320778,1,4);w(o,a,t+930,o.horizon-72,150,18,6320778,1,4);w(o,a,t+1180,o.horizon-162,130,18,6320778,1,4);a.trampoline=e.Forms.trampoline(o.scene,{x:t+314,y:o.horizon-16,width:74,height:12,power:430});o.platforms.push(a.trampoline.rect);a.platforms.push(a.trampoline.rect);X(o,a,{id:"aerial-clearance",baseX:t+44,text:n.contradictionSign,defyAction:"move",windowMs:840});S(o,a,{id:"aerial-glide",actionName:"glide",text:n.actionSigns[0],signX:t+524,signY:o.horizon-178,sensorX:t+620,sensorY:o.horizon-120,sensorW:220,sensorH:180,blocker:{x:t+812,y:o.horizon-72,w:18,h:66}});S(o,a,{id:"aerial-copter",actionName:"cigCopter",text:n.actionSigns[1],signX:t+1038,signY:o.horizon-214,sensorX:t+1110,sensorY:o.horizon-138,sensorW:160,sensorH:220,blocker:{x:t+1246,y:o.horizon-164,w:18,h:66}});return a}function N(t,r,a,s){var c=b(t,r,a,s);z(t,c,1383722,14699066);l(t.scene,"supervisor_silhouette",a+1012,t.horizon-146,188,188,1.8,.26);i(t,c,[{x:a+248,y:t.horizon-8,variant:2},{x:a+814,y:t.horizon-8,variant:1}]);w(t,c,a+170,t.horizon,s-120,28,4478058,1,2);X(t,c,{id:"final-protocol",baseX:a+120,text:r.contradictionSign,defyAction:"move",windowMs:900});c.finalSign=e.Signs.place(t.scene,a+784,t.horizon-84,r.actionSigns[0],{id:"final-cert-sign"});c.finalLamp=t.scene.add.rectangle(a+848,t.horizon-92,10,10,7106680,1).setDepth(11);t.finalLamp=c.finalLamp;t.finalDoor=o(t.scene,a+926,t.horizon-34,18,72,12729147,1,6);t.goal=n(t.scene,a+1120,t.horizon-88,140,180);return c}function L(o,n){n=n||{};if(!e.Events||!e.Events.emit)return;switch(o){case"jump":e.Events.emit("movement:jump",n);return;case"doubleJump":e.Events.emit("movement:doubleJump",n);return;case"tripleJump":e.Events.emit("movement:tripleJump",n);return;case"wallSlideJump":e.Events.emit("movement:wallJump",n);return;case"punch":e.Events.emit("movement:punch",n);return;case"kick":e.Events.emit("movement:kick",n);return;case"spinDash":e.Events.emit("movement:spinDash",n);return;case"cigCopter":e.Events.emit("movement:cigCopter",n);return;case"groundSlam":e.Events.emit("movement:groundSlam",n);return;case"glide":e.Events.emit("movement:glide",n);return;default:return}}function H(o){e.Axes.reset();if(e.Metrics&&e.Metrics.reset)e.Metrics.reset();o.actionQueue=[];o.visitedRooms={};o.learnedMap={};o.completedModules={};o.roomOrder.length=0;o.actionsLearned.length=0;o.runState.roomOrder=o.roomOrder;o.runState.actionsLearned=o.actionsLearned;o.runState.roomId="intake";o.runState.receipt=null;o.lastContradictionOutcome="";o.scene.runComplete=false;o.scene.pendingDeath=null;o.scene.runStartMs=o.scene.time.now;o.scene.recorder.clear();e.Movement.respawn(o.player);f(o,"intake")}function F(e,o,n){var t=n==="obedient"?W(e,"upper"):W(e,"lower");return{x:e.startX+300+o*96,y:t}}function W(e,o){if(e.id==="vertical-compliance"){return o==="upper"?238:330}if(e.id==="aerial-exception"){return o==="upper"?248:346}return o==="upper"?276:392}function T(o,n,t,r){var i=t==="obedient"?"upper":"lower";var a=n.startX+64;o.player.x=a;o.player.y=W(n,i);M(o);o.scene.recorder.mark(r[0],n.startX+64,W(n,i),1);if(n.contradictions.length){if(t==="obedient")n.contradictions[0].follow();else n.contradictions[0].defy()}for(var s=0;s<n.modules.length;s++){g(o,n.modules[s].sign);n.modules[s].sign.peek({signId:n.modules[s].sign.id,words:n.modules[s].sign.text.split(/\s+/).length});n.modules[s].sign.read({signId:n.modules[s].sign.id,words:n.modules[s].sign.text.split(/\s+/).length});L(n.modules[s].actionName,F(n,s,t));if(n.modules[s].actionName==="move"){o.player.body.setVelocityX(t==="obedient"?120:180)}n.modules[s].resolve("debug");o.scene.recorder.mark(r[s+1],n.startX+220+s*120,W(n,i),1)}if(n.bridge&&n.bridge.activate)n.bridge.activate(o.player);if(n.trampoline&&n.trampoline.activate)n.trampoline.activate(o.player);if(n.blade&&t==="defiant"&&n.blade.activate){if(e.Events&&e.Events.emit)e.Events.emit("movement:nearMiss",{x:n.blade.rect.x,y:n.blade.rect.y})}if(e.Events&&e.Events.emit)e.Events.emit("music:sync",{x:n.endX-120,y:W(n,i)});o.player.x=n.endX-90;o.player.y=W(n,i);M(o);o.scene.recorder.mark(r[r.length-1],n.endX-90,W(n,i),1)}function j(o,n,t){if(n.runComplete&&o.runState.receipt){return{receipt:u(o.runState.receipt),axes:u(e.Axes.snapshot()),frames:u(n.recorder.dump()),contradictionOutcome:o.lastContradictionOutcome||"",worldId:o.runState.worldId,roomOrder:u(o.roomOrder),actionsLearned:u(o.actionsLearned)}}t=t||"obedient";H(o);var r=[[0,110,220,360],[420,560,720,880],[920,1180,1360,1540,1720],[1760,1960,2140,2320],[2360,2560,2740,2920],[2960,3160,3340]];for(var i=0;i<o.rooms.length;i++){T(o,o.rooms[i],t,r[i])}C(o);if(o.finalSign){o.finalSign.peek({signId:o.finalSign.id,words:o.finalSign.text.split(/\s+/).length});o.finalSign.read({signId:o.finalSign.id,words:o.finalSign.text.split(/\s+/).length})}o.player.x=o.goal.x;o.player.y=o.goal.y;M(o);n.completeRun("debug:"+t);return{receipt:u(o.runState.receipt),axes:u(e.Axes.snapshot()),frames:u(n.recorder.dump()),contradictionOutcome:o.lastContradictionOutcome||"",worldId:o.runState.worldId,roomOrder:u(o.roomOrder),actionsLearned:u(o.actionsLearned)}}function G(o,n){var t=e.Worlds&&e.Worlds.get?e.Worlds.get("orientation"):null;var r=e.GAME_H-24;var i=1320;var a={id:"orientation-world",worldId:"orientation",scene:o,runState:n,manifest:t,horizon:r,width:i*6,rooms:[],modules:[],contradictions:[],platforms:[],actionQueue:[],offFns:[],visitedRooms:{},learnedMap:{},completedModules:{},roomOrder:[],actionsLearned:[],currentRoomId:"intake",finalDoor:null,finalDoorUnlocked:false,finalLamp:null,goal:null,lastContradictionOutcome:""};o.cameras.main.setBackgroundColor("#101824");o.physics.world.setBounds(0,0,a.width,e.GAME_H);o.cameras.main.setBounds(0,0,a.width,e.GAME_H);a.player=e.Movement.createEd(o,72,r-28);o.player=a.player;n.worldId="orientation";n.roomId="intake";n.roomOrder=a.roomOrder;n.actionsLearned=a.actionsLearned;n.worldFlags=t||{};_(a,t.rooms[0],0,i);I(a,t.rooms[1],i,i);Y(a,t.rooms[2],i*2,i);R(a,t.rooms[3],i*3,i);J(a,t.rooms[4],i*4,i);N(a,t.rooms[5],i*5,i);for(var s=0;s<a.platforms.length;s++){o.physics.add.collider(a.player,a.platforms[s],(function(e,o){if(a.player!==e)return;if(a.rooms[1].bridge&&o===a.rooms[1].bridge.rect)a.rooms[1].bridge.activate(e);if(a.rooms[2].trampoline&&o===a.rooms[2].trampoline.rect&&e.body.velocity.y>=0)a.rooms[2].trampoline.activate(e);if(a.rooms[4].trampoline&&o===a.rooms[4].trampoline.rect&&e.body.velocity.y>=0)a.rooms[4].trampoline.activate(e)}))}if(a.rooms[3].blade){o.physics.add.overlap(a.player,a.rooms[3].blade.rect,(function(){a.rooms[3].blade.activate(a.player)}))}o.physics.add.overlap(a.player,a.goal,(function(){if(a.finalDoorUnlocked)o.completeRun("goal")}));E(a);f(a,"intake");if(e.Curiosity&&e.Curiosity.prime)e.Curiosity.prime(o,"orientation");return a}function Q(o,n){var t=o.room;if(!t||!t.player)return;y(t);M(t);O(t,o.time.now);A(t);C(t);if(t.finalSign)g(t,t.finalSign);if(e.Curiosity&&e.Curiosity.update)e.Curiosity.update(o,n)}function P(e){if(!e||!e.offFns)return;for(var o=0;o<e.offFns.length;o++){if(typeof e.offFns[o]==="function")e.offFns[o]()}e.offFns=[]}e.WorldOrientation={create:G,update:Q,destroy:P,runStyle:j}})(CEHP);CEHP._register("74_world_orientation_runtime");
 /* =============== MODULE: 75_WORLD_BENEFITS_RUNTIME.JS =============== */
 (function(ns){
 'use strict';
@@ -5314,6 +4342,16 @@ world.runState.worldStats = world.stats;
 world.runState.receiptFlags = world.receiptFlags;
 }
 
+function passRoomModule(world, room, moduleId){
+if (!room || room.modulePassed) return;
+room.modulePassed = true;
+if (ns.Events && ns.Events.emit) ns.Events.emit('module:passed', {
+  roomId: room.id,
+  moduleId: moduleId || room.id
+});
+updateRunState(world);
+}
+
 function setJumpPenalty(world, value){
 world.stats.jumpPenalty = clamp(value, 0, 48);
 world.player.jumpVelocity = clamp(ns.TUNING.JUMP_VELOCITY + world.stats.jumpPenalty, -340, -292);
@@ -5397,10 +4435,18 @@ var room = {
   enemies: [],
   hazards: [],
   gate: null,
+  riskGate: null,
+  claimExit: null,
+  networkExit: null,
   branchOutcome: '',
   safeCompleted: false,
   uninsuredCommitted: false,
+  bridgeActivated: false,
+  groundSlammed: false,
+  routeUnlocked: false,
+  nearMissLogged: false,
   damageTagged: false,
+  modulePassed: false,
   finalized: false,
   completeX: startX + width - 110
 };
@@ -5476,6 +4522,154 @@ var hazard = {
 room.hazards.push(hazard);
 world.hazards.push(hazard);
 return hazard;
+}
+
+function makeRiskGate(world, room, sign, cfg){
+var gate = {
+  sign: sign,
+  sensor: cfg.sensor,
+  lamp: cfg.lamp,
+  enteredAt: 0,
+  resolved: false,
+  outcome: '',
+  follow: function(){
+    gate.core.evaluate({ action: 'wait', elapsedMs: (cfg.windowMs || 900) + 20 });
+    gate.apply();
+  },
+  defy: function(){
+    gate.core.evaluate({ action: 'move', elapsedMs: 120 });
+    gate.apply();
+  },
+  apply: function(){
+    if (gate.resolved || !gate.core.resolved) return;
+    gate.resolved = true;
+    gate.outcome = gate.core.outcome || '';
+    room.branchOutcome = gate.outcome === 'follow' ? 'insured' : 'uninsured';
+    world.lastContradictionOutcome = gate.outcome;
+    gate.lamp.fillColor = gate.outcome === 'follow' ? 0x5b8f6a : 0xe04a3a;
+    updateRunState(world);
+  }
+};
+
+gate.core = ns.Contradiction.gate({
+  sign: { id: sign.id },
+  expectedBehavior: 'wait',
+  windowMs: cfg.windowMs || 900,
+  onFollow: function(){
+    world.receiptFlags.premiumSecured = true;
+    world.receiptFlags.uninsuredVeteran = false;
+    updateRunState(world);
+    return 'upper';
+  },
+  onDefy: function(){
+    world.receiptFlags.uninsuredVeteran = true;
+    world.receiptFlags.premiumSecured = false;
+    room.uninsuredCommitted = true;
+    updateRunState(world);
+    return 'lower';
+  }
+});
+
+room.riskGate = gate;
+return gate;
+}
+
+function buildRiskAtrium(world, spec, startX, width){
+var room = makeRoom(world, spec, startX, width);
+var waitSign;
+addBackdrop(world, room, 0x34232a, 0xf2c6d1);
+addPlatform(world, room, startX + 180, 432, 420, 28, 0x7a7480, 1, 2);
+addPlatform(world, room, startX + 520, 330, 220, 18, 0xfff1c8, 1, 4);
+addPlatform(world, room, startX + 780, 270, 220, 18, 0xfff1c8, 1, 4);
+addPlatform(world, room, startX + 530, 432, 620, 28, 0x7a7480, 1, 2);
+makeHazard(world, room, startX + 730, 405, 40, 14, 'blade');
+addBackdropImage(world.scene, 'paper_safety_poster', startX + 120, 120, 74, 74, 1.6, 0.6);
+addBackdropImage(world.scene, 'prop_filing_cabinet', startX + 1180, 360, 86, 128, 1.9, 0.58);
+waitSign = addSign(world, room, startX + 120, 178, spec.contradictionSign, { id: 'benefits-risk-wait', width: 138 });
+addSign(world, room, startX + 450, 294, spec.actionSigns[0], { id: 'benefits-risk-doors', width: 122 });
+addSign(world, room, startX + 820, 390, spec.actionSigns[1], { id: 'benefits-risk-lower', width: 122 });
+room.upperGoal = sensorZone(world.scene, startX + 1260, 300, 116, 116);
+room.lowerGoal = sensorZone(world.scene, startX + 1260, 396, 116, 92);
+makeRiskGate(world, room, waitSign, {
+  sensor: sensorZone(world.scene, startX + 120, 396, 180, 96),
+  lamp: world.scene.add.rectangle(startX + 188, 166, 10, 10, 0x8b6f74, 1).setDepth(11),
+  windowMs: 900
+});
+return room;
+}
+
+function activateClaimBridge(world, room){
+if (!room || room.bridgeActivated) return;
+room.bridgeActivated = true;
+if (room.bridge && room.bridge.activate) room.bridge.activate(world.player);
+updateRunState(world);
+}
+
+function triggerClaimSlam(world, room){
+if (!room || room.groundSlammed) return;
+room.groundSlammed = true;
+if (ns.Events && ns.Events.emit) ns.Events.emit('movement:groundSlam', {
+  roomId: room.id,
+  x: world.player ? world.player.x : room.startX + 870,
+  y: world.player ? world.player.y : 330
+});
+updateRunState(world);
+}
+
+function buildClaimWindow(world, spec, startX, width){
+var room = makeRoom(world, spec, startX, width);
+addBackdrop(world, room, 0x302129, 0xf0d48f);
+addPlatform(world, room, startX + 180, 432, 360, 28, 0x7a7480, 1, 2);
+room.bridge = ns.Forms && ns.Forms.bridge ? ns.Forms.bridge(world.scene, {
+  x: startX + 660,
+  y: 392,
+  width: 132,
+  height: 14
+}) : { rect: addPlatform(world, room, startX + 660, 392, 132, 14, 0xdcc9a3, 1, 4) };
+world.platforms.push(room.bridge.rect);
+room.platforms.push(room.bridge.rect);
+addPlatform(world, room, startX + 920, 350, 240, 18, 0xfff1c8, 1, 4);
+addPlatform(world, room, startX + 1160, 432, 220, 28, 0x7a7480, 1, 2);
+makeHazard(world, room, startX + 870, 330, 40, 14, 'blade');
+addBackdropImage(world.scene, 'paper_expired_id', startX + 250, 128, 86, 58, 1.6, 0.52);
+addBackdropImage(world.scene, 'prop_coffee_cup', startX + 1120, 282, 30, 30, 2.1, 0.94);
+addSign(world, room, startX + 250, 170, spec.actionSigns[0], { id: 'benefits-claim-forms', width: 142 });
+addSign(world, room, startX + 705, 354, spec.actionSigns[1], { id: 'benefits-claim-cross', width: 132 });
+room.slamSensor = sensorZone(world.scene, startX + 870, 330, 150, 160);
+room.claimExit = sensorZone(world.scene, startX + 1260, 396, 120, 100);
+return room;
+}
+
+function unlockNetworkRoute(world, room, action){
+if (!room || room.routeUnlocked) return;
+room.routeUnlocked = true;
+if (ns.Events && ns.Events.emit) {
+  ns.Events.emit(action === 'glide' ? 'movement:glide' : 'movement:wallJump', {
+    roomId: room.id,
+    x: world.player ? world.player.x : room.startX + 860,
+    y: world.player ? world.player.y : 318
+  });
+}
+updateRunState(world);
+}
+
+function buildNetworkNarrow(world, spec, startX, width){
+var room = makeRoom(world, spec, startX, width);
+addBackdrop(world, room, 0x321f28, 0xc23b3b);
+addPlatform(world, room, startX + 170, 432, 340, 28, 0x7a7480, 1, 2);
+addPlatform(world, room, startX + 480, 330, 90, 18, 0xfff1c8, 1, 4);
+addPlatform(world, room, startX + 640, 260, 90, 18, 0xfff1c8, 1, 4);
+addPlatform(world, room, startX + 860, 318, 120, 18, 0xfff1c8, 1, 4);
+addPlatform(world, room, startX + 1140, 386, 260, 28, 0x7a7480, 1, 2);
+makeHazard(world, room, startX + 730, 250, 40, 14, 'blade');
+addBackdropImage(world.scene, 'fluorescent_light_fixture', startX + 560, 42, 150, 74, 1.55, 0.24);
+addBackdropImage(world.scene, 'supervisor_silhouette', startX + 1050, 250, 188, 188, 1.8, 0.24);
+addSign(world, room, startX + 185, 360, spec.actionSigns[0], { id: 'benefits-network-small', width: 142 });
+addSign(world, room, startX + 780, 222, spec.actionSigns[1], { id: 'benefits-network-floor', width: 132 });
+room.routeSensor = sensorZone(world.scene, startX + 760, 288, 340, 240);
+room.nearMissSensor = sensorZone(world.scene, startX + 730, 250, 120, 110);
+room.networkExit = sensorZone(world.scene, startX + 1260, 360, 120, 120);
+return room;
 }
 
 function addEnemy(world, room, type, opts){
@@ -5727,6 +4921,66 @@ if (!room.gate.unlocked && intersects(world.player, room.gate.lowerTrigger)) roo
 if (room.gate.unlocked && intersects(world.player, room.gate.upperClear)) room.gate.markSafe();
 }
 
+function updateRiskAtrium(world){
+var room = world.currentRoom;
+var gate;
+var now;
+var moving;
+if (!room || !room.riskGate) return;
+gate = room.riskGate;
+now = world.scene.time.now;
+if (!gate.resolved) {
+  if (intersects(world.player, gate.sensor)) {
+    if (!gate.enteredAt) gate.enteredAt = now || 1;
+    moving = world.player && world.player.body ? Math.abs(world.player.body.velocity.x) > 18 : false;
+    if (moving) gate.defy();
+    else if (now - gate.enteredAt >= gate.core.windowMs) gate.follow();
+  } else {
+    gate.enteredAt = 0;
+  }
+}
+if (intersects(world.player, room.upperGoal)) {
+  if (!gate.resolved) gate.follow();
+  room.safeCompleted = true;
+  room.branchOutcome = 'insured';
+  updateRunState(world);
+}
+if (intersects(world.player, room.lowerGoal)) {
+  if (!gate.resolved) gate.defy();
+  room.uninsuredCommitted = true;
+  room.branchOutcome = 'uninsured';
+  updateRunState(world);
+}
+}
+
+function updateClaimWindow(world){
+var room = world.currentRoom;
+if (!room || room.id !== 'benefits-claim-window') return;
+if (room.bridge && room.bridge.rect && intersects(world.player, room.bridge.rect)) activateClaimBridge(world, room);
+if (room.slamSensor && intersects(world.player, room.slamSensor) && ns.Input.justPressed('groundSlam')) triggerClaimSlam(world, room);
+if (room.claimExit && room.bridgeActivated && room.groundSlammed && intersects(world.player, room.claimExit)) {
+  room.safeCompleted = true;
+  passRoomModule(world, room, room.id + '-claim');
+}
+}
+
+function updateNetworkNarrow(world){
+var room = world.currentRoom;
+if (!room || room.id !== 'benefits-network-narrow') return;
+if (room.routeSensor && intersects(world.player, room.routeSensor)) {
+  if (ns.Input.justPressed('glide') || ns.Input.down('glide')) unlockNetworkRoute(world, room, 'glide');
+  else if (ns.Input.justPressed('jump')) unlockNetworkRoute(world, room, 'wallJump');
+}
+if (!room.nearMissLogged && room.nearMissSensor && intersects(world.player, room.nearMissSensor)) {
+  room.nearMissLogged = true;
+  if (ns.Events && ns.Events.emit) ns.Events.emit('movement:nearMiss', { roomId: room.id, x: world.player.x, y: world.player.y });
+}
+if (room.networkExit && room.routeUnlocked && intersects(world.player, room.networkExit)) {
+  room.safeCompleted = true;
+  passRoomModule(world, room, room.id + '-network');
+}
+}
+
 function updateHazards(world){
 var room = world.currentRoom;
 if (!room) return;
@@ -5774,9 +5028,22 @@ for (var i = 0; i < world.rooms.length; i++) {
   world.rooms[i].premiumCount = 0;
   world.rooms[i].safeCompleted = false;
   world.rooms[i].uninsuredCommitted = false;
+  world.rooms[i].bridgeActivated = false;
+  world.rooms[i].groundSlammed = false;
+  world.rooms[i].routeUnlocked = false;
+  world.rooms[i].nearMissLogged = false;
   world.rooms[i].damageTagged = false;
   world.rooms[i].branchOutcome = '';
+  world.rooms[i].modulePassed = false;
   world.rooms[i].finalized = false;
+  if (world.rooms[i].riskGate) {
+    world.rooms[i].riskGate.enteredAt = 0;
+    world.rooms[i].riskGate.resolved = false;
+    world.rooms[i].riskGate.outcome = '';
+    world.rooms[i].riskGate.core.resolved = false;
+    world.rooms[i].riskGate.core.outcome = null;
+    world.rooms[i].riskGate.lamp.fillColor = 0x8b6f74;
+  }
   if (world.rooms[i].gate) {
     world.rooms[i].gate.unlocked = false;
     world.rooms[i].gate.skipped = false;
@@ -5801,6 +5068,79 @@ function scriptRoom(world, room, style, markers){
 var insured = style === 'insured';
 var laneY = insured ? world.horizon - 140 : world.horizon - 28;
 var roomIndex = world.rooms.indexOf(room);
+if (room.id === 'benefits-risk-atrium') {
+  world.player.x = room.startX + 80;
+  world.player.y = insured ? 300 : 396;
+  syncCurrentRoom(world);
+  world.scene.recorder.mark(markers[0], world.player.x, world.player.y, 1);
+  for (var r = 0; r < room.signs.length; r++) {
+    room.signs[r].peek({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+    room.signs[r].read({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+  }
+  if (insured) {
+    room.riskGate.follow();
+    room.safeCompleted = true;
+    world.scene.recorder.mark(markers[1], room.startX + 520, 330, 1);
+    world.scene.recorder.mark(markers[2], room.startX + 780, 270, 1);
+  } else {
+    room.riskGate.defy();
+    room.uninsuredCommitted = true;
+    room.damageTagged = true;
+    if (ns.Events && ns.Events.emit) ns.Events.emit('combat:damageTaken', { kind: 'uninsured-lane', amount: 1 });
+    world.scene.recorder.mark(markers[1], room.startX + 430, 396, 1);
+    world.scene.recorder.mark(markers[2], room.startX + 940, 396, 1);
+  }
+  world.player.x = room.endX - 120;
+  world.player.y = insured ? 300 : 396;
+  syncCurrentRoom(world);
+  finalizeRoom(world, room);
+  world.scene.recorder.mark(markers[3], world.player.x, world.player.y, 1);
+  return;
+}
+if (room.id === 'benefits-claim-window') {
+  world.player.x = room.startX + 80;
+  world.player.y = world.horizon - 28;
+  syncCurrentRoom(world);
+  world.scene.recorder.mark(markers[0], world.player.x, world.player.y, 1);
+  for (r = 0; r < room.signs.length; r++) {
+    room.signs[r].peek({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+    room.signs[r].read({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+  }
+  activateClaimBridge(world, room);
+  triggerClaimSlam(world, room);
+  room.safeCompleted = true;
+  passRoomModule(world, room, room.id + '-claim');
+  world.scene.recorder.mark(markers[1], room.startX + 660, 392, 1);
+  world.scene.recorder.mark(markers[2], room.startX + 920, 350, 1);
+  world.player.x = room.endX - 120;
+  world.player.y = world.horizon - 28;
+  syncCurrentRoom(world);
+  finalizeRoom(world, room);
+  world.scene.recorder.mark(markers[3], world.player.x, world.player.y, 1);
+  return;
+}
+if (room.id === 'benefits-network-narrow') {
+  world.player.x = room.startX + 80;
+  world.player.y = insured ? 260 : 386;
+  syncCurrentRoom(world);
+  world.scene.recorder.mark(markers[0], world.player.x, world.player.y, 1);
+  for (r = 0; r < room.signs.length; r++) {
+    room.signs[r].peek({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+    room.signs[r].read({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+  }
+  unlockNetworkRoute(world, room, insured ? 'glide' : 'wallJump');
+  if (!insured && ns.Events && ns.Events.emit) ns.Events.emit('movement:nearMiss', { roomId: room.id, x: room.startX + 730, y: 250 });
+  room.safeCompleted = true;
+  passRoomModule(world, room, room.id + '-network');
+  world.scene.recorder.mark(markers[1], room.startX + 640, 260, 1);
+  world.scene.recorder.mark(markers[2], room.startX + 860, 318, 1);
+  world.player.x = room.endX - 120;
+  world.player.y = insured ? 360 : 386;
+  syncCurrentRoom(world);
+  finalizeRoom(world, room);
+  world.scene.recorder.mark(markers[3], world.player.x, world.player.y, 1);
+  return;
+}
 world.player.x = room.startX + 80;
 world.player.y = laneY;
 syncCurrentRoom(world);
@@ -5869,16 +5209,10 @@ if (scene.runComplete && world.runState.receipt) {
 style = style || 'insured';
 resetDebug(world);
 
-var markers = [
-  [0, 180, 380, 560],
-  [620, 800, 980, 1160],
-  [1220, 1400, 1580, 1760],
-  [1820, 2000, 2180, 2360],
-  [2420, 2600, 2780, 2960],
-  [3020, 3200, 3380, 3560]
-];
-
-for (var i = 0; i < world.rooms.length; i++) scriptRoom(world, world.rooms[i], style, markers[i]);
+for (var i = 0; i < world.rooms.length; i++) {
+  var base = i * 620;
+  scriptRoom(world, world.rooms[i], style, [base, base + 180, base + 380, base + 560]);
+}
 
 if (!world.receiptFlags.uninsuredVeteran && world.stats.premiumRoomsCleared >= 4) {
   world.receiptFlags.premiumSecured = true;
@@ -5912,7 +5246,7 @@ var world = {
   runState: runState,
   manifest: manifest,
   horizon: horizon,
-  width: roomWidth * 6,
+  width: roomWidth * manifest.rooms.length,
   rooms: [],
   platforms: [],
   premiums: [],
@@ -5960,12 +5294,15 @@ updateRunState(world);
 if (ns.EncounterDirector && ns.EncounterDirector.prime) ns.EncounterDirector.prime(scene, 'benefits', manifest.rooms[0].id);
 if (ns.Curiosity && ns.Curiosity.prime) ns.Curiosity.prime(scene, 'benefits');
 
-buildEnrollment(world, manifest.rooms[0], 0, roomWidth);
-buildPathways(world, manifest.rooms[1], roomWidth, roomWidth);
-buildNetwork(world, manifest.rooms[2], roomWidth * 2, roomWidth);
-buildDeductible(world, manifest.rooms[3], roomWidth * 3, roomWidth);
-buildWellness(world, manifest.rooms[4], roomWidth * 4, roomWidth);
-buildFinal(world, manifest.rooms[5], roomWidth * 5, roomWidth);
+buildRiskAtrium(world, manifest.rooms[0], 0, roomWidth);
+buildClaimWindow(world, manifest.rooms[1], roomWidth, roomWidth);
+buildNetworkNarrow(world, manifest.rooms[2], roomWidth * 2, roomWidth);
+buildEnrollment(world, manifest.rooms[3], roomWidth * 3, roomWidth);
+buildPathways(world, manifest.rooms[4], roomWidth * 4, roomWidth);
+buildNetwork(world, manifest.rooms[5], roomWidth * 5, roomWidth);
+buildDeductible(world, manifest.rooms[6], roomWidth * 6, roomWidth);
+buildWellness(world, manifest.rooms[7], roomWidth * 7, roomWidth);
+buildFinal(world, manifest.rooms[8], roomWidth * 8, roomWidth);
 
 for (var i = 0; i < world.platforms.length; i++) {
   scene.physics.add.collider(world.player, world.platforms[i]);
@@ -5993,6 +5330,9 @@ syncCurrentRoom(world);
 updateSigns(world);
 updatePremiums(world);
 updateGate(world);
+updateRiskAtrium(world);
+updateClaimWindow(world);
+updateNetworkNarrow(world);
 updateHazards(world);
 updateEnemies(world, dtMs);
 if (ns.EncounterDirector && ns.EncounterDirector.tick) ns.EncounterDirector.tick(scene, dtMs);
@@ -6120,6 +5460,7 @@ function defaultFlags(){
 return {
   restOpened: false,
   rushedRest: false,
+  cigaretteLit: false,
   syncedFlow: false
 };
 }
@@ -6297,7 +5638,7 @@ updateRunState(world);
 
 function makeRestGate(world, room, cfg){
 var scene = world.scene;
-var sign = addSign(world, room, cfg.signX, cfg.signY, cfg.text, { id: room.id + '-rest-sign' });
+var sign = addSign(world, room, cfg.signX, cfg.signY, cfg.text, { id: cfg.id || (room.id + '-rest-sign') });
 var pad = scene.add.rectangle(cfg.padX, cfg.padY, cfg.padW || 120, cfg.padH || 10, 0xf2e3c5, 0.22).setDepth(3).setStrokeStyle(1, 0xc49a4a, 0.9);
 var sensor = sensorZone(scene, cfg.sensorX, cfg.sensorY, cfg.sensorW || 150, cfg.sensorH || 84);
 var lamp = scene.add.rectangle(cfg.signX + 54, cfg.signY - 8, 10, 10, 0x8a7d62, 1).setDepth(11);
@@ -6331,12 +5672,14 @@ var gate = {
     gate.lamp.fillColor = 0x5b8f6a;
     world.stats.restOpens += 1;
     world.receiptFlags.restOpened = true;
+    world.receiptFlags.cigaretteLit = false;
+    if (world.runState.worldFlags) world.runState.worldFlags.cigaretteWillNotLight = true;
     updateRunState(world);
+    gate.core.evaluate({ action: 'wait', elapsedMs: gate.windowMs });
     if (ns.Events && ns.Events.emit) {
-      ns.Events.emit('contradiction:follow', { gateId: sign.id, action: 'wait', elapsedMs: gate.windowMs });
       ns.Events.emit('module:passed', { roomId: room.id, moduleId: sign.id });
     }
-    if (source === 'debug') awardSync(world, gate, world.player.x, world.player.y);
+    awardSync(world, gate, world.player.x, world.player.y);
   },
   rush: function(source){
     var now = world.scene.time.now;
@@ -6350,10 +5693,16 @@ var gate = {
     world.stats.rushRebounds += 1;
     world.receiptFlags.rushedRest = true;
     updateRunState(world);
+    gate.core.evaluate({ action: 'move', elapsedMs: 120 });
     if (!gate.rushLogged && ns.Events && ns.Events.emit) {
       gate.rushLogged = true;
-      ns.Events.emit('contradiction:defy', { gateId: sign.id, action: 'move', elapsedMs: 120 });
       ns.Events.emit('module:skipped', { roomId: room.id, moduleId: sign.id });
+    }
+    if (cfg.rushUnlocks && !gate.opened) {
+      gate.opened = true;
+      destroyThing(gate.door);
+      gate.door = null;
+      gate.lamp.fillColor = 0xc49a4a;
     }
     if (source === 'debug' && ns.Events && ns.Events.emit) {
       ns.Events.emit('movement:backtrack', { distance: 24, x: world.player.x, y: world.player.y });
@@ -6365,15 +5714,63 @@ var gate = {
     gate.rushLogged = false;
     gate.lastRushMs = 0;
     gate.lamp.fillColor = 0x8a7d62;
+    gate.core.resolved = false;
+    gate.core.outcome = null;
     destroyThing(gate.door);
     gate.door = null;
     gate.createDoor();
   }
 };
+gate.core = ns.Contradiction.gate({
+  sign: { id: sign.id },
+  expectedBehavior: 'wait',
+  windowMs: gate.windowMs,
+  onFollow: function(){
+    world.receiptFlags.restOpened = true;
+    world.receiptFlags.cigaretteLit = false;
+    if (world.runState.worldFlags) world.runState.worldFlags.cigaretteWillNotLight = true;
+    updateRunState(world);
+    return 'open';
+  },
+  onDefy: function(){
+    world.receiptFlags.rushedRest = true;
+    updateRunState(world);
+    return 'loop';
+  }
+});
 gate.createDoor();
 room.restGate = gate;
 world.restGate = gate;
+world.restGates.push(gate);
 return gate;
+}
+
+function buildSoftBelt(world, spec, startX, width){
+var room = makeRoom(world, spec, startX, width);
+addBackdrop(world, room, 0x263321, 0xc49a4a);
+addBackdropImage(world.scene, 'carpet_tile_seamless', startX + 720, 456, 360, 40, 1.5, 0.34);
+addBackdropImage(world.scene, 'fluorescent_light_fixture', startX + 720, 42, 150, 74, 1.55, 0.24);
+addPlatform(world, room, startX + 200, 432, 480, 28, 0x61784f, 1, 4);
+addPlatform(world, room, startX + 720, 432, 360, 18, 0x61784f, 1, 4);
+addPlatform(world, room, startX + 1120, 360, 260, 28, 0xe8d9b1, 1, 4);
+addSign(world, room, startX + 430, 392, spec.actionSigns[0], { id: 'rasta-belt-speed', width: 130 });
+addSign(world, room, startX + 945, 322, spec.actionSigns[1], { id: 'rasta-belt-fire', width: 124 });
+makeRestGate(world, room, {
+  id: 'rasta-belt-rest',
+  signX: startX + 170,
+  signY: 360,
+  text: spec.contradictionSign,
+  padX: startX + 720,
+  padY: 420,
+  sensorX: startX + 720,
+  sensorY: 392,
+  sensorW: 220,
+  sensorH: 90,
+  doorX: startX + 1012,
+  doorY: 386,
+  rushUnlocks: true
+});
+return room;
 }
 
 function buildReceiving(world, spec, startX, width){
@@ -6570,7 +5967,7 @@ return ns.Input.down('left') || ns.Input.down('right') || ns.Input.down('jump') 
 }
 
 function updateRestGate(world, dtMs){
-var gate = world.restGate;
+var gate = world.currentRoom && world.currentRoom.restGate ? world.currentRoom.restGate : null;
 if (!gate || gate.opened || world.currentRoom !== gate.room) return;
 if (!intersects(world.player, gate.sensor)) {
   gate.restingMs = 0;
@@ -6614,7 +6011,9 @@ for (var i = 0; i < world.syncPlatforms.length; i++) {
 for (i = 0; i < world.sortingMachines.length; i++) {
   world.sortingMachines[i].cooldownUntil = 0;
 }
-if (world.restGate) world.restGate.reset();
+for (i = 0; i < world.restGates.length; i++) {
+  if (world.restGates[i] && world.restGates[i].reset) world.restGates[i].reset();
+}
 updateRunState(world);
 rememberRoom(world, world.rooms[0].id);
 world.currentRoom = world.rooms[0];
@@ -6657,7 +6056,7 @@ if (!ambient && room.sortingMachines.length) {
   }
 }
 
-if (room.id === 'warm-exit' && room.restGate) {
+if ((room.id === 'warm-exit' || room.id === 'rasta-soft-belt') && room.restGate) {
   world.player.x = room.restGate.sensor.x;
   world.player.y = world.horizon - 28;
   if (ambient) {
@@ -6691,17 +6090,9 @@ if (scene.runComplete && world.runState.receipt) {
 style = style || 'ambient';
 resetDebug(world);
 
-var markers = [
-  [0, 180, 340, 520],
-  [580, 760, 920, 1120],
-  [1180, 1360, 1540, 1720],
-  [1780, 1960, 2140, 2320],
-  [2380, 2560, 2740, 2920],
-  [2980, 3160, 3340, 3520]
-];
-
 for (var i = 0; i < world.rooms.length; i++) {
-  scriptRoom(world, world.rooms[i], style, markers[i]);
+  var base = i * 580;
+  scriptRoom(world, world.rooms[i], style, [base, base + 180, base + 340, base + 520]);
 }
 
 scene.completeRun('debug:' + style);
@@ -6730,7 +6121,7 @@ var world = {
   runState: runState,
   manifest: manifest,
   horizon: horizon,
-  width: roomWidth * 6,
+  width: roomWidth * manifest.rooms.length,
   rooms: [],
   platforms: [],
   syncPlatforms: [],
@@ -6738,6 +6129,7 @@ var world = {
   signs: [],
   goal: null,
   restGate: null,
+  restGates: [],
   currentRoom: null,
   currentRoomId: manifest && manifest.rooms && manifest.rooms[0] ? manifest.rooms[0].id : 'receiving-dock',
   roomOrder: [],
@@ -6766,7 +6158,8 @@ buildSyncBelt(world, manifest.rooms[1], roomWidth, roomWidth);
 buildRestLanding(world, manifest.rooms[2], roomWidth * 2, roomWidth);
 buildSortingFloor(world, manifest.rooms[3], roomWidth * 3, roomWidth);
 buildHumming(world, manifest.rooms[4], roomWidth * 4, roomWidth);
-buildWarmExit(world, manifest.rooms[5], roomWidth * 5, roomWidth);
+buildSoftBelt(world, manifest.rooms[5], roomWidth * 5, roomWidth);
+buildWarmExit(world, manifest.rooms[6], roomWidth * 6, roomWidth);
 
 for (var i = 0; i < world.platforms.length; i++) {
   scene.physics.add.collider(world.player, world.platforms[i]);
@@ -6802,11 +6195,11 @@ if (!world) return;
 for (var i = 0; i < world.sortingMachines.length; i++) {
   if (world.sortingMachines[i] && world.sortingMachines[i].destroy) world.sortingMachines[i].destroy();
 }
-if (world.restGate) {
-  destroyThing(world.restGate.door);
-  destroyThing(world.restGate.sensor);
-  destroyThing(world.restGate.pad);
-  destroyThing(world.restGate.lamp);
+for (i = 0; i < world.restGates.length; i++) {
+  destroyThing(world.restGates[i].door);
+  destroyThing(world.restGates[i].sensor);
+  destroyThing(world.restGates[i].pad);
+  destroyThing(world.restGates[i].lamp);
 }
 }
 
@@ -6825,6 +6218,7 @@ CEHP._register('76_world_rasta_runtime');
 
 var BENIGN_BIAS = 0.35;
 var MALICIOUS_BIAS = -0.35;
+var W11_CONTENT_BIAS = 1.1;
 
 function makeFragment(id, text, opts){
 return {
@@ -6845,6 +6239,21 @@ function addGroup(target, prefix, texts, opts){
 for (var i = 0; i < texts.length; i++) {
   target.push(makeFragment(prefix + '_' + pad(i + 1, 2), texts[i], opts));
 }
+}
+
+function registerFragment(pool, id, text, opts){
+var pools = {
+  VERDICTS: VERDICTS,
+  TENSIONS: TENSIONS,
+  CLOSERS: CLOSERS
+};
+var key = String(pool || '').toUpperCase();
+var target = pools[key];
+var fragment;
+if (!target) return null;
+fragment = makeFragment(id, text, opts || {});
+target.push(fragment);
+return fragment;
 }
 
 function pad(n, width){
@@ -7592,6 +7001,20 @@ if (val <= 1) return val;
 return Math.min(1, val / 3);
 }
 
+function allFlagsMatch(fragment, context){
+var key;
+if (!fragment.flags) return true;
+for (key in fragment.flags) {
+  if (!Object.prototype.hasOwnProperty.call(fragment.flags, key)) continue;
+  if (key === 'cigaretteLit') {
+    if (context.cigaretteLit !== fragment.flags[key]) return false;
+  } else if (!context.flags || context.flags[key] !== fragment.flags[key]) {
+    return false;
+  }
+}
+return true;
+}
+
 function scoreFragment(fragment, axes, tensions, context){
 var score = 0;
 var key;
@@ -7659,6 +7082,7 @@ if (fragment.flags) {
 
 if (fragment.tone === 'benign') score += BENIGN_BIAS;
 else if (fragment.tone === 'malicious') score += MALICIOUS_BIAS;
+if (fragment.id && fragment.id.indexOf('W11_') === 0 && allFlagsMatch(fragment, context)) score += W11_CONTENT_BIAS;
 
 return score;
 }
@@ -7743,6 +7167,19 @@ return {
 };
 }
 
+registerFragment('VERDICTS', 'W11_BENEFITS_VERDICT_ATRIUM_01', 'THE ATRIUM PRICED YOUR HESITATION.', {worlds:{benefits:3.2}, axes:{compliance:0.5, intuition:0.4}, micro:{idleMs:0.5}, tone:'benign'});
+registerFragment('VERDICTS', 'W11_BENEFITS_VERDICT_NETWORK_01', 'THE NETWORK COUNTED YOUR SHOULDERS.', {worlds:{benefits:3.1}, axes:{grace:0.5, efficiency:0.3}, micro:{nearMisses:0.5}, tone:'benign'});
+registerFragment('VERDICTS', 'W11_BENEFITS_VERDICT_AUTH_01', 'PREAUTHORIZATION MISTOOK DELAY FOR VALUE.', {worlds:{benefits:3.1}, flags:{premiumSecured:true}, axes:{compliance:0.6}, micro:{contradictionFollow:0.6}, tone:'benign'});
+registerFragment('TENSIONS', 'W11_BENEFITS_TENSION_BRANCH_01', 'EVERY BRANCH COST A DIFFERENT BODY.', {worlds:{benefits:3.0}, tensions:{auditRisk:0.4, style:0.2}, micro:{modulesPassed:0.4}});
+registerFragment('TENSIONS', 'W11_BENEFITS_TENSION_SLOW_01', 'THE CLAIM REWARDED LOWER VELOCITY.', {worlds:{benefits:3.1}, tensions:{obedience:0.5}, axes:{compliance:0.4, intuition:0.2}, tone:'benign'});
+registerFragment('TENSIONS', 'W11_BENEFITS_TENSION_EXPOSED_01', 'YOUR EXPOSURE IMPROVED THE MARGIN.', {worlds:{benefits:3.2}, flags:{uninsuredVeteran:true}, tensions:{obedience:-0.6, auditRisk:0.4}, micro:{damageTaken:0.6}});
+registerFragment('CLOSERS', 'W11_BENEFITS_CLOSER_PLAN_01', 'THE PLAN CLOSED WITHOUT LOOKING DOWN.', {worlds:{benefits:3.2}, flags:{premiumSecured:true}, axes:{compliance:0.3}, tone:'benign'});
+registerFragment('CLOSERS', 'W11_BENEFITS_CLOSER_BILLING_01', 'THE EXIT KEPT A BILLING ADDRESS.', {worlds:{benefits:3.0}, axes:{efficiency:0.2, chaos:0.2}});
+registerFragment('VERDICTS', 'W11_RASTA_VERDICT_BELT_01', 'THE BELT ACCEPTED YOUR STILLNESS.', {worlds:{rasta:3.3}, flags:{restOpened:true, cigaretteLit:false}, axes:{intuition:0.5, grace:0.3}, micro:{musicSync:0.5}, tone:'benign'});
+registerFragment('TENSIONS', 'W11_RASTA_TENSION_DOOR_01', 'THE KIND DOOR REASSESSED URGENCY.', {worlds:{rasta:3.2}, flags:{rushedRest:true}, micro:{contradictionDefy:0.6}, axes:{intuition:0.3}, tone:'benign'});
+registerFragment('CLOSERS', 'W11_RASTA_CLOSER_FLOOR_01', 'THE FLOOR RELEASED YOUR BREATH.', {worlds:{rasta:3.3}, flags:{restOpened:true, cigaretteLit:false}, axes:{grace:0.4}, tone:'benign'});
+registerFragment('CLOSERS', 'W11_RASTA_CLOSER_NAME_01', 'SOFT MACHINES RETURNED YOUR NAME.', {worlds:{rasta:3.1}, flags:{rushedRest:true}, axes:{intuition:0.3, grace:0.2}, tone:'benign'});
+
 ns.Receipts = {
 POOLS: {
   VERDICTS: VERDICTS,
@@ -7751,6 +7188,7 @@ POOLS: {
 },
 generate: generate,
 cardModel: cardModel,
+registerFragment: registerFragment,
 playUrlForSeed: playUrlForSeed,
 themeForReceipt: themeForReceipt,
 isThermalSearch: isThermalSearch,
@@ -11207,7 +10645,7 @@ openPoster: function(state){ return openSurface(state, 'poster'); }
 CEHP._register('90_ui');
 
 /* =============== MODULE: 91_SCENES.JS =============== */
-!function(e){"use strict";var t=[];function i(e,t){for(var i=(e=e||"").indexOf("?"),s=(i>=0?e.slice(i+1):e).split("&"),n=0;n<s.length;n++){var a=s[n].split("=");if(a[0]===t)return decodeURIComponent(a[1]||"")}return""}function s(t){return e.Receipts&&e.Receipts.isThermalSearch?e.Receipts.isThermalSearch(t):"1"===i(t,"thermal")}function n(e){return!s(e)&&!function(e){return/[?&]splash=0/.test(e||"")}(e)}function a(e){return"orientation"===e?"splash_world_orientation":"benefits"===e?"splash_world_benefits":"rasta"===e?"splash_world_rasta":"splash_title"}function r(e){return e&&e.renderFlags&&e.renderFlags.thermal?"Receipt":"ShiftEnd"}function o(e){return(e||0)+500}function d(e,t){return(t||0)>=(e||0)}function l(e,t,i,s,n){var a,r=e&&e.textures&&e.textures.get?e.textures.get(t):null,o=r&&r.getSourceImage?r.getSourceImage():null;return o&&o.width&&o.height?(a=Math.min(i/o.width,s/o.height),e.add.image(i/2,s/2,t).setDepth(n||0).setScale(a)):null}function h(t,i,s,n){var a=i+"-"+(e._receiptTextureSeq=(e._receiptTextureSeq||0)+1),r=e.ReceiptRender.render(s,{worldId:n.worldId,thermal:!!n.thermal,width:n.width,height:n.height});return t.textures.exists(a)&&t.textures.remove(a),t.textures.addCanvas(a,r),t.events.once("shutdown",function(){t.textures.exists(a)&&t.textures.remove(a)}),t.add.image(n.x,n.y,a).setOrigin(.5).setDepth(n.depth||10)}function c(e){return JSON.parse(JSON.stringify(e))}function u(e){var t=i(e,"room"),s=i(e,"world");return"test"===t?"test":"rasta"===s?"rasta":"benefits"===s?"benefits":"orientation"}function p(t){return"rasta"===t&&e.WorldRasta?e.WorldRasta:"benefits"===t&&e.WorldBenefits?e.WorldBenefits:"orientation"===t&&e.WorldOrientation?e.WorldOrientation:null}if("undefined"!=typeof Phaser){var m=new Phaser.Class({Extends:Phaser.Scene,initialize:function(){Phaser.Scene.call(this,{key:"Boot"})},preload:function(){var e="undefined"!=typeof location&&location.search||"",t=u(e),i=a(t);n(e)&&("splash_title"!==i&&this.load.image(i,function(e){return"orientation"===e?"art/env_w1_orientation_bureau.png":"benefits"===e?"art/env_w2_benefits_enrollment.png":"rasta"===e?"art/env_w3_rasta_corp.png":"art/title_cold_open.png"}(t)),this.load.image("splash_title","art/title_cold_open.png"),this.load.image("shift_end_reveal","art/screen_unmasked_reveal.png"),this.load.image("shift_end_after","art/screen_end_of_shift.png"),this.load.image("coworker_mascot_variants","art/coworker_mascot_variants.png")),s(e)||(this.load.image("receipt_crest_orientation","art/crest_orientation_bureau.png"),this.load.image("receipt_crest_benefits","art/crest_benefits_enrollment.png"),this.load.image("receipt_crest_rasta","art/logo_rasta_corp.png"),this.load.image("receipt_seal","art/seal_counterfeit_educational_org.png"),this.load.image("receipt_brand_mascot","art/cactus_ed_brand_mascot.png"),this.load.image("supervisor_silhouette","art/supervisor_silhouette.png"),this.load.image("carpet_tile_seamless","art/carpet_tile_seamless.png"),this.load.image("enemy_deadline_wraith","art/enemy_deadline_wraith.png"),this.load.image("enemy_compliance_auditor","art/enemy_compliance_auditor.png"),this.load.image("paper_safety_poster","art/paper_safety_poster.png"),this.load.image("prop_coffee_cup","art/prop_coffee_cup.png"),this.load.image("prop_stamp_pad","art/prop_stamp_pad.png"),this.load.image("fluorescent_light_fixture","art/fluorescent_light_fixture.png"),this.load.image("prop_filing_cabinet","art/prop_filing_cabinet.png"),this.load.image("prop_archive_box","art/prop_archive_box.png"),this.load.image("paper_expired_id","art/paper_expired_id.png"),this.load.image("enemy_telegraph_windup","art/enemy_telegraph_windup.png"),this.load.image("ed_sheet_60px","art/ed_sheet_60px.png")),this.load.on("loaderror",function(){})},create:function(){var t,i,s,r="undefined"!=typeof location&&location.search||"",o=e.GAME_W,d=e.GAME_H;this.textures;n(r)?(i=a(u(r)),this.cameras.main.setBackgroundColor("#0b0d12"),(s=l(this,i,o,d,1))||"splash_title"===i||(s=l(this,"splash_title",o,d,1)),(t=!!s)||(this.add.text(o/2,d/2-32,"COUNTERFEIT EDUCATIONAL",{fontFamily:"monospace",fontSize:"16px",color:"#f7c948"}).setOrigin(.5),this.add.text(o/2,d/2-8,"CASE INTAKE",{fontFamily:"monospace",fontSize:"10px",color:"#88aacc"}).setOrigin(.5),this.add.text(o/2,d/2+16,"RULESET "+(e.RULESET||"R2")+"   BUILD "+(e.VERSION||""),{fontFamily:"monospace",fontSize:"8px",color:"#556677"}).setOrigin(.5)),this.time.delayedCall(t?1500:140,function(){this.scene.start("Play")},[],this)):this.scene.start("Play")}}),f=new Phaser.Class({Extends:Phaser.Scene,initialize:function(){Phaser.Scene.call(this,{key:"Play"})},init:function(e){this._seedOverride=e&&e.caseSeed?e.caseSeed:""},create:function(){var t="undefined"!=typeof location?location.search:"",n=!this._seedOverride&&e.CaseSeed&&"undefined"!=typeof location?e.CaseSeed.fromURL(location.search):null,a=u(t),r=i(t,"room"),o=e.Worlds&&e.Worlds.get?e.Worlds.get("test"===a?"orientation":a):null,d=p(a),l=e.SAVE&&e.SAVE.boot?e.SAVE.boot():null,h=e.SAVE&&e.SAVE.assistMode?e.SAVE.assistMode(l):{},c=e.SAVE&&e.SAVE.assistTuning?e.SAVE.assistTuning(h):{},m=this._seedOverride||(n?n.raw:e.CaseSeed?e.CaseSeed.make({date:new Date(Date.UTC(2026,3,20)),counter:1,axis:"CURIOSITY"}):"CASE-20260420-001-CURIOSITY-R2");e.Axes.reset(),e.Metrics&&e.Metrics.reset&&e.Metrics.reset(),e.Input.bind(this),e.RunState={caseSeed:m,roomId:"test"===r?"test-room":o&&o.rooms&&o.rooms[0]?o.rooms[0].id:"intake",worldId:"test"===a?"orientation":a,worldFlags:o||{},renderFlags:{thermal:s(t)},assistMode:h,assistTuning:c,receipt:null,deaths:0,runs:l&&l.runs?l.runs:0,ui:e.UI.makeState(null),appealBaseline:e.Appeals&&e.Appeals.fromURL?e.Appeals.fromURL("undefined"!=typeof location?location.search:""):null,comparison:null,cigarette:null,receiptFlags:{uninsuredVeteran:!1,premiumSecured:!1},worldStats:{premiumsCollected:0,premiumRoomsCleared:0,deductibleHits:0,jumpPenalty:0,occlusionUntil:0},roomOrder:[],actionsLearned:[]},e.RunState.ui.runState=e.RunState,this._assistMode=h,this._assistTuning=c,this.runStartMs=this.time.now,this.recorder=new e.Appeals.Recorder,this._fixedStep=e.FixedStep&&e.FixedStep.create?e.FixedStep.create():null,e.Ed&&e.Ed.prime&&e.Ed.prime(this,{seed:m,worldId:e.RunState.worldId}),e.Light&&e.Light.prime&&e.Light.prime(this,{seed:m,worldId:e.RunState.worldId}),e.Prop&&e.Prop.prime&&e.Prop.prime(this,{seed:m,worldId:e.RunState.worldId}),e.Air&&e.Air.prime&&e.Air.prime(this,{seed:m,worldId:e.RunState.worldId}),this.room="test"!==r&&d&&d.create?d.create(this,e.RunState):e.TestRoom.create(this,e.RunState),this.player=this.room.player,this.pendingDeath=null,this.runComplete=!1,e.Lens&&e.Lens.attach&&e.Lens.attach(this,{seed:m}),e.Light&&e.Light.attach&&e.Light.attach(this,{seed:m,worldId:e.RunState.worldId}),e.FX.attach(this),e.FX.setMood(e.RunState.worldId||"orientation"),e.Audio.stop();var f=this;this.events.once("shutdown",function(){e.Audio.stop();var t=p(f.room&&f.room.worldId?f.room.worldId:"");f.room&&t&&t.destroy&&t.destroy(f.room)}),this.scene.isActive("Overlay")&&this.scene.stop("Overlay"),this.scene.launch("Overlay",{runState:e.RunState}),this.scene.bringToTop("Overlay"),this.time&&(this.time.timeScale=c.timeScale||1),this.physics&&this.physics.world&&(this.physics.world.timeScale=c.physicsTimeScale||1),this.cameras.main.startFollow(this.player,!0,c.cameraLerp||.12,c.cameraLerp||.12),this.cameras.main.setDeadzone(48,32),this.player.takeHit=function(e){this.pendingDeath||this.runComplete||this.queueDeath(e||"hazard")}.bind(this),this.input.keyboard.once("keydown",function(){e.Audio.start(e.RunState.worldId)}),this.input.once("pointerdown",function(){e.Audio.start(e.RunState.worldId)}),e.Debug=e.Debug||{},e.Debug.runStyle=function(t){var i=e._game&&e._game.scene&&e._game.scene.getScene?e._game.scene.getScene("Play"):null;return i&&i.runStyle?i.runStyle(t):null}},queueDeath:function(t){var i=this._simNowMs!=null?this._simNowMs:this.time.now,s=e.FX.noteDeath(this,i);this.pendingDeath={source:t,respawnAt:i+250,iframesMs:s.iframesMs},e.RunState.deaths+=1,e.Events&&e.Events.emit&&e.Events.emit("player:death",{source:t})},completeRun:function(t){if(!this.runComplete){this.runComplete=!0,e.Events&&e.Events.emit&&e.Events.emit("run:complete",{reason:t||"goal"});var i=e.Axes.snapshot(),s=this.recorder.dump(),n=e.Receipts.generate({seed:e.RunState.caseSeed,axes:i,tensions:e.Axes.tensions(),worldId:e.RunState.worldId,flags:e.RunState.receiptFlags||{},cigaretteLit:!(e.RunState.worldFlags&&e.RunState.worldFlags.cigaretteWillNotLight)}),a={receipt:n,frames:s},o=e.RunState.appealBaseline?e.Appeals.compare(e.RunState.appealBaseline,a):null;if(e.RunState.receipt=n,e.RunState.appealPayload=e.Appeals.encode(a),e.RunState.comparison=o,e.Docket&&e.Docket.currentWeekSeed&&e.Docket.recordReceipt&&e.RunState.caseSeed===e.Docket.currentWeekSeed()){var d=e.Docket.weekInfo(e.Docket._now?e.Docket._now():new Date);e.Docket.recordReceipt({year:d.year,isoWeek:d.isoWeek,seed:e.RunState.caseSeed,worldId:e.RunState.worldId,lines:n.lines,fragmentIds:n.fragmentIds,flags:e.RunState.receiptFlags||{},ts:Date.now()})}this.scene.stop("Overlay"),e.Audio.stop(),this.scene.start(r(e.RunState),{runState:e.RunState,current:a,baseline:e.RunState.appealBaseline})}},runStyle:function(t){var i=p(this.room&&this.room.worldId?this.room.worldId:"");return this.room&&i&&i.runStyle?i.runStyle(this.room,this,t):this.runComplete&&e.RunState&&e.RunState.receipt?{receipt:c(e.RunState.receipt),axes:e.Axes.snapshot(),frames:this.recorder.dump(),contradictionOutcome:this.room.contradictionOutcome||""}:(t=t||"obedient",e.Axes.reset(),e.Metrics&&e.Metrics.reset&&e.Metrics.reset(),this.recorder.clear(),this.runStartMs=this.time.now,this.pendingDeath=null,this.runComplete=!1,this.room.contradictionOutcome="",this.player.invulnMs=0,e.Movement.respawn(this.player),this.room.sign.peek({signId:this.room.sign.id,words:3}),this.room.sign.read({signId:this.room.sign.id,words:3}),this.room.bridge.activate(this.player),this.room.trampoline.activate(this.player),"obedient"===t?(this.room.gate.evaluate({action:"wait",elapsedMs:900}),e.Events&&e.Events.emit&&(e.Events.emit("movement:jump",{x:120,y:340}),e.Events.emit("movement:glide",{x:760,y:240}),e.Events.emit("music:sync",{x:1410,y:360})),this.recorder.mark(0,72,396,1),this.recorder.mark(320,340,396,1),this.recorder.mark(640,760,396,1),this.recorder.mark(980,1120,300,1),this.recorder.mark(1320,1450,248,1),this.recorder.mark(1660,1880,150,1)):(this.room.gate.evaluate({action:"jump",elapsedMs:120}),e.Events&&e.Events.emit&&(e.Events.emit("movement:jump",{x:120,y:340}),e.Events.emit("movement:kick",{x:660,y:392}),e.Events.emit("movement:spinDash",{x:840,y:392,tier:3}),e.Events.emit("movement:backtrack",{distance:32,x:820,y:392}),e.Events.emit("movement:punch",{x:1120,y:392}),e.Events.emit("movement:nearMiss",{x:1115,y:392})),this.recorder.mark(0,72,396,1),this.recorder.mark(260,380,396,1),this.recorder.mark(520,720,396,1),this.recorder.mark(760,1080,396,1),this.recorder.mark(980,1440,396,1),this.recorder.mark(1240,1820,378,1)),this.completeRun("debug:"+t),{receipt:c(e.RunState.receipt),axes:c(e.Axes.snapshot()),frames:c(this.recorder.dump()),contradictionOutcome:this.room.contradictionOutcome||""})},update:function(t,i){var s=this,n=function(t,i){var n=t*i;s._simNowMs=n,e.Input.update(),e.Input.justPressed("pause")&&(e.RunState.ui.open?e.UI.back(e.RunState.ui):e.UI.openClipboard(e.RunState.ui)),s.runComplete||e.RunState.ui.open||s.pendingDeath?(e.RunState.ui.open||s.pendingDeath)&&s.player.body.setVelocityX(0):e.Movement.apply(s.player,e.Input,i),s.pendingDeath&&n>=s.pendingDeath.respawnAt&&(e.Movement.respawn(s.player),s.player.invulnMs=s.pendingDeath.iframesMs,s.pendingDeath=null,e.Events&&e.Events.emit&&e.Events.emit("player:respawn",{x:s.player.x,y:s.player.y})),!s.pendingDeath&&s.player.y>e.GAME_H+120&&s.queueDeath("pit"),s.room&&"orientation-world"===s.room.id&&e.WorldOrientation&&e.WorldOrientation.update?e.WorldOrientation.update(s,i):s.room&&"rasta-world"===s.room.id&&e.WorldRasta&&e.WorldRasta.update?e.WorldRasta.update(s,i):s.room&&"benefits-world"===s.room.id&&e.WorldBenefits&&e.WorldBenefits.update?e.WorldBenefits.update(s,i):e.TestRoom&&e.TestRoom.update&&e.TestRoom.update(s,i),s.runComplete||(s.recorder.sampleInput&&s.recorder.sampleInput(t,e.Input),s.recorder.sample(n,s.player.x,s.player.y,s.player.facing||1))};this._fixedStep&&e.FixedStep&&e.FixedStep.advance?e.FixedStep.advance(this._fixedStep,i,n):n(1,i),this._simNowMs=null;var a=Math.abs(this.player.body.velocity.x)>4||Math.abs(this.player.body.velocity.y)>4;e.Metrics&&e.Metrics.tick&&e.Metrics.tick(i,{moving:a,x:this.player.x,y:this.player.y,facing:this.player.facing||1});var r=e.Axes.snapshot();e.FX.setAxes(r),e.FX.update(this,e.RunState,i),e.Feel&&e.Feel.updateCamera&&e.Feel.updateCamera(this,i,this.player),e.Ed&&e.Ed.update&&e.Ed.update(this,i),e.Light&&e.Light.update&&e.Light.update(this,i),e.Lens&&e.Lens.update&&e.Lens.update(this,i),e.Air&&e.Air.update&&e.Air.update(this,i),e.Audio.isRunning()&&e.Audio.updateFromAxes(r,{worldId:e.RunState.worldId})}}),S=new Phaser.Class({Extends:Phaser.Scene,initialize:function(){Phaser.Scene.call(this,{key:"Overlay"})},create:function(t){this.runState=t&&t.runState?t.runState:e.RunState,this.bg=this.add.rectangle(e.GAME_W/2,e.GAME_H/2,e.GAME_W,e.GAME_H,329482,.82).setScrollFactor(0).setDepth(120).setVisible(!1),this.txt=this.add.text(24,24,"",{fontFamily:"monospace",fontSize:"10px",color:"#e8e3d1",lineSpacing:8}).setScrollFactor(0).setDepth(121).setVisible(!1)},update:function(){var t=this.runState&&this.runState.ui?this.runState.ui:null;if(!t||!t.open)return this.bg.setVisible(!1),void this.txt.setVisible(!1);this.bg.setVisible(!0),this.txt.setVisible(!0),e.Input.justPressed("menuUp")&&e.UI.move(t,-1),e.Input.justPressed("menuDown")&&e.UI.move(t,1),e.Input.justPressed("confirm")&&e.UI.activate(t),e.Input.justPressed("back")&&e.UI.back(t),this.txt.setText(e.UI.lines(t).join("\n"))}}),g=new Phaser.Class({Extends:Phaser.Scene,initialize:function(){Phaser.Scene.call(this,{key:"ShiftEnd"})},create:function(t){var i=this,s=function(){d(i._skipAt,Date.now())&&i.finish()};this._payload=t||{},this._done=!1,this._beat=0,this._image=null,this._timer=null,this._skipAt=o(Date.now()),this.cameras.main.setBackgroundColor("#000"),this.add.rectangle(e.GAME_W/2,e.GAME_H/2,e.GAME_W,e.GAME_H,0,1),this.finish=function(){i._done||(i._done=!0,i._timer&&i._timer.remove&&i._timer.remove(!1),i.scene.start("Receipt",i._payload))},this.showBeat=function(){var t=0===i._beat?"shift_end_reveal":1===i._beat?"shift_end_after":"";i._image&&i._image.destroy&&i._image.destroy(),i._image=null,t?(i._image=l(i,t,e.GAME_W,e.GAME_H,10),i._beat+=1,i._image?i._timer=i.time.delayedCall(1500,i.showBeat,[],i):i.showBeat()):i.finish()},this.input.keyboard.on("keydown",s),this.input.on("pointerdown",s),this.events.once("shutdown",function(){i.input.keyboard.off("keydown",s),i.input.off("pointerdown",s)}),this.showBeat()}}),y=new Phaser.Class({Extends:Phaser.Scene,initialize:function(){Phaser.Scene.call(this,{key:"Receipt"})},create:function(t){var i=t&&t.runState?t.runState:e.RunState,s=t&&t.current?t.current:null,n=t&&t.baseline?t.baseline:null,a=n?e.Appeals.compare(n,s):null,r=e.GAME_W,o=e.GAME_H,d=!!(i&&i.renderFlags&&i.renderFlags.thermal);this.cameras.main.setBackgroundColor("#f5f0df"),this.add.rectangle(r/2,o/2,r,o,d?15721414:16117983,1),n?(this.add.text(30,68,"PREVIOUS CASE",{fontFamily:"monospace",fontSize:"8px",color:"#5a4a36"}),this.add.text(r/2+10,68,"CURRENT CASE",{fontFamily:"monospace",fontSize:"8px",color:"#5a4a36"}),h(this,"receipt-prev",n.receipt,{x:134,y:170,width:188,height:235,thermal:d,worldId:i.worldId}),h(this,"receipt-current",s.receipt,{x:378,y:170,width:188,height:235,thermal:d,worldId:i.worldId}),this.add.text(30,184,"COMPARE",{fontFamily:"monospace",fontSize:"8px",color:"#5a4a36"}),function(t,i,s,n){var a=t.add.graphics().setDepth(3),r=e.Appeals.compare({frames:s||[],receipt:{}},{frames:n||[],receipt:{}}).bounds,o=Math.max(1,r.maxX-r.minX),d=Math.max(1,r.maxY-r.minY);function l(e,t){if(e&&!(e.length<2)){a.lineStyle(2,t,.9),a.beginPath();for(var s=0;s<e.length;s++){var n=i.x+(e[s][1]-r.minX)/o*i.w,l=i.y+(e[s][2]-r.minY)/d*i.h;0===s?a.moveTo(n,l):a.lineTo(n,l)}a.strokePath()}}l(s,16238920),l(n,6793177)}(this,{x:30,y:198,w:r-60,h:110},n.frames,s.frames),this.add.text(30,318,"DELTA "+JSON.stringify(a.axisDelta),{fontFamily:"monospace",fontSize:"7px",color:"#4c4133",wordWrap:{width:r-60}})):s&&h(this,"receipt-single",s.receipt,{x:r/2,y:192,width:286,height:358,thermal:d,worldId:i.worldId}),this.add.text(30,o-28,"ENTER TO REFILE",{fontFamily:"monospace",fontSize:"8px",color:"#5a4a36"}),this.input.keyboard.once("keydown-ENTER",function(){this.scene.start("Play",{caseSeed:i.caseSeed})},this)}});t.push(m,f,g,S,y)}e.Scenes={list:function(){return t},add:function(e){t.push(e)},bootSplashKeyForWorld:a,shouldPreloadPresentationArt:n,nextRunCompleteScene:r,shiftEndSkipDeadline:o,shiftEndCanSkip:d}}(CEHP),CEHP._register("91_scenes");
+!function(e){"use strict";var t=[];function i(e,t){for(var i=(e=e||"").indexOf("?"),s=(i>=0?e.slice(i+1):e).split("&"),n=0;n<s.length;n++){var a=s[n].split("=");if(a[0]===t)return decodeURIComponent(a[1]||"")}return""}function s(t){return e.Receipts&&e.Receipts.isThermalSearch?e.Receipts.isThermalSearch(t):"1"===i(t,"thermal")}function n(e){return!s(e)&&!function(e){return/[?&]splash=0/.test(e||"")}(e)}function a(e){return"orientation"===e?"splash_world_orientation":"benefits"===e?"splash_world_benefits":"rasta"===e?"splash_world_rasta":"splash_title"}function r(e){return e&&e.renderFlags&&e.renderFlags.thermal?"Receipt":"ShiftEnd"}function o(e){return(e||0)+500}function d(e,t){return(t||0)>=(e||0)}function l(e,t,i,s,n){var a,r=e&&e.textures&&e.textures.get?e.textures.get(t):null,o=r&&r.getSourceImage?r.getSourceImage():null;return o&&o.width&&o.height?(a=Math.min(i/o.width,s/o.height),e.add.image(i/2,s/2,t).setDepth(n||0).setScale(a)):null}function h(t,i,s,n){var a=i+"-"+(e._receiptTextureSeq=(e._receiptTextureSeq||0)+1),r=e.ReceiptRender.render(s,{worldId:n.worldId,thermal:!!n.thermal,width:n.width,height:n.height});return t.textures.exists(a)&&t.textures.remove(a),t.textures.addCanvas(a,r),t.events.once("shutdown",function(){t.textures.exists(a)&&t.textures.remove(a)}),t.add.image(n.x,n.y,a).setOrigin(.5).setDepth(n.depth||10)}function c(e){return JSON.parse(JSON.stringify(e))}function u(e){var t=i(e,"room"),s=i(e,"world");return"test"===t?"test":"rasta"===s?"rasta":"benefits"===s?"benefits":"orientation"}function p(t){return"rasta"===t&&e.WorldRasta?e.WorldRasta:"benefits"===t&&e.WorldBenefits?e.WorldBenefits:"orientation"===t&&e.WorldOrientation?e.WorldOrientation:null}if("undefined"!=typeof Phaser){var m=new Phaser.Class({Extends:Phaser.Scene,initialize:function(){Phaser.Scene.call(this,{key:"Boot"})},preload:function(){var e="undefined"!=typeof location&&location.search||"",t=u(e),i=a(t);n(e)&&("splash_title"!==i&&this.load.image(i,function(e){return"orientation"===e?"art/env_w1_orientation_bureau.png":"benefits"===e?"art/env_w2_benefits_enrollment.png":"rasta"===e?"art/env_w3_rasta_corp.png":"art/title_cold_open.png"}(t)),this.load.image("splash_title","art/title_cold_open.png"),this.load.image("shift_end_reveal","art/screen_unmasked_reveal.png"),this.load.image("shift_end_after","art/screen_end_of_shift.png"),this.load.image("coworker_mascot_variants","art/coworker_mascot_variants.png")),s(e)||(this.load.image("receipt_crest_orientation","art/crest_orientation_bureau.png"),this.load.image("receipt_crest_benefits","art/crest_benefits_enrollment.png"),this.load.image("receipt_crest_rasta","art/logo_rasta_corp.png"),this.load.image("receipt_seal","art/seal_counterfeit_educational_org.png"),this.load.image("receipt_brand_mascot","art/cactus_ed_brand_mascot.png"),this.load.image("supervisor_silhouette","art/supervisor_silhouette.png"),this.load.image("carpet_tile_seamless","art/carpet_tile_seamless.png"),this.load.image("enemy_deadline_wraith","art/enemy_deadline_wraith.png"),this.load.image("enemy_compliance_auditor","art/enemy_compliance_auditor.png"),this.load.image("paper_safety_poster","art/paper_safety_poster.png"),this.load.image("prop_coffee_cup","art/prop_coffee_cup.png"),this.load.image("prop_stamp_pad","art/prop_stamp_pad.png"),this.load.image("fluorescent_light_fixture","art/fluorescent_light_fixture.png"),this.load.image("prop_filing_cabinet","art/prop_filing_cabinet.png"),this.load.image("prop_archive_box","art/prop_archive_box.png"),this.load.image("paper_expired_id","art/paper_expired_id.png"),this.load.image("enemy_telegraph_windup","art/enemy_telegraph_windup.png"),this.load.image("ed_sheet_60px","art/ed_sheet_60px.png")),this.load.on("loaderror",function(){})},create:function(){var t,i,s,r="undefined"!=typeof location&&location.search||"",o=e.GAME_W,d=e.GAME_H;this.textures;n(r)?(i=a(u(r)),this.cameras.main.setBackgroundColor("#0b0d12"),(s=l(this,i,o,d,1))||"splash_title"===i||(s=l(this,"splash_title",o,d,1)),(t=!!s)||(this.add.text(o/2,d/2-32,"COUNTERFEIT EDUCATIONAL",{fontFamily:"monospace",fontSize:"16px",color:"#f7c948"}).setOrigin(.5),this.add.text(o/2,d/2-8,"CASE INTAKE",{fontFamily:"monospace",fontSize:"10px",color:"#88aacc"}).setOrigin(.5),this.add.text(o/2,d/2+16,"RULESET "+(e.RULESET||"R2")+"   BUILD "+(e.VERSION||""),{fontFamily:"monospace",fontSize:"8px",color:"#556677"}).setOrigin(.5)),this.time.delayedCall(t?1500:140,function(){this.scene.start("Play")},[],this)):this.scene.start("Play")}}),f=new Phaser.Class({Extends:Phaser.Scene,initialize:function(){Phaser.Scene.call(this,{key:"Play"})},init:function(e){this._seedOverride=e&&e.caseSeed?e.caseSeed:""},create:function(){var t="undefined"!=typeof location?location.search:"",n=!this._seedOverride&&e.CaseSeed&&"undefined"!=typeof location?e.CaseSeed.fromURL(location.search):null,a=u(t),r=i(t,"room"),o=e.Worlds&&e.Worlds.get?e.Worlds.get("test"===a?"orientation":a):null,d=p(a),l=e.SAVE&&e.SAVE.boot?e.SAVE.boot():null,h=e.SAVE&&e.SAVE.assistMode?e.SAVE.assistMode(l):{},c=e.SAVE&&e.SAVE.assistTuning?e.SAVE.assistTuning(h):{},m=this._seedOverride||(n?n.raw:e.CaseSeed?e.CaseSeed.make({date:new Date(Date.UTC(2026,3,20)),counter:1,axis:"CURIOSITY"}):"CASE-20260420-001-CURIOSITY-R2");e.Axes.reset(),e.Metrics&&e.Metrics.reset&&e.Metrics.reset(),e.Input.bind(this),e.RunState={caseSeed:m,roomId:"test"===r?"test-room":o&&o.rooms&&o.rooms[0]?o.rooms[0].id:"intake",worldId:"test"===a?"orientation":a,worldFlags:o||{},renderFlags:{thermal:s(t)},assistMode:h,assistTuning:c,receipt:null,deaths:0,runs:l&&l.runs?l.runs:0,ui:e.UI.makeState(null),appealBaseline:e.Appeals&&e.Appeals.fromURL?e.Appeals.fromURL("undefined"!=typeof location?location.search:""):null,comparison:null,cigarette:null,receiptFlags:{uninsuredVeteran:!1,premiumSecured:!1,restOpened:!1,rushedRest:!1,cigaretteLit:!1},worldStats:{premiumsCollected:0,premiumRoomsCleared:0,deductibleHits:0,jumpPenalty:0,occlusionUntil:0},roomOrder:[],actionsLearned:[]},e.RunState.ui.runState=e.RunState,this._assistMode=h,this._assistTuning=c,this.runStartMs=this.time.now,this.recorder=new e.Appeals.Recorder,this._fixedStep=e.FixedStep&&e.FixedStep.create?e.FixedStep.create():null,e.Ed&&e.Ed.prime&&e.Ed.prime(this,{seed:m,worldId:e.RunState.worldId}),e.Light&&e.Light.prime&&e.Light.prime(this,{seed:m,worldId:e.RunState.worldId}),e.Prop&&e.Prop.prime&&e.Prop.prime(this,{seed:m,worldId:e.RunState.worldId}),e.Air&&e.Air.prime&&e.Air.prime(this,{seed:m,worldId:e.RunState.worldId}),this.room="test"!==r&&d&&d.create?d.create(this,e.RunState):e.TestRoom.create(this,e.RunState),this.player=this.room.player,this.pendingDeath=null,this.runComplete=!1,e.Lens&&e.Lens.attach&&e.Lens.attach(this,{seed:m}),e.Light&&e.Light.attach&&e.Light.attach(this,{seed:m,worldId:e.RunState.worldId}),e.FX.attach(this),e.FX.setMood(e.RunState.worldId||"orientation"),e.Audio.stop();var f=this;this.events.once("shutdown",function(){e.Audio.stop();var t=p(f.room&&f.room.worldId?f.room.worldId:"");f.room&&t&&t.destroy&&t.destroy(f.room)}),this.scene.isActive("Overlay")&&this.scene.stop("Overlay"),this.scene.launch("Overlay",{runState:e.RunState}),this.scene.bringToTop("Overlay"),this.time&&(this.time.timeScale=c.timeScale||1),this.physics&&this.physics.world&&(this.physics.world.timeScale=c.physicsTimeScale||1),this.cameras.main.startFollow(this.player,!0,c.cameraLerp||.12,c.cameraLerp||.12),this.cameras.main.setDeadzone(48,32),this.player.takeHit=function(e){this.pendingDeath||this.runComplete||this.queueDeath(e||"hazard")}.bind(this),this.input.keyboard.once("keydown",function(){e.Audio.start(e.RunState.worldId)}),this.input.once("pointerdown",function(){e.Audio.start(e.RunState.worldId)}),e.Debug=e.Debug||{},e.Debug.runStyle=function(t){var i=e._game&&e._game.scene&&e._game.scene.getScene?e._game.scene.getScene("Play"):null;return i&&i.runStyle?i.runStyle(t):null}},queueDeath:function(t){var i=this._simNowMs!=null?this._simNowMs:this.time.now,s=e.FX.noteDeath(this,i);this.pendingDeath={source:t,respawnAt:i+250,iframesMs:s.iframesMs},e.RunState.deaths+=1,e.Events&&e.Events.emit&&e.Events.emit("player:death",{source:t})},completeRun:function(t){if(!this.runComplete){this.runComplete=!0,e.Events&&e.Events.emit&&e.Events.emit("run:complete",{reason:t||"goal"});var i=e.Axes.snapshot(),s=this.recorder.dump(),n=e.Receipts.generate({seed:e.RunState.caseSeed,axes:i,tensions:e.Axes.tensions(),worldId:e.RunState.worldId,flags:e.RunState.receiptFlags||{},cigaretteLit:!(e.RunState.worldFlags&&e.RunState.worldFlags.cigaretteWillNotLight)}),a={receipt:n,frames:s},o=e.RunState.appealBaseline?e.Appeals.compare(e.RunState.appealBaseline,a):null;if(e.RunState.receipt=n,e.RunState.appealPayload=e.Appeals.encode(a),e.RunState.comparison=o,e.Docket&&e.Docket.currentWeekSeed&&e.Docket.recordReceipt&&e.RunState.caseSeed===e.Docket.currentWeekSeed()){var d=e.Docket.weekInfo(e.Docket._now?e.Docket._now():new Date);e.Docket.recordReceipt({year:d.year,isoWeek:d.isoWeek,seed:e.RunState.caseSeed,worldId:e.RunState.worldId,lines:n.lines,fragmentIds:n.fragmentIds,flags:e.RunState.receiptFlags||{},ts:Date.now()})}this.scene.stop("Overlay"),e.Audio.stop(),this.scene.start(r(e.RunState),{runState:e.RunState,current:a,baseline:e.RunState.appealBaseline})}},runStyle:function(t){var i=p(this.room&&this.room.worldId?this.room.worldId:"");return this.room&&i&&i.runStyle?i.runStyle(this.room,this,t):this.runComplete&&e.RunState&&e.RunState.receipt?{receipt:c(e.RunState.receipt),axes:e.Axes.snapshot(),frames:this.recorder.dump(),contradictionOutcome:this.room.contradictionOutcome||""}:(t=t||"obedient",e.Axes.reset(),e.Metrics&&e.Metrics.reset&&e.Metrics.reset(),this.recorder.clear(),this.runStartMs=this.time.now,this.pendingDeath=null,this.runComplete=!1,this.room.contradictionOutcome="",this.player.invulnMs=0,e.Movement.respawn(this.player),this.room.sign.peek({signId:this.room.sign.id,words:3}),this.room.sign.read({signId:this.room.sign.id,words:3}),this.room.bridge.activate(this.player),this.room.trampoline.activate(this.player),"obedient"===t?(this.room.gate.evaluate({action:"wait",elapsedMs:900}),e.Events&&e.Events.emit&&(e.Events.emit("movement:jump",{x:120,y:340}),e.Events.emit("movement:glide",{x:760,y:240}),e.Events.emit("music:sync",{x:1410,y:360})),this.recorder.mark(0,72,396,1),this.recorder.mark(320,340,396,1),this.recorder.mark(640,760,396,1),this.recorder.mark(980,1120,300,1),this.recorder.mark(1320,1450,248,1),this.recorder.mark(1660,1880,150,1)):(this.room.gate.evaluate({action:"jump",elapsedMs:120}),e.Events&&e.Events.emit&&(e.Events.emit("movement:jump",{x:120,y:340}),e.Events.emit("movement:kick",{x:660,y:392}),e.Events.emit("movement:spinDash",{x:840,y:392,tier:3}),e.Events.emit("movement:backtrack",{distance:32,x:820,y:392}),e.Events.emit("movement:punch",{x:1120,y:392}),e.Events.emit("movement:nearMiss",{x:1115,y:392})),this.recorder.mark(0,72,396,1),this.recorder.mark(260,380,396,1),this.recorder.mark(520,720,396,1),this.recorder.mark(760,1080,396,1),this.recorder.mark(980,1440,396,1),this.recorder.mark(1240,1820,378,1)),this.completeRun("debug:"+t),{receipt:c(e.RunState.receipt),axes:c(e.Axes.snapshot()),frames:c(this.recorder.dump()),contradictionOutcome:this.room.contradictionOutcome||""})},update:function(t,i){var s=this,n=function(t,i){var n=t*i;s._simNowMs=n,e.Input.update(),e.Input.justPressed("pause")&&(e.RunState.ui.open?e.UI.back(e.RunState.ui):e.UI.openClipboard(e.RunState.ui)),s.runComplete||e.RunState.ui.open||s.pendingDeath?(e.RunState.ui.open||s.pendingDeath)&&s.player.body.setVelocityX(0):e.Movement.apply(s.player,e.Input,i),s.pendingDeath&&n>=s.pendingDeath.respawnAt&&(e.Movement.respawn(s.player),s.player.invulnMs=s.pendingDeath.iframesMs,s.pendingDeath=null,e.Events&&e.Events.emit&&e.Events.emit("player:respawn",{x:s.player.x,y:s.player.y})),!s.pendingDeath&&s.player.y>e.GAME_H+120&&s.queueDeath("pit"),s.room&&"orientation-world"===s.room.id&&e.WorldOrientation&&e.WorldOrientation.update?e.WorldOrientation.update(s,i):s.room&&"rasta-world"===s.room.id&&e.WorldRasta&&e.WorldRasta.update?e.WorldRasta.update(s,i):s.room&&"benefits-world"===s.room.id&&e.WorldBenefits&&e.WorldBenefits.update?e.WorldBenefits.update(s,i):e.TestRoom&&e.TestRoom.update&&e.TestRoom.update(s,i),s.runComplete||(s.recorder.sampleInput&&s.recorder.sampleInput(t,e.Input),s.recorder.sample(n,s.player.x,s.player.y,s.player.facing||1))};this._fixedStep&&e.FixedStep&&e.FixedStep.advance?e.FixedStep.advance(this._fixedStep,i,n):n(1,i),this._simNowMs=null;var a=Math.abs(this.player.body.velocity.x)>4||Math.abs(this.player.body.velocity.y)>4;e.Metrics&&e.Metrics.tick&&e.Metrics.tick(i,{moving:a,x:this.player.x,y:this.player.y,facing:this.player.facing||1});var r=e.Axes.snapshot();e.FX.setAxes(r),e.FX.update(this,e.RunState,i),e.Feel&&e.Feel.updateCamera&&e.Feel.updateCamera(this,i,this.player),e.Ed&&e.Ed.update&&e.Ed.update(this,i),e.Light&&e.Light.update&&e.Light.update(this,i),e.Lens&&e.Lens.update&&e.Lens.update(this,i),e.Air&&e.Air.update&&e.Air.update(this,i),e.Audio.isRunning()&&e.Audio.updateFromAxes(r,{worldId:e.RunState.worldId})}}),S=new Phaser.Class({Extends:Phaser.Scene,initialize:function(){Phaser.Scene.call(this,{key:"Overlay"})},create:function(t){this.runState=t&&t.runState?t.runState:e.RunState,this.bg=this.add.rectangle(e.GAME_W/2,e.GAME_H/2,e.GAME_W,e.GAME_H,329482,.82).setScrollFactor(0).setDepth(120).setVisible(!1),this.txt=this.add.text(24,24,"",{fontFamily:"monospace",fontSize:"10px",color:"#e8e3d1",lineSpacing:8}).setScrollFactor(0).setDepth(121).setVisible(!1)},update:function(){var t=this.runState&&this.runState.ui?this.runState.ui:null;if(!t||!t.open)return this.bg.setVisible(!1),void this.txt.setVisible(!1);this.bg.setVisible(!0),this.txt.setVisible(!0),e.Input.justPressed("menuUp")&&e.UI.move(t,-1),e.Input.justPressed("menuDown")&&e.UI.move(t,1),e.Input.justPressed("confirm")&&e.UI.activate(t),e.Input.justPressed("back")&&e.UI.back(t),this.txt.setText(e.UI.lines(t).join("\n"))}}),g=new Phaser.Class({Extends:Phaser.Scene,initialize:function(){Phaser.Scene.call(this,{key:"ShiftEnd"})},create:function(t){var i=this,s=function(){d(i._skipAt,Date.now())&&i.finish()};this._payload=t||{},this._done=!1,this._beat=0,this._image=null,this._timer=null,this._skipAt=o(Date.now()),this.cameras.main.setBackgroundColor("#000"),this.add.rectangle(e.GAME_W/2,e.GAME_H/2,e.GAME_W,e.GAME_H,0,1),this.finish=function(){i._done||(i._done=!0,i._timer&&i._timer.remove&&i._timer.remove(!1),i.scene.start("Receipt",i._payload))},this.showBeat=function(){var t=0===i._beat?"shift_end_reveal":1===i._beat?"shift_end_after":"";i._image&&i._image.destroy&&i._image.destroy(),i._image=null,t?(i._image=l(i,t,e.GAME_W,e.GAME_H,10),i._beat+=1,i._image?i._timer=i.time.delayedCall(1500,i.showBeat,[],i):i.showBeat()):i.finish()},this.input.keyboard.on("keydown",s),this.input.on("pointerdown",s),this.events.once("shutdown",function(){i.input.keyboard.off("keydown",s),i.input.off("pointerdown",s)}),this.showBeat()}}),y=new Phaser.Class({Extends:Phaser.Scene,initialize:function(){Phaser.Scene.call(this,{key:"Receipt"})},create:function(t){var i=t&&t.runState?t.runState:e.RunState,s=t&&t.current?t.current:null,n=t&&t.baseline?t.baseline:null,a=n?e.Appeals.compare(n,s):null,r=e.GAME_W,o=e.GAME_H,d=!!(i&&i.renderFlags&&i.renderFlags.thermal);this.cameras.main.setBackgroundColor("#f5f0df"),this.add.rectangle(r/2,o/2,r,o,d?15721414:16117983,1),n?(this.add.text(30,68,"PREVIOUS CASE",{fontFamily:"monospace",fontSize:"8px",color:"#5a4a36"}),this.add.text(r/2+10,68,"CURRENT CASE",{fontFamily:"monospace",fontSize:"8px",color:"#5a4a36"}),h(this,"receipt-prev",n.receipt,{x:134,y:170,width:188,height:235,thermal:d,worldId:i.worldId}),h(this,"receipt-current",s.receipt,{x:378,y:170,width:188,height:235,thermal:d,worldId:i.worldId}),this.add.text(30,184,"COMPARE",{fontFamily:"monospace",fontSize:"8px",color:"#5a4a36"}),function(t,i,s,n){var a=t.add.graphics().setDepth(3),r=e.Appeals.compare({frames:s||[],receipt:{}},{frames:n||[],receipt:{}}).bounds,o=Math.max(1,r.maxX-r.minX),d=Math.max(1,r.maxY-r.minY);function l(e,t){if(e&&!(e.length<2)){a.lineStyle(2,t,.9),a.beginPath();for(var s=0;s<e.length;s++){var n=i.x+(e[s][1]-r.minX)/o*i.w,l=i.y+(e[s][2]-r.minY)/d*i.h;0===s?a.moveTo(n,l):a.lineTo(n,l)}a.strokePath()}}l(s,16238920),l(n,6793177)}(this,{x:30,y:198,w:r-60,h:110},n.frames,s.frames),this.add.text(30,318,"DELTA "+JSON.stringify(a.axisDelta),{fontFamily:"monospace",fontSize:"7px",color:"#4c4133",wordWrap:{width:r-60}})):s&&h(this,"receipt-single",s.receipt,{x:r/2,y:192,width:286,height:358,thermal:d,worldId:i.worldId}),this.add.text(30,o-28,"ENTER TO REFILE",{fontFamily:"monospace",fontSize:"8px",color:"#5a4a36"}),this.input.keyboard.once("keydown-ENTER",function(){this.scene.start("Play",{caseSeed:i.caseSeed})},this)}});t.push(m,f,g,S,y)}e.Scenes={list:function(){return t},add:function(e){t.push(e)},bootSplashKeyForWorld:a,shouldPreloadPresentationArt:n,nextRunCompleteScene:r,shiftEndSkipDeadline:o,shiftEndCanSkip:d}}(CEHP),CEHP._register("91_scenes");
 /* =============== MODULE: 92_TESTROOM.JS =============== */
 (function(ns){
 'use strict';

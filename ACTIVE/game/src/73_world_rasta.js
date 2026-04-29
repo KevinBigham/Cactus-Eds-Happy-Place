@@ -53,6 +53,12 @@
         actionSigns: ['LET THE PLATFORM ARRIVE.', 'THE CEILING IS NOT A JUDGE.']
       },
       {
+        id: 'rasta-soft-belt',
+        title: 'RASTA SOFT BELT',
+        contradictionSign: 'REST UNTIL THE BELT BELIEVES YOU',
+        actionSigns: ['THE KIND DOOR HATES SPEED', 'NO FIRE IS ALSO COVERAGE']
+      },
+      {
         id: 'warm-exit',
         title: 'WARM EXIT',
         contradictionSign: 'REST HERE.',

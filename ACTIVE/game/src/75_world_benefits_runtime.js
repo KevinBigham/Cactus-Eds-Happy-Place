@@ -96,6 +96,16 @@
     world.runState.receiptFlags = world.receiptFlags;
   }
 
+  function passRoomModule(world, room, moduleId){
+    if (!room || room.modulePassed) return;
+    room.modulePassed = true;
+    if (ns.Events && ns.Events.emit) ns.Events.emit('module:passed', {
+      roomId: room.id,
+      moduleId: moduleId || room.id
+    });
+    updateRunState(world);
+  }
+
   function setJumpPenalty(world, value){
     world.stats.jumpPenalty = clamp(value, 0, 48);
     world.player.jumpVelocity = clamp(ns.TUNING.JUMP_VELOCITY + world.stats.jumpPenalty, -340, -292);
@@ -179,10 +189,18 @@
       enemies: [],
       hazards: [],
       gate: null,
+      riskGate: null,
+      claimExit: null,
+      networkExit: null,
       branchOutcome: '',
       safeCompleted: false,
       uninsuredCommitted: false,
+      bridgeActivated: false,
+      groundSlammed: false,
+      routeUnlocked: false,
+      nearMissLogged: false,
       damageTagged: false,
+      modulePassed: false,
       finalized: false,
       completeX: startX + width - 110
     };
@@ -258,6 +276,154 @@
     room.hazards.push(hazard);
     world.hazards.push(hazard);
     return hazard;
+  }
+
+  function makeRiskGate(world, room, sign, cfg){
+    var gate = {
+      sign: sign,
+      sensor: cfg.sensor,
+      lamp: cfg.lamp,
+      enteredAt: 0,
+      resolved: false,
+      outcome: '',
+      follow: function(){
+        gate.core.evaluate({ action: 'wait', elapsedMs: (cfg.windowMs || 900) + 20 });
+        gate.apply();
+      },
+      defy: function(){
+        gate.core.evaluate({ action: 'move', elapsedMs: 120 });
+        gate.apply();
+      },
+      apply: function(){
+        if (gate.resolved || !gate.core.resolved) return;
+        gate.resolved = true;
+        gate.outcome = gate.core.outcome || '';
+        room.branchOutcome = gate.outcome === 'follow' ? 'insured' : 'uninsured';
+        world.lastContradictionOutcome = gate.outcome;
+        gate.lamp.fillColor = gate.outcome === 'follow' ? 0x5b8f6a : 0xe04a3a;
+        updateRunState(world);
+      }
+    };
+
+    gate.core = ns.Contradiction.gate({
+      sign: { id: sign.id },
+      expectedBehavior: 'wait',
+      windowMs: cfg.windowMs || 900,
+      onFollow: function(){
+        world.receiptFlags.premiumSecured = true;
+        world.receiptFlags.uninsuredVeteran = false;
+        updateRunState(world);
+        return 'upper';
+      },
+      onDefy: function(){
+        world.receiptFlags.uninsuredVeteran = true;
+        world.receiptFlags.premiumSecured = false;
+        room.uninsuredCommitted = true;
+        updateRunState(world);
+        return 'lower';
+      }
+    });
+
+    room.riskGate = gate;
+    return gate;
+  }
+
+  function buildRiskAtrium(world, spec, startX, width){
+    var room = makeRoom(world, spec, startX, width);
+    var waitSign;
+    addBackdrop(world, room, 0x34232a, 0xf2c6d1);
+    addPlatform(world, room, startX + 180, 432, 420, 28, 0x7a7480, 1, 2);
+    addPlatform(world, room, startX + 520, 330, 220, 18, 0xfff1c8, 1, 4);
+    addPlatform(world, room, startX + 780, 270, 220, 18, 0xfff1c8, 1, 4);
+    addPlatform(world, room, startX + 530, 432, 620, 28, 0x7a7480, 1, 2);
+    makeHazard(world, room, startX + 730, 405, 40, 14, 'blade');
+    addBackdropImage(world.scene, 'paper_safety_poster', startX + 120, 120, 74, 74, 1.6, 0.6);
+    addBackdropImage(world.scene, 'prop_filing_cabinet', startX + 1180, 360, 86, 128, 1.9, 0.58);
+    waitSign = addSign(world, room, startX + 120, 178, spec.contradictionSign, { id: 'benefits-risk-wait', width: 138 });
+    addSign(world, room, startX + 450, 294, spec.actionSigns[0], { id: 'benefits-risk-doors', width: 122 });
+    addSign(world, room, startX + 820, 390, spec.actionSigns[1], { id: 'benefits-risk-lower', width: 122 });
+    room.upperGoal = sensorZone(world.scene, startX + 1260, 300, 116, 116);
+    room.lowerGoal = sensorZone(world.scene, startX + 1260, 396, 116, 92);
+    makeRiskGate(world, room, waitSign, {
+      sensor: sensorZone(world.scene, startX + 120, 396, 180, 96),
+      lamp: world.scene.add.rectangle(startX + 188, 166, 10, 10, 0x8b6f74, 1).setDepth(11),
+      windowMs: 900
+    });
+    return room;
+  }
+
+  function activateClaimBridge(world, room){
+    if (!room || room.bridgeActivated) return;
+    room.bridgeActivated = true;
+    if (room.bridge && room.bridge.activate) room.bridge.activate(world.player);
+    updateRunState(world);
+  }
+
+  function triggerClaimSlam(world, room){
+    if (!room || room.groundSlammed) return;
+    room.groundSlammed = true;
+    if (ns.Events && ns.Events.emit) ns.Events.emit('movement:groundSlam', {
+      roomId: room.id,
+      x: world.player ? world.player.x : room.startX + 870,
+      y: world.player ? world.player.y : 330
+    });
+    updateRunState(world);
+  }
+
+  function buildClaimWindow(world, spec, startX, width){
+    var room = makeRoom(world, spec, startX, width);
+    addBackdrop(world, room, 0x302129, 0xf0d48f);
+    addPlatform(world, room, startX + 180, 432, 360, 28, 0x7a7480, 1, 2);
+    room.bridge = ns.Forms && ns.Forms.bridge ? ns.Forms.bridge(world.scene, {
+      x: startX + 660,
+      y: 392,
+      width: 132,
+      height: 14
+    }) : { rect: addPlatform(world, room, startX + 660, 392, 132, 14, 0xdcc9a3, 1, 4) };
+    world.platforms.push(room.bridge.rect);
+    room.platforms.push(room.bridge.rect);
+    addPlatform(world, room, startX + 920, 350, 240, 18, 0xfff1c8, 1, 4);
+    addPlatform(world, room, startX + 1160, 432, 220, 28, 0x7a7480, 1, 2);
+    makeHazard(world, room, startX + 870, 330, 40, 14, 'blade');
+    addBackdropImage(world.scene, 'paper_expired_id', startX + 250, 128, 86, 58, 1.6, 0.52);
+    addBackdropImage(world.scene, 'prop_coffee_cup', startX + 1120, 282, 30, 30, 2.1, 0.94);
+    addSign(world, room, startX + 250, 170, spec.actionSigns[0], { id: 'benefits-claim-forms', width: 142 });
+    addSign(world, room, startX + 705, 354, spec.actionSigns[1], { id: 'benefits-claim-cross', width: 132 });
+    room.slamSensor = sensorZone(world.scene, startX + 870, 330, 150, 160);
+    room.claimExit = sensorZone(world.scene, startX + 1260, 396, 120, 100);
+    return room;
+  }
+
+  function unlockNetworkRoute(world, room, action){
+    if (!room || room.routeUnlocked) return;
+    room.routeUnlocked = true;
+    if (ns.Events && ns.Events.emit) {
+      ns.Events.emit(action === 'glide' ? 'movement:glide' : 'movement:wallJump', {
+        roomId: room.id,
+        x: world.player ? world.player.x : room.startX + 860,
+        y: world.player ? world.player.y : 318
+      });
+    }
+    updateRunState(world);
+  }
+
+  function buildNetworkNarrow(world, spec, startX, width){
+    var room = makeRoom(world, spec, startX, width);
+    addBackdrop(world, room, 0x321f28, 0xc23b3b);
+    addPlatform(world, room, startX + 170, 432, 340, 28, 0x7a7480, 1, 2);
+    addPlatform(world, room, startX + 480, 330, 90, 18, 0xfff1c8, 1, 4);
+    addPlatform(world, room, startX + 640, 260, 90, 18, 0xfff1c8, 1, 4);
+    addPlatform(world, room, startX + 860, 318, 120, 18, 0xfff1c8, 1, 4);
+    addPlatform(world, room, startX + 1140, 386, 260, 28, 0x7a7480, 1, 2);
+    makeHazard(world, room, startX + 730, 250, 40, 14, 'blade');
+    addBackdropImage(world.scene, 'fluorescent_light_fixture', startX + 560, 42, 150, 74, 1.55, 0.24);
+    addBackdropImage(world.scene, 'supervisor_silhouette', startX + 1050, 250, 188, 188, 1.8, 0.24);
+    addSign(world, room, startX + 185, 360, spec.actionSigns[0], { id: 'benefits-network-small', width: 142 });
+    addSign(world, room, startX + 780, 222, spec.actionSigns[1], { id: 'benefits-network-floor', width: 132 });
+    room.routeSensor = sensorZone(world.scene, startX + 760, 288, 340, 240);
+    room.nearMissSensor = sensorZone(world.scene, startX + 730, 250, 120, 110);
+    room.networkExit = sensorZone(world.scene, startX + 1260, 360, 120, 120);
+    return room;
   }
 
   function addEnemy(world, room, type, opts){
@@ -509,6 +675,66 @@
     if (room.gate.unlocked && intersects(world.player, room.gate.upperClear)) room.gate.markSafe();
   }
 
+  function updateRiskAtrium(world){
+    var room = world.currentRoom;
+    var gate;
+    var now;
+    var moving;
+    if (!room || !room.riskGate) return;
+    gate = room.riskGate;
+    now = world.scene.time.now;
+    if (!gate.resolved) {
+      if (intersects(world.player, gate.sensor)) {
+        if (!gate.enteredAt) gate.enteredAt = now || 1;
+        moving = world.player && world.player.body ? Math.abs(world.player.body.velocity.x) > 18 : false;
+        if (moving) gate.defy();
+        else if (now - gate.enteredAt >= gate.core.windowMs) gate.follow();
+      } else {
+        gate.enteredAt = 0;
+      }
+    }
+    if (intersects(world.player, room.upperGoal)) {
+      if (!gate.resolved) gate.follow();
+      room.safeCompleted = true;
+      room.branchOutcome = 'insured';
+      updateRunState(world);
+    }
+    if (intersects(world.player, room.lowerGoal)) {
+      if (!gate.resolved) gate.defy();
+      room.uninsuredCommitted = true;
+      room.branchOutcome = 'uninsured';
+      updateRunState(world);
+    }
+  }
+
+  function updateClaimWindow(world){
+    var room = world.currentRoom;
+    if (!room || room.id !== 'benefits-claim-window') return;
+    if (room.bridge && room.bridge.rect && intersects(world.player, room.bridge.rect)) activateClaimBridge(world, room);
+    if (room.slamSensor && intersects(world.player, room.slamSensor) && ns.Input.justPressed('groundSlam')) triggerClaimSlam(world, room);
+    if (room.claimExit && room.bridgeActivated && room.groundSlammed && intersects(world.player, room.claimExit)) {
+      room.safeCompleted = true;
+      passRoomModule(world, room, room.id + '-claim');
+    }
+  }
+
+  function updateNetworkNarrow(world){
+    var room = world.currentRoom;
+    if (!room || room.id !== 'benefits-network-narrow') return;
+    if (room.routeSensor && intersects(world.player, room.routeSensor)) {
+      if (ns.Input.justPressed('glide') || ns.Input.down('glide')) unlockNetworkRoute(world, room, 'glide');
+      else if (ns.Input.justPressed('jump')) unlockNetworkRoute(world, room, 'wallJump');
+    }
+    if (!room.nearMissLogged && room.nearMissSensor && intersects(world.player, room.nearMissSensor)) {
+      room.nearMissLogged = true;
+      if (ns.Events && ns.Events.emit) ns.Events.emit('movement:nearMiss', { roomId: room.id, x: world.player.x, y: world.player.y });
+    }
+    if (room.networkExit && room.routeUnlocked && intersects(world.player, room.networkExit)) {
+      room.safeCompleted = true;
+      passRoomModule(world, room, room.id + '-network');
+    }
+  }
+
   function updateHazards(world){
     var room = world.currentRoom;
     if (!room) return;
@@ -556,9 +782,22 @@
       world.rooms[i].premiumCount = 0;
       world.rooms[i].safeCompleted = false;
       world.rooms[i].uninsuredCommitted = false;
+      world.rooms[i].bridgeActivated = false;
+      world.rooms[i].groundSlammed = false;
+      world.rooms[i].routeUnlocked = false;
+      world.rooms[i].nearMissLogged = false;
       world.rooms[i].damageTagged = false;
       world.rooms[i].branchOutcome = '';
+      world.rooms[i].modulePassed = false;
       world.rooms[i].finalized = false;
+      if (world.rooms[i].riskGate) {
+        world.rooms[i].riskGate.enteredAt = 0;
+        world.rooms[i].riskGate.resolved = false;
+        world.rooms[i].riskGate.outcome = '';
+        world.rooms[i].riskGate.core.resolved = false;
+        world.rooms[i].riskGate.core.outcome = null;
+        world.rooms[i].riskGate.lamp.fillColor = 0x8b6f74;
+      }
       if (world.rooms[i].gate) {
         world.rooms[i].gate.unlocked = false;
         world.rooms[i].gate.skipped = false;
@@ -583,6 +822,79 @@
     var insured = style === 'insured';
     var laneY = insured ? world.horizon - 140 : world.horizon - 28;
     var roomIndex = world.rooms.indexOf(room);
+    if (room.id === 'benefits-risk-atrium') {
+      world.player.x = room.startX + 80;
+      world.player.y = insured ? 300 : 396;
+      syncCurrentRoom(world);
+      world.scene.recorder.mark(markers[0], world.player.x, world.player.y, 1);
+      for (var r = 0; r < room.signs.length; r++) {
+        room.signs[r].peek({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+        room.signs[r].read({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+      }
+      if (insured) {
+        room.riskGate.follow();
+        room.safeCompleted = true;
+        world.scene.recorder.mark(markers[1], room.startX + 520, 330, 1);
+        world.scene.recorder.mark(markers[2], room.startX + 780, 270, 1);
+      } else {
+        room.riskGate.defy();
+        room.uninsuredCommitted = true;
+        room.damageTagged = true;
+        if (ns.Events && ns.Events.emit) ns.Events.emit('combat:damageTaken', { kind: 'uninsured-lane', amount: 1 });
+        world.scene.recorder.mark(markers[1], room.startX + 430, 396, 1);
+        world.scene.recorder.mark(markers[2], room.startX + 940, 396, 1);
+      }
+      world.player.x = room.endX - 120;
+      world.player.y = insured ? 300 : 396;
+      syncCurrentRoom(world);
+      finalizeRoom(world, room);
+      world.scene.recorder.mark(markers[3], world.player.x, world.player.y, 1);
+      return;
+    }
+    if (room.id === 'benefits-claim-window') {
+      world.player.x = room.startX + 80;
+      world.player.y = world.horizon - 28;
+      syncCurrentRoom(world);
+      world.scene.recorder.mark(markers[0], world.player.x, world.player.y, 1);
+      for (r = 0; r < room.signs.length; r++) {
+        room.signs[r].peek({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+        room.signs[r].read({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+      }
+      activateClaimBridge(world, room);
+      triggerClaimSlam(world, room);
+      room.safeCompleted = true;
+      passRoomModule(world, room, room.id + '-claim');
+      world.scene.recorder.mark(markers[1], room.startX + 660, 392, 1);
+      world.scene.recorder.mark(markers[2], room.startX + 920, 350, 1);
+      world.player.x = room.endX - 120;
+      world.player.y = world.horizon - 28;
+      syncCurrentRoom(world);
+      finalizeRoom(world, room);
+      world.scene.recorder.mark(markers[3], world.player.x, world.player.y, 1);
+      return;
+    }
+    if (room.id === 'benefits-network-narrow') {
+      world.player.x = room.startX + 80;
+      world.player.y = insured ? 260 : 386;
+      syncCurrentRoom(world);
+      world.scene.recorder.mark(markers[0], world.player.x, world.player.y, 1);
+      for (r = 0; r < room.signs.length; r++) {
+        room.signs[r].peek({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+        room.signs[r].read({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
+      }
+      unlockNetworkRoute(world, room, insured ? 'glide' : 'wallJump');
+      if (!insured && ns.Events && ns.Events.emit) ns.Events.emit('movement:nearMiss', { roomId: room.id, x: room.startX + 730, y: 250 });
+      room.safeCompleted = true;
+      passRoomModule(world, room, room.id + '-network');
+      world.scene.recorder.mark(markers[1], room.startX + 640, 260, 1);
+      world.scene.recorder.mark(markers[2], room.startX + 860, 318, 1);
+      world.player.x = room.endX - 120;
+      world.player.y = insured ? 360 : 386;
+      syncCurrentRoom(world);
+      finalizeRoom(world, room);
+      world.scene.recorder.mark(markers[3], world.player.x, world.player.y, 1);
+      return;
+    }
     world.player.x = room.startX + 80;
     world.player.y = laneY;
     syncCurrentRoom(world);
@@ -651,16 +963,10 @@
     style = style || 'insured';
     resetDebug(world);
 
-    var markers = [
-      [0, 180, 380, 560],
-      [620, 800, 980, 1160],
-      [1220, 1400, 1580, 1760],
-      [1820, 2000, 2180, 2360],
-      [2420, 2600, 2780, 2960],
-      [3020, 3200, 3380, 3560]
-    ];
-
-    for (var i = 0; i < world.rooms.length; i++) scriptRoom(world, world.rooms[i], style, markers[i]);
+    for (var i = 0; i < world.rooms.length; i++) {
+      var base = i * 620;
+      scriptRoom(world, world.rooms[i], style, [base, base + 180, base + 380, base + 560]);
+    }
 
     if (!world.receiptFlags.uninsuredVeteran && world.stats.premiumRoomsCleared >= 4) {
       world.receiptFlags.premiumSecured = true;
@@ -694,7 +1000,7 @@
       runState: runState,
       manifest: manifest,
       horizon: horizon,
-      width: roomWidth * 6,
+      width: roomWidth * manifest.rooms.length,
       rooms: [],
       platforms: [],
       premiums: [],
@@ -742,12 +1048,15 @@
     if (ns.EncounterDirector && ns.EncounterDirector.prime) ns.EncounterDirector.prime(scene, 'benefits', manifest.rooms[0].id);
     if (ns.Curiosity && ns.Curiosity.prime) ns.Curiosity.prime(scene, 'benefits');
 
-    buildEnrollment(world, manifest.rooms[0], 0, roomWidth);
-    buildPathways(world, manifest.rooms[1], roomWidth, roomWidth);
-    buildNetwork(world, manifest.rooms[2], roomWidth * 2, roomWidth);
-    buildDeductible(world, manifest.rooms[3], roomWidth * 3, roomWidth);
-    buildWellness(world, manifest.rooms[4], roomWidth * 4, roomWidth);
-    buildFinal(world, manifest.rooms[5], roomWidth * 5, roomWidth);
+    buildRiskAtrium(world, manifest.rooms[0], 0, roomWidth);
+    buildClaimWindow(world, manifest.rooms[1], roomWidth, roomWidth);
+    buildNetworkNarrow(world, manifest.rooms[2], roomWidth * 2, roomWidth);
+    buildEnrollment(world, manifest.rooms[3], roomWidth * 3, roomWidth);
+    buildPathways(world, manifest.rooms[4], roomWidth * 4, roomWidth);
+    buildNetwork(world, manifest.rooms[5], roomWidth * 5, roomWidth);
+    buildDeductible(world, manifest.rooms[6], roomWidth * 6, roomWidth);
+    buildWellness(world, manifest.rooms[7], roomWidth * 7, roomWidth);
+    buildFinal(world, manifest.rooms[8], roomWidth * 8, roomWidth);
 
     for (var i = 0; i < world.platforms.length; i++) {
       scene.physics.add.collider(world.player, world.platforms[i]);
@@ -775,6 +1084,9 @@
     updateSigns(world);
     updatePremiums(world);
     updateGate(world);
+    updateRiskAtrium(world);
+    updateClaimWindow(world);
+    updateNetworkNarrow(world);
     updateHazards(world);
     updateEnemies(world, dtMs);
     if (ns.EncounterDirector && ns.EncounterDirector.tick) ns.EncounterDirector.tick(scene, dtMs);

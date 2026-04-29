@@ -9,6 +9,7 @@
 
   var BENIGN_BIAS = 0.35;
   var MALICIOUS_BIAS = -0.35;
+  var W11_CONTENT_BIAS = 1.1;
 
   function makeFragment(id, text, opts){
     return {
@@ -29,6 +30,21 @@
     for (var i = 0; i < texts.length; i++) {
       target.push(makeFragment(prefix + '_' + pad(i + 1, 2), texts[i], opts));
     }
+  }
+
+  function registerFragment(pool, id, text, opts){
+    var pools = {
+      VERDICTS: VERDICTS,
+      TENSIONS: TENSIONS,
+      CLOSERS: CLOSERS
+    };
+    var key = String(pool || '').toUpperCase();
+    var target = pools[key];
+    var fragment;
+    if (!target) return null;
+    fragment = makeFragment(id, text, opts || {});
+    target.push(fragment);
+    return fragment;
   }
 
   function pad(n, width){
@@ -776,6 +792,20 @@
     return Math.min(1, val / 3);
   }
 
+  function allFlagsMatch(fragment, context){
+    var key;
+    if (!fragment.flags) return true;
+    for (key in fragment.flags) {
+      if (!Object.prototype.hasOwnProperty.call(fragment.flags, key)) continue;
+      if (key === 'cigaretteLit') {
+        if (context.cigaretteLit !== fragment.flags[key]) return false;
+      } else if (!context.flags || context.flags[key] !== fragment.flags[key]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   function scoreFragment(fragment, axes, tensions, context){
     var score = 0;
     var key;
@@ -843,6 +873,7 @@
 
     if (fragment.tone === 'benign') score += BENIGN_BIAS;
     else if (fragment.tone === 'malicious') score += MALICIOUS_BIAS;
+    if (fragment.id && fragment.id.indexOf('W11_') === 0 && allFlagsMatch(fragment, context)) score += W11_CONTENT_BIAS;
 
     return score;
   }
@@ -927,6 +958,19 @@
     };
   }
 
+  registerFragment('VERDICTS', 'W11_BENEFITS_VERDICT_ATRIUM_01', 'THE ATRIUM PRICED YOUR HESITATION.', {worlds:{benefits:3.2}, axes:{compliance:0.5, intuition:0.4}, micro:{idleMs:0.5}, tone:'benign'});
+  registerFragment('VERDICTS', 'W11_BENEFITS_VERDICT_NETWORK_01', 'THE NETWORK COUNTED YOUR SHOULDERS.', {worlds:{benefits:3.1}, axes:{grace:0.5, efficiency:0.3}, micro:{nearMisses:0.5}, tone:'benign'});
+  registerFragment('VERDICTS', 'W11_BENEFITS_VERDICT_AUTH_01', 'PREAUTHORIZATION MISTOOK DELAY FOR VALUE.', {worlds:{benefits:3.1}, flags:{premiumSecured:true}, axes:{compliance:0.6}, micro:{contradictionFollow:0.6}, tone:'benign'});
+  registerFragment('TENSIONS', 'W11_BENEFITS_TENSION_BRANCH_01', 'EVERY BRANCH COST A DIFFERENT BODY.', {worlds:{benefits:3.0}, tensions:{auditRisk:0.4, style:0.2}, micro:{modulesPassed:0.4}});
+  registerFragment('TENSIONS', 'W11_BENEFITS_TENSION_SLOW_01', 'THE CLAIM REWARDED LOWER VELOCITY.', {worlds:{benefits:3.1}, tensions:{obedience:0.5}, axes:{compliance:0.4, intuition:0.2}, tone:'benign'});
+  registerFragment('TENSIONS', 'W11_BENEFITS_TENSION_EXPOSED_01', 'YOUR EXPOSURE IMPROVED THE MARGIN.', {worlds:{benefits:3.2}, flags:{uninsuredVeteran:true}, tensions:{obedience:-0.6, auditRisk:0.4}, micro:{damageTaken:0.6}});
+  registerFragment('CLOSERS', 'W11_BENEFITS_CLOSER_PLAN_01', 'THE PLAN CLOSED WITHOUT LOOKING DOWN.', {worlds:{benefits:3.2}, flags:{premiumSecured:true}, axes:{compliance:0.3}, tone:'benign'});
+  registerFragment('CLOSERS', 'W11_BENEFITS_CLOSER_BILLING_01', 'THE EXIT KEPT A BILLING ADDRESS.', {worlds:{benefits:3.0}, axes:{efficiency:0.2, chaos:0.2}});
+  registerFragment('VERDICTS', 'W11_RASTA_VERDICT_BELT_01', 'THE BELT ACCEPTED YOUR STILLNESS.', {worlds:{rasta:3.3}, flags:{restOpened:true, cigaretteLit:false}, axes:{intuition:0.5, grace:0.3}, micro:{musicSync:0.5}, tone:'benign'});
+  registerFragment('TENSIONS', 'W11_RASTA_TENSION_DOOR_01', 'THE KIND DOOR REASSESSED URGENCY.', {worlds:{rasta:3.2}, flags:{rushedRest:true}, micro:{contradictionDefy:0.6}, axes:{intuition:0.3}, tone:'benign'});
+  registerFragment('CLOSERS', 'W11_RASTA_CLOSER_FLOOR_01', 'THE FLOOR RELEASED YOUR BREATH.', {worlds:{rasta:3.3}, flags:{restOpened:true, cigaretteLit:false}, axes:{grace:0.4}, tone:'benign'});
+  registerFragment('CLOSERS', 'W11_RASTA_CLOSER_NAME_01', 'SOFT MACHINES RETURNED YOUR NAME.', {worlds:{rasta:3.1}, flags:{rushedRest:true}, axes:{intuition:0.3, grace:0.2}, tone:'benign'});
+
   ns.Receipts = {
     POOLS: {
       VERDICTS: VERDICTS,
@@ -935,6 +979,7 @@
     },
     generate: generate,
     cardModel: cardModel,
+    registerFragment: registerFragment,
     playUrlForSeed: playUrlForSeed,
     themeForReceipt: themeForReceipt,
     isThermalSearch: isThermalSearch,

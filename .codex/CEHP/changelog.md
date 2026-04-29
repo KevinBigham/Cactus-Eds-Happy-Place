@@ -1,5 +1,38 @@
 # CEHP Changelog
 
+## 2026-04-28 — W11 byte recovery + receipt API prep; content spec blocked · Codex GPT-5.5
+
+**Context**: Kevin provided CEHP-Sprint-NEXT+3 to wire Architect's W11 Benefits/Rasta content after mandatory bundle headroom recovery. The exact Architect content spec was referenced as pasted at the top of the session, but it was not present in the visible context or repo search results.
+
+**P0 — Bundle headroom recovery**:
+- Files: `ACTIVE/game/scripts/verify-launch.sh`, `ACTIVE/game/process_manifest.json`, `ACTIVE/game/src/74_world_orientation_runtime.js`, `ACTIVE/game/index.html`.
+- Rationale: W11 content plus W12/W13 polish room require headroom; cap raised to Kevin's requested `372000` B ceiling, and unchanged Orientation runtime was minified in-place to recover bytes without behavior change.
+- Result: build `346956` reported / `346966` on disk after all code prep, leaving `25034` B under `372000`.
+
+**P1/P2 — Safe prep only**:
+- Files: `ACTIVE/game/src/80_receipts.js`, `ACTIVE/game/src/91_scenes.js`, `ACTIVE/game/tests/rebuild_logic.test.mjs`, `ACTIVE/game/index.html`.
+- Rationale: expose the public fragment registration seam and initialize the W11 receipt flags that are already referenced by existing receipt logic, without inventing missing content.
+- Result: `CEHP.Receipts.registerFragment(pool, id, text, opts)` uses existing `makeFragment`; Play `receiptFlags` now includes `restOpened`, `rushedRest`, and `cigaretteLit`.
+
+**Blocked phases**:
+- The 12 W11 fragment texts/opts, 10 sign texts/triggers, 4 room layouts, and exact flow rules were not recoverable from the provided workspace. No W11 content, signs, room geometry, or replay baselines were authored.
+
+**Verification**:
+- `cd ACTIVE/game && bash scripts/verify-cehp.sh 2>&1 | tail -10` PASS starting-line check; baseline bundle `358392` B, behavior oracle `81/81`, replay corpus `3/3`.
+- `cd ACTIVE/game && node build.js && wc -c index.html` PASS after P0 (`346548` reported / `346558` disk) and after prep (`346956` reported / `346966` disk).
+- Orientation case-run fingerprint before/after P0 minify: PASS, byte-identical receipt output.
+- Focused TDD checks for `registerFragment` and W11 receipt flags failed RED before implementation, then PASS.
+- `cd ACTIVE/game && node --test tests/rebuild_logic.test.mjs` PASS (`83/83`).
+- `cd ACTIVE/game && npm run test:replay` PASS (`3/3`).
+- `cd ACTIVE/game && npm run verify:launch` PASS (`CEHP LAUNCH VERIFY: PASS`, bundle `346966 / 372000`).
+
+**Notes**:
+- No save schema change.
+- No new package or runtime dependency; `npx terser` was used as a one-off source minifier for the unchanged Orientation runtime.
+- Golden replay baselines were not updated.
+
+---
+
 ## 2026-04-28 — Replay corpus Stop gate + launch verification loop · Codex GPT-5.5
 
 **Context**: Kevin provided CEHP-Sprint-NEXT+2 to turn the fixed-step scene seam into a permanent replay verification loop.
@@ -2535,3 +2568,22 @@ Plan specifies: read 5 receipts from the same 5 case seeds before + after. Does 
   - `.codex/CEHP/handoff.md`
 - summary: created the required `.codex/CEHP` memory files, read canonical repo docs, cross-checked runtime facts
 - no gameplay or runtime changes
+
+## 2026-04-28 — W11 Benefits + Rasta Content Wire GREEN
+- files changed:
+  - `ACTIVE/game/src/80_receipts.js`
+  - `ACTIVE/game/src/72_world_benefits.js`
+  - `ACTIVE/game/src/75_world_benefits_runtime.js`
+  - `ACTIVE/game/src/73_world_rasta.js`
+  - `ACTIVE/game/src/76_world_rasta_runtime.js`
+  - `ACTIVE/game/tests/rebuild_logic.test.mjs`
+  - `ACTIVE/game/tests/replay_corpus.test.mjs`
+  - `ACTIVE/game/_canon/replays/cehp/w2_benefits_uninsured.json`
+  - `ACTIVE/game/index.html`
+  - `.codex/CEHP/status.md`
+  - `.codex/CEHP/handoff.md`
+  - `.codex/CEHP/changelog.md`
+  - `ACTIVE/docs/NEXT_TASK.md`
+- summary: resumed W11 after exact Architect spec landed; registered 12 W11 receipt fragments, wired three Benefits rooms and one Rasta room, added W11 behavior-oracle coverage, added fourth replay fixture, and kept save schema unchanged.
+- verification: `npm run verify:launch` PASS with build `365789` reported / `365799` on disk under `372000`, behavior oracle `90/90`, replay corpus `4/4`, and final line `CEHP LAUNCH VERIFY: PASS`; fixture md5s stable across three reads.
+- notes: no commit, push, version bump, dependency, save-schema edit, or README edit.

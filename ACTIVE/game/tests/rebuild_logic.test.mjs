@@ -89,6 +89,10 @@ const APPEALS_REPLAY_MODULES = [
   '82_appeals.js'
 ];
 
+function plain(value) {
+  return value == null ? value : JSON.parse(JSON.stringify(value));
+}
+
 const LENS_MODULES = [
   '00_index.js',
   '01_const.js',
@@ -296,6 +300,114 @@ test('receipts expose stable fragment ids and diverge by behavior profile', () =
   assert.notDeepEqual(receiptA.fragmentIds, receiptB.fragmentIds);
 });
 
+test('receipts register fragments into public pools through makeFragment', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const before = CEHP.Receipts.POOLS.VERDICTS.length;
+
+  const fragment = CEHP.Receipts.registerFragment('VERDICTS', 'TEST_REGISTER_VERDICT', 'REGISTERED LINE.', {
+    tone: 'benign',
+    worlds: { benefits: 99 }
+  });
+  const receipt = CEHP.Receipts.generate({
+    seed: 'CASE-20260427-001-COMPLIANCE-R2',
+    axes: {
+      primary: { compliance: 0, intuition: 0, curiosity: 0, grace: 0, chaos: 0, efficiency: 0 },
+      micro: {}
+    },
+    tensions: { obedience: 0, style: 0, auditRisk: 0 },
+    worldId: 'benefits'
+  });
+
+  assert.equal(CEHP.Receipts.POOLS.VERDICTS.length, before + 1);
+  assert.equal(fragment.id, 'TEST_REGISTER_VERDICT');
+  assert.equal(fragment.text, 'REGISTERED LINE.');
+  assert.equal(receipt.fragmentIds[0], 'TEST_REGISTER_VERDICT');
+});
+
+test('W11 receipt fragments are registered verbatim with existing opts shape', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const fragments = [
+    ['VERDICTS', 'W11_BENEFITS_VERDICT_ATRIUM_01', 'THE ATRIUM PRICED YOUR HESITATION.', { worlds: { benefits: 3.2 }, axes: { compliance: 0.5, intuition: 0.4 }, micro: { idleMs: 0.5 }, tone: 'benign' }],
+    ['VERDICTS', 'W11_BENEFITS_VERDICT_NETWORK_01', 'THE NETWORK COUNTED YOUR SHOULDERS.', { worlds: { benefits: 3.1 }, axes: { grace: 0.5, efficiency: 0.3 }, micro: { nearMisses: 0.5 }, tone: 'benign' }],
+    ['VERDICTS', 'W11_BENEFITS_VERDICT_AUTH_01', 'PREAUTHORIZATION MISTOOK DELAY FOR VALUE.', { worlds: { benefits: 3.1 }, flags: { premiumSecured: true }, axes: { compliance: 0.6 }, micro: { contradictionFollow: 0.6 }, tone: 'benign' }],
+    ['TENSIONS', 'W11_BENEFITS_TENSION_BRANCH_01', 'EVERY BRANCH COST A DIFFERENT BODY.', { worlds: { benefits: 3.0 }, tensions: { auditRisk: 0.4, style: 0.2 }, micro: { modulesPassed: 0.4 } }],
+    ['TENSIONS', 'W11_BENEFITS_TENSION_SLOW_01', 'THE CLAIM REWARDED LOWER VELOCITY.', { worlds: { benefits: 3.1 }, tensions: { obedience: 0.5 }, axes: { compliance: 0.4, intuition: 0.2 }, tone: 'benign' }],
+    ['TENSIONS', 'W11_BENEFITS_TENSION_EXPOSED_01', 'YOUR EXPOSURE IMPROVED THE MARGIN.', { worlds: { benefits: 3.2 }, flags: { uninsuredVeteran: true }, tensions: { obedience: -0.6, auditRisk: 0.4 }, micro: { damageTaken: 0.6 } }],
+    ['CLOSERS', 'W11_BENEFITS_CLOSER_PLAN_01', 'THE PLAN CLOSED WITHOUT LOOKING DOWN.', { worlds: { benefits: 3.2 }, flags: { premiumSecured: true }, axes: { compliance: 0.3 }, tone: 'benign' }],
+    ['CLOSERS', 'W11_BENEFITS_CLOSER_BILLING_01', 'THE EXIT KEPT A BILLING ADDRESS.', { worlds: { benefits: 3.0 }, axes: { efficiency: 0.2, chaos: 0.2 } }],
+    ['VERDICTS', 'W11_RASTA_VERDICT_BELT_01', 'THE BELT ACCEPTED YOUR STILLNESS.', { worlds: { rasta: 3.3 }, flags: { restOpened: true, cigaretteLit: false }, axes: { intuition: 0.5, grace: 0.3 }, micro: { musicSync: 0.5 }, tone: 'benign' }],
+    ['TENSIONS', 'W11_RASTA_TENSION_DOOR_01', 'THE KIND DOOR REASSESSED URGENCY.', { worlds: { rasta: 3.2 }, flags: { rushedRest: true }, micro: { contradictionDefy: 0.6 }, axes: { intuition: 0.3 }, tone: 'benign' }],
+    ['CLOSERS', 'W11_RASTA_CLOSER_FLOOR_01', 'THE FLOOR RELEASED YOUR BREATH.', { worlds: { rasta: 3.3 }, flags: { restOpened: true, cigaretteLit: false }, axes: { grace: 0.4 }, tone: 'benign' }],
+    ['CLOSERS', 'W11_RASTA_CLOSER_NAME_01', 'SOFT MACHINES RETURNED YOUR NAME.', { worlds: { rasta: 3.1 }, flags: { rushedRest: true }, axes: { intuition: 0.3, grace: 0.2 }, tone: 'benign' }]
+  ];
+
+  fragments.forEach(function(entry) {
+    const pool = CEHP.Receipts.POOLS[entry[0]];
+    const fragment = pool.find(function(item) {
+      return item.id === entry[1];
+    });
+    const opts = entry[3];
+
+    assert.ok(fragment, 'missing ' + entry[1]);
+    assert.equal(fragment.text, entry[2]);
+    assert.equal(fragment.text.indexOf('!'), -1);
+    assert.equal(fragment.text.split(/\s+/).length <= 8, true);
+    assert.deepEqual(plain(fragment.worlds), opts.worlds || null);
+    assert.deepEqual(plain(fragment.axes), opts.axes || null);
+    assert.deepEqual(plain(fragment.tensions), opts.tensions || null);
+    assert.deepEqual(plain(fragment.micro), opts.micro || null);
+    assert.deepEqual(plain(fragment.flags), opts.flags || null);
+    assert.equal(fragment.tone, opts.tone || null);
+  });
+});
+
+test('W11 benefits rooms are in world order with voice-safe signs', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const rooms = CEHP.Worlds.MANIFEST.benefits.rooms;
+  const expected = [
+    {
+      id: 'benefits-risk-atrium',
+      contradictionSign: 'WAIT FOR COVERAGE TO NOTICE YOU',
+      actionSigns: ['EVERY DOORWAY HAS TERMS', 'THE LOWER PLAN SAVES STAIRS']
+    },
+    {
+      id: 'benefits-claim-window',
+      actionSigns: ['FORMS BECOME SOLID AFTER REJECTION', 'PLEASE CROSS THE DENIED CLAIM']
+    },
+    {
+      id: 'benefits-network-narrow',
+      actionSigns: ['THE NETWORK PREFERS SMALLER MOTION', 'OUT OF NETWORK MEANS FLOOR']
+    }
+  ];
+
+  expected.forEach(function(spec, index) {
+    const room = rooms[index];
+
+    assert.equal(room.id, spec.id);
+    if (spec.contradictionSign) assert.equal(room.contradictionSign, spec.contradictionSign);
+    assert.deepEqual(plain(room.actionSigns), spec.actionSigns);
+    [room.contradictionSign].concat(room.actionSigns || []).filter(Boolean).forEach(function(line) {
+      assert.equal(line.indexOf('!'), -1);
+      assert.equal(line.split(/\s+/).length <= 8, true);
+    });
+  });
+});
+
+test('W11 rasta soft belt is in world order with voice-safe signs', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const rooms = CEHP.Worlds.MANIFEST.rasta.rooms;
+  const room = rooms[rooms.length - 2];
+
+  assert.equal(room.id, 'rasta-soft-belt');
+  assert.equal(rooms[rooms.length - 1].id, 'warm-exit');
+  assert.equal(room.contradictionSign, 'REST UNTIL THE BELT BELIEVES YOU');
+  assert.deepEqual(plain(room.actionSigns), ['THE KIND DOOR HATES SPEED', 'NO FIRE IS ALSO COVERAGE']);
+  [room.contradictionSign].concat(room.actionSigns || []).forEach(function(line) {
+    assert.equal(line.indexOf('!'), -1);
+    assert.equal(line.split(/\s+/).length <= 8, true);
+  });
+});
+
 test('receipts score generic world flags for benefits routes', () => {
   const CEHP = loadModules(LOGIC_MODULES);
   const seed = 'CASE-20260427-001-COMPLIANCE-R2';
@@ -334,6 +446,141 @@ test('receipts score generic world flags for benefits routes', () => {
   assert.equal(Array.isArray(insured.fragmentIds), true);
   assert.equal(Array.isArray(uninsured.fragmentIds), true);
   assert.notDeepEqual(insured.fragmentIds, uninsured.fragmentIds);
+});
+
+test('W11 benefits atrium follow path sets premium flag and receipt branch', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const flags = { premiumSecured: false, uninsuredVeteran: false };
+  const gate = CEHP.Contradiction.gate({
+    sign: { id: 'benefits-risk-wait' },
+    expectedBehavior: 'wait',
+    windowMs: 900,
+    onFollow: function() {
+      flags.premiumSecured = true;
+      return 'upper';
+    },
+    onDefy: function() {
+      flags.uninsuredVeteran = true;
+      return 'lower';
+    }
+  });
+
+  CEHP.Axes.reset();
+  CEHP.Events.emit('sign:read', { signId: 'benefits-risk-wait', words: 6 });
+  gate.evaluate({ action: 'wait', elapsedMs: 920 });
+
+  const receipt = CEHP.Receipts.generate({
+    seed: 'CASE-W11-BENEFITS-FOLLOW',
+    axes: CEHP.Axes.snapshot(),
+    tensions: CEHP.Axes.tensions(),
+    worldId: 'benefits',
+    flags
+  });
+
+  assert.equal(flags.premiumSecured, true);
+  assert.equal(receipt.fragmentIds.includes('W11_BENEFITS_CLOSER_PLAN_01'), true, receipt.fragmentIds.join(', '));
+});
+
+test('W11 benefits atrium defy path sets uninsured flag and receipt branch', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const flags = { premiumSecured: false, uninsuredVeteran: false };
+  const gate = CEHP.Contradiction.gate({
+    sign: { id: 'benefits-risk-wait' },
+    expectedBehavior: 'wait',
+    windowMs: 900,
+    onFollow: function() {
+      flags.premiumSecured = true;
+      return 'upper';
+    },
+    onDefy: function() {
+      flags.uninsuredVeteran = true;
+      return 'lower';
+    }
+  });
+
+  CEHP.Axes.reset();
+  CEHP.Events.emit('sign:read', { signId: 'benefits-risk-wait', words: 6 });
+  gate.evaluate({ action: 'move', elapsedMs: 120 });
+  CEHP.Events.emit('combat:damageTaken', { kind: 'blade', amount: 1 });
+
+  const receipt = CEHP.Receipts.generate({
+    seed: 'CASE-W11-BENEFITS-DEFY',
+    axes: CEHP.Axes.snapshot(),
+    tensions: CEHP.Axes.tensions(),
+    worldId: 'benefits',
+    flags
+  });
+
+  assert.equal(flags.uninsuredVeteran, true);
+  assert.equal(receipt.fragmentIds.includes('W11_BENEFITS_TENSION_EXPOSED_01'), true, receipt.fragmentIds.join(', '));
+});
+
+test('W11 rasta soft belt rest path keeps cigarette dark and receipt branch', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const flags = { restOpened: false, rushedRest: false, cigaretteLit: true };
+  const worldFlags = { cigaretteWillNotLight: false };
+  const gate = CEHP.Contradiction.gate({
+    sign: { id: 'rasta-belt-rest' },
+    expectedBehavior: 'wait',
+    windowMs: 800,
+    onFollow: function() {
+      flags.restOpened = true;
+      flags.cigaretteLit = false;
+      worldFlags.cigaretteWillNotLight = true;
+      return 'open';
+    },
+    onDefy: function() {
+      flags.rushedRest = true;
+      return 'loop';
+    }
+  });
+
+  CEHP.Axes.reset();
+  gate.evaluate({ action: 'wait', elapsedMs: 820 });
+  CEHP.Events.emit('music:sync', { x: 720, y: 392 });
+
+  const receipt = CEHP.Receipts.generate({
+    seed: 'CASE-W11-RASTA-REST',
+    axes: CEHP.Axes.snapshot(),
+    tensions: CEHP.Axes.tensions(),
+    worldId: 'rasta',
+    flags,
+    cigaretteLit: !worldFlags.cigaretteWillNotLight
+  });
+
+  assert.equal(flags.restOpened, true);
+  assert.equal(flags.cigaretteLit, false);
+  assert.equal(receipt.cigaretteLit, false);
+  assert.equal(receipt.fragmentIds.includes('W11_RASTA_VERDICT_BELT_01'), true, receipt.fragmentIds.join(', '));
+});
+
+test('W11 rasta rushed path does not receive rest-only verdict bias', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const flags = { restOpened: false, rushedRest: true, cigaretteLit: false };
+
+  CEHP.Axes.reset();
+  CEHP.Events.emit('contradiction:defy', { gateId: 'rasta-belt-rest', action: 'move', elapsedMs: 120 });
+
+  const receipt = CEHP.Receipts.generate({
+    seed: 'CASE-W11-RASTA-RUSH',
+    axes: CEHP.Axes.snapshot(),
+    tensions: CEHP.Axes.tensions(),
+    worldId: 'rasta',
+    flags,
+    cigaretteLit: false
+  });
+
+  assert.equal(receipt.fragmentIds.includes('W11_RASTA_VERDICT_BELT_01'), false, receipt.fragmentIds.join(', '));
+  assert.equal(receipt.fragmentIds.includes('W11_RASTA_TENSION_DOOR_01'), true, receipt.fragmentIds.join(', '));
+});
+
+test('play scene initializes W11 receipt flags without changing save schema', () => {
+  const source = fs.readFileSync(path.join(srcDir, '91_scenes.js'), 'utf8');
+
+  assert.match(
+    source,
+    /receiptFlags:\{uninsuredVeteran:!1,premiumSecured:!1,restOpened:!1,rushedRest:!1,cigaretteLit:!1\}/
+  );
 });
 
 test('receipt card helpers keep receipt content stable across thermal presentation', () => {

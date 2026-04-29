@@ -97,6 +97,7 @@
     return {
       restOpened: false,
       rushedRest: false,
+      cigaretteLit: false,
       syncedFlow: false
     };
   }
@@ -274,7 +275,7 @@
 
   function makeRestGate(world, room, cfg){
     var scene = world.scene;
-    var sign = addSign(world, room, cfg.signX, cfg.signY, cfg.text, { id: room.id + '-rest-sign' });
+    var sign = addSign(world, room, cfg.signX, cfg.signY, cfg.text, { id: cfg.id || (room.id + '-rest-sign') });
     var pad = scene.add.rectangle(cfg.padX, cfg.padY, cfg.padW || 120, cfg.padH || 10, 0xf2e3c5, 0.22).setDepth(3).setStrokeStyle(1, 0xc49a4a, 0.9);
     var sensor = sensorZone(scene, cfg.sensorX, cfg.sensorY, cfg.sensorW || 150, cfg.sensorH || 84);
     var lamp = scene.add.rectangle(cfg.signX + 54, cfg.signY - 8, 10, 10, 0x8a7d62, 1).setDepth(11);
@@ -308,12 +309,14 @@
         gate.lamp.fillColor = 0x5b8f6a;
         world.stats.restOpens += 1;
         world.receiptFlags.restOpened = true;
+        world.receiptFlags.cigaretteLit = false;
+        if (world.runState.worldFlags) world.runState.worldFlags.cigaretteWillNotLight = true;
         updateRunState(world);
+        gate.core.evaluate({ action: 'wait', elapsedMs: gate.windowMs });
         if (ns.Events && ns.Events.emit) {
-          ns.Events.emit('contradiction:follow', { gateId: sign.id, action: 'wait', elapsedMs: gate.windowMs });
           ns.Events.emit('module:passed', { roomId: room.id, moduleId: sign.id });
         }
-        if (source === 'debug') awardSync(world, gate, world.player.x, world.player.y);
+        awardSync(world, gate, world.player.x, world.player.y);
       },
       rush: function(source){
         var now = world.scene.time.now;
@@ -327,10 +330,16 @@
         world.stats.rushRebounds += 1;
         world.receiptFlags.rushedRest = true;
         updateRunState(world);
+        gate.core.evaluate({ action: 'move', elapsedMs: 120 });
         if (!gate.rushLogged && ns.Events && ns.Events.emit) {
           gate.rushLogged = true;
-          ns.Events.emit('contradiction:defy', { gateId: sign.id, action: 'move', elapsedMs: 120 });
           ns.Events.emit('module:skipped', { roomId: room.id, moduleId: sign.id });
+        }
+        if (cfg.rushUnlocks && !gate.opened) {
+          gate.opened = true;
+          destroyThing(gate.door);
+          gate.door = null;
+          gate.lamp.fillColor = 0xc49a4a;
         }
         if (source === 'debug' && ns.Events && ns.Events.emit) {
           ns.Events.emit('movement:backtrack', { distance: 24, x: world.player.x, y: world.player.y });
@@ -342,15 +351,63 @@
         gate.rushLogged = false;
         gate.lastRushMs = 0;
         gate.lamp.fillColor = 0x8a7d62;
+        gate.core.resolved = false;
+        gate.core.outcome = null;
         destroyThing(gate.door);
         gate.door = null;
         gate.createDoor();
       }
     };
+    gate.core = ns.Contradiction.gate({
+      sign: { id: sign.id },
+      expectedBehavior: 'wait',
+      windowMs: gate.windowMs,
+      onFollow: function(){
+        world.receiptFlags.restOpened = true;
+        world.receiptFlags.cigaretteLit = false;
+        if (world.runState.worldFlags) world.runState.worldFlags.cigaretteWillNotLight = true;
+        updateRunState(world);
+        return 'open';
+      },
+      onDefy: function(){
+        world.receiptFlags.rushedRest = true;
+        updateRunState(world);
+        return 'loop';
+      }
+    });
     gate.createDoor();
     room.restGate = gate;
     world.restGate = gate;
+    world.restGates.push(gate);
     return gate;
+  }
+
+  function buildSoftBelt(world, spec, startX, width){
+    var room = makeRoom(world, spec, startX, width);
+    addBackdrop(world, room, 0x263321, 0xc49a4a);
+    addBackdropImage(world.scene, 'carpet_tile_seamless', startX + 720, 456, 360, 40, 1.5, 0.34);
+    addBackdropImage(world.scene, 'fluorescent_light_fixture', startX + 720, 42, 150, 74, 1.55, 0.24);
+    addPlatform(world, room, startX + 200, 432, 480, 28, 0x61784f, 1, 4);
+    addPlatform(world, room, startX + 720, 432, 360, 18, 0x61784f, 1, 4);
+    addPlatform(world, room, startX + 1120, 360, 260, 28, 0xe8d9b1, 1, 4);
+    addSign(world, room, startX + 430, 392, spec.actionSigns[0], { id: 'rasta-belt-speed', width: 130 });
+    addSign(world, room, startX + 945, 322, spec.actionSigns[1], { id: 'rasta-belt-fire', width: 124 });
+    makeRestGate(world, room, {
+      id: 'rasta-belt-rest',
+      signX: startX + 170,
+      signY: 360,
+      text: spec.contradictionSign,
+      padX: startX + 720,
+      padY: 420,
+      sensorX: startX + 720,
+      sensorY: 392,
+      sensorW: 220,
+      sensorH: 90,
+      doorX: startX + 1012,
+      doorY: 386,
+      rushUnlocks: true
+    });
+    return room;
   }
 
   function buildReceiving(world, spec, startX, width){
@@ -547,7 +604,7 @@
   }
 
   function updateRestGate(world, dtMs){
-    var gate = world.restGate;
+    var gate = world.currentRoom && world.currentRoom.restGate ? world.currentRoom.restGate : null;
     if (!gate || gate.opened || world.currentRoom !== gate.room) return;
     if (!intersects(world.player, gate.sensor)) {
       gate.restingMs = 0;
@@ -591,7 +648,9 @@
     for (i = 0; i < world.sortingMachines.length; i++) {
       world.sortingMachines[i].cooldownUntil = 0;
     }
-    if (world.restGate) world.restGate.reset();
+    for (i = 0; i < world.restGates.length; i++) {
+      if (world.restGates[i] && world.restGates[i].reset) world.restGates[i].reset();
+    }
     updateRunState(world);
     rememberRoom(world, world.rooms[0].id);
     world.currentRoom = world.rooms[0];
@@ -634,7 +693,7 @@
       }
     }
 
-    if (room.id === 'warm-exit' && room.restGate) {
+    if ((room.id === 'warm-exit' || room.id === 'rasta-soft-belt') && room.restGate) {
       world.player.x = room.restGate.sensor.x;
       world.player.y = world.horizon - 28;
       if (ambient) {
@@ -668,17 +727,9 @@
     style = style || 'ambient';
     resetDebug(world);
 
-    var markers = [
-      [0, 180, 340, 520],
-      [580, 760, 920, 1120],
-      [1180, 1360, 1540, 1720],
-      [1780, 1960, 2140, 2320],
-      [2380, 2560, 2740, 2920],
-      [2980, 3160, 3340, 3520]
-    ];
-
     for (var i = 0; i < world.rooms.length; i++) {
-      scriptRoom(world, world.rooms[i], style, markers[i]);
+      var base = i * 580;
+      scriptRoom(world, world.rooms[i], style, [base, base + 180, base + 340, base + 520]);
     }
 
     scene.completeRun('debug:' + style);
@@ -707,7 +758,7 @@
       runState: runState,
       manifest: manifest,
       horizon: horizon,
-      width: roomWidth * 6,
+      width: roomWidth * manifest.rooms.length,
       rooms: [],
       platforms: [],
       syncPlatforms: [],
@@ -715,6 +766,7 @@
       signs: [],
       goal: null,
       restGate: null,
+      restGates: [],
       currentRoom: null,
       currentRoomId: manifest && manifest.rooms && manifest.rooms[0] ? manifest.rooms[0].id : 'receiving-dock',
       roomOrder: [],
@@ -743,7 +795,8 @@
     buildRestLanding(world, manifest.rooms[2], roomWidth * 2, roomWidth);
     buildSortingFloor(world, manifest.rooms[3], roomWidth * 3, roomWidth);
     buildHumming(world, manifest.rooms[4], roomWidth * 4, roomWidth);
-    buildWarmExit(world, manifest.rooms[5], roomWidth * 5, roomWidth);
+    buildSoftBelt(world, manifest.rooms[5], roomWidth * 5, roomWidth);
+    buildWarmExit(world, manifest.rooms[6], roomWidth * 6, roomWidth);
 
     for (var i = 0; i < world.platforms.length; i++) {
       scene.physics.add.collider(world.player, world.platforms[i]);
@@ -779,11 +832,11 @@
     for (var i = 0; i < world.sortingMachines.length; i++) {
       if (world.sortingMachines[i] && world.sortingMachines[i].destroy) world.sortingMachines[i].destroy();
     }
-    if (world.restGate) {
-      destroyThing(world.restGate.door);
-      destroyThing(world.restGate.sensor);
-      destroyThing(world.restGate.pad);
-      destroyThing(world.restGate.lamp);
+    for (i = 0; i < world.restGates.length; i++) {
+      destroyThing(world.restGates[i].door);
+      destroyThing(world.restGates[i].sensor);
+      destroyThing(world.restGates[i].pad);
+      destroyThing(world.restGates[i].lamp);
     }
   }
 

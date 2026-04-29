@@ -1,7 +1,7 @@
 # Fixed-Step Accumulator — Current State
 
 **Last updated:** 2026-04-28
-**Sprint:** CEHP-Sprint-NEXT+1 wall-jump fix then scene onStep activation
+**Sprint:** CEHP-Sprint-NEXT+3 launch gate remains active after W11 byte prep
 **Module:** [src/04_fixed_step.js](../../game/src/04_fixed_step.js)
 
 ## Layered accumulators
@@ -67,6 +67,8 @@ Replay corpus details live in [replay-format.md](replay-format.md). The current 
 - `ACTIVE/game/_canon/replays/cehp/w2_benefits_insured.json`
 - `ACTIVE/game/_canon/replays/cehp/w3_rasta_short.json`
 
+W11 content did not add or rebaseline fixtures yet because the exact Architect room/sign/fragment spec is still missing. The corpus remains three fixtures until that authored spec lands.
+
 Run only the corpus with:
 
 ```sh
@@ -87,7 +89,7 @@ The historical W10 Phase 6 `movement:wallJump` divergence no longer reproduces i
 
 ## Sacred-constraint check
 
-- Single-file artifact: `index.html` remains under the 358,400 B sprint cap after rebuild.
+- Single-file artifact: `index.html` remains under the 372,000 B launch cap after rebuild.
 - ES5 runtime: `91_scenes.js` remains minified ES5.
 - Phaser via CDN: no new dependency.
 - Save schema: `cactusEd_save_v1` untouched.

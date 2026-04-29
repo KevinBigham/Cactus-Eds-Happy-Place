@@ -5,7 +5,7 @@
   "shipArtifact": {
     "file": "index.html",
     "buildCommand": "node build.js",
-    "maxBytes": 409600
+    "maxBytes": 372000
   },
   "worlds": ["orientation", "benefits", "rasta"],
   "requiredFiles": [

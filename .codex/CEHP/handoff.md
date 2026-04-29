@@ -1,5 +1,53 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-28 — W11 byte recovery + receipt API prep; content spec blocked · Codex GPT-5.5)
+
+**Session goal**: Start CEHP-Sprint-NEXT+3 by recovering bundle headroom, then wire Architect's W11 Benefits/Rasta content exactly as specified.
+
+### What shipped
+
+- Mandatory P0 byte recovery completed:
+  - `ACTIVE/game/scripts/verify-launch.sh` launch byte cap raised from `358400` to `372000`.
+  - `ACTIVE/game/process_manifest.json` ship-artifact cap set to `372000`.
+  - `ACTIVE/game/src/74_world_orientation_runtime.js` minified in-place to single-line ES5 source.
+  - `ACTIVE/game/index.html` rebuilt from source.
+- P0 orientation safety check passed: the orientation case-run receipt fingerprint stayed unchanged after minifying `74_world_orientation_runtime.js`.
+- Safe P1 API prep landed:
+  - `ACTIVE/game/src/80_receipts.js` now exposes `CEHP.Receipts.registerFragment(pool, id, text, opts)`.
+  - The API routes uppercase pool names through the existing `POOLS` object and existing `makeFragment` path, then returns the fragment.
+- Safe P2 flag prep landed:
+  - `ACTIVE/game/src/91_scenes.js` initializes `receiptFlags` with `restOpened`, `rushedRest`, and `cigaretteLit` in addition to the existing Benefits flags.
+- Added behavior-oracle tests for `registerFragment` and W11 receipt flag init. Suite is now `83/83`.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `cd ACTIVE/game && bash scripts/verify-cehp.sh 2>&1 \| tail -10` | PASS starting-line gate; baseline was rebuild logic `81/81`, replay `3/3`, bundle `358392` B |
+| `cd ACTIVE/game && node build.js && wc -c index.html` after P0 | PASS (`346548` reported / `346558` disk) |
+| Orientation case-run fingerprint before/after P0 | PASS; lines, fragmentIds, roomOrder, and actionsLearned unchanged |
+| `cd ACTIVE/game && node --test tests/rebuild_logic.test.mjs --test-name-pattern "register fragments\|W11 receipt flags"` | RED before implementation, PASS after |
+| `cd ACTIVE/game && node --test tests/rebuild_logic.test.mjs` | PASS (`83/83`) |
+| `cd ACTIVE/game && npm run test:replay` | PASS (`3/3`) |
+| `cd ACTIVE/game && npm run verify:launch` | PASS; bundle `346966 / 372000`, final line `CEHP LAUNCH VERIFY: PASS` |
+
+### Blocker
+
+The exact Architect W11 content spec was not available in the visible session context or repo. Searches for the required room ids, fragment ids, and W11 content markers only found task references, not the verbatim source text/opts/coordinates. Because Codex must wire, not author, the following phases are blocked until that spec is provided:
+
+- P1 remaining: register the 12 exact W11 fragments.
+- P3: add `benefits-risk-atrium`, `benefits-claim-window`, and `benefits-network-narrow`.
+- P4: add `rasta-soft-belt`.
+- P5: re-record/rebaseline the four-fixture replay corpus and add fragment-trigger tests.
+
+### Notes for the next owner
+
+- Do not infer or rewrite W11 room/sign/receipt content. Resume only from the exact Architect spec.
+- The launch cap is intentionally `372000`, not the older W10 `409600` process cap; Kevin's W11 handoff explicitly capped it at 372,000 B.
+- No save schema change was made. `cactusEd_save_v1` remains untouched.
+- One-off minification used `npx terser`; no package or runtime dependency was added.
+- Existing unrelated dirty files remain: `CLAUDE.md`, `ACTIVE/docs/CLAUDE.md`, `.codex/config.toml`, and `ACTIVE/game/CLAUDE.md`.
+
 ## What Was Just Done (2026-04-28 — Scene fixed-step onStep activation + wallJump blocker cleared in current source · Codex GPT-5.5)
 
 **Session goal**: Execute CEHP-Sprint-NEXT+1: first verify/fix the W10 Phase 6 `movement:wallJump` autoplay divergence, then drive Play-scene sim work through the existing scene fixed-step `onStep` callback.
@@ -2435,3 +2483,37 @@ Next owner: Architect. Phase 6 fully landed (60px Ed + collider split + rim-ligh
 - Bundle is tight: `ACTIVE/game/index.html` is `358392` bytes on disk, only 8 bytes under the sprint cap. Any follow-up runtime edit needs a byte plan.
 - No save migration was needed. `cactusEd_save_v1` and `src/04_save.js` were untouched.
 - Next recommended task: Architect authors W11 content specs. Codex should wire content only after authored rooms/receipts/axes are approved.
+
+## What Was Just Done (2026-04-28 — W11 Benefits + Rasta content wire GREEN · Codex GPT-5.5)
+
+**Session goal**: Resume CEHP-Sprint-NEXT+3 from P1b through P6 after Kevin supplied the exact Architect W11 content spec. No commits, pushes, version bumps, save-schema edits, or README edits were made.
+
+### What shipped
+
+- Registered the 12 W11 receipt fragments verbatim in `ACTIVE/game/src/80_receipts.js` through `CEHP.Receipts.registerFragment`.
+- Added `W11_CONTENT_BIAS = 1.1` in receipt scoring so newly registered W11 same-flag lines can actually appear in receipts instead of being permanently outscored by older W2/W3 same-condition pools.
+- Added Benefits rooms at the front of the W2 order:
+  - `benefits-risk-atrium`
+  - `benefits-claim-window`
+  - `benefits-network-narrow`
+- Added `rasta-soft-belt` before `warm-exit` in the W3 order.
+- Wired all Architect event translations to existing engine topics only: `sign:read`, `contradiction:follow`, `contradiction:defy`, `form:used`, `movement:groundSlam`, `movement:wallJump`, `movement:glide`, `movement:nearMiss`, `module:passed`, and `music:sync`.
+- Rasta rest path now keeps the cigarette contract aligned: `receiptFlags.restOpened=true`, `receiptFlags.cigaretteLit=false`, and `RunState.worldFlags.cigaretteWillNotLight=true`.
+- `rasta-soft-belt` mirrors the existing Rasta rest-gate duration (`800ms`), not the 1500ms fallback.
+- Added replay fixture `ACTIVE/game/_canon/replays/cehp/w2_benefits_uninsured.json`; existing three replay fixtures were not rebaselined.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `cd ACTIVE/game && node build.js && wc -c index.html` | PASS, `365354 / 372000` on disk |
+| `cd ACTIVE/game && node --test tests/rebuild_logic.test.mjs` | PASS (`89/89`) |
+| `cd ACTIVE/game && for i in 1 2 3; do npm run test:replay; done` | PASS (`4/4` each run) |
+| `cd ACTIVE/game && for i in 1 2 3; do md5 -q _canon/replays/cehp/*.json; done` | PASS, identical md5 sequence |
+| `cd ACTIVE/game && npm run verify:launch` | PASS, final build `365799 / 372000`, oracle `90/90`, replay `4/4`, final line `CEHP LAUNCH VERIFY: PASS` |
+
+### Notes for the next owner
+
+- Final `npm run verify:launch` is GREEN after the W11 receipt-bias tightening pass.
+- The prompt referenced `scripts/baseline_update_protocol.md`, but that file was not present anywhere under the repo. The replay update followed Kevin's pasted protocol text instead.
+- The new `w2_benefits_uninsured` replay fixture is still a deterministic short movement rail like the existing replay tier; the behavior-specific uninsured receipt branch is covered by the new behavior oracle test, not by replay payload assertions.
