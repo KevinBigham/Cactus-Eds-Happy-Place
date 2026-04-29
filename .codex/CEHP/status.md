@@ -219,3 +219,26 @@ Phase 6 wall-jump single-owner landed 2026-04-24 per architect call (ChatGPT 5.4
     `a412c8427605feef317987764b0a018b`,
     `6812183919a381e6dc1f4e6e05febbf7`.
 - Notes: no bundled runtime source, save schema, authored rooms, deferred W11 mechanics, or pre-session dirty-file edits.
+
+## 2026-04-29 - W12 P7 Asset Cleanup GREEN
+
+- Current state: W12 P1-P7 are GREEN on branch `codex/cehp-w12-polish-launch-prep`; end-of-sprint handoff JSON is next.
+- Bundle: unchanged by P7; `ACTIVE/game/index.html` remains `354,011 / 409,600` bytes.
+- Oracle: unchanged by P7; behavior oracle remains `117/117`.
+- Replay: unchanged by P7; replay corpus remains `10/10`.
+- What changed:
+  - Moved 8 orphan PNG candidates from `ACTIVE/game/art/` to `ACTIVE/game/art/_orphans/`.
+  - Updated `ACTIVE/game/scripts/verify_art_assets.mjs` so it verifies the 25 active top-level expected assets and ignores archived orphan PNGs.
+  - Installed the local `pngquant` CLI through Homebrew for this workstation only; no project dependency or play-path library was added.
+  - Compressed 23 active oversize PNGs and 7 orphan oversize PNGs with `pngquant --quality=70-85 --force --skip-if-larger --ext .png`.
+- Asset size result:
+  - Active top-level PNG bytes after orphan move: `6,032,806`.
+  - Active-plus-orphan PNG bytes before cleanup: `7,759,150`.
+  - Active top-level PNG bytes after compression: `1,492,309`.
+  - Active-plus-orphan PNG bytes after compression: `1,957,754`.
+  - Reduction against the original active top-level inventory: `5,801,396` bytes, or `74.8%`.
+- Verification:
+  - `node ACTIVE/game/scripts/verify_art_assets.mjs` PASS after orphan move (`25/25`).
+  - `node ACTIVE/game/scripts/verify_art_assets.mjs` PASS after active PNG compression (`25/25`).
+  - `node ACTIVE/game/scripts/verify_art_assets.mjs` PASS after orphan PNG compression (`25/25`).
+- Notes: no runtime source, save schema, replay fixture, authored content, or pre-session dirty-file edit was changed in P7.

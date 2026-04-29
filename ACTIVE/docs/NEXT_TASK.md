@@ -14,8 +14,8 @@ When this task is complete, the completing agent updates this file with the next
 ## TASK_ID: CEHP-REBUILD-W12-POLISH-PREP
 ## TITLE: W12 polish + launch prep specification
 ## TASK_OWNER_ROLE: Codex (builder)
-## CURRENT_STAGE: 2026-04-29 — W12 P6 replay fixtures GREEN; bundle 354,011 / 409,600, oracle 117/117, replay 10/10
-## NEXT_HANDLER_ROLE: Codex executes P7 asset cleanup
+## CURRENT_STAGE: 2026-04-29 — W12 P7 asset cleanup GREEN; bundle 354,011 / 409,600, oracle 117/117, replay 10/10
+## NEXT_HANDLER_ROLE: Codex prepares W12 handoff JSON
 ## STATUS: ACTIVE
 ## DEADLINE: W12 polish prep window; no public deploy without Kevin approval
 
@@ -65,10 +65,11 @@ Completed W12 work:
 - P4 density check is GREEN; `ACTIVE/game/scripts/check_density.mjs` is hooked into `verify-launch.sh` between `art_assets` and `behavior_oracle`, with current max density Orientation `1/5`, Benefits `4/5`, Rasta `0/5`.
 - P5 procedural Web Audio is GREEN; `ACTIVE/game/src/30_audio.js` now exposes `Audio.playAmbient(worldKey)`, `Audio.stopAmbient()`, and `Audio.event(eventKey)` with legacy `start`/`stop` aliases, three deterministic ambient beds, six <=300ms event hits, and 300ms ambient ducking.
 - P6 replay fixture expansion is GREEN; corpus is now 10 fixtures, with new coverage for Benefits default completion, Rasta dark-cigarette baseline, and Rasta rest-open completion. Gold md5s are pinned in `.codex/CEHP/w12_replay_hashes.md`.
+- P7 asset cleanup is GREEN; 8 orphan PNGs moved to `ACTIVE/game/art/_orphans/`, all 30 oversize PNGs were compressed with `pngquant --quality=70-85`, active-plus-orphan PNG bytes dropped from `7,759,150` to `1,957,754` (74.8% reduction), and `verify_art_assets` now checks 25 active expected assets.
 
 Current W12 builder lanes:
 
-1. P7 asset orphan quarantine and PNG compression.
+1. Prepare end-of-sprint handoff JSON.
 
 ## ACCEPTANCE GATES
 

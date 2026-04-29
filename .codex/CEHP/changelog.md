@@ -2713,3 +2713,23 @@ Plan specifies: read 5 receipts from the same 5 case seeds before + after. Does 
 - summary: expanded the replay harness with a `receipt-completion` debug plan and added three browser-run fixtures for actual P2 audit gap paths: Benefits default completion, Rasta dark-cigarette baseline, and Rasta rest-open completion.
 - verification: `npm run --prefix ACTIVE/game test:replay` PASS (`10/10`); three replay runs all ended `SUMMARY PASS 10/10`; md5 sequence matched exactly across all three reads and is pinned in `.codex/CEHP/w12_replay_hashes.md`.
 - notes: no bundled runtime source, save schema edit, new room, deferred mini-boss/setpiece, runtime dependency, or pre-session dirty-file edit.
+
+## 2026-04-29 - W12 P7 Asset Cleanup GREEN
+- files changed:
+  - `ACTIVE/game/scripts/verify_art_assets.mjs`
+  - `ACTIVE/game/art/_orphans/cactus_ed_in_game_sprite.png`
+  - `ACTIVE/game/art/_orphans/cactus_ed_portraits_masked.png`
+  - `ACTIVE/game/art/_orphans/cactus_ed_portraits_unmasked.png`
+  - `ACTIVE/game/art/_orphans/paper_hr_memo.png`
+  - `ACTIVE/game/art/_orphans/stamps_sheet.png`
+  - `ACTIVE/game/art/_orphans/ui_clipboard.png`
+  - `ACTIVE/game/art/_orphans/ui_locker.png`
+  - `ACTIVE/game/art/_orphans/ui_training_poster.png`
+  - Active referenced PNG assets under `ACTIVE/game/art/*.png`
+  - `.codex/CEHP/status.md`
+  - `.codex/CEHP/handoff.md`
+  - `.codex/CEHP/changelog.md`
+  - `ACTIVE/docs/NEXT_TASK.md`
+- summary: quarantined 8 orphan PNGs under `art/_orphans/`, narrowed the art verifier to 25 active expected assets, and compressed all 30 oversize active/orphan PNGs with `pngquant --quality=70-85`.
+- verification: `node ACTIVE/game/scripts/verify_art_assets.mjs` PASS after orphan move, after active compression, and after orphan compression; active-plus-orphan PNG bytes dropped from `7,759,150` to `1,957,754` (74.8% reduction).
+- notes: no bundled runtime source, save schema edit, authored content, replay fixture, or pre-session dirty-file edit.

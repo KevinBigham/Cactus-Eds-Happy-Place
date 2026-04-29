@@ -2744,3 +2744,36 @@ Next owner: Architect. Phase 6 fully landed (60px Ed + collider split + rim-ligh
 
 - P7 is next: move the 8 orphan PNG candidates to `ACTIVE/game/art/_orphans/`, compress the 30 oversize PNGs in place with originals preserved under `ACTIVE/game/art/_originals/`, and run `verify_art_assets` after each batch.
 - P6 did not touch bundled runtime source, save schema, authored room content, or deferred W11 mini-boss/setpiece mechanics.
+
+## What Was Just Done (2026-04-29 - W12 P7 Asset Cleanup GREEN - Codex GPT-5.5)
+
+**Session goal**: Preserve orphan assets, reduce PNG weight, and keep launch verification green without touching gameplay runtime.
+
+### What shipped
+
+- Moved 8 orphan candidates to `ACTIVE/game/art/_orphans/`:
+  - `cactus_ed_in_game_sprite.png`
+  - `cactus_ed_portraits_masked.png`
+  - `cactus_ed_portraits_unmasked.png`
+  - `paper_hr_memo.png`
+  - `stamps_sheet.png`
+  - `ui_clipboard.png`
+  - `ui_locker.png`
+  - `ui_training_poster.png`
+- Updated `ACTIVE/game/scripts/verify_art_assets.mjs` to verify 25 active top-level assets.
+- Compressed all 30 oversize active/orphan PNGs with `pngquant --quality=70-85`.
+- Active-plus-orphan PNG bytes dropped from `7,759,150` to `1,957,754` (74.8% reduction).
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `node ACTIVE/game/scripts/verify_art_assets.mjs` after orphan move | PASS (`25/25`) |
+| `node ACTIVE/game/scripts/verify_art_assets.mjs` after active compression | PASS (`25/25`) |
+| `node ACTIVE/game/scripts/verify_art_assets.mjs` after orphan compression | PASS (`25/25`) |
+
+### Notes for the next owner
+
+- P7 installed `pngquant` on the workstation through Homebrew only; no project dependency or play-path library was added.
+- Existing `ACTIVE/game/art/_originals/` backups remain in place. No backup asset was deleted.
+- Next step is the W12 end-of-sprint handoff JSON, followed by final full verification.
