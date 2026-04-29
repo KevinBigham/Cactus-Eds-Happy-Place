@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "level_id": "rasta",
+  "engine_version": "0.2.0-rebuild",
+  "ruleset": "R2",
+  "seed": "REPLAY-W3-RASTA-REST-OPEN",
+  "debug_plan": "receipt-completion",
+  "completion": {
+    "world_id": "rasta",
+    "room_id": "rasta-rest-open",
+    "room_order": [
+      "rasta-rest-open"
+    ],
+    "actions_learned": [],
+    "receipt_flags": {
+      "restOpened": true,
+      "rushedRest": false,
+      "cigaretteLit": false
+    },
+    "world_stats": {
+      "syncMoments": 3,
+      "restOpens": 2,
+      "rushRebounds": 0,
+      "sortingRedirects": 0
+    },
+    "world_flags": {
+      "cigaretteWillNotLight": true
+    },
+    "axes": {
+      "primary": {
+        "intuition": 1,
+        "grace": 1
+      },
+      "micro": {
+        "musicSync": 3,
+        "contradictionFollow": 3
+      }
+    }
+  },
+  "initial_state": {
+    "x": 72,
+    "y": 396,
+    "facing": 1
+  },
+  "frames": [],
+  "expected_checkpoints": [],
+  "expected_final": {
+    "frame": 0,
+    "recorder_signature": "debug-plan",
+    "axes_snapshot": {},
+    "receipt_lines": []
+  },
+  "expected_debug": {
+    "world_id": "rasta",
+    "room_id": "rasta-rest-open",
+    "room_order": [
+      "rasta-rest-open"
+    ],
+    "actions_learned": [],
+    "receipt_flags": {
+      "restOpened": true,
+      "rushedRest": false,
+      "cigaretteLit": false
+    },
+    "world_stats": {
+      "syncMoments": 3,
+      "restOpens": 2,
+      "rushRebounds": 0,
+      "sortingRedirects": 0
+    },
+    "receipt_fragment_ids": [
+      "VERDICT_RASTA_REST_04",
+      "TENSION_RASTA_REST_01",
+      "CLOSER_RASTA_REST_03"
+    ]
+  }
+}

@@ -192,3 +192,30 @@ Phase 6 wall-jump single-owner landed 2026-04-24 per architect call (ChatGPT 5.4
   - `node ACTIVE/game/scripts/check_save_schema.js` PASS.
   - Sacred sweep on `ACTIVE/game/src/30_audio.js` found no `Math.random`, `Date.now`, `performance.now`, `const`, `let`, or arrow syntax.
 - Notes: no audio files, no runtime dependency, no save schema change, no new mechanics, no deferred mini-boss/setpiece work, and no pre-session dirty-file edits.
+
+## 2026-04-29 - W12 P6 Replay Fixtures GREEN
+
+- Current state: W12 P1-P6 are GREEN on branch `codex/cehp-w12-polish-launch-prep`; P7 asset cleanup is next.
+- Bundle: unchanged by P6; `ACTIVE/game/index.html` remains `354,011 / 409,600` bytes.
+- Oracle: unchanged by P6; behavior oracle remains `117/117`.
+- Replay: corpus expanded from `7/7` to `10/10`.
+- What changed:
+  - Added replay harness support for a `receipt-completion` debug plan so browser replay fixtures can pin actual flag-state completion paths without inventing unbuilt W11 mini-bosses or setpieces.
+  - Added `w2_benefits_default_completion.json` for the Benefits default completion path.
+  - Added `w3_rasta_dark_cigarette.json` for the Rasta dark-cigarette baseline path.
+  - Added `w3_rasta_rest_open.json` for the Rasta rest-open path.
+  - Pinned all 10 replay fixture md5s in `.codex/CEHP/w12_replay_hashes.md`.
+- Final P6 verification:
+  - Three replay runs ended `SUMMARY PASS 10/10`.
+  - All three md5 sequences matched exactly:
+    `8ed8ad52b7cf5d9527f6ffa72acc50a2`,
+    `959e9ea8165a6e07ba7f88086c87e363`,
+    `83350e61d274787443ea882bccf1eb19`,
+    `37fee2643be901fa1757daa996e36d9e`,
+    `bbacf3e1b817827f3391e01f17bd4f26`,
+    `33ead17d29a3429bb07e77a7e8b852ef`,
+    `4bc2b923c92d76c903468c7acb081150`,
+    `31cff301a90e4e1fd32ee45625d92bc0`,
+    `a412c8427605feef317987764b0a018b`,
+    `6812183919a381e6dc1f4e6e05febbf7`.
+- Notes: no bundled runtime source, save schema, authored rooms, deferred W11 mechanics, or pre-session dirty-file edits.

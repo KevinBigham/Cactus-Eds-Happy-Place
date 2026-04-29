@@ -2698,3 +2698,18 @@ Plan specifies: read 5 receipts from the same 5 case seeds before + after. Does 
 - summary: replaced the legacy four-layer Web Audio module with deterministic procedural ambient beds and event hits, added `playAmbient` / `stopAmbient` / `event` while preserving scene aliases, wired shipped event topics to diegetic hits, and added oracle coverage for ambient parameters, <=300ms envelopes, 300ms ducking, and event-bus triggers.
 - verification: focused P5 tests first failed against the old module, then passed after implementation; `node ACTIVE/game/build.js` PASS (`354001` reported / `354011` disk); `bash ACTIVE/game/scripts/verify-launch.sh` PASS (`CEHP LAUNCH VERIFY: PASS`, oracle `117/117`, replay `7/7`, bundle `354011 / 409600`); `npm run --prefix ACTIVE/game test:replay` PASS (`7/7`); save schema PASS; sacred sweep clean on `30_audio.js`.
 - notes: no audio files, MP3/chiptune assets, runtime dependency, save schema change, RNG/time violation, deferred W11 mechanics, or pre-session dirty-file edits.
+
+## 2026-04-29 - W12 P6 Replay Fixtures GREEN
+- files changed:
+  - `ACTIVE/game/scripts/run_replays.mjs`
+  - `ACTIVE/game/_canon/replays/cehp/w2_benefits_default_completion.json`
+  - `ACTIVE/game/_canon/replays/cehp/w3_rasta_dark_cigarette.json`
+  - `ACTIVE/game/_canon/replays/cehp/w3_rasta_rest_open.json`
+  - `.codex/CEHP/w12_replay_hashes.md`
+  - `.codex/CEHP/status.md`
+  - `.codex/CEHP/handoff.md`
+  - `.codex/CEHP/changelog.md`
+  - `ACTIVE/docs/NEXT_TASK.md`
+- summary: expanded the replay harness with a `receipt-completion` debug plan and added three browser-run fixtures for actual P2 audit gap paths: Benefits default completion, Rasta dark-cigarette baseline, and Rasta rest-open completion.
+- verification: `npm run --prefix ACTIVE/game test:replay` PASS (`10/10`); three replay runs all ended `SUMMARY PASS 10/10`; md5 sequence matched exactly across all three reads and is pinned in `.codex/CEHP/w12_replay_hashes.md`.
+- notes: no bundled runtime source, save schema edit, new room, deferred mini-boss/setpiece, runtime dependency, or pre-session dirty-file edit.

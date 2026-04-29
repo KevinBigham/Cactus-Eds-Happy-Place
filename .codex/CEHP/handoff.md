@@ -2719,3 +2719,28 @@ Next owner: Architect. Phase 6 fully landed (60px Ed + collider split + rim-ligh
 - P6 remains the next W12 phase: add three replay fixtures for actual under-covered completion paths from the P2 receipt audit, not the deferred mini-boss/setpiece language from the original packet.
 - `boss_telegraph` uses a 290ms envelope to stay safely under the 300ms requirement without depending on exact floating-point equality at `0.30`.
 - No save schema, runtime dependency, MP3/chiptune asset, `Math.random`, wall-clock time, new room, or deferred W11 mechanic was added.
+
+## What Was Just Done (2026-04-29 - W12 P6 Replay Fixtures GREEN - Codex GPT-5.5)
+
+**Session goal**: Add three deterministic replay fixtures for actual under-covered completion paths from the P2 receipt audit, with no deferred W11 launch-arc content.
+
+### What shipped
+
+- Extended `ACTIVE/game/scripts/run_replays.mjs` with `debug_plan: "receipt-completion"`.
+- Added three browser-run debug fixtures:
+  - `w2_benefits_default_completion.json`
+  - `w3_rasta_dark_cigarette.json`
+  - `w3_rasta_rest_open.json`
+- Pinned the full 10-fixture md5 sequence in `.codex/CEHP/w12_replay_hashes.md`.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `npm run --prefix ACTIVE/game test:replay` | PASS (`10/10`) |
+| `for run in 1 2 3; do npm run --prefix ACTIVE/game test:replay; md5 -q ACTIVE/game/_canon/replays/cehp/*.json; done` | PASS, all three replay runs `10/10`, all md5 sequences identical |
+
+### Notes for the next owner
+
+- P7 is next: move the 8 orphan PNG candidates to `ACTIVE/game/art/_orphans/`, compress the 30 oversize PNGs in place with originals preserved under `ACTIVE/game/art/_originals/`, and run `verify_art_assets` after each batch.
+- P6 did not touch bundled runtime source, save schema, authored room content, or deferred W11 mini-boss/setpiece mechanics.

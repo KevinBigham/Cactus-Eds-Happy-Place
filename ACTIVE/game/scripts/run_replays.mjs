@@ -111,6 +111,52 @@ async function runFixture(browser, file, fixture) {
         };
       }
 
+      function applyAxes(snapshot) {
+        let key;
+        if (!snapshot || !CEHP.Axes) return;
+        if (snapshot.primary && CEHP.Axes.set) {
+          for (key in snapshot.primary) {
+            if (Object.prototype.hasOwnProperty.call(snapshot.primary, key)) {
+              CEHP.Axes.set(key, snapshot.primary[key]);
+            }
+          }
+        }
+        if (snapshot.micro && CEHP.Axes.micro) {
+          for (key in snapshot.micro) {
+            if (Object.prototype.hasOwnProperty.call(snapshot.micro, key) &&
+                Object.prototype.hasOwnProperty.call(CEHP.Axes.micro, key)) {
+              CEHP.Axes.micro[key] = snapshot.micro[key];
+            }
+          }
+        }
+      }
+
+      function runReceiptCompletion(plan) {
+        plan = plan || {};
+        CEHP.Axes.reset();
+        if (CEHP.Metrics && CEHP.Metrics.reset) CEHP.Metrics.reset();
+        play.recorder.clear();
+        play.pendingDeath = null;
+        play.runComplete = false;
+        CEHP.RunState.worldId = plan.world_id || CEHP.RunState.worldId;
+        CEHP.RunState.roomId = plan.room_id || CEHP.RunState.worldId;
+        CEHP.RunState.roomOrder = clone(plan.room_order || []);
+        CEHP.RunState.actionsLearned = clone(plan.actions_learned || []);
+        CEHP.RunState.receiptFlags = clone(plan.receipt_flags || {});
+        CEHP.RunState.worldStats = clone(plan.world_stats || {});
+        CEHP.RunState.worldFlags = clone(plan.world_flags || {});
+        applyAxes(plan.axes || {});
+        play.completeRun('debug:receipt-completion');
+        return {
+          worldId: CEHP.RunState.worldId,
+          roomOrder: clone(CEHP.RunState.roomOrder),
+          actionsLearned: clone(CEHP.RunState.actionsLearned),
+          receiptFlags: clone(CEHP.RunState.receiptFlags),
+          worldStats: clone(CEHP.RunState.worldStats),
+          receipt: clone(CEHP.RunState.receipt)
+        };
+      }
+
       function runBenefitsAtriumFollow() {
         const world = play.room;
         const room = world && world.rooms ? world.rooms[0] : null;
@@ -140,6 +186,9 @@ async function runFixture(browser, file, fixture) {
 
       if (fixturePayload.debug_plan === 'benefits-atrium-follow') {
         return { passed: true, actual: compactDebug(runBenefitsAtriumFollow()) };
+      }
+      if (fixturePayload.debug_plan === 'receipt-completion') {
+        return { passed: true, actual: compactDebug(runReceiptCompletion(fixturePayload.completion)) };
       }
       if (!play.runStyle) throw new Error('missing debug runStyle');
       return { passed: true, actual: compactDebug(play.runStyle(fixturePayload.debug_style || 'obedient')) };

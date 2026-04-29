@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "level_id": "benefits",
+  "engine_version": "0.2.0-rebuild",
+  "ruleset": "R2",
+  "seed": "REPLAY-W2-BENEFITS-DEFAULT-COMPLETION",
+  "debug_plan": "receipt-completion",
+  "completion": {
+    "world_id": "benefits",
+    "room_id": "benefits-default-completion",
+    "room_order": [
+      "benefits-default-completion"
+    ],
+    "actions_learned": [],
+    "receipt_flags": {
+      "uninsuredVeteran": false,
+      "premiumSecured": false
+    },
+    "world_stats": {
+      "premiumsCollected": 0,
+      "premiumRoomsCleared": 0,
+      "deductibleHits": 0,
+      "jumpPenalty": 0,
+      "occlusionUntil": 0
+    },
+    "world_flags": {},
+    "axes": {
+      "primary": {
+        "compliance": 0.8,
+        "intuition": 0.8,
+        "efficiency": 0.8,
+        "chaos": 0.4,
+        "grace": 0.6
+      },
+      "micro": {
+        "modulesPassed": 3,
+        "nearMisses": 3
+      }
+    }
+  },
+  "initial_state": {
+    "x": 72,
+    "y": 396,
+    "facing": 1
+  },
+  "frames": [],
+  "expected_checkpoints": [],
+  "expected_final": {
+    "frame": 0,
+    "recorder_signature": "debug-plan",
+    "axes_snapshot": {},
+    "receipt_lines": []
+  },
+  "expected_debug": {
+    "world_id": "benefits",
+    "room_id": "benefits-default-completion",
+    "room_order": [
+      "benefits-default-completion"
+    ],
+    "actions_learned": [],
+    "receipt_flags": {
+      "uninsuredVeteran": false,
+      "premiumSecured": false
+    },
+    "world_stats": {
+      "premiumsCollected": 0,
+      "premiumRoomsCleared": 0,
+      "deductibleHits": 0,
+      "jumpPenalty": 0,
+      "occlusionUntil": 0
+    },
+    "receipt_fragment_ids": [
+      "W11_BENEFITS_VERDICT_NETWORK_01",
+      "W11_BENEFITS_TENSION_SLOW_01",
+      "W11_BENEFITS_CLOSER_BILLING_01"
+    ]
+  }
+}
