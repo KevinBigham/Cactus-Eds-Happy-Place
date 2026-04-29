@@ -2673,3 +2673,15 @@ Plan specifies: read 5 receipts from the same 5 case seeds before + after. Does 
 - summary: audited only shipped enemy archetypes in `60_enemies.js`, documented their effective jittered windup ranges, raised `pizzaParty` windup from `140ms` to `160ms` so seeded `-40ms` jitter cannot fall below `120ms`, and added oracle coverage for `120-400ms` bounds.
 - verification: `node ACTIVE/game/build.js` PASS (`351292` reported / `351302` disk); `bash ACTIVE/game/scripts/verify-launch.sh` PASS (`CEHP LAUNCH VERIFY: PASS`, oracle `114/114`, replay `7/7`, bundle `351302 / 409600`); `npm run --prefix ACTIVE/game test:replay` PASS (`7/7`); save schema PASS; sacred sweep clean on `60_enemies.js`.
 - notes: no save schema, RNG, mini-boss, setpiece, or pre-session dirty-file edits.
+
+## 2026-04-29 - W12 P4 Density Check GREEN
+- files changed:
+  - `ACTIVE/game/scripts/check_density.mjs`
+  - `ACTIVE/game/scripts/verify-launch.sh`
+  - `.codex/CEHP/status.md`
+  - `.codex/CEHP/handoff.md`
+  - `.codex/CEHP/changelog.md`
+  - `ACTIVE/docs/NEXT_TASK.md`
+- summary: added a static density analyzer that loads world manifests, models decision-grade threats from runtime room builders, checks every 960px camera window against the `<=5` limit, and wired it into `verify-launch.sh` between `art_assets` and `behavior_oracle`.
+- verification: `node ACTIVE/game/scripts/check_density.mjs` PASS (Orientation `1/5`, Benefits `4/5`, Rasta `0/5`, 25 threats modeled); `node ACTIVE/game/build.js` PASS (`351292` reported / `351302` disk); `bash ACTIVE/game/scripts/verify-launch.sh` PASS with `check_density` included (`CEHP LAUNCH VERIFY: PASS`, oracle `114/114`, replay `7/7`, bundle `351302 / 409600`); `npm run --prefix ACTIVE/game test:replay` PASS (`7/7`); save schema PASS.
+- notes: no bundled runtime source, save schema, RNG, room layout, or pre-session dirty-file edits.

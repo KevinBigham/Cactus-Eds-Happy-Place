@@ -62,6 +62,7 @@ run_component build node build.js
 run_component save_schema node scripts/check_save_schema.js
 run_component process_manifest node scripts/check_process_manifest.mjs
 run_component art_assets node scripts/verify_art_assets.mjs
+run_component check_density node scripts/check_density.mjs
 run_component behavior_oracle node --test tests/rebuild_logic.test.mjs
 run_component process_manifest_test node --test tests/process_manifest.test.mjs
 run_component server ensure_server

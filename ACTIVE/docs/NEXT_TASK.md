@@ -14,8 +14,8 @@ When this task is complete, the completing agent updates this file with the next
 ## TASK_ID: CEHP-REBUILD-W12-POLISH-PREP
 ## TITLE: W12 polish + launch prep specification
 ## TASK_OWNER_ROLE: Codex (builder)
-## CURRENT_STAGE: 2026-04-29 — W12 P3 telegraph audit GREEN; bundle 351,302 / 409,600, oracle 114/114, replay 7/7
-## NEXT_HANDLER_ROLE: Codex executes P4 static density analysis and launch-gate hook
+## CURRENT_STAGE: 2026-04-29 — W12 P4 density check GREEN; bundle 351,302 / 409,600, oracle 114/114, replay 7/7
+## NEXT_HANDLER_ROLE: Codex executes P5 procedural Web Audio
 ## STATUS: ACTIVE
 ## DEADLINE: W12 polish prep window; no public deploy without Kevin approval
 
@@ -62,13 +62,13 @@ Completed W12 work:
 - P2 receipt completion-flag audit is GREEN; actual registered flag keys are `premiumSecured`, `uninsuredVeteran`, `restOpened`, `cigaretteLit`, and `rushedRest`.
 - P2 added `W12_RASTA_VERDICT_DARK_01` and `W12_RASTA_TENSION_DARK_01`, made receipt scoring reject incompatible flag-specific fragments, and documented coverage in `.codex/CEHP/w12_receipt_audit.md`.
 - P3 existing-enemy telegraph audit is GREEN; `pizzaParty` windup is tuned from `140ms` to `160ms` so jittered restarts stay within `120-400ms`, and `.codex/CEHP/w12_telegraph_audit.md` documents all shipped enemy ranges.
+- P4 density check is GREEN; `ACTIVE/game/scripts/check_density.mjs` is hooked into `verify-launch.sh` between `art_assets` and `behavior_oracle`, with current max density Orientation `1/5`, Benefits `4/5`, Rasta `0/5`.
 
 Current W12 builder lanes:
 
-1. P4 static density script and launch-gate hook.
-2. P5 procedural Web Audio API and deterministic event hits.
-3. P6 replay fixture expansion for under-covered actual completion paths from the P2 audit.
-4. P7 asset orphan quarantine and PNG compression.
+1. P5 procedural Web Audio API and deterministic event hits.
+2. P6 replay fixture expansion for under-covered actual completion paths from the P2 audit.
+3. P7 asset orphan quarantine and PNG compression.
 
 ## ACCEPTANCE GATES
 

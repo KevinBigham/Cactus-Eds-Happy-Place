@@ -1,5 +1,44 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-29 - W12 P4 Density Check GREEN - Codex GPT-5.5)
+
+**Session goal**: Add the revised W12 static density guard and wire it into the launch gate.
+
+### What shipped
+
+- Added `ACTIVE/game/scripts/check_density.mjs`.
+- The script loads the 71/72/73 world manifests and models decision-grade threats from the current runtime room builders.
+- It checks every candidate `960x540` camera window against the `<=5` threat limit.
+- Hooked `check_density` into `ACTIVE/game/scripts/verify-launch.sh` between `art_assets` and `behavior_oracle`.
+- No room edits were needed.
+
+### Density Results
+
+| World | Max Density | Viewport | Notes |
+|---|---:|---:|---|
+| Orientation | `1/5` | `x=3876` | Corrective-handling blade |
+| Benefits | `4/5` | `x=6482` | Network-validation hazards plus two scantron routes |
+| Rasta | `0/5` | `x=0` | No decision-grade threats |
+
+The analyzer currently models 25 threats.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `node ACTIVE/game/scripts/check_density.mjs` | PASS |
+| `node ACTIVE/game/build.js` | PASS (`351292` reported / `351302` disk) |
+| `bash ACTIVE/game/scripts/verify-launch.sh` | PASS with `check_density`; bundle `351302 / 409600`, oracle `114/114`, replay `7/7`, final line `CEHP LAUNCH VERIFY: PASS` |
+| `npm run --prefix ACTIVE/game test:replay` | PASS (`7/7`) |
+| `node ACTIVE/game/scripts/check_save_schema.js` | PASS |
+| Script sweep | PASS; no `Math.random`, `Date.now`, or `performance.now` in touched scripts |
+
+### Notes for the next owner
+
+- Continue with P5 procedural Web Audio.
+- The P4 check is dev-time only; it adds no bundle bytes.
+- Replay corpus is still `7/7`.
+
 ## What Was Just Done (2026-04-29 - W12 P3 Telegraph Audit GREEN - Codex GPT-5.5)
 
 **Session goal**: Execute revised P3 against shipped enemies only, document timing ranges, and keep the launch gate green.
