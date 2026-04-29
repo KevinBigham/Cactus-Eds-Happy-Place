@@ -2630,3 +2630,16 @@ Plan specifies: read 5 receipts from the same 5 case seeds before + after. Does 
 - summary: completed M1-M8 infrastructure marathon: bundle trim, W11 behavior-test backfill, whole-codebase sweeps, asset audit, save robustness tests, replay corpus expansion, TODO/stale-doc triage, and final launch verification.
 - verification: `npm run verify:launch` PASS with bundle `350,854 / 372,000`, oracle `111/111`, replay `7/7`; save schema and art verifier pass; replay md5 sequence stable across three reads.
 - notes: no authored content changes, no save schema edits, no commits/pushes, no dependencies, no version bumps, and no additional in-place source minification.
+
+## 2026-04-29 - W12 P1 Byte Cap GREEN
+- files changed:
+  - `ACTIVE/game/scripts/verify-launch.sh`
+  - `ACTIVE/game/process_manifest.json`
+  - `.codex/CEHP/w12_packet.md`
+  - `.codex/CEHP/status.md`
+  - `.codex/CEHP/handoff.md`
+  - `.codex/CEHP/changelog.md`
+  - `ACTIVE/docs/NEXT_TASK.md`
+- summary: started W12 Polish + Launch Prep from Kevin/Architect packet, saved the packet copy, raised launch byte cap enforcement from `372000` to `409600`, and kept the hardened server poll-loop unchanged.
+- verification: `node ACTIVE/game/build.js` PASS (`350844` reported / `350854` disk); `bash ACTIVE/game/scripts/verify-launch.sh` PASS (`CEHP LAUNCH VERIFY: PASS`, process cap `350854 <= 409600`, oracle `111/111`, replay `7/7`); `npm run --prefix ACTIVE/game test:replay` PASS (`7/7`).
+- notes: no save schema, RNG, W11 content, or pre-session dirty-file edits.

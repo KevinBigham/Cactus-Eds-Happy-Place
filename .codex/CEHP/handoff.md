@@ -2553,3 +2553,27 @@ Next owner: Architect. Phase 6 fully landed (60px Ed + collider split + rim-ligh
 - `.codex/CEHP/marathon_findings.md` has 60 structured findings/triage entries. Biggest handoff items: 30 PNGs over 100 KB, 8 orphan asset candidates, and existing wall-clock `Date.now()` sites outside the sim path.
 - The M1 trim includes generated-bundle whitespace normalization in `build.js`; no additional source module was minified in place.
 - W12 remains Architect/Kevin-owned until the exact polish-prep packet lands.
+
+## What Was Just Done (2026-04-29 - W12 P1 Byte Cap GREEN - Codex GPT-5.5)
+
+**Session goal**: Start Kevin/Architect W12 Polish + Launch Prep and execute P1 cap raise without touching pre-session dirty docs/settings or changing save schema.
+
+### What shipped
+
+- Saved the W12 sprint packet at `.codex/CEHP/w12_packet.md`.
+- Raised `ACTIVE/game/scripts/verify-launch.sh` bundle echo/comparison from `372000` to `409600`.
+- Raised `ACTIVE/game/process_manifest.json` `shipArtifact.maxBytes` to `409600` so `verify:launch` does not still enforce the old cap through `check_process_manifest.mjs`.
+- Left the verify-launch poll-loop unchanged.
+- Updated `ACTIVE/docs/NEXT_TASK.md` from queued W12 planning to active Codex W12 execution.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `node ACTIVE/game/build.js` | PASS, `350844` reported / `350854` on disk |
+| `bash ACTIVE/game/scripts/verify-launch.sh` | PASS, process cap `350854 <= 409600`, oracle `111/111`, replay `7/7`, final line `CEHP LAUNCH VERIFY: PASS` |
+| `npm run --prefix ACTIVE/game test:replay` | PASS (`7/7`) |
+
+### Notes for the next owner
+
+- P2 has a local-source mismatch to resolve conservatively: the packet references W11 mini-boss defeat completions and setpiece completions, but current source searches found no shipped systems named Supervisor / Enrollment / Logistics or Trust Fall / Open Concept / Supply Chain. Do not invent new mechanics or rooms; only add completion-event receipt coverage for seams that exist or can be proven from source.

@@ -54,8 +54,8 @@ ensure_server() {
 
 check_bundle_bytes() {
   bytes="$(wc -c < index.html | tr -d ' ')"
-  echo "Bundle bytes: $bytes / 372000"
-  [ "$bytes" -lt 372000 ]
+  echo "Bundle bytes: $bytes / 409600"
+  [ "$bytes" -lt 409600 ]
 }
 
 run_component build node build.js

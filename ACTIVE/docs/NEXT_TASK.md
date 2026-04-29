@@ -13,10 +13,10 @@ When this task is complete, the completing agent updates this file with the next
 
 ## TASK_ID: CEHP-REBUILD-W12-POLISH-PREP
 ## TITLE: W12 polish + launch prep specification
-## TASK_OWNER_ROLE: Architect or Kevin (planning)
-## CURRENT_STAGE: 2026-04-29 — W11.5 polish hardening GREEN; W12 polish prep queued with bundle 350,854 / 372,000, oracle 111/111, replay 7/7
-## NEXT_HANDLER_ROLE: Architect/Kevin defines W12 audio, density, autoplay, receipt, and launch-prep scope; Codex waits for a builder handoff
-## STATUS: QUEUED
+## TASK_OWNER_ROLE: Codex (builder)
+## CURRENT_STAGE: 2026-04-29 — W12 P1 byte cap GREEN; bundle 350,854 / 409,600, oracle 111/111, replay 7/7
+## NEXT_HANDLER_ROLE: Codex executes P2 receipt-gen completeness audit conservatively against existing completion seams
+## STATUS: ACTIVE
 ## DEADLINE: W12 polish prep window; no public deploy without Kevin approval
 
 ## CONTEXT
@@ -48,34 +48,29 @@ Completed W11.5 hardening:
 
 Final W11.5 verification is recorded in `.codex/CEHP/handoff.md` and the Codex final response.
 
-## REQUIRED INPUT TO UNBLOCK W12
+## W12 PACKET NOW ACTIVE
 
-Architect/Kevin should define the exact W12 polish-prep packet:
+Kevin/Architect supplied the W12 builder handoff on 2026-04-29. A copy is saved at `.codex/CEHP/w12_packet.md`.
 
-- Audio decision path: chip-tune vs analog drone, including Kevin-gated listening criteria.
-- Telegraph tightening scope and which enemy/setpiece reads are in bounds.
-- Density audit target: keep decision-grade threats at or below 5 per screen.
-- Cross-browser 60fps matrix and target browsers/devices.
-- Byte recapture or cap posture for the W12 400KB lane.
-- Autoplay/replay extensions needed for W11 rooms and any W12 probes.
-- Receipt generation update scope for W10/W11 verbs and new W11 branches.
-- Docs refresh scope for `KNOWN_ISSUES.md`, `A11Y_STATUS.md`, and launch-prep docs.
+Completed W12 work:
 
-## RESUME SCOPE FOR CODEX
+- P1 byte cap raise is GREEN.
+- `ACTIVE/game/scripts/verify-launch.sh` now reports and enforces `409600`.
+- `ACTIVE/game/process_manifest.json` `shipArtifact.maxBytes` now matches `409600`.
+- `verify-launch.sh` poll-loop was not changed.
 
-Codex should not implement W12 until the Architect/Kevin packet lands and `TASK_OWNER_ROLE` is flipped back to Codex.
+Current W12 builder lanes:
 
-Likely builder lanes after handoff:
-
-1. Add W12 tests first for the chosen audio/density/autoplay/receipt changes.
-2. Wire minimal W12 polish code inside existing modules only.
-3. Extend replay/autoplay fixtures only with documented rationale.
-4. Run save schema, behavior oracle, replay corpus, and `npm run verify:launch`.
-5. Append `.codex/CEHP/status.md`, `handoff.md`, and `changelog.md`.
+1. P2 receipt-gen completeness audit and behavior-oracle coverage for existing completion seams only.
+2. P3 telegraph windup audit/tune with `120 <= windup <= 400 ms`.
+3. P4 static density script and launch-gate hook.
+4. P5 procedural Web Audio API and deterministic event hits.
+5. P6 replay fixture expansion only if the named mini-boss completion paths exist in source.
+6. P7 asset orphan quarantine and PNG compression.
 
 ## ACCEPTANCE GATES
 
-- `cd ACTIVE/game && node build.js && wc -c index.html` stays under the active cap; current bundle is `350,854 / 372,000`.
+- `cd ACTIVE/game && node build.js && wc -c index.html` stays under the active cap; current bundle is `350,854 / 409,600`.
 - `cd ACTIVE/game && node scripts/check_save_schema.js` passes.
 - `cd ACTIVE/game && node --test tests/rebuild_logic.test.mjs` passes; current oracle is `111/111`.
 - `cd ACTIVE/game && npm run test:replay` passes deterministic corpus; current replay corpus is `7/7`.
