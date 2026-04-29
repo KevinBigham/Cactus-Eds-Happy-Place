@@ -1,5 +1,28 @@
 # CEHP Changelog
 
+## 2026-04-29 — W13 P5 launch dress rehearsal · Codex GPT-5.5
+
+**Context**: W13 P5 required Codex to execute a cold-clone launch rehearsal once and write the T-1 recipe Kevin reruns on Thursday 2026-05-28.
+
+**What changed**:
+- Added `ACTIVE/docs/LAUNCH_DRESS_REHEARSAL.md` with the cold-clone recipe, actual wall-clock timings, GREEN output, RED modes, default-browser entry check, and cross-browser notes.
+- Updated `ACTIVE/docs/NEXT_TASK.md`, `.codex/CEHP/status.md`, and `.codex/CEHP/handoff.md` for P5 progress.
+
+**Verification**:
+- Cold clone: `/usr/bin/time -p git clone /Users/tkevinbigham/Projects/CEHP /tmp/cehp-rehearsal-1777484189` PASS, `real 0.93`.
+- Install: `npm install` PASS, `real 0.90`, `0 vulnerabilities`.
+- Build plus launch gate: `node build.js && bash scripts/verify-launch.sh` PASS, final line `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, behavior oracle `117/117`, replay corpus `10/10`, `real 28.94`.
+- Replay cold reruns: three `npm run test:replay` runs all ended `SUMMARY PASS 10/10`; wall-clock `9.12s`, `9.20s`, `9.12s`.
+- Default browser open: `open /tmp/cehp-rehearsal-1777484189/ACTIVE/game/index.html` returned `real 0.13`.
+- Browser probes: Google Chrome stable GREEN, Playwright Chromium GREEN, Playwright WebKit GREEN, Playwright Firefox GREEN.
+
+**Notes**:
+- Firefox emitted standard AudioContext/WebGL warnings only; no visible failure was observed, so no `KNOWN_ISSUES.md` entry was added.
+- `npx playwright install webkit firefox` installed browser binaries to the user Playwright cache for rehearsal automation; no project dependency or repo file changed.
+- No runtime source, scripts, tests, replay fixtures, save schema, art, marketing assets, or pre-session dirty files were changed.
+
+---
+
 ## 2026-04-29 — W13 P4 CR pitch packet refresh · Codex GPT-5.5
 
 **Context**: W13 P4 required the Critical Reflex send-ready packet to reflect the current W10-W12 build and mark stale media for Kevin replacement.

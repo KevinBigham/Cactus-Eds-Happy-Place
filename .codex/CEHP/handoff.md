@@ -1,5 +1,38 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-29 - W13 P5 Launch Dress Rehearsal - Codex GPT-5.5)
+
+**Session goal**: Execute the launch dress rehearsal once from a cold clone and capture the T-1 recipe with actual timings.
+
+### What shipped
+
+- Added `ACTIVE/docs/LAUNCH_DRESS_REHEARSAL.md`.
+- Documented the exact cold-clone recipe Kevin reruns on 2026-05-28.
+- Captured actual timings for clone, install, launch gate, replay reruns, default-browser open, and browser-family probes.
+- Updated `ACTIVE/docs/NEXT_TASK.md` and `.codex/CEHP/status.md` for P5 progress.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| Cold clone | PASS; `real 0.93` |
+| `npm install` | PASS; `real 0.90`, `0 vulnerabilities` |
+| `node build.js && bash scripts/verify-launch.sh` | PASS; `CEHP LAUNCH VERIFY: PASS`, bundle `354011 / 409600`, oracle `117/117`, replay `10/10`, `real 28.94` |
+| Replay rerun 1 | PASS; `SUMMARY PASS 10/10`, `real 9.12` |
+| Replay rerun 2 | PASS; `SUMMARY PASS 10/10`, `real 9.20` |
+| Replay rerun 3 | PASS; `SUMMARY PASS 10/10`, `real 9.12` |
+| Default browser `open` | PASS; `real 0.13` |
+| Google Chrome stable | GREEN; ambient, 60px Ed tuning, CRT rim-light, and W1 receipt fragments verified |
+| Playwright Chromium | GREEN |
+| Playwright WebKit | GREEN |
+| Playwright Firefox | GREEN; standard AudioContext/WebGL warnings only |
+
+### Notes for the next owner
+
+- P6 should write `ACTIVE/docs/LAUNCH_FREEZE.md`, save `.codex/CEHP/w13_handoff.json`, create annotated tag `launch-freeze`, and push the tag per packet.
+- No launch-blocking bug surfaced in P5.
+- Runtime code remains frozen.
+
 ## What Was Just Done (2026-04-29 - W13 P4 CR Pitch Packet - Codex GPT-5.5)
 
 **Session goal**: Refresh the Critical Reflex send-ready packet without building a screenshot pipeline.
