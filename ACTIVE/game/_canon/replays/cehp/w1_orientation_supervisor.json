@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "level_id": "orientation",
+  "engine_version": "0.2.0-rebuild",
+  "ruleset": "R2",
+  "seed": "REPLAY-W1-ORIENTATION-SUPERVISOR",
+  "debug_style": "supervisor",
+  "initial_state": {
+    "x": 72,
+    "y": 396,
+    "facing": 1
+  },
+  "frames": [],
+  "expected_checkpoints": [],
+  "expected_final": {
+    "frame": 0,
+    "recorder_signature": "debug-plan",
+    "axes_snapshot": {},
+    "receipt_lines": []
+  },
+  "expected_debug": {
+    "world_id": "orientation",
+    "room_id": "final-certification",
+    "room_order": [
+      "intake",
+      "base-locomotion",
+      "vertical-compliance",
+      "corrective-handling",
+      "aerial-exception",
+      "final-certification"
+    ],
+    "actions_learned": [
+      "move",
+      "jump",
+      "doubleJump",
+      "tripleJump",
+      "wallSlideJump",
+      "punch",
+      "kick",
+      "spinDash",
+      "cigCopter",
+      "groundSlam",
+      "glide"
+    ],
+    "receipt_flags": {
+      "uninsuredVeteran": false,
+      "premiumSecured": false,
+      "restOpened": false,
+      "rushedRest": false,
+      "cigaretteLit": false,
+      "supervisorDefeated": true
+    },
+    "world_stats": {
+      "premiumsCollected": 0,
+      "premiumRoomsCleared": 0,
+      "deductibleHits": 0,
+      "jumpPenalty": 0,
+      "occlusionUntil": 0
+    },
+    "receipt_fragment_ids": [
+      "VERDICT_ORIENTATION_10",
+      "TENSION_ORIENTATION_FOLLOW_05",
+      "W15_SUPERVISOR_CLOSER_01"
+    ]
+  }
+}

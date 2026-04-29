@@ -1,0 +1,31 @@
+/* MODULE: 64_POST_BOSS_SUPERVISOR - W15M-P3 W1 mini-boss. */
+(function(n){"use strict";
+var FID="W15_SUPERVISOR_CLOSER_01",FT="THE SUPERVISOR ACCEPTED YOUR PAPERWORK.";
+n.flags=n.flags||{};if(n.flags.W1_SUPERVISOR_BOSS==null)n.flags.W1_SUPERVISOR_BOSS=true;n.bosses=n.bosses||{};
+function R(){if(n.bosses._supervisorReceiptRegistered)return;if(!n.Receipts||!n.Receipts.registerFragment)return;n.Receipts.registerFragment("CLOSERS",FID,FT,{worlds:{orientation:6},flags:{supervisorDefeated:true},micro:{modulesPassed:.8,damageDealt:.4},tone:"benign"});n.bosses._supervisorReceiptRegistered=true}
+function B(o){if(!o||!o.body)return;o.body.x=o.x-(o.width||0)/2;o.body.y=o.y-(o.height||0)/2;o.body.width=o.width||o.body.width||0;o.body.height=o.height||o.body.height||0;if(o.body.updateFromGameObject)o.body.updateFromGameObject()}
+function Q(s,x,y,w,h,c,a,d){var r=s.add.rectangle(x,y,w,h,c,a==null?1:a).setDepth(d==null?12:d);if(s.physics&&s.physics.add&&s.physics.add.existing){s.physics.add.existing(r,true);if(r.body){r.body.allowGravity=false;r.body.moves=false;B(r)}}return r}
+function L(s,x,y,t){return s.add.text(x,y,t,{fontFamily:"monospace",fontSize:"7px",color:"#e8e3d1",align:"center"}).setOrigin(.5).setDepth(14)}
+function X(s,k,x,y,w,h,d,a){var i;if(!s||!s.textures||!s.textures.exists||!s.textures.exists(k)||!s.add||!s.add.image)return null;i=s.add.image(x,y,k).setDepth(d==null?12.5:d);if(i.setOrigin)i.setOrigin(.5);if(i.setDisplaySize)i.setDisplaySize(w,h);if(i.setAlpha)i.setAlpha(a==null?1:a);return i}
+function V(o,v){if(!o)return;if(o.setVisible)o.setVisible(v);else o.visible=v}
+function A(o,a){if(!o)return;if(o.setAlpha)o.setAlpha(a);else o.alpha=a}
+function D(o){if(o&&o.destroy)o.destroy()}
+function Z(r,x,y,w,h){if(!r)return;r.x=x;r.y=y;r.width=w;r.height=h;if(r.setSize)r.setSize(w,h);B(r)}
+function P(o,x,y,p){var w,h;if(!o||x==null||y==null)return false;p=p||0;w=(o.width||0)/2+p;h=(o.height||0)/2+p;return x>=o.x-w&&x<=o.x+w&&y>=o.y-h&&y<=o.y+h}
+function H(b,p){var pl=b.world&&b.world.player,x=p&&p.x!=null?p.x:(pl?pl.x:null),y=p&&p.y!=null?p.y:(pl?pl.y:null);return P(b.rect,x,y,72)||P(b.hazard,x,y,18)}
+function E(w){w.runState=w.runState||{};w.runState.receiptFlags=w.runState.receiptFlags||{};return w.runState.receiptFlags}
+function C(b,id){var x=b.rect.x,y=b.rect.y;if(id==="review")return{x:x-126,y:y+32,w:336,h:82,c:0x6b4a4a};if(id==="stamp")return{x:x-72,y:y+20,w:136,h:118,c:0xe04a3a};return{x:x-170,y:y-10,w:278,h:22,c:0xe8e3d1}}
+function S(b,s){var c,on;if(!b||!b.rect)return;s=s||b.framework.snapshot();c=C(b,s.phaseId);on=s.state==="telegraph"||s.state==="strike";if(b.label){b.label.x=b.rect.x;b.label.y=b.rect.y-58}if(b.sprite){b.sprite.x=b.rect.x;b.sprite.y=b.rect.y-8;A(b.sprite,b.defeated ? .18 : .42)}if(b.hazard){Z(b.hazard,c.x,c.y,c.w,c.h);b.hazard.fillColor=c.c;V(b.hazard,on&&!b.defeated);A(b.hazard,s.state==="strike" ? .72 : .24)}A(b.rect,b.defeated ? .34 : (s.state==="telegraph" ? .78 : .94))}
+function J(b,s){var p;if(!b||b.defeated||!s||s.state!=="strike")return;p=b.world&&b.world.player;if(!p||p.invulnMs>0)return;if(!n.Collision||!n.Collision.intersects||!n.Collision.intersects(p,b.hazard))return;if(s.phaseId==="stamp"&&b._q&&H(b,b._q)){b.defeat("signature-trap");return}if(p.takeHit)p.takeHit("supervisor")}
+function O(b){var ts=["movement:punch","movement:kick","movement:groundSlam"],i;if(!n.Events||!n.Events.on)return;for(i=0;i<ts.length;i++)(function(t){b.offFns.push(n.Events.on(t,function(p){if(!b.defeated)b._q=p||{}}))})(ts[i])}
+function K(seed,rng){return n.bossFramework.create({id:"supervisor",seed:seed||"cehp-supervisor",rng:rng||null,phases:[{id:"intake",telegraphWindowMs:{min:150,max:210},strikeMs:70,cooldownMs:110},{id:"review",telegraphWindowMs:{min:190,max:290},strikeMs:80,cooldownMs:130},{id:"stamp",telegraphWindowMs:{min:240,max:340},strikeMs:90,cooldownMs:150}],receiptTags:[{topic:"combat:damageDealt",payload:{kind:"boss",bossId:"supervisor",amount:1}},{topic:"module:passed",payload:{kind:"boss",bossId:"supervisor",moduleId:"supervisor-final-certification"}},{topic:"boss:receiptTag",payload:{kind:"boss",bossId:"supervisor",receiptFlag:"supervisorDefeated"}}]})}
+function G(scene,world,opts){var room,x,y,b;opts=opts||{};if(!scene||!world||!n.bossFramework||!n.bossFramework.create)return null;R();room=world.rooms&&world.rooms.length?world.rooms[world.rooms.length-1]:null;x=opts.x||(room&&room.startX!=null?room.startX+1008:(world.goal?world.goal.x-260:7440));y=opts.y||((world.horizon||400)-82);b={id:"supervisor",world:world,scene:scene,rect:Q(scene,x,y,56,88,0x162436,.94,12.8),label:L(scene,x,y-58,"SUPERVISOR"),sprite:X(scene,"supervisor_silhouette",x,y-8,92,118,12.7,.42),hazard:Q(scene,x-170,y-10,278,22,0xe8e3d1,.24,13.6),blocker:Q(scene,world.goal?world.goal.x-150:x+140,(world.horizon||400)-34,18,72,0xc23b3b,1,6),framework:K(opts.seed||(world.runState&&world.runState.caseSeed?world.runState.caseSeed+"|supervisor":"cehp-supervisor"),opts.rng||null),offFns:[],defeated:false,_q:null};
+b.update=function(dt){var s;if(b.defeated){S(b,b.framework.snapshot());return b.framework.snapshot()}s=b.framework.update(dt||16);if(s.phaseId==="stamp"&&(s.state==="telegraph"||s.state==="strike")&&b._q&&H(b,b._q))return b.defeat("signature-trap");S(b,s);J(b,s);if(s.state!=="telegraph"&&s.state!=="strike")b._q=null;return s};
+b.snapshot=function(){return b.framework.snapshot()};
+b.defeat=function(reason){var f;if(b.defeated)return b.framework.snapshot();R();f=E(world);f.supervisorDefeated=true;world.supervisorDefeated=true;b.defeated=true;D(b.blocker);V(b.hazard,false);S(b,b.framework.snapshot());return b.framework.defeat({reason:reason||"defeat"})};
+b.debugDefeat=function(){var g=0,s=b.framework.snapshot();while(!s.defeated&&s.phaseId!=="stamp"&&g<80){s=b.update(50);g++}return b.defeat("debug")};
+b.destroy=function(){var i;for(i=0;i<b.offFns.length;i++){if(typeof b.offFns[i]==="function")b.offFns[i]()}b.offFns=[];D(b.rect);D(b.label);D(b.sprite);D(b.hazard);D(b.blocker)};
+V(b.hazard,false);if(world.platforms)world.platforms.push(b.blocker);if(room&&room.platforms)room.platforms.push(b.blocker);world.supervisorBoss=b;O(b);S(b,b.framework.snapshot());return b}
+n.bosses.registerSupervisorReceipt=R;n.bosses.spawnSupervisor=G
+})(CEHP);
+CEHP._register('64_post_boss_supervisor');
