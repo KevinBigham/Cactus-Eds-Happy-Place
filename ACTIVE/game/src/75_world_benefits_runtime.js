@@ -5,49 +5,18 @@
 (function(ns){
   'use strict';
 
-  function clamp(v, min, max){
-    return v < min ? min : (v > max ? max : v);
-  }
-
-  function staticRect(scene, x, y, w, h, color, alpha, depth){
-    var rect = scene.add.rectangle(x, y, w, h, color || 0x6a6671, alpha == null ? 1 : alpha).setDepth(depth == null ? 4 : depth);
-    scene.physics.add.existing(rect, true);
-    rect.body.allowGravity = false;
-    rect.body.updateFromGameObject();
-    return rect;
-  }
-
-  function sensorZone(scene, x, y, w, h){
-    var zone = scene.add.zone(x, y, w, h).setDepth(3);
-    scene.physics.add.existing(zone, true);
-    zone.body.allowGravity = false;
-    zone.body.moves = false;
-    return zone;
-  }
+  var WH = ns.WorldRuntime;
+  var clamp = WH.clamp;
+  var staticRect = WH.staticRect;
+  var sensorZone = WH.sensorZone;
+  var textureExists = WH.textureExists;
+  var addBackdropImage = WH.addBackdropImage;
+  var destroyThing = WH.destroyThing;
+  var clone = WH.clone;
+  var intersects = WH.intersects;
 
   function textLabel(scene, x, y, text, size, color, depth){
-    return scene.add.text(x, y, text, {
-      fontFamily: 'monospace',
-      fontSize: (size || 8) + 'px',
-      color: color || '#fff9e0',
-      align: 'left'
-    }).setDepth(depth == null ? 8 : depth);
-  }
-
-  function textureExists(scene, key){
-    return !!(scene && scene.textures && scene.textures.exists && scene.textures.exists(key));
-  }
-
-  function addBackdropImage(scene, key, x, y, w, h, depth, alpha){
-    var image;
-
-    if (!textureExists(scene, key) || !scene.add || !scene.add.image) return null;
-
-    image = scene.add.image(x, y, key).setDepth(depth == null ? 1.6 : depth);
-    if (image.setOrigin) image.setOrigin(0.5);
-    if (image.setDisplaySize) image.setDisplaySize(w, h);
-    if (image.setAlpha) image.setAlpha(alpha == null ? 1 : alpha);
-    return image;
+    return WH.textLabel(scene, x, y, text, size, color, depth, '#fff9e0');
   }
 
   function addOfficeDressing(world, room){
@@ -73,18 +42,6 @@
     addBackdropImage(scene, 'prop_coffee_cup', room.endX - 82, world.horizon - 142, 30, 30, 2.1, 0.94);
   }
 
-  function destroyThing(obj){
-    if (obj && obj.destroy) obj.destroy();
-  }
-
-  function clone(obj){
-    return JSON.parse(JSON.stringify(obj));
-  }
-
-  function intersects(a, b){
-    return ns.Collision && ns.Collision.intersects ? ns.Collision.intersects(a, b) : false;
-  }
-
   function rememberRoom(world, roomId){
     if (world.visitedRooms[roomId]) return;
     world.visitedRooms[roomId] = true;
@@ -99,7 +56,7 @@
   function passRoomModule(world, room, moduleId){
     if (!room || room.modulePassed) return;
     room.modulePassed = true;
-    if (ns.Events && ns.Events.emit) ns.Events.emit('module:passed', {
+    ns.emit('module:passed', {
       roomId: room.id,
       moduleId: moduleId || room.id
     });
@@ -241,7 +198,7 @@
         premium.label.setVisible(false);
         room.premiumCount += 1;
         world.stats.premiumsCollected += 1;
-        if (ns.Events && ns.Events.emit) ns.Events.emit('form:used', { kind: 'premium', x: x, y: y });
+        ns.emit('form:used', { kind: 'premium', x: x, y: y });
         updateRunState(world);
       },
       destroy: function(){
@@ -254,6 +211,12 @@
     return premium;
   }
 
+  function addPremiums(world, room, startX, values){
+    for (var i = 0; i < values.length; i += 2) {
+      makePremium(world, room, startX + values[i], world.horizon - values[i + 1]);
+    }
+  }
+
   function makeHazard(world, room, x, y, w, h, kind){
     var zone = world.scene.add.rectangle(x, y, w, h, 0x7a2e2e, 0.45).setDepth(5);
     var hazard = {
@@ -262,7 +225,7 @@
       kind: kind || 'hazard',
       update: function(player){
         if (!player || player.invulnMs > 0 || !intersects(player, zone)) return;
-        if (ns.Events && ns.Events.emit) ns.Events.emit('combat:damageTaken', { kind: hazard.kind, amount: 1 });
+        ns.emit('combat:damageTaken', { kind: hazard.kind, amount: 1 });
         if (room.uninsuredCommitted) {
           room.damageTagged = true;
           world.receiptFlags.uninsuredVeteran = true;
@@ -276,6 +239,12 @@
     room.hazards.push(hazard);
     world.hazards.push(hazard);
     return hazard;
+  }
+
+  function addLaneHazards(world, room, startX, values){
+    for (var i = 0; i < values.length; i += 4) {
+      makeHazard(world, room, startX + values[i], world.horizon - values[i + 1], values[i + 2], values[i + 3], 'uninsured-lane');
+    }
   }
 
   function makeRiskGate(world, room, sign, cfg){
@@ -362,7 +331,7 @@
   function triggerClaimSlam(world, room){
     if (!room || room.groundSlammed) return;
     room.groundSlammed = true;
-    if (ns.Events && ns.Events.emit) ns.Events.emit('movement:groundSlam', {
+    ns.emit('movement:groundSlam', {
       roomId: room.id,
       x: world.player ? world.player.x : room.startX + 870,
       y: world.player ? world.player.y : 330
@@ -397,13 +366,11 @@
   function unlockNetworkRoute(world, room, action){
     if (!room || room.routeUnlocked) return;
     room.routeUnlocked = true;
-    if (ns.Events && ns.Events.emit) {
-      ns.Events.emit(action === 'glide' ? 'movement:glide' : 'movement:wallJump', {
-        roomId: room.id,
-        x: world.player ? world.player.x : room.startX + 860,
-        y: world.player ? world.player.y : 318
-      });
-    }
+    ns.emit(action === 'glide' ? 'movement:glide' : 'movement:wallJump', {
+      roomId: room.id,
+      x: world.player ? world.player.x : room.startX + 860,
+      y: world.player ? world.player.y : 318
+    });
     updateRunState(world);
   }
 
@@ -442,6 +409,14 @@
     return enemy;
   }
 
+  function addScantronRoute(world, room, startX, values){
+    var points = [];
+    for (var i = 0; i < values.length; i += 2) {
+      points.push({ x: startX + values[i], y: world.horizon - values[i + 1] });
+    }
+    return addEnemy(world, room, 'scantron', { teleportPoints: points });
+  }
+
   function pathwayGate(world, room, spec, cfg){
     var scene = world.scene;
     var horizon = world.horizon;
@@ -473,7 +448,7 @@
         destroyThing(room.gate.upperDoor);
         room.gate.lamp.fillColor = 0x5b8f6a;
         room.branchOutcome = 'insured';
-        if (ns.Events && ns.Events.emit) ns.Events.emit('module:passed', {
+        ns.emit('module:passed', {
           roomId: room.id,
           moduleId: room.id + '-premium-path'
         });
@@ -485,22 +460,20 @@
         room.branchOutcome = 'uninsured';
         room.gate.lamp.fillColor = 0xe04a3a;
         world.lastContradictionOutcome = 'defy';
-        if (ns.Events && ns.Events.emit) {
-          ns.Events.emit('module:skipped', {
-            roomId: room.id,
-            moduleId: room.id + '-premium-path'
-          });
-          ns.Events.emit('contradiction:defy', { gateId: sign.id, action: 'move', elapsedMs: 120 });
-        }
+        ns.emit('module:skipped', {
+          roomId: room.id,
+          moduleId: room.id + '-premium-path'
+        });
+        ns.emit('contradiction:defy', { gateId: sign.id, action: 'move', elapsedMs: 120 });
       },
       markSafe: function(){
         if (!room.gate.unlocked || room.safeCompleted) return;
         room.safeCompleted = true;
         room.branchOutcome = 'insured';
         world.lastContradictionOutcome = 'follow';
-        if (!room.gate.followed && ns.Events && ns.Events.emit) {
+        if (!room.gate.followed) {
           room.gate.followed = true;
-          ns.Events.emit('contradiction:follow', { gateId: sign.id, action: 'wait', elapsedMs: 900 });
+          ns.emit('contradiction:follow', { gateId: sign.id, action: 'wait', elapsedMs: 900 });
         }
       }
     };
@@ -517,7 +490,7 @@
   function applyDeductibleHit(world){
     world.player.invulnMs = 420;
     world.stats.deductibleHits += 1;
-    if (ns.Events && ns.Events.emit) ns.Events.emit('combat:damageTaken', { kind: 'deductible', amount: 1 });
+    ns.emit('combat:damageTaken', { kind: 'deductible', amount: 1 });
     setJumpPenalty(world, world.stats.jumpPenalty + 16);
     if (world.currentRoom && world.currentRoom.uninsuredCommitted) {
       world.currentRoom.damageTagged = true;
@@ -528,7 +501,7 @@
   }
 
   function hitByEnemy(world, kind){
-    if (ns.Events && ns.Events.emit) ns.Events.emit('combat:damageTaken', { kind: kind, amount: 1 });
+    ns.emit('combat:damageTaken', { kind: kind, amount: 1 });
     if (world.currentRoom && world.currentRoom.uninsuredCommitted) {
       world.currentRoom.damageTagged = true;
       world.receiptFlags.uninsuredVeteran = true;
@@ -549,101 +522,60 @@
   function buildEnrollment(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addCommonGeometry(world, room, spec, startX, width, [0x3a262a, 0xf2c6d1]);
-    makePremium(world, room, startX + 302, world.horizon - 48);
-    makePremium(world, room, startX + 418, world.horizon - 84);
+    addPremiums(world, room, startX, [302, 48, 418, 84]);
     addEnemy(world, room, 'pizzaParty', { x: startX + 910, y: world.horizon - 148, phase: 0.2 });
-    makeHazard(world, room, startX + 826, world.horizon - 10, 40, 22, 'uninsured-lane');
-    makeHazard(world, room, startX + 972, world.horizon - 10, 40, 22, 'uninsured-lane');
+    addLaneHazards(world, room, startX, [826, 10, 40, 22, 972, 10, 40, 22]);
     return room;
   }
 
   function buildPathways(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addCommonGeometry(world, room, spec, startX, width, [0x352229, 0xe3a0ab]);
-    makePremium(world, room, startX + 286, world.horizon - 48);
-    makePremium(world, room, startX + 396, world.horizon - 84);
-    addEnemy(world, room, 'scantron', {
-      teleportPoints: [
-        { x: startX + 716, y: world.horizon - 108 },
-        { x: startX + 900, y: world.horizon - 108 },
-        { x: startX + 980, y: world.horizon - 12 }
-      ]
-    });
-    makeHazard(world, room, startX + 930, world.horizon - 10, 36, 22, 'uninsured-lane');
-    makeHazard(world, room, startX + 1070, world.horizon - 10, 36, 22, 'uninsured-lane');
+    addPremiums(world, room, startX, [286, 48, 396, 84]);
+    addScantronRoute(world, room, startX, [716, 108, 900, 108, 980, 12]);
+    addLaneHazards(world, room, startX, [930, 10, 36, 22, 1070, 10, 36, 22]);
     return room;
   }
 
   function buildNetwork(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addCommonGeometry(world, room, spec, startX, width, [0x321f28, 0xc23b3b]);
-    makePremium(world, room, startX + 264, world.horizon - 48);
-    makePremium(world, room, startX + 356, world.horizon - 84);
-    makePremium(world, room, startX + 464, world.horizon - 120);
-    addEnemy(world, room, 'scantron', {
-      teleportPoints: [
-        { x: startX + 706, y: world.horizon - 108 },
-        { x: startX + 882, y: world.horizon - 108 },
-        { x: startX + 1036, y: world.horizon - 12 }
-      ]
-    });
-    addEnemy(world, room, 'scantron', {
-      teleportPoints: [
-        { x: startX + 768, y: world.horizon - 126 },
-        { x: startX + 972, y: world.horizon - 108 },
-        { x: startX + 1126, y: world.horizon - 12 }
-      ]
-    });
-    makeHazard(world, room, startX + 884, world.horizon - 10, 40, 22, 'uninsured-lane');
-    makeHazard(world, room, startX + 1042, world.horizon - 10, 40, 22, 'uninsured-lane');
+    addPremiums(world, room, startX, [264, 48, 356, 84, 464, 120]);
+    addScantronRoute(world, room, startX, [706, 108, 882, 108, 1036, 12]);
+    addScantronRoute(world, room, startX, [768, 126, 972, 108, 1126, 12]);
+    addLaneHazards(world, room, startX, [884, 10, 40, 22, 1042, 10, 40, 22]);
     return room;
   }
 
   function buildDeductible(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addCommonGeometry(world, room, spec, startX, width, [0x302129, 0xf0d48f]);
-    makePremium(world, room, startX + 300, world.horizon - 48);
-    makePremium(world, room, startX + 420, world.horizon - 120);
+    addPremiums(world, room, startX, [300, 48, 420, 120]);
     addEnemy(world, room, 'deductibleWeight', { x: startX + 826, y: world.horizon - 144, range: 48, speed: 0.0022, phase: 0.4 });
     addEnemy(world, room, 'deductibleWeight', { x: startX + 1032, y: world.horizon - 24, range: 32, speed: 0.0026, phase: 1.1 });
-    makeHazard(world, room, startX + 920, world.horizon - 10, 34, 22, 'uninsured-lane');
+    addLaneHazards(world, room, startX, [920, 10, 34, 22]);
     return room;
   }
 
   function buildWellness(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addCommonGeometry(world, room, spec, startX, width, [0x3a2830, 0xf2c6d1]);
-    makePremium(world, room, startX + 262, world.horizon - 48);
-    makePremium(world, room, startX + 360, world.horizon - 84);
-    makePremium(world, room, startX + 456, world.horizon - 120);
-    addEnemy(world, room, 'scantron', {
-      teleportPoints: [
-        { x: startX + 724, y: world.horizon - 108 },
-        { x: startX + 932, y: world.horizon - 108 },
-        { x: startX + 1090, y: world.horizon - 12 }
-      ]
-    });
+    addPremiums(world, room, startX, [262, 48, 360, 84, 456, 120]);
+    addScantronRoute(world, room, startX, [724, 108, 932, 108, 1090, 12]);
     addEnemy(world, room, 'deductibleWeight', { x: startX + 844, y: world.horizon - 24, range: 36, speed: 0.0024, phase: 0.8 });
     addEnemy(world, room, 'pizzaParty', { x: startX + 986, y: world.horizon - 148, phase: 0.5 });
-    makeHazard(world, room, startX + 932, world.horizon - 10, 36, 22, 'uninsured-lane');
+    addLaneHazards(world, room, startX, [932, 10, 36, 22]);
     return room;
   }
 
   function buildFinal(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addCommonGeometry(world, room, spec, startX, width, [0x2b1d24, 0xc23b3b]);
-    makePremium(world, room, startX + 294, world.horizon - 48);
-    makePremium(world, room, startX + 432, world.horizon - 120);
-    addEnemy(world, room, 'scantron', {
-      teleportPoints: [
-        { x: startX + 716, y: world.horizon - 108 },
-        { x: startX + 900, y: world.horizon - 126 },
-        { x: startX + 1068, y: world.horizon - 12 }
-      ]
-    });
+    addPremiums(world, room, startX, [294, 48, 432, 120]);
+    addScantronRoute(world, room, startX, [716, 108, 900, 126, 1068, 12]);
     addEnemy(world, room, 'deductibleWeight', { x: startX + 840, y: world.horizon - 24, range: 38, speed: 0.0023, phase: 0.6 });
     addEnemy(world, room, 'pizzaParty', { x: startX + 944, y: world.horizon - 148, phase: 0.9 });
-    makeHazard(world, room, startX + 1036, world.horizon - 10, 42, 22, 'uninsured-lane');
+    addLaneHazards(world, room, startX, [1036, 10, 42, 22]);
     room.finalSign = addSign(world, room, startX + 1102, world.horizon - 190, spec.actionSigns[1], { id: room.id + '-final-sign' });
     world.goal = sensorZone(world.scene, startX + 1168, world.horizon - 120, 160, 220);
     return room;
@@ -727,7 +659,7 @@
     }
     if (!room.nearMissLogged && room.nearMissSensor && intersects(world.player, room.nearMissSensor)) {
       room.nearMissLogged = true;
-      if (ns.Events && ns.Events.emit) ns.Events.emit('movement:nearMiss', { roomId: room.id, x: world.player.x, y: world.player.y });
+      ns.emit('movement:nearMiss', { roomId: room.id, x: world.player.x, y: world.player.y });
     }
     if (room.networkExit && room.routeUnlocked && intersects(world.player, room.networkExit)) {
       room.safeCompleted = true;
@@ -840,7 +772,7 @@
         room.riskGate.defy();
         room.uninsuredCommitted = true;
         room.damageTagged = true;
-        if (ns.Events && ns.Events.emit) ns.Events.emit('combat:damageTaken', { kind: 'uninsured-lane', amount: 1 });
+        ns.emit('combat:damageTaken', { kind: 'uninsured-lane', amount: 1 });
         world.scene.recorder.mark(markers[1], room.startX + 430, 396, 1);
         world.scene.recorder.mark(markers[2], room.startX + 940, 396, 1);
       }
@@ -883,7 +815,7 @@
         room.signs[r].read({ signId: room.signs[r].id, words: room.signs[r].text.split(/\s+/).length });
       }
       unlockNetworkRoute(world, room, insured ? 'glide' : 'wallJump');
-      if (!insured && ns.Events && ns.Events.emit) ns.Events.emit('movement:nearMiss', { roomId: room.id, x: room.startX + 730, y: 250 });
+      if (!insured) ns.emit('movement:nearMiss', { roomId: room.id, x: room.startX + 730, y: 250 });
       room.safeCompleted = true;
       passRoomModule(world, room, room.id + '-network');
       world.scene.recorder.mark(markers[1], room.startX + 640, 260, 1);
@@ -916,7 +848,7 @@
       if (room.id === 'wellness-incentive' || room.id === 'final-processing') applyPizzaParty(world);
       if (room.id === 'deductible-adjustment') applyDeductibleHit(world);
       if (room.id === 'wellness-incentive') setJumpPenalty(world, Math.max(0, world.stats.jumpPenalty - 16));
-      if (ns.Events && ns.Events.emit) ns.Events.emit('music:sync', { x: room.endX - 160, y: world.horizon - 140 });
+      ns.emit('music:sync', { x: room.endX - 160, y: world.horizon - 140 });
       world.scene.recorder.mark(markers[1], room.startX + 420, world.horizon - 96, 1);
       world.scene.recorder.mark(markers[2], room.startX + 860, world.horizon - 126, 1);
     } else {
@@ -925,15 +857,13 @@
         room.damageTagged = true;
         world.receiptFlags.uninsuredVeteran = true;
         world.receiptFlags.premiumSecured = false;
-        if (ns.Events && ns.Events.emit) {
-          ns.Events.emit('combat:damageTaken', { kind: 'uninsured-lane', amount: 1 });
-          ns.Events.emit('player:death', { source: 'uninsured-lane' });
-        }
+        ns.emit('combat:damageTaken', { kind: 'uninsured-lane', amount: 1 });
+        ns.emit('player:death', { source: 'uninsured-lane' });
       }
       if (room.id === 'deductible-adjustment' || room.id === 'wellness-incentive' || room.id === 'final-processing') {
         applyDeductibleHit(world);
       }
-      if (ns.Events && ns.Events.emit) ns.Events.emit('movement:nearMiss', { x: room.startX + 940, y: world.horizon - 12 });
+      ns.emit('movement:nearMiss', { x: room.startX + 940, y: world.horizon - 12 });
       world.scene.recorder.mark(markers[1], room.startX + 430, world.horizon - 20, 1);
       world.scene.recorder.mark(markers[2], room.startX + 940, world.horizon - 12, 1);
     }

@@ -1,6 +1,6 @@
 # W9 SPRINT — READABILITY RESTORATION + ART INTEGRATION CONTINUATION
 
-> **Status**: ACTIVE (kicked 2026-04-23 by Kevin).
+> **Status**: CLOSED 19a1b10 (batched W7-W10 local sync); retained as historical spec.
 > **Owner**: Codex 5.4 (builder).
 > **Reviewer**: Claude Opus 4.7.
 > **Predecessors**: [W7_LENS_AND_FEEL_SPRINT.md](W7_LENS_AND_FEEL_SPRINT.md) · [W8_RETROSPECTIVE.md](W8_RETROSPECTIVE.md) · [W9_SCOPE_PROPOSAL.md](W9_SCOPE_PROPOSAL.md) · [KEVIN_RETURN_BRIEF.md](KEVIN_RETURN_BRIEF.md)

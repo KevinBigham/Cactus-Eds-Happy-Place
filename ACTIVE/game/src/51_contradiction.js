@@ -29,9 +29,7 @@
           out.outcome = 'defy';
           out.resolved = true;
           out.routeResult = out.onDefy(payload);
-          if (ns.Events && ns.Events.emit) {
-            ns.Events.emit('contradiction:defy', { gateId: out.sign && out.sign.id, action: action, elapsedMs: elapsedMs });
-          }
+          ns.emit('contradiction:defy', { gateId: out.sign && out.sign.id, action: action, elapsedMs: elapsedMs });
           return out.outcome;
         }
 
@@ -39,9 +37,7 @@
           out.outcome = 'follow';
           out.resolved = true;
           out.routeResult = out.onFollow(payload);
-          if (ns.Events && ns.Events.emit) {
-            ns.Events.emit('contradiction:follow', { gateId: out.sign && out.sign.id, action: action, elapsedMs: elapsedMs });
-          }
+          ns.emit('contradiction:follow', { gateId: out.sign && out.sign.id, action: action, elapsedMs: elapsedMs });
           return out.outcome;
         }
 
@@ -49,9 +45,7 @@
           out.outcome = 'follow';
           out.resolved = true;
           out.routeResult = out.onFollow(payload);
-          if (ns.Events && ns.Events.emit) {
-            ns.Events.emit('contradiction:follow', { gateId: out.sign && out.sign.id, action: 'wait', elapsedMs: elapsedMs });
-          }
+          ns.emit('contradiction:follow', { gateId: out.sign && out.sign.id, action: 'wait', elapsedMs: elapsedMs });
           return out.outcome;
         }
 

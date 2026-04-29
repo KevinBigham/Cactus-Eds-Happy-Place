@@ -5,71 +5,17 @@
 (function(ns){
   'use strict';
 
-  function clamp(v, min, max){
-    return v < min ? min : (v > max ? max : v);
-  }
-
-  function staticRect(scene, x, y, w, h, color, alpha, depth){
-    var rect = scene.add.rectangle(x, y, w, h, color || 0x6c8a5c, alpha == null ? 1 : alpha).setDepth(depth == null ? 4 : depth);
-    scene.physics.add.existing(rect, true);
-    rect.body.allowGravity = false;
-    rect.body.updateFromGameObject();
-    return rect;
-  }
-
-  function movingRect(scene, x, y, w, h, color, alpha, depth){
-    var rect = scene.add.rectangle(x, y, w, h, color || 0xe8d9b1, alpha == null ? 1 : alpha).setDepth(depth == null ? 4 : depth);
-    scene.physics.add.existing(rect);
-    rect.body.allowGravity = false;
-    rect.body.setImmovable(true);
-    rect.body.moves = false;
-    rect.body.updateFromGameObject();
-    return rect;
-  }
-
-  function sensorZone(scene, x, y, w, h){
-    var zone = scene.add.zone(x, y, w, h).setDepth(3);
-    scene.physics.add.existing(zone, true);
-    zone.body.allowGravity = false;
-    zone.body.moves = false;
-    return zone;
-  }
+  var WH = ns.WorldRuntime;
+  var staticRect = WH.staticRect;
+  var movingRect = WH.movingRect;
+  var sensorZone = WH.sensorZone;
+  var addBackdropImage = WH.addBackdropImage;
+  var destroyThing = WH.destroyThing;
+  var clone = WH.clone;
+  var intersects = WH.intersects;
 
   function textLabel(scene, x, y, text, size, color, depth){
-    return scene.add.text(x, y, text, {
-      fontFamily: 'monospace',
-      fontSize: (size || 8) + 'px',
-      color: color || '#f2e3c5',
-      align: 'left'
-    }).setDepth(depth == null ? 8 : depth);
-  }
-
-  function textureExists(scene, key){
-    return !!(scene && scene.textures && scene.textures.exists && scene.textures.exists(key));
-  }
-
-  function addBackdropImage(scene, key, x, y, w, h, depth, alpha){
-    var image;
-
-    if (!textureExists(scene, key) || !scene.add || !scene.add.image) return null;
-
-    image = scene.add.image(x, y, key).setDepth(depth == null ? 1.6 : depth);
-    if (image.setOrigin) image.setOrigin(0.5);
-    if (image.setDisplaySize) image.setDisplaySize(w, h);
-    if (image.setAlpha) image.setAlpha(alpha == null ? 1 : alpha);
-    return image;
-  }
-
-  function destroyThing(obj){
-    if (obj && obj.destroy) obj.destroy();
-  }
-
-  function clone(obj){
-    return JSON.parse(JSON.stringify(obj));
-  }
-
-  function intersects(a, b){
-    return ns.Collision && ns.Collision.intersects ? ns.Collision.intersects(a, b) : false;
+    return WH.textLabel(scene, x, y, text, size, color, depth, '#f2e3c5');
   }
 
   function triangleWave(v){
@@ -155,6 +101,45 @@
     return rect;
   }
 
+  function addPlatforms(world, room, startX, values){
+    for (var i = 0; i < values.length; i += 5) {
+      addPlatform(world, room, startX + values[i], world.horizon - values[i + 1], values[i + 2], values[i + 3], values[i + 4], 1, 4);
+    }
+  }
+
+  function addRoomSigns(world, room, startX, spec, values){
+    for (var i = 0; i < values.length; i += 2) {
+      addSign(world, room, startX + values[i], world.horizon - values[i + 1], spec.actionSigns[i / 2], { id: room.id + '-sign-' + ((i / 2) + 1) });
+    }
+  }
+
+  var SYNC_MODES = ['sine', 'cosine', 'triangle'];
+
+  function addSyncs(world, room, startX, values){
+    for (var i = 0; i < values.length; i += 8) {
+      makeSyncPlatform(world, room, {
+        baseX: startX + values[i],
+        baseY: world.horizon - values[i + 1],
+        ampX: values[i + 2],
+        ampY: values[i + 3],
+        modeX: SYNC_MODES[values[i + 4]],
+        modeY: SYNC_MODES[values[i + 5]],
+        rateX: values[i + 6],
+        rateY: values[i + 7]
+      });
+    }
+  }
+
+  function addSortingMachines(world, room, startX, values){
+    for (var i = 0; i < values.length; i += 5) {
+      makeSortingMachine(world, room, startX + values[i], world.horizon - values[i + 1], {
+        label: values[i + 2],
+        nudgeX: values[i + 3],
+        nudgeY: values[i + 4]
+      });
+    }
+  }
+
   function addBackdrop(world, room, color, accent){
     var width = room.endX - room.startX;
     world.scene.add.rectangle(room.startX + (width / 2), ns.GAME_H / 2, width - 24, ns.GAME_H - 32, color, 1).setDepth(0);
@@ -214,13 +199,11 @@
 
   function noteSortingRedirect(world, machine, x, y){
     world.stats.sortingRedirects += 1;
-    if (ns.Events && ns.Events.emit) {
-      ns.Events.emit('movement:correction', {
-        x: x,
-        y: y,
-        distance: Math.abs(machine.nudgeX || 0)
-      });
-    }
+    ns.emit('movement:correction', {
+      x: x,
+      y: y,
+      distance: Math.abs(machine.nudgeX || 0)
+    });
     updateRunState(world);
   }
 
@@ -246,9 +229,7 @@
         player.body.setVelocityX((player.body.velocity.x * 0.2) + machine.nudgeX);
         if (player.body.velocity.y > machine.nudgeY) player.body.setVelocityY(machine.nudgeY);
         noteSortingRedirect(world, machine, player.x, player.y);
-        if (source === 'debug' && ns.Events && ns.Events.emit) {
-          ns.Events.emit('music:sync', { x: player.x, y: player.y });
-        }
+        if (source === 'debug') ns.emit('music:sync', { x: player.x, y: player.y });
       },
       destroy: function(){
         destroyThing(shell);
@@ -268,7 +249,7 @@
     if (source) source.emitLockUntil = now + 280;
     world.stats.syncMoments += 1;
     if (world.stats.syncMoments >= 3) world.receiptFlags.syncedFlow = true;
-    if (ns.Events && ns.Events.emit) ns.Events.emit('music:sync', { x: x, y: y });
+    ns.emit('music:sync', { x: x, y: y });
     if (ns.Axes && ns.Axes.bump) ns.Axes.bump('intuition', 0.01);
     updateRunState(world);
   }
@@ -313,9 +294,7 @@
         if (world.runState.worldFlags) world.runState.worldFlags.cigaretteWillNotLight = true;
         updateRunState(world);
         gate.core.evaluate({ action: 'wait', elapsedMs: gate.windowMs });
-        if (ns.Events && ns.Events.emit) {
-          ns.Events.emit('module:passed', { roomId: room.id, moduleId: sign.id });
-        }
+        ns.emit('module:passed', { roomId: room.id, moduleId: sign.id });
         awardSync(world, gate, world.player.x, world.player.y);
       },
       rush: function(source){
@@ -331,9 +310,9 @@
         world.receiptFlags.rushedRest = true;
         updateRunState(world);
         gate.core.evaluate({ action: 'move', elapsedMs: 120 });
-        if (!gate.rushLogged && ns.Events && ns.Events.emit) {
+        if (!gate.rushLogged) {
           gate.rushLogged = true;
-          ns.Events.emit('module:skipped', { roomId: room.id, moduleId: sign.id });
+          ns.emit('module:skipped', { roomId: room.id, moduleId: sign.id });
         }
         if (cfg.rushUnlocks && !gate.opened) {
           gate.opened = true;
@@ -341,9 +320,7 @@
           gate.door = null;
           gate.lamp.fillColor = 0xc49a4a;
         }
-        if (source === 'debug' && ns.Events && ns.Events.emit) {
-          ns.Events.emit('movement:backtrack', { distance: 24, x: world.player.x, y: world.player.y });
-        }
+        if (source === 'debug') ns.emit('movement:backtrack', { distance: 24, x: world.player.x, y: world.player.y });
       },
       reset: function(){
         gate.restingMs = 0;
@@ -387,9 +364,7 @@
     addBackdrop(world, room, 0x263321, 0xc49a4a);
     addBackdropImage(world.scene, 'carpet_tile_seamless', startX + 720, 456, 360, 40, 1.5, 0.34);
     addBackdropImage(world.scene, 'fluorescent_light_fixture', startX + 720, 42, 150, 74, 1.55, 0.24);
-    addPlatform(world, room, startX + 200, 432, 480, 28, 0x61784f, 1, 4);
-    addPlatform(world, room, startX + 720, 432, 360, 18, 0x61784f, 1, 4);
-    addPlatform(world, room, startX + 1120, 360, 260, 28, 0xe8d9b1, 1, 4);
+    addPlatforms(world, room, startX, [200, -8, 480, 28, 0x61784f, 720, -8, 360, 18, 0x61784f, 1120, 64, 260, 28, 0xe8d9b1]);
     addSign(world, room, startX + 430, 392, spec.actionSigns[0], { id: 'rasta-belt-speed', width: 130 });
     addSign(world, room, startX + 945, 322, spec.actionSigns[1], { id: 'rasta-belt-fire', width: 124 });
     makeRestGate(world, room, {
@@ -415,71 +390,31 @@
     addBackdrop(world, room, 0x293122, 0xc49a4a);
     addBackdropImage(world.scene, 'prop_archive_box', startX + 124, world.horizon - 44, 92, 62, 2.1, 0.78);
     addBackdropImage(world.scene, 'prop_archive_box', startX + 220, world.horizon - 44, 84, 56, 2.1, 0.72);
-    addSign(world, room, startX + 168, world.horizon - 84, spec.actionSigns[0], { id: room.id + '-sign-1' });
-    addSign(world, room, startX + 732, world.horizon - 170, spec.actionSigns[1], { id: room.id + '-sign-2' });
-    addPlatform(world, room, startX + 210, world.horizon - 10, 360, 18, 0x61784f, 1, 4);
-    addPlatform(world, room, startX + 1110, world.horizon - 10, 260, 18, 0x61784f, 1, 4);
-    makeSyncPlatform(world, room, {
-      baseX: startX + 600, baseY: world.horizon - 86,
-      ampY: 26, modeY: 'sine', modeX: 'triangle', ampX: 18,
-      rateX: 0.00022, rateY: 0.00031
-    });
-    makeSyncPlatform(world, room, {
-      baseX: startX + 870, baseY: world.horizon - 138,
-      ampX: 46, ampY: 16, modeX: 'triangle', modeY: 'cosine',
-      rateX: 0.00018, rateY: 0.00026
-    });
-    addPlatform(world, room, startX + 1010, world.horizon - 122, 120, 14, 0xe8d9b1, 1, 4);
+    addRoomSigns(world, room, startX, spec, [168, 84, 732, 170]);
+    addPlatforms(world, room, startX, [210, 10, 360, 18, 0x61784f, 1110, 10, 260, 18, 0x61784f]);
+    addSyncs(world, room, startX, [600, 86, 18, 26, 2, 0, 0.00022, 0.00031, 870, 138, 46, 16, 2, 1, 0.00018, 0.00026]);
+    addPlatforms(world, room, startX, [1010, 122, 120, 14, 0xe8d9b1]);
     return room;
   }
 
   function buildSyncBelt(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addBackdrop(world, room, 0x25301f, 0xc49a4a);
-    addSign(world, room, startX + 126, world.horizon - 84, spec.actionSigns[0], { id: room.id + '-sign-1' });
-    addSign(world, room, startX + 786, world.horizon - 124, spec.actionSigns[1], { id: room.id + '-sign-2' });
-    addPlatform(world, room, startX + 136, world.horizon - 10, 220, 18, 0x61784f, 1, 4);
-    addPlatform(world, room, startX + 1140, world.horizon - 10, 220, 18, 0x61784f, 1, 4);
-    makeSyncPlatform(world, room, {
-      baseX: startX + 430, baseY: world.horizon - 78,
-      ampY: 22, modeY: 'cosine', rateY: 0.00029
-    });
-    makeSyncPlatform(world, room, {
-      baseX: startX + 642, baseY: world.horizon - 122,
-      ampX: 42, ampY: 14, modeX: 'triangle', modeY: 'sine',
-      rateX: 0.00016, rateY: 0.00024
-    });
-    makeSyncPlatform(world, room, {
-      baseX: startX + 946, baseY: world.horizon - 86,
-      ampY: 18, modeY: 'triangle', modeX: 'cosine', ampX: 16,
-      rateX: 0.00021, rateY: 0.00027
-    });
-    makeSortingMachine(world, room, startX + 836, world.horizon - 42, {
-      label: 'SORT',
-      nudgeX: 92,
-      nudgeY: -34
-    });
+    addRoomSigns(world, room, startX, spec, [126, 84, 786, 124]);
+    addPlatforms(world, room, startX, [136, 10, 220, 18, 0x61784f, 1140, 10, 220, 18, 0x61784f]);
+    addSyncs(world, room, startX, [430, 78, 0, 22, 0, 1, 0.00028, 0.00029, 642, 122, 42, 14, 2, 0, 0.00016, 0.00024, 946, 86, 16, 18, 1, 2, 0.00021, 0.00027]);
+    addSortingMachines(world, room, startX, [836, 42, 'SORT', 92, -34]);
     return room;
   }
 
   function buildRestLanding(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addBackdrop(world, room, 0x283222, 0xc49a4a);
-    addSign(world, room, startX + 156, world.horizon - 84, spec.actionSigns[0], { id: room.id + '-sign-1' });
-    addSign(world, room, startX + 716, world.horizon - 164, spec.actionSigns[1], { id: room.id + '-sign-2' });
-    addPlatform(world, room, startX + 248, world.horizon - 10, 250, 18, 0x61784f, 1, 4);
-    addPlatform(world, room, startX + 1090, world.horizon - 10, 250, 18, 0x61784f, 1, 4);
-    makeSyncPlatform(world, room, {
-      baseX: startX + 560, baseY: world.horizon - 72,
-      ampY: 18, modeY: 'sine', modeX: 'triangle', ampX: 10,
-      rateX: 0.00018, rateY: 0.00025
-    });
-    addPlatform(world, room, startX + 792, world.horizon - 138, 164, 14, 0xe8d9b1, 1, 4);
-    makeSyncPlatform(world, room, {
-      baseX: startX + 996, baseY: world.horizon - 108,
-      ampX: 34, ampY: 20, modeX: 'cosine', modeY: 'triangle',
-      rateX: 0.00017, rateY: 0.00022
-    });
+    addRoomSigns(world, room, startX, spec, [156, 84, 716, 164]);
+    addPlatforms(world, room, startX, [248, 10, 250, 18, 0x61784f, 1090, 10, 250, 18, 0x61784f]);
+    addSyncs(world, room, startX, [560, 72, 10, 18, 2, 0, 0.00018, 0.00025]);
+    addPlatforms(world, room, startX, [792, 138, 164, 14, 0xe8d9b1]);
+    addSyncs(world, room, startX, [996, 108, 34, 20, 1, 2, 0.00017, 0.00022]);
     return room;
   }
 
@@ -487,67 +422,31 @@
     var room = makeRoom(world, spec, startX, width);
     addBackdrop(world, room, 0x24301f, 0xc49a4a);
     addBackdropImage(world.scene, 'prop_archive_box', startX + 1110, world.horizon - 46, 88, 58, 2.1, 0.76);
-    addSign(world, room, startX + 130, world.horizon - 84, spec.actionSigns[0], { id: room.id + '-sign-1' });
-    addSign(world, room, startX + 792, world.horizon - 84, spec.actionSigns[1], { id: room.id + '-sign-2' });
-    addPlatform(world, room, startX + 220, world.horizon - 10, 250, 18, 0x61784f, 1, 4);
-    addPlatform(world, room, startX + 1030, world.horizon - 10, 330, 18, 0x61784f, 1, 4);
-    makeSyncPlatform(world, room, {
-      baseX: startX + 520, baseY: world.horizon - 92,
-      ampY: 24, modeY: 'triangle', modeX: 'cosine', ampX: 18,
-      rateX: 0.00016, rateY: 0.00028
-    });
-    makeSyncPlatform(world, room, {
-      baseX: startX + 730, baseY: world.horizon - 144,
-      ampX: 48, ampY: 16, modeX: 'triangle', modeY: 'sine',
-      rateX: 0.00017, rateY: 0.00025
-    });
-    makeSortingMachine(world, room, startX + 622, world.horizon - 42, {
-      label: 'SORT',
-      nudgeX: 86,
-      nudgeY: -38
-    });
-    makeSortingMachine(world, room, startX + 936, world.horizon - 42, {
-      label: 'GUIDE',
-      nudgeX: 92,
-      nudgeY: -30
-    });
+    addRoomSigns(world, room, startX, spec, [130, 84, 792, 84]);
+    addPlatforms(world, room, startX, [220, 10, 250, 18, 0x61784f, 1030, 10, 330, 18, 0x61784f]);
+    addSyncs(world, room, startX, [520, 92, 18, 24, 1, 2, 0.00016, 0.00028, 730, 144, 48, 16, 2, 0, 0.00017, 0.00025]);
+    addSortingMachines(world, room, startX, [622, 42, 'SORT', 86, -38, 936, 42, 'GUIDE', 92, -30]);
     return room;
   }
 
   function buildHumming(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addBackdrop(world, room, 0x2a3524, 0xc49a4a);
-    addSign(world, room, startX + 132, world.horizon - 84, spec.actionSigns[0], { id: room.id + '-sign-1' });
-    addSign(world, room, startX + 796, world.horizon - 162, spec.actionSigns[1], { id: room.id + '-sign-2' });
-    addPlatform(world, room, startX + 196, world.horizon - 10, 320, 18, 0x61784f, 1, 4);
-    makeSyncPlatform(world, room, {
-      baseX: startX + 560, baseY: world.horizon - 110,
-      ampX: 52, ampY: 12, modeX: 'cosine', modeY: 'triangle',
-      rateX: 0.00015, rateY: 0.00022
-    });
-    addPlatform(world, room, startX + 860, world.horizon - 168, 180, 14, 0xe8d9b1, 1, 4);
-    makeSyncPlatform(world, room, {
-      baseX: startX + 1060, baseY: world.horizon - 96,
-      ampY: 26, ampX: 12, modeY: 'sine', modeX: 'triangle',
-      rateX: 0.00018, rateY: 0.00029
-    });
-    addPlatform(world, room, startX + 1210, world.horizon - 10, 120, 18, 0x61784f, 1, 4);
+    addRoomSigns(world, room, startX, spec, [132, 84, 796, 162]);
+    addPlatforms(world, room, startX, [196, 10, 320, 18, 0x61784f]);
+    addSyncs(world, room, startX, [560, 110, 52, 12, 1, 2, 0.00015, 0.00022]);
+    addPlatforms(world, room, startX, [860, 168, 180, 14, 0xe8d9b1]);
+    addSyncs(world, room, startX, [1060, 96, 12, 26, 2, 0, 0.00018, 0.00029]);
+    addPlatforms(world, room, startX, [1210, 10, 120, 18, 0x61784f]);
     return room;
   }
 
   function buildWarmExit(world, spec, startX, width){
     var room = makeRoom(world, spec, startX, width);
     addBackdrop(world, room, 0x2b3525, 0xc49a4a);
-    addSign(world, room, startX + 810, world.horizon - 166, spec.actionSigns[0], { id: room.id + '-sign-1' });
-    addSign(world, room, startX + 1012, world.horizon - 126, spec.actionSigns[1], { id: room.id + '-sign-2' });
-    addPlatform(world, room, startX + 220, world.horizon - 10, 420, 18, 0x61784f, 1, 4);
-    addPlatform(world, room, startX + 770, world.horizon - 118, 168, 14, 0xe8d9b1, 1, 4);
-    addPlatform(world, room, startX + 1062, world.horizon - 118, 220, 14, 0xe8d9b1, 1, 4);
-    makeSyncPlatform(world, room, {
-      baseX: startX + 580, baseY: world.horizon - 92,
-      ampY: 22, ampX: 14, modeY: 'cosine', modeX: 'triangle',
-      rateX: 0.00016, rateY: 0.00025
-    });
+    addRoomSigns(world, room, startX, spec, [810, 166, 1012, 126]);
+    addPlatforms(world, room, startX, [220, 10, 420, 18, 0x61784f, 770, 118, 168, 14, 0xe8d9b1, 1062, 118, 220, 14, 0xe8d9b1]);
+    addSyncs(world, room, startX, [580, 92, 14, 22, 2, 1, 0.00016, 0.00025]);
     makeRestGate(world, room, {
       signX: startX + 272,
       signY: world.horizon - 84,

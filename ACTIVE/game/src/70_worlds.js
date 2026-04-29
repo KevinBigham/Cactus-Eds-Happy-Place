@@ -11,7 +11,7 @@
   ns.Worlds.list = function(){
     var out = [];
     for (var k in ns.Worlds.MANIFEST) {
-      if (Object.prototype.hasOwnProperty.call(ns.Worlds.MANIFEST, k)) out.push(k);
+      if (ns.has(ns.Worlds.MANIFEST, k)) out.push(k);
     }
     return out;
   };

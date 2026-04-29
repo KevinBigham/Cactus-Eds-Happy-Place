@@ -65,7 +65,6 @@
         actionSigns: ['THE DOOR OPENS WHEN ASKED.', 'YOU CAN STAND HERE.']
       }
     ]
-    /* TODO(codex): synchronicity platforms flow with music, sorting machines redirect politely. */
   };
 })(CEHP);
 CEHP._register('73_world_rasta');

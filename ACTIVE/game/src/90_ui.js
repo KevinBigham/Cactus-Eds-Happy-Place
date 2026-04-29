@@ -94,7 +94,7 @@
     var save = ns.SAVE && ns.SAVE.boot ? ns.SAVE.boot() : null;
     if (save && save.assistMode) {
       for (var key in save.assistMode) {
-        if (!Object.prototype.hasOwnProperty.call(save.assistMode, key)) continue;
+        if (!ns.has(save.assistMode, key)) continue;
         if (form.elements[key]) form.elements[key].checked = !!save.assistMode[key];
       }
     }
@@ -104,7 +104,7 @@
       if (!ns.SAVE || !ns.SAVE.boot || !ns.SAVE.save) return;
       var payload = ns.SAVE.boot();
       for (var k in payload.assistMode) {
-        if (!Object.prototype.hasOwnProperty.call(payload.assistMode, k)) continue;
+        if (!ns.has(payload.assistMode, k)) continue;
         if (form.elements[k]) payload.assistMode[k] = !!form.elements[k].checked;
       }
       ns.SAVE.save(payload);

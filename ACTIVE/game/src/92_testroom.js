@@ -150,7 +150,7 @@
     room.signB.updateFromAxes(ns.Axes.snapshot());
 
     if (player.body.blocked.down && Math.abs(player.body.velocity.x) > 160) {
-      if (ns.Events && ns.Events.emit) ns.Events.emit('music:sync', { x: player.x, y: player.y });
+      ns.emit('music:sync', { x: player.x, y: player.y });
     }
   }
 

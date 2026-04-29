@@ -1,5 +1,7 @@
 # Scan Results — 2026-03-15
 
+> **STALE SNAPSHOT**: Superseded by `ACTIVE/docs/CODEBASE_AUDIT.md`; do not treat this generated report as current project health.
+
 **Trigger**: manual
 
 ## Code Health

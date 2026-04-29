@@ -1,6 +1,6 @@
 # W8 — LENS OF RESEARCH SPRINT
 
-> **Status**: Sprint doc staged. Awaits Kevin's W7 close-out + promotion of `NEXT_TASK.md` to `CEHP-REBUILD-W8-LENS-OF-RESEARCH`.
+> **Status**: CLOSED 19a1b10 (batched W7-W10 local sync); retained as historical spec.
 > **Owner role on activation**: Builder (Codex 5.4)
 > **Reviewer**: Claude Opus 4.7 at every phase boundary
 > **Created**: 2026-04-21 late — after the reviewer-side research synthesis surfaced 6 ranked W8 candidates from the legacy research/guidance docs

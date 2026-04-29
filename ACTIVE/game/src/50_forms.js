@@ -46,7 +46,7 @@
       rect: rect,
       label: tag,
       activate: function(actor){
-        if (ns.Events && ns.Events.emit) ns.Events.emit('form:used', { kind: 'bridge', x: rect.x, y: rect.y, actorX: actor ? actor.x : rect.x });
+        ns.emit('form:used', { kind: 'bridge', x: rect.x, y: rect.y, actorX: actor ? actor.x : rect.x });
       }
     };
   }
@@ -60,10 +60,8 @@
       rect: rect,
       label: tag,
       activate: function(actor){
-        if (ns.Events && ns.Events.emit) {
-          ns.Events.emit('form:used', { kind: 'blade', x: rect.x, y: rect.y });
-          ns.Events.emit('combat:damageTaken', { kind: 'blade', amount: 1 });
-        }
+        ns.emit('form:used', { kind: 'blade', x: rect.x, y: rect.y });
+        ns.emit('combat:damageTaken', { kind: 'blade', amount: 1 });
         if (actor && actor.takeHit) actor.takeHit('blade');
       }
     };
@@ -84,7 +82,7 @@
         if (actor && actor.body) {
           actor.body.setVelocityY(-(opts.power || 520));
         }
-        if (ns.Events && ns.Events.emit) ns.Events.emit('form:used', { kind: 'trampoline', x: rect.x, y: rect.y });
+        ns.emit('form:used', { kind: 'trampoline', x: rect.x, y: rect.y });
       }
     };
   }

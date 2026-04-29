@@ -28,7 +28,7 @@ function isModuleFile(file) {
 }
 
 function bannerFor(file) {
-  return '/* =============== MODULE: ' + String(file || '').toUpperCase() + ' =============== */';
+  return '/* MODULE: ' + String(file || '').toUpperCase() + ' */';
 }
 
 function stripLeadingModuleComment(source) {
@@ -37,7 +37,7 @@ function stripLeadingModuleComment(source) {
 }
 
 function normalizeBundleSource(source) {
-  return String(source || '').replace(/^  /gm, '').replace(/^  /gm, '');
+  return String(source || '').replace(/^[ \t]+/gm, '').replace(/^\s*\n/gm, '');
 }
 
 function priorityIndex(file) {

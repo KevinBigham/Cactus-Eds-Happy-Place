@@ -2,7 +2,7 @@
 
 Date: 2026-04-23
 Source: `~/Downloads/W10 REDESIGN SPRINT DOC.md` (raw dump of 7 AI research lanes)
-Status: **PROPOSED** — awaiting Kevin taste-gate on 5 tradeoffs before Codex kickoff
+Status: **CLOSED 19a1b10** — retained as historical W10 feel-pass spec
 Owner on adoption: Codex 5.4 (builder)
 Launch target on calendar: 2026-05-29 (5 weeks from today)
 

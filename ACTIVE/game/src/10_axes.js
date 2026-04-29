@@ -24,18 +24,18 @@
   function clamp01(v){ return v < 0 ? 0 : (v > 1 ? 1 : v); }
 
   function bumpMicro(key, n){
-    if (!Object.prototype.hasOwnProperty.call(micro, key)) return;
+    if (!ns.has(micro, key)) return;
     micro[key] += n == null ? 1 : n;
   }
 
   function set(axis, v){
-    if (Object.prototype.hasOwnProperty.call(primary, axis)) primary[axis] = clamp01(v);
+    if (ns.has(primary, axis)) primary[axis] = clamp01(v);
   }
   function bump(axis, delta){
-    if (Object.prototype.hasOwnProperty.call(primary, axis)) primary[axis] = clamp01(primary[axis] + delta);
+    if (ns.has(primary, axis)) primary[axis] = clamp01(primary[axis] + delta);
   }
   function get(axis){
-    return Object.prototype.hasOwnProperty.call(primary, axis) ? primary[axis] : 0;
+    return ns.has(primary, axis) ? primary[axis] : 0;
   }
 
   function snapshot(){
@@ -53,7 +53,7 @@
   function dominant(){
     var best = null, score = -Infinity;
     for (var k in primary) {
-      if (!Object.prototype.hasOwnProperty.call(primary, k)) continue;
+      if (!ns.has(primary, k)) continue;
       if (primary[k] > score) { score = primary[k]; best = k; }
     }
     return best;

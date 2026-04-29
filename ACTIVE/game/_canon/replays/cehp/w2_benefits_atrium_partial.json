@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "level_id": "benefits",
+  "engine_version": "0.2.0-rebuild",
+  "ruleset": "R2",
+  "seed": "REPLAY-W2-BENEFITS-ATRIUM-PARTIAL",
+  "debug_plan": "benefits-atrium-follow",
+  "initial_state": {
+    "x": 72,
+    "y": 396,
+    "facing": 1
+  },
+  "frames": [],
+  "expected_checkpoints": [],
+  "expected_final": {
+    "frame": 0,
+    "recorder_signature": "debug-plan",
+    "axes_snapshot": {},
+    "receipt_lines": []
+  },
+  "expected_debug": {
+    "world_id": "benefits",
+    "room_id": "benefits-risk-atrium",
+    "room_order": [
+      "benefits-risk-atrium"
+    ],
+    "actions_learned": [],
+    "receipt_flags": {
+      "uninsuredVeteran": false,
+      "premiumSecured": true,
+      "restOpened": false,
+      "rushedRest": false,
+      "cigaretteLit": false
+    },
+    "world_stats": {
+      "premiumsCollected": 0,
+      "premiumRoomsCleared": 0,
+      "deductibleHits": 0,
+      "jumpPenalty": 0,
+      "occlusionUntil": 0
+    },
+    "receipt_fragment_ids": [
+      "W11_BENEFITS_VERDICT_AUTH_01",
+      "TENSION_BENEFITS_SECURED_04",
+      "W11_BENEFITS_CLOSER_PLAN_01"
+    ]
+  }
+}

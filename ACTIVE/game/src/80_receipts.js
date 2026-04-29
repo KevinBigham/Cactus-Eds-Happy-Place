@@ -796,7 +796,7 @@
     var key;
     if (!fragment.flags) return true;
     for (key in fragment.flags) {
-      if (!Object.prototype.hasOwnProperty.call(fragment.flags, key)) continue;
+      if (!ns.has(fragment.flags, key)) continue;
       if (key === 'cigaretteLit') {
         if (context.cigaretteLit !== fragment.flags[key]) return false;
       } else if (!context.flags || context.flags[key] !== fragment.flags[key]) {
@@ -815,7 +815,7 @@
 
     if (fragment.axes) {
       for (key in fragment.axes) {
-        if (!Object.prototype.hasOwnProperty.call(fragment.axes, key)) continue;
+        if (!ns.has(fragment.axes, key)) continue;
         value = primary[key] || 0;
         if (tensions[key] != null) value = tensions[key];
         score += value * fragment.axes[key];
@@ -824,21 +824,21 @@
 
     if (fragment.lowAxes) {
       for (key in fragment.lowAxes) {
-        if (!Object.prototype.hasOwnProperty.call(fragment.lowAxes, key)) continue;
+        if (!ns.has(fragment.lowAxes, key)) continue;
         score += (1 - Math.min(1, primary[key] || 0)) * fragment.lowAxes[key];
       }
     }
 
     if (fragment.tensions) {
       for (key in fragment.tensions) {
-        if (!Object.prototype.hasOwnProperty.call(fragment.tensions, key)) continue;
+        if (!ns.has(fragment.tensions, key)) continue;
         score += (tensions[key] || 0) * fragment.tensions[key];
       }
     }
 
     if (fragment.lowTensions) {
       for (key in fragment.lowTensions) {
-        if (!Object.prototype.hasOwnProperty.call(fragment.lowTensions, key)) continue;
+        if (!ns.has(fragment.lowTensions, key)) continue;
         value = tensions[key];
         if (key === 'style') {
           value = Math.max(0, Math.min(2, tensions[key] || 0));
@@ -851,7 +851,7 @@
 
     if (fragment.micro) {
       for (key in fragment.micro) {
-        if (!Object.prototype.hasOwnProperty.call(fragment.micro, key)) continue;
+        if (!ns.has(fragment.micro, key)) continue;
         score += microValue(micro[key] || 0) * fragment.micro[key];
       }
     }
@@ -862,7 +862,7 @@
 
     if (fragment.flags) {
       for (key in fragment.flags) {
-        if (!Object.prototype.hasOwnProperty.call(fragment.flags, key)) continue;
+        if (!ns.has(fragment.flags, key)) continue;
         if (key === 'cigaretteLit') {
           if (context.cigaretteLit === fragment.flags[key]) score += 1.5;
           continue;

@@ -37,7 +37,7 @@
     var out = {};
     var key;
     for (key in meta) {
-      if (Object.prototype.hasOwnProperty.call(meta, key)) out[key] = meta[key];
+      if (ns.has(meta, key)) out[key] = meta[key];
     }
     return out;
   }

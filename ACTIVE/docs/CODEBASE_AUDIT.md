@@ -283,14 +283,9 @@ Approximate score = physical lines + 3 * branch tokens. The top-level module IIF
 
 ### TODO / FIXME / HACK Notes
 
-Runtime source has one true TODO marker:
+CLOSED 2026-04-29 during W11.5 hardening: the stale `src/73_world_rasta.js` TODO for synchronicity platforms and polite sorting redirects was removed after the runtime implementation existed in `76_world_rasta_runtime.js`.
 
-```text
-ACTIVE/game/src/73_world_rasta.js:62
-/* TODO(codex): synchronicity platforms flow with music, sorting machines redirect politely. */
-```
-
-Other TODO/FIXME hits are scan scripts, old planning docs, or memory references. `ACTIVE/docs/scan-results.md` still claims TODO/FIXME count `0`, which is stale relative to current `src/73_world_rasta.js`.
+Current TODO/FIXME/HACK hits are scan scripts, old planning docs, historical audit notes, or generated/stale report references. `ACTIVE/docs/scan-results.md` is a historical 2026-03-15 snapshot and not a current health source.
 
 ### Files Not Touched In 6+ Months
 

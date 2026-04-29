@@ -4,7 +4,7 @@
 > **Author**: Reviewer (Claude Code Sonnet 4.6) — director-authorized 5-week plan
 > **Launch lock**: **2026-05-29** (Kane Pixels × A24 Backrooms alignment; non-negotiable)
 > **Kevin mode**: Teacher by day, director by text/evening. Maximum-autonomy school-hours window.
-> **Status**: ACTIVE — Kevin greenlit all 5 W10 taste-gates 2026-04-23 ("READY!!!! CREATE THE SUPER-LONG-RUN-SPRINT FOR YOU AND CODEX TO BUILD THIS GAME FROM THE GROUND UP")
+> **Status**: ACTIVE — W10 closed in 19a1b10; W11 content drop closed in a276f2d; W12 polish prep is the next launch-arc queue.
 
 ---
 

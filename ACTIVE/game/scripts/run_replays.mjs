@@ -36,6 +36,41 @@ function replayUrl(fixture) {
   return `${baseUrl.replace(/\/$/, '')}/index.html?${params.join('&')}`;
 }
 
+function primitive(value) {
+  return value === null || typeof value !== 'object';
+}
+
+function firstDiff(expected, actual, field) {
+  let keys;
+  let seen;
+  let diff;
+  if (JSON.stringify(expected) === JSON.stringify(actual)) return null;
+  if (primitive(expected) || primitive(actual)) {
+    return { passed: false, divergent_frame: null, field, expected, actual };
+  }
+  if (Array.isArray(expected) || Array.isArray(actual)) {
+    for (let i = 0; i < Math.max((expected || []).length, (actual || []).length); i++) {
+      diff = firstDiff(expected ? expected[i] : undefined, actual ? actual[i] : undefined, `${field}[${i}]`);
+      if (diff) return diff;
+    }
+    return null;
+  }
+  seen = {};
+  keys = Object.keys(expected || {}).sort();
+  for (let i = 0; i < keys.length; i++) {
+    seen[keys[i]] = true;
+    diff = firstDiff(expected[keys[i]], actual ? actual[keys[i]] : undefined, `${field}.${keys[i]}`);
+    if (diff) return diff;
+  }
+  keys = Object.keys(actual || {}).sort();
+  for (let i = 0; i < keys.length; i++) {
+    if (seen[keys[i]]) continue;
+    diff = firstDiff(undefined, actual[keys[i]], `${field}.${keys[i]}`);
+    if (diff) return diff;
+  }
+  return null;
+}
+
 async function runFixture(browser, file, fixture) {
   const context = await browser.newContext({ viewport: { width: 1024, height: 768 } });
   const page = await context.newPage();
@@ -47,6 +82,74 @@ async function runFixture(browser, file, fixture) {
       window.CEHP._game.scene.getScene && window.CEHP._game.scene.getScene('Play');
     return !!(play && play.room && play.player && play._fixedStep && window.CEHP.Replay);
   }, { timeout: 10000 });
+
+  if (fixture.debug_plan || fixture.debug_style) {
+    const result = await page.evaluate((fixturePayload) => {
+      const CEHP = window.CEHP;
+      const play = CEHP._game.scene.getScene('Play');
+
+      function clone(value) {
+        return value == null ? value : JSON.parse(JSON.stringify(value));
+      }
+
+      function readSign(sign) {
+        if (!sign || !sign.text) return;
+        if (sign.peek) sign.peek({ signId: sign.id, words: sign.text.split(/\s+/).length });
+        if (sign.read) sign.read({ signId: sign.id, words: sign.text.split(/\s+/).length });
+      }
+
+      function compactDebug(debug) {
+        const receipt = (debug && debug.receipt) || (CEHP.RunState && CEHP.RunState.receipt) || {};
+        return {
+          world_id: (debug && debug.worldId) || (CEHP.RunState && CEHP.RunState.worldId) || '',
+          room_id: (CEHP.RunState && CEHP.RunState.roomId) || '',
+          room_order: clone((debug && debug.roomOrder) || (CEHP.RunState && CEHP.RunState.roomOrder) || []),
+          actions_learned: clone((debug && debug.actionsLearned) || (CEHP.RunState && CEHP.RunState.actionsLearned) || []),
+          receipt_flags: clone((debug && debug.receiptFlags) || (CEHP.RunState && CEHP.RunState.receiptFlags) || {}),
+          world_stats: clone((debug && debug.worldStats) || (CEHP.RunState && CEHP.RunState.worldStats) || {}),
+          receipt_fragment_ids: clone(receipt.fragmentIds || [])
+        };
+      }
+
+      function runBenefitsAtriumFollow() {
+        const world = play.room;
+        const room = world && world.rooms ? world.rooms[0] : null;
+        let i;
+        if (!world || !room || !room.riskGate) throw new Error('missing benefits atrium risk gate');
+        CEHP.Axes.reset();
+        if (CEHP.Metrics && CEHP.Metrics.reset) CEHP.Metrics.reset();
+        play.recorder.clear();
+        play.pendingDeath = null;
+        play.runComplete = false;
+        for (i = 0; i < (room.signs || []).length; i++) readSign(room.signs[i]);
+        if (room.riskGate.sign) readSign(room.riskGate.sign);
+        room.riskGate.follow();
+        room.safeCompleted = true;
+        world.player.x = room.endX - 120;
+        world.player.y = 300;
+        play.completeRun('debug:benefits-atrium-follow');
+        return {
+          worldId: 'benefits',
+          roomOrder: clone(world.roomOrder),
+          actionsLearned: clone(world.runState.actionsLearned || []),
+          receiptFlags: clone(world.receiptFlags),
+          worldStats: clone(world.stats),
+          receipt: clone(CEHP.RunState.receipt)
+        };
+      }
+
+      if (fixturePayload.debug_plan === 'benefits-atrium-follow') {
+        return { passed: true, actual: compactDebug(runBenefitsAtriumFollow()) };
+      }
+      if (!play.runStyle) throw new Error('missing debug runStyle');
+      return { passed: true, actual: compactDebug(play.runStyle(fixturePayload.debug_style || 'obedient')) };
+    }, fixture);
+    await context.close();
+    if (errors.length) return { passed: false, divergent_frame: null, field: 'pageerror', expected: [], actual: errors };
+    if (!result.passed) return result;
+    return firstDiff(fixture.expected_debug || {}, result.actual, 'expected_debug') ||
+      { passed: true, divergent_frame: null, expected: null, actual: null, field: null };
+  }
 
   await page.evaluate((fixturePayload) => {
     const CEHP = window.CEHP;

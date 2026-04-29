@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "level_id": "rasta",
+  "engine_version": "0.2.0-rebuild",
+  "ruleset": "R2",
+  "seed": "REPLAY-W3-RASTA-RUSHED",
+  "debug_style": "rushed",
+  "initial_state": {
+    "x": 72,
+    "y": 396,
+    "facing": 1
+  },
+  "frames": [],
+  "expected_checkpoints": [],
+  "expected_final": {
+    "frame": 0,
+    "recorder_signature": "debug-plan",
+    "axes_snapshot": {},
+    "receipt_lines": []
+  },
+  "expected_debug": {
+    "world_id": "rasta",
+    "room_id": "warm-exit",
+    "room_order": [
+      "receiving-dock",
+      "sync-belt",
+      "rest-landing",
+      "sorting-floor",
+      "humming-mezzanine",
+      "rasta-soft-belt",
+      "warm-exit"
+    ],
+    "actions_learned": [],
+    "receipt_flags": {
+      "restOpened": false,
+      "rushedRest": true,
+      "cigaretteLit": false,
+      "syncedFlow": false
+    },
+    "world_stats": {
+      "syncMoments": 1,
+      "restOpens": 0,
+      "rushRebounds": 2,
+      "sortingRedirects": 3
+    },
+    "receipt_fragment_ids": [
+      "VERDICT_RASTA_RUSH_04",
+      "W11_RASTA_TENSION_DOOR_01",
+      "W11_RASTA_CLOSER_NAME_01"
+    ]
+  }
+}

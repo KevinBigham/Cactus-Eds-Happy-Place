@@ -12,10 +12,16 @@ var CEHP = CEHP || {};
 
   ns._modules = {};
   ns._register = function(key){ ns._modules[key] = true; };
+  ns.emit = function(topic, payload){
+    if (ns.Events && ns.Events.emit) ns.Events.emit(topic, payload);
+  };
+  ns.has = function(obj, key){
+    return Object.prototype.hasOwnProperty.call(obj, key);
+  };
   ns._loaded   = function(){
     var out = [];
     for (var k in ns._modules) {
-      if (Object.prototype.hasOwnProperty.call(ns._modules, k)) out.push(k);
+      if (ns.has(ns._modules, k)) out.push(k);
     }
     return out.sort();
   };

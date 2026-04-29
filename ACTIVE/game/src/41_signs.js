@@ -42,12 +42,12 @@
       peek: function(payload){
         if (sign.hasPeeked) return;
         sign.hasPeeked = true;
-        if (ns.Events && ns.Events.emit) ns.Events.emit('sign:peek', payload || { signId: sign.id, words: clean.split(/\s+/).length });
+        ns.emit('sign:peek', payload || { signId: sign.id, words: clean.split(/\s+/).length });
       },
       read: function(payload){
         if (sign.hasRead) return;
         sign.hasRead = true;
-        if (ns.Events && ns.Events.emit) ns.Events.emit('sign:read', payload || { signId: sign.id, words: clean.split(/\s+/).length });
+        ns.emit('sign:read', payload || { signId: sign.id, words: clean.split(/\s+/).length });
       },
       updateFromAxes: function(snapshot){
         var chaos = snapshot && snapshot.primary ? snapshot.primary.chaos || 0 : 0;

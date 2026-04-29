@@ -84,8 +84,8 @@
   function compare(recA, recB){
     recA=recA||{}; recB=recB||{};
     var la=recA.receipt&&recA.receipt.lines?recA.receipt.lines:[],lb=recB.receipt&&recB.receipt.lines?recB.receipt.lines:[],aa=axisMap(recA),ab=axisMap(recB),ad={},ld=[],k,i;
-    for(k in aa){ if(Object.prototype.hasOwnProperty.call(aa,k)) ad[k]=(ab[k]||0)-(aa[k]||0); }
-    for(k in ab){ if(Object.prototype.hasOwnProperty.call(ab,k)&&!Object.prototype.hasOwnProperty.call(ad,k)) ad[k]=ab[k]||0; }
+    for(k in aa){ if(ns.has(aa,k)) ad[k]=(ab[k]||0)-(aa[k]||0); }
+    for(k in ab){ if(ns.has(ab,k)&&!ns.has(ad,k)) ad[k]=ab[k]||0; }
     for(i=0;i<Math.max(la.length,lb.length);i++) if(la[i]!==lb[i]) ld.push({ index:i, a:la[i]||'', b:lb[i]||'' });
     return {matches:ld.length===0,lineDiff:ld,axisDelta:ad,pathA:clone(recA.frames||[]),pathB:clone(recB.frames||[]),bounds:bounds(recA.frames||[],recB.frames||[])};
   }

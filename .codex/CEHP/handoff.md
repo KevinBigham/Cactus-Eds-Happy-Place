@@ -2517,3 +2517,39 @@ Next owner: Architect. Phase 6 fully landed (60px Ed + collider split + rim-ligh
 - Final `npm run verify:launch` is GREEN after the W11 receipt-bias tightening pass.
 - The prompt referenced `scripts/baseline_update_protocol.md`, but that file was not present anywhere under the repo. The replay update followed Kevin's pasted protocol text instead.
 - The new `w2_benefits_uninsured` replay fixture is still a deterministic short movement rail like the existing replay tier; the behavior-specific uninsured receipt branch is covered by the new behavior oracle test, not by replay payload assertions.
+
+## What Was Just Done (2026-04-29 - W11.5 Polish Hardening Marathon GREEN - Codex GPT-5.5)
+
+**Session goal**: Run the autonomous M1-M8 infrastructure marathon after the W11 content drop, with no authored content changes, no commits/pushes, no save-schema edits, no new dependencies, and no additional in-place source minification.
+
+### What shipped
+
+- Trimmed bundle from `365,799 / 372,000` to `350,854 / 372,000` bytes.
+- Added reusable `ACTIVE/game/src/74_world_runtime_helpers.js` and refactored repeated Benefits/Rasta runtime helper patterns.
+- Kept `W11_CONTENT_BIAS = 1.1` intact and pinned it with a behavior test.
+- Added W11 fragment-condition coverage for all 12 W11 fragments plus W11 room-order tests.
+- Added 6 save-robustness oracle tests while leaving `ACTIVE/game/src/04_save.js` unchanged.
+- Extended `scripts/run_replays.mjs` with opt-in debug-plan fixtures and added:
+  - `_canon/replays/cehp/w1_orientation_obedient.json`
+  - `_canon/replays/cehp/w2_benefits_atrium_partial.json`
+  - `_canon/replays/cehp/w3_rasta_rushed.json`
+- Removed the stale Rasta TODO marker after its runtime implementation was already present.
+- Logged voice/time/asset/TODO/stale-doc findings and new fixture md5s in `.codex/CEHP/marathon_findings.md`.
+- Refreshed `ACTIVE/docs/NEXT_TASK.md` to keep W12 polish prep queued with the new bundle/oracle/replay numbers.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `cd ACTIVE/game && bash scripts/verify-cehp.sh 2>&1 \| tail -20` | PASS |
+| `cd ACTIVE/game && npm run verify:launch` | PASS, `350854 / 372000`, oracle `111/111`, replay `7/7`, final line `CEHP LAUNCH VERIFY: PASS` |
+| `cd ACTIVE/game && for i in 1 2 3; do md5 -q _canon/replays/cehp/*.json; done` | PASS, identical sequence across all three reads |
+| `cd ACTIVE/game && node scripts/check_save_schema.js` | PASS |
+| `cd ACTIVE/game && node scripts/verify_art_assets.mjs` | PASS (`33/33`) |
+
+### Notes for the next owner
+
+- The new replay fixtures are debug-plan assertions for deterministic room order, flags, stats, and fragment IDs. They intentionally avoid copying receipt prose.
+- `.codex/CEHP/marathon_findings.md` has 60 structured findings/triage entries. Biggest handoff items: 30 PNGs over 100 KB, 8 orphan asset candidates, and existing wall-clock `Date.now()` sites outside the sim path.
+- The M1 trim includes generated-bundle whitespace normalization in `build.js`; no additional source module was minified in place.
+- W12 remains Architect/Kevin-owned until the exact polish-prep packet lands.

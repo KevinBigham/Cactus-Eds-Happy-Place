@@ -25,13 +25,11 @@
       state.scene.runState.curiosityPays = (state.scene.runState.curiosityPays || 0) + 1;
     }
 
-    if (ns.Events && ns.Events.emit) {
-      ns.Events.emit('curiosity:reward', {
-        kind: kind,
-        signId: state.signId,
-        worldId: state.worldId
-      });
-    }
+    ns.emit('curiosity:reward', {
+      kind: kind,
+      signId: state.signId,
+      worldId: state.worldId
+    });
 
     state.pending = false;
   }

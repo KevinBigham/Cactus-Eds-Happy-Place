@@ -1,6 +1,6 @@
 # W7 — LENS AND FEEL SPRINT
 
-> **Status**: Sprint draft, awaiting promotion of `NEXT_TASK.md` to `CEHP-REBUILD-W7-LENS-AND-FEEL`.
+> **Status**: CLOSED 19a1b10 (batched W7-W10 local sync); retained as historical spec.
 > **Owner role on activation**: Builder (Codex 5.4)
 > **Reviewer**: Claude Opus 4.7 at every phase boundary
 > **Created**: 2026-04-21 after soft-launch screenshot review revealed feel/graphics gap

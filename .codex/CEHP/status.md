@@ -135,3 +135,30 @@
 **Production**: 1 week per world. 6 weeks total. All sacred constraints preserved. Moderate autonomy with seed-milestone check-ins.
 
 Phase 6 wall-jump single-owner landed 2026-04-24 per architect call (ChatGPT 5.4 Pro): 07_ed_state.js is sole owner of jump-family intent + movement:* emission. 21_movement.js no longer consumes jump input or emits jump-family topics. ED_SLIDE_W preserved at 24. W2 benefits autoplay A/B MATCH restored on movement:* stream. Phase 6 visual + feel + sim ownership freeze confirmed.
+
+## 2026-04-29 - W11.5 Polish Hardening Marathon GREEN
+
+- Current state: W11 content is preserved and W11.5 infrastructure hardening is complete locally. No commits, pushes, version bumps, save-schema edits, dependency additions, or authored content changes were made.
+- Bundle: `ACTIVE/game/index.html` is `350,854 / 372,000` bytes after the final build, freeing `14,945` bytes versus the W11 starting point `365,799`.
+- Oracle: `ACTIVE/game/tests/rebuild_logic.test.mjs` passes `111/111`.
+- Replay: `npm run test:replay` passes `7/7`; md5s are stable across three reads:
+  - `test_room_obedient.json` `8ed8ad52b7cf5d9527f6ffa72acc50a2`
+  - `w1_orientation_obedient.json` `959e9ea8165a6e07ba7f88086c87e363`
+  - `w2_benefits_atrium_partial.json` `83350e61d274787443ea882bccf1eb19`
+  - `w2_benefits_insured.json` `bbacf3e1b817827f3391e01f17bd4f26`
+  - `w2_benefits_uninsured.json` `33ead17d29a3429bb07e77a7e8b852ef`
+  - `w3_rasta_rushed.json` `a412c8427605feef317987764b0a018b`
+  - `w3_rasta_short.json` `6812183919a381e6dc1f4e6e05febbf7`
+- What changed:
+  - Added `CEHP.WorldRuntime` helpers and code-design trims in Benefits/Rasta runtime code.
+  - Kept `W11_CONTENT_BIAS = 1.1` and pinned it with tests.
+  - Added 15 W11 behavior tests and 6 save robustness tests; `src/04_save.js` stayed unchanged.
+  - Expanded replay corpus to 7 fixtures, including W1 obedient, W2 atrium follow partial, and W3 rushed rest.
+  - Removed one stale Rasta TODO comment after the runtime implementation already existed.
+  - Logged voice/time/asset/TODO/stale-doc findings in `.codex/CEHP/marathon_findings.md`.
+- Final verification:
+  - `bash scripts/verify-cehp.sh 2>&1 | tail -20` PASS.
+  - `npm run verify:launch` PASS, final line `CEHP LAUNCH VERIFY: PASS`.
+  - `node scripts/check_save_schema.js` PASS.
+  - `node scripts/verify_art_assets.mjs` PASS (`33/33`).
+- Next task: `ACTIVE/docs/NEXT_TASK.md` remains `CEHP-REBUILD-W12-POLISH-PREP`, Architect/Kevin-owned, now refreshed with W11.5 bundle/oracle/replay numbers.

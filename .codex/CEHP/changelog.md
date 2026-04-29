@@ -2587,3 +2587,46 @@ Plan specifies: read 5 receipts from the same 5 case seeds before + after. Does 
 - summary: resumed W11 after exact Architect spec landed; registered 12 W11 receipt fragments, wired three Benefits rooms and one Rasta room, added W11 behavior-oracle coverage, added fourth replay fixture, and kept save schema unchanged.
 - verification: `npm run verify:launch` PASS with build `365789` reported / `365799` on disk under `372000`, behavior oracle `90/90`, replay corpus `4/4`, and final line `CEHP LAUNCH VERIFY: PASS`; fixture md5s stable across three reads.
 - notes: no commit, push, version bump, dependency, save-schema edit, or README edit.
+
+## 2026-04-29 - W11.5 Polish Hardening Marathon GREEN
+- files changed:
+  - `ACTIVE/game/build.js`
+  - `ACTIVE/game/index.html`
+  - `ACTIVE/game/src/00_index.js`
+  - `ACTIVE/game/src/05_input_buffer.js`
+  - `ACTIVE/game/src/06_cancel_matrix.js`
+  - `ACTIVE/game/src/10_axes.js`
+  - `ACTIVE/game/src/41_signs.js`
+  - `ACTIVE/game/src/50_forms.js`
+  - `ACTIVE/game/src/51_contradiction.js`
+  - `ACTIVE/game/src/52_curiosity.js`
+  - `ACTIVE/game/src/70_worlds.js`
+  - `ACTIVE/game/src/73_world_rasta.js`
+  - `ACTIVE/game/src/74_world_runtime_helpers.js`
+  - `ACTIVE/game/src/75_world_benefits_runtime.js`
+  - `ACTIVE/game/src/76_world_rasta_runtime.js`
+  - `ACTIVE/game/src/80_receipts.js`
+  - `ACTIVE/game/src/82_appeals.js`
+  - `ACTIVE/game/src/90_ui.js`
+  - `ACTIVE/game/src/92_testroom.js`
+  - `ACTIVE/game/scripts/run_replays.mjs`
+  - `ACTIVE/game/tests/rebuild_logic.test.mjs`
+  - `ACTIVE/game/_canon/replays/cehp/w1_orientation_obedient.json`
+  - `ACTIVE/game/_canon/replays/cehp/w2_benefits_atrium_partial.json`
+  - `ACTIVE/game/_canon/replays/cehp/w3_rasta_rushed.json`
+  - `ACTIVE/docs/CODEBASE_AUDIT.md`
+  - `ACTIVE/docs/CEHP_LAUNCH_ARC.md`
+  - `ACTIVE/docs/NEXT_TASK.md`
+  - `ACTIVE/docs/PROPOSED_NEXT_TASK.md`
+  - `ACTIVE/docs/W7_LENS_AND_FEEL_SPRINT.md`
+  - `ACTIVE/docs/W8_LENS_OF_RESEARCH_SPRINT.md`
+  - `ACTIVE/docs/W9_SPRINT_DOC.md`
+  - `ACTIVE/docs/W10_REDESIGN_SPRINT.md`
+  - `ACTIVE/docs/scan-results.md`
+  - `.codex/CEHP/marathon_findings.md`
+  - `.codex/CEHP/status.md`
+  - `.codex/CEHP/handoff.md`
+  - `.codex/CEHP/changelog.md`
+- summary: completed M1-M8 infrastructure marathon: bundle trim, W11 behavior-test backfill, whole-codebase sweeps, asset audit, save robustness tests, replay corpus expansion, TODO/stale-doc triage, and final launch verification.
+- verification: `npm run verify:launch` PASS with bundle `350,854 / 372,000`, oracle `111/111`, replay `7/7`; save schema and art verifier pass; replay md5 sequence stable across three reads.
+- notes: no authored content changes, no save schema edits, no commits/pushes, no dependencies, no version bumps, and no additional in-place source minification.

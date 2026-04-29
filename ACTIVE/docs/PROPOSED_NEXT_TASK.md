@@ -2,6 +2,8 @@
 
 This file is the proposal lane for the post-W9 hand-back.
 
+> **Status**: CLOSED/SUPERSEDED 19a1b10; retained as historical post-W9 proposal.
+
 ---
 
 ## TASK_ID: CEHP-POST-W9-KEVIN-TASTEGATE-AND-POLISH

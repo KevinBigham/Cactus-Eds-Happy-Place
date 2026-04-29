@@ -22,10 +22,10 @@
     var state;
     var input;
     for (state in source) {
-      if (!Object.prototype.hasOwnProperty.call(source, state)) continue;
+      if (!ns.has(source, state)) continue;
       out[state] = {};
       for (input in source[state]) {
-        if (!Object.prototype.hasOwnProperty.call(source[state], input)) continue;
+        if (!ns.has(source[state], input)) continue;
         out[state][input] = cloneRule(source[state][input]);
       }
     }

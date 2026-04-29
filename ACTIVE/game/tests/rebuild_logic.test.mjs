@@ -83,6 +83,12 @@ const LOGIC_MODULES = [
   '82_appeals.js'
 ];
 
+const SAVE_MODULES = [
+  '00_index.js',
+  '01_const.js',
+  '04_save.js'
+];
+
 const APPEALS_REPLAY_MODULES = [
   '00_index.js',
   '01_const.js',
@@ -91,6 +97,22 @@ const APPEALS_REPLAY_MODULES = [
 
 function plain(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value));
+}
+
+function makeStorage(seed) {
+  const store = Object.assign({}, seed || {});
+  return {
+    _store: store,
+    getItem(key) {
+      return Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null;
+    },
+    setItem(key, value) {
+      store[key] = String(value);
+    },
+    removeItem(key) {
+      delete store[key];
+    }
+  };
 }
 
 const LENS_MODULES = [
@@ -408,6 +430,24 @@ test('W11 rasta soft belt is in world order with voice-safe signs', () => {
   });
 });
 
+test('W11 benefits room insertion indexes stay pinned', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const rooms = CEHP.Worlds.MANIFEST.benefits.rooms.map(function(room) { return room.id; });
+
+  assert.deepEqual(plain(rooms.slice(0, 3)), [
+    'benefits-risk-atrium',
+    'benefits-claim-window',
+    'benefits-network-narrow'
+  ]);
+});
+
+test('W11 rasta soft belt stays before warm exit', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const rooms = CEHP.Worlds.MANIFEST.rasta.rooms.map(function(room) { return room.id; });
+
+  assert.equal(rooms.indexOf('rasta-soft-belt'), rooms.indexOf('warm-exit') - 1);
+});
+
 test('receipts score generic world flags for benefits routes', () => {
   const CEHP = loadModules(LOGIC_MODULES);
   const seed = 'CASE-20260427-001-COMPLIANCE-R2';
@@ -574,6 +614,166 @@ test('W11 rasta rushed path does not receive rest-only verdict bias', () => {
   assert.equal(receipt.fragmentIds.includes('W11_RASTA_TENSION_DOOR_01'), true, receipt.fragmentIds.join(', '));
 });
 
+test('W11_CONTENT_BIAS favors equivalent W11 fragments when flags match', () => {
+  const CEHP = loadModules(LOGIC_MODULES);
+  const seed = 'CASE-W11-BIAS-0';
+  CEHP.Receipts.registerFragment('CLOSERS', 'CONTROL_BIAS_CLOSER', 'CONTROL BIAS LINE.', {
+    worlds: { orientation: 99 }
+  });
+  CEHP.Receipts.registerFragment('CLOSERS', 'W11_TEST_BIAS_CLOSER', 'W11 BIAS LINE.', {
+    worlds: { orientation: 99 }
+  });
+
+  assert.equal(
+    CEHP.seedFromString(seed + '|CONTROL_BIAS_CLOSER') < CEHP.seedFromString(seed + '|W11_TEST_BIAS_CLOSER'),
+    true
+  );
+
+  const receipt = CEHP.Receipts.generate({
+    seed,
+    worldId: 'orientation',
+    axes: { primary: {}, micro: {} },
+    tensions: { obedience: 0, style: 0, auditRisk: 0 },
+    flags: {}
+  });
+
+  assert.equal(receipt.fragmentIds.includes('W11_TEST_BIAS_CLOSER'), true, receipt.fragmentIds.join(', '));
+});
+
+[
+  {
+    id: 'W11_BENEFITS_VERDICT_ATRIUM_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-ATRIUM',
+      worldId: 'benefits',
+      axes: { primary: { compliance: 1, intuition: 1 }, micro: { idleMs: 3 } },
+      tensions: { obedience: 0.5, style: 0.2, auditRisk: 0.2 },
+      flags: {}
+    }
+  },
+  {
+    id: 'W11_BENEFITS_VERDICT_NETWORK_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-NETWORK',
+      worldId: 'benefits',
+      axes: { primary: { grace: 1, efficiency: 1 }, micro: { nearMisses: 3 } },
+      tensions: { obedience: 0, style: 0, auditRisk: 0 },
+      flags: {}
+    }
+  },
+  {
+    id: 'W11_BENEFITS_VERDICT_AUTH_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-AUTH',
+      worldId: 'benefits',
+      axes: { primary: { compliance: 1 }, micro: { contradictionFollow: 3 } },
+      tensions: { obedience: 1, style: 0, auditRisk: 0 },
+      flags: { premiumSecured: true }
+    }
+  },
+  {
+    id: 'W11_BENEFITS_TENSION_BRANCH_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-BRANCH',
+      worldId: 'benefits',
+      axes: { primary: {}, micro: { modulesPassed: 3 } },
+      tensions: { obedience: 0, style: 1, auditRisk: 1 },
+      flags: {}
+    }
+  },
+  {
+    id: 'W11_BENEFITS_TENSION_SLOW_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-SLOW',
+      worldId: 'benefits',
+      axes: { primary: { compliance: 1, intuition: 1 }, micro: {} },
+      tensions: { obedience: 1, style: 0, auditRisk: 0 },
+      flags: {}
+    }
+  },
+  {
+    id: 'W11_BENEFITS_TENSION_EXPOSED_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-EXPOSED',
+      worldId: 'benefits',
+      axes: { primary: {}, micro: { damageTaken: 3 } },
+      tensions: { obedience: -1, style: 0, auditRisk: 1 },
+      flags: { uninsuredVeteran: true }
+    }
+  },
+  {
+    id: 'W11_BENEFITS_CLOSER_PLAN_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-PLAN',
+      worldId: 'benefits',
+      axes: { primary: { compliance: 1 }, micro: {} },
+      tensions: { obedience: 1, style: 0, auditRisk: 0 },
+      flags: { premiumSecured: true }
+    }
+  },
+  {
+    id: 'W11_BENEFITS_CLOSER_BILLING_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-BILLING',
+      worldId: 'benefits',
+      axes: { primary: { efficiency: 1, chaos: 1 }, micro: {} },
+      tensions: { obedience: 0, style: 0, auditRisk: 0 },
+      flags: {}
+    }
+  },
+  {
+    id: 'W11_RASTA_VERDICT_BELT_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-BELT',
+      worldId: 'rasta',
+      axes: { primary: { intuition: 1, grace: 1 }, micro: { musicSync: 3 } },
+      tensions: { obedience: 0, style: 0, auditRisk: 0 },
+      flags: { restOpened: true, cigaretteLit: false },
+      cigaretteLit: false
+    }
+  },
+  {
+    id: 'W11_RASTA_TENSION_DOOR_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-DOOR',
+      worldId: 'rasta',
+      axes: { primary: { intuition: 1 }, micro: { contradictionDefy: 3 } },
+      tensions: { obedience: 0, style: 0, auditRisk: 0 },
+      flags: { rushedRest: true },
+      cigaretteLit: false
+    }
+  },
+  {
+    id: 'W11_RASTA_CLOSER_FLOOR_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-FLOOR',
+      worldId: 'rasta',
+      axes: { primary: { grace: 1 }, micro: { musicSync: 3 } },
+      tensions: { obedience: 0, style: 0, auditRisk: 0 },
+      flags: { restOpened: true, cigaretteLit: false },
+      cigaretteLit: false
+    }
+  },
+  {
+    id: 'W11_RASTA_CLOSER_NAME_01',
+    opts: {
+      seed: 'CASE-W11-FRAG-NAME',
+      worldId: 'rasta',
+      axes: { primary: { intuition: 1, grace: 1 }, micro: { contradictionDefy: 3 } },
+      tensions: { obedience: 0, style: 0, auditRisk: 0 },
+      flags: { rushedRest: true },
+      cigaretteLit: false
+    }
+  }
+].forEach(function(entry) {
+  test(entry.id + ' surfaces under its W11 selection conditions', () => {
+    const CEHP = loadModules(LOGIC_MODULES);
+    const receipt = CEHP.Receipts.generate(entry.opts);
+
+    assert.equal(receipt.fragmentIds.includes(entry.id), true, receipt.fragmentIds.join(', '));
+  });
+});
+
 test('play scene initializes W11 receipt flags without changing save schema', () => {
   const source = fs.readFileSync(path.join(srcDir, '91_scenes.js'), 'utf8');
 
@@ -581,6 +781,121 @@ test('play scene initializes W11 receipt flags without changing save schema', ()
     source,
     /receiptFlags:\{uninsuredVeteran:!1,premiumSecured:!1,restOpened:!1,rushedRest:!1,cigaretteLit:!1\}/
   );
+});
+
+test('save boot without stored data returns sane v2 defaults', () => {
+  const storage = makeStorage();
+  const CEHP = loadModules(SAVE_MODULES, { localStorage: storage });
+  const save = plain(CEHP.SAVE.boot());
+
+  assert.equal(save.version, 2);
+  assert.equal(save.ruleset, CEHP.RULESET);
+  assert.equal(save.world, 1);
+  assert.equal(save.health, 3);
+  assert.deepEqual(save.axes, {
+    compliance: 0,
+    intuition: 0,
+    curiosity: 0,
+    grace: 0,
+    chaos: 0,
+    efficiency: 0
+  });
+  assert.deepEqual(save.cases, []);
+  assert.equal(save.legacy, null);
+  assert.equal(storage.getItem(CEHP.SAVE._key), null);
+});
+
+test('v1 save with missing fields migrates with defaults and preserves legacy blob', () => {
+  const legacy = {
+    timestamp: 12345,
+    health: 2,
+    behavior: { compliance: 0.7, chaos: 0.4 },
+    assistMode: { slowerGame: true },
+    extraV1Field: 'kept'
+  };
+  const storage = makeStorage({ cactusEd_save_v1: JSON.stringify(legacy) });
+  const CEHP = loadModules(SAVE_MODULES, { localStorage: storage });
+  const migrated = plain(CEHP.SAVE.boot());
+
+  assert.equal(migrated.version, 2);
+  assert.equal(migrated.ts, 12345);
+  assert.equal(migrated.world, 1);
+  assert.equal(migrated.health, 2);
+  assert.equal(migrated.runs, 0);
+  assert.equal(migrated.axes.compliance, 0.7);
+  assert.equal(migrated.axes.chaos, 0.4);
+  assert.equal(migrated.assistMode.slowerGame, true);
+  assert.equal(migrated.assistMode.reduceShake, false);
+  assert.deepEqual(migrated.legacy, legacy);
+  assert.deepEqual(JSON.parse(storage.getItem(CEHP.SAVE._key)).legacy, legacy);
+  assert.equal(storage.getItem(CEHP.SAVE._keyV1), JSON.stringify(legacy));
+});
+
+test('v2 save with extra fields round-trips without losing unknown data', () => {
+  const storage = makeStorage();
+  const CEHP = loadModules(SAVE_MODULES, { localStorage: storage });
+  const payload = CEHP.SAVE._emptyV2();
+  payload.world = 2;
+  payload.extraTopLevel = { review: 'preserved', nested: { ok: true } };
+  payload.cases.push({ seed: 'CASE-SAVE-EXTRA', result: 'kept' });
+
+  assert.equal(CEHP.SAVE.save(payload), true);
+
+  const reloaded = loadModules(SAVE_MODULES, { localStorage: storage });
+  assert.deepEqual(plain(reloaded.SAVE.boot().extraTopLevel), {
+    review: 'preserved',
+    nested: { ok: true }
+  });
+  assert.deepEqual(plain(reloaded.SAVE.load().cases), [{ seed: 'CASE-SAVE-EXTRA', result: 'kept' }]);
+});
+
+test('corrupt save JSON recovers to defaults without throwing', () => {
+  const storage = makeStorage({ cactusEd_save_v2: '{not-valid-json' });
+  const CEHP = loadModules(SAVE_MODULES, { localStorage: storage });
+  let save = null;
+
+  assert.doesNotThrow(function() {
+    save = CEHP.SAVE.boot();
+  });
+  assert.equal(save.version, 2);
+  assert.equal(save.health, 3);
+  assert.deepEqual(plain(save.cases), []);
+});
+
+test('v1 save with mismatched ruleset migrates to live ruleset and keeps audit trail', () => {
+  const legacy = {
+    timestamp: 67890,
+    ruleset: 'R1',
+    world: 3,
+    health: 1
+  };
+  const storage = makeStorage({ cactusEd_save_v1: JSON.stringify(legacy) });
+  const CEHP = loadModules(SAVE_MODULES, { localStorage: storage });
+  const migrated = plain(CEHP.SAVE.boot());
+
+  assert.equal(migrated.ruleset, CEHP.RULESET);
+  assert.equal(migrated.world, 3);
+  assert.equal(migrated.health, 1);
+  assert.equal(migrated.legacy.ruleset, 'R1');
+});
+
+test('v2 save then reload returns the same saved state', () => {
+  const storage = makeStorage();
+  const CEHP = loadModules(SAVE_MODULES, { localStorage: storage });
+  const payload = CEHP.SAVE._emptyV2();
+  payload.world = 3;
+  payload.health = 1;
+  payload.axes.compliance = 0.25;
+  payload.axes.grace = 0.5;
+  payload.micro = { contradictionFollow: 2 };
+  payload.cases = [{ seed: 'CASE-SAVE-ROUNDTRIP', worldId: 'rasta' }];
+  payload.assistMode.reduceFlash = true;
+
+  assert.equal(CEHP.SAVE.save(payload), true);
+  assert.deepEqual(plain(CEHP.SAVE.load()), plain(payload));
+
+  const reloaded = loadModules(SAVE_MODULES, { localStorage: storage });
+  assert.deepEqual(plain(reloaded.SAVE.boot()), plain(payload));
 });
 
 test('receipt card helpers keep receipt content stable across thermal presentation', () => {
@@ -1373,16 +1688,16 @@ test('replay run comparison reports first divergent checkpoint frame and field',
   });
 });
 
-test('build.js restores long-form bundle module banners in index.html', () => {
+test('build.js keeps compact bundle module banners in index.html', () => {
   childProcess.execFileSync('node', ['build.js'], { cwd: gameDir, stdio: 'pipe' });
   const builtHtml = fs.readFileSync(path.join(gameDir, 'index.html'), 'utf8');
 
   assert.equal(
-    builtHtml.includes('/* =============== MODULE: 00_INDEX.JS =============== */'),
+    builtHtml.includes('/* MODULE: 00_INDEX.JS */'),
     true
   );
   assert.equal(
-    builtHtml.includes('/* =============== MODULE: 89_ED_PERFORM.JS =============== */'),
+    builtHtml.includes('/* MODULE: 89_ED_PERFORM.JS */'),
     true
   );
 });
