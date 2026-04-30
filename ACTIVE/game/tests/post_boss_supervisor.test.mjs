@@ -263,9 +263,10 @@ test('W1 runtime gates Supervisor integration without changing obedient debug st
     source,
     /W1_SUPERVISOR_BOSS!==!1\)\)a\.supervisorBoss=e\.bosses\.spawnSupervisor\(o,a\)/
   );
+  // NOTE: regex relaxed in W15M-P8a-prep to allow additional debug styles to map to obedient
   assert.match(
     source,
-    /var s=t==="supervisor"\?"obedient":t;var r=/
+    /var\s+s\s*=\s*\(?[^?]*t==="supervisor"[^?]*\)?\?"obedient":t/
   );
   assert.match(
     source,
