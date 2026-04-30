@@ -276,7 +276,7 @@ test('W3 runtime gates Logistics integration and preserves non-boss debug style'
   );
   assert.match(
     source,
-    /var run = style === 'logistics' \? 'ambient' : style;/
+    /var run = style === 'logistics' \|\| style === 'supply-chain' \? 'ambient' : style;/
   );
   assert.match(
     source,

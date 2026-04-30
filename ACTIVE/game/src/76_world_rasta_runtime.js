@@ -602,6 +602,7 @@
     for (i = 0; i < world.restGates.length; i++) {
       if (world.restGates[i] && world.restGates[i].reset) world.restGates[i].reset();
     }
+    if (world.supplyChain && world.supplyChain.reset) world.supplyChain.reset();
     updateRunState(world);
     rememberRoom(world, world.rooms[0].id);
     world.currentRoom = world.rooms[0];
@@ -695,7 +696,7 @@
     }
 
     style = style || 'ambient';
-    var run = style === 'logistics' ? 'ambient' : style;
+    var run = style === 'logistics' || style === 'supply-chain' ? 'ambient' : style;
     if (style === 'locust') run = 'ambient';
     resetDebug(world);
 
@@ -707,6 +708,9 @@
     if (style === 'locust') debugSurviveLocust(world);
     if (style === 'logistics' && world.logisticsBoss && world.logisticsBoss.debugDefeat) {
       world.logisticsBoss.debugDefeat();
+    }
+    if (style === 'supply-chain' && world.supplyChain && world.supplyChain.debugRoute) {
+      world.supplyChain.debugRoute();
     }
     scene.completeRun('debug:' + style);
 
@@ -775,6 +779,9 @@
     buildHumming(world, manifest.rooms[4], roomWidth * 4, roomWidth);
     buildSoftBelt(world, manifest.rooms[5], roomWidth * 5, roomWidth);
     buildWarmExit(world, manifest.rooms[6], roomWidth * 6, roomWidth);
+    if (ns.Setpieces && ns.Setpieces.attachSupplyChain && (!ns.flags || ns.flags.W3_SUPPLY_CHAIN !== false)) {
+      world.supplyChain = ns.Setpieces.attachSupplyChain(scene, world, { room: world.rooms[3] });
+    }
     if (ns.bosses && ns.bosses.spawnLogistics && (!ns.flags || ns.flags.W3_LOGISTICS_BOSS !== false)) {
       world.logisticsBoss = ns.bosses.spawnLogistics(scene, world);
     }
@@ -832,6 +839,7 @@
       destroyThing(world.rooms[i].locustSensor);
     }
     if (world.logisticsBoss && world.logisticsBoss.destroy) world.logisticsBoss.destroy();
+    if (world.supplyChain && world.supplyChain.destroy) world.supplyChain.destroy();
     if (world.parallax && world.parallax.destroy) world.parallax.destroy();
   }
 

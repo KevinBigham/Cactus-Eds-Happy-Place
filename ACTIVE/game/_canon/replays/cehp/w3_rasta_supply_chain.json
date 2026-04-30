@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "level_id": "rasta",
+  "engine_version": "0.2.0-rebuild",
+  "ruleset": "R2",
+  "seed": "REPLAY-W3-RASTA-SUPPLY-CHAIN",
+  "debug_style": "supply-chain",
+  "initial_state": {
+    "x": 72,
+    "y": 396,
+    "facing": 1
+  },
+  "frames": [],
+  "expected_checkpoints": [],
+  "expected_final": {
+    "frame": 0,
+    "recorder_signature": "debug-plan",
+    "axes_snapshot": {},
+    "receipt_lines": []
+  },
+  "expected_debug": {
+    "world_id": "rasta",
+    "room_id": "warm-exit",
+    "room_order": [
+      "receiving-dock",
+      "sync-belt",
+      "rest-landing",
+      "sorting-floor",
+      "humming-mezzanine",
+      "rasta-soft-belt",
+      "warm-exit"
+    ],
+    "actions_learned": [],
+    "receipt_flags": {
+      "restOpened": true,
+      "rushedRest": false,
+      "cigaretteLit": false,
+      "syncedFlow": true,
+      "supplyChainRouted": true
+    },
+    "world_stats": {
+      "syncMoments": 5,
+      "restOpens": 2,
+      "rushRebounds": 0,
+      "sortingRedirects": 0
+    },
+    "receipt_fragment_ids": [
+      "W11_RASTA_VERDICT_BELT_01",
+      "TENSION_RASTA_REST_01",
+      "W15_SUPPLY_CHAIN_CLOSER_01"
+    ]
+  }
+}
