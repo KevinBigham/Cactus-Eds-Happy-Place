@@ -95,6 +95,10 @@ function makeScene(CEHP) {
     cameras: {
       main: { scrollX: 0 }
     },
+    time: {
+      now: 0
+    },
+    _assistMode: {},
     scale: {
       width: 960
     },
@@ -188,4 +192,32 @@ test('ART2 parallax attach layers manifest plates without removing legacy layers
 
   handle.destroy();
   assert.equal(scene.images.every((image) => image.destroyed), true);
+});
+
+test('ART3 parallax wind drift moves far and mid plates while preserving base recovery', () => {
+  const CEHP = loadModules(PARALLAX_ASSET_MODULES);
+  CEHP.Art.registerManifest(readManifest());
+  const scene = makeScene(CEHP);
+  const handle = CEHP.Parallax.attach(scene, makeWorld('orientation'), { worldId: 'orientation' });
+
+  scene.time.now = 625;
+  handle.sync(0);
+
+  const farDrift = handle.plates[0].node.x - handle.plates[0].baseX;
+  const midDrift = handle.plates[1].node.x - handle.plates[1].baseX;
+  const nearDrift = handle.plates[2].node.x - handle.plates[2].baseX;
+
+  assert.ok(Math.abs(farDrift) > 0);
+  assert.ok(Math.abs(farDrift) <= 6);
+  assert.ok(Math.abs(midDrift) > 0);
+  assert.ok(Math.abs(midDrift) <= 3);
+  assert.equal(nearDrift, 0);
+
+  scene._assistMode.reduceShake = true;
+  handle.sync(0);
+  assert.ok(Math.abs(handle.plates[0].node.x - handle.plates[0].baseX) <= 1.8);
+
+  handle.plates[0].drift = false;
+  handle.sync(240);
+  assert.equal(Math.round(handle.plates[0].node.x), Math.round(handle.plates[0].baseX + (240 * (1 - handle.plates[0].factor))));
 });

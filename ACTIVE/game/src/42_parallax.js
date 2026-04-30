@@ -14,6 +14,13 @@
   };
 
   var PLATE_STATES = ['far', 'mid', 'near'];
+  var TAU = Math.PI * 2;
+  var WIND = {
+    far: { amp: 6, hz: 0.4 },
+    mid: { amp: 3, hz: 0.7 },
+    near: { amp: 0, hz: 0 }
+  };
+  var WIND_PHASES = {};
 
   var PALETTES = {
     orientation: { far: 0x1a2230, mid: 0x2c3a52 },
@@ -53,6 +60,34 @@
 
   function textureExists(scene, key){
     return !!(scene && scene.textures && scene.textures.exists && scene.textures.exists(key));
+  }
+
+  function assistMode(scene){
+    if (scene && scene._assistMode) return scene._assistMode;
+    if (ns.RunState && ns.RunState.assistMode) return ns.RunState.assistMode;
+    return {};
+  }
+
+  function windPhase(id){
+    var rng;
+    if (WIND_PHASES[id] == null) {
+      rng = ns.makeRNG ? ns.makeRNG('parallax|wind|' + String(id || 'orientation')) : null;
+      WIND_PHASES[id] = rng && rng.float ? rng.float() * TAU : 0;
+    }
+    return WIND_PHASES[id];
+  }
+
+  function windDrift(scene, item, id){
+    var spec;
+    var amp;
+    var nowMs;
+    if (!item || !item.drift) return 0;
+    spec = WIND[item.layerId] || null;
+    if (!spec || !spec.amp) return 0;
+    amp = spec.amp * (assistMode(scene).reduceShake ? 0.3 : 1);
+    nowMs = scene && scene.time && scene.time.now ? scene.time.now : 0;
+    if (!nowMs) return 0;
+    return Math.sin(((nowMs / 1000) * spec.hz * TAU) + windPhase(id)) * amp;
   }
 
   function addRect(scene, x, y, w, h, color, alpha, depth){
@@ -139,6 +174,7 @@
       factor: spec.factor,
       baseX: width / 2,
       baseY: height,
+      drift: true,
       node: node
     };
   }
@@ -155,13 +191,13 @@
     return plates;
   }
 
-  function syncItems(items, cameraX){
+  function syncItems(items, cameraX, scene, id){
     var i;
     var item;
     cameraX = Number(cameraX) || 0;
     for (i = 0; i < items.length; i++) {
       item = items[i];
-      item.node.x = item.baseX + (cameraX * (1 - item.factor));
+      item.node.x = item.baseX + (cameraX * (1 - item.factor)) + windDrift(scene, item, id);
       item.node.y = item.baseY;
     }
   }
@@ -193,9 +229,9 @@
       },
       plates: makePlates(scene, world, id),
       sync: function(scrollX){
-        syncItems(handle.layers.far, scrollX);
-        syncItems(handle.layers.mid, scrollX);
-        syncItems(handle.plates, scrollX);
+        syncItems(handle.layers.far, scrollX, scene, id);
+        syncItems(handle.layers.mid, scrollX, scene, id);
+        syncItems(handle.plates, scrollX, scene, id);
       },
       destroy: function(){
         if (updateHook && scene && scene.events && scene.events.off) scene.events.off('update', updateHook);
@@ -213,5 +249,6 @@
     return handle;
   };
   ns.Parallax.loadWorldPlates = loadWorldPlates;
+  ns.Parallax.windDrift = windDrift;
 })(CEHP);
 CEHP._register('42_parallax');
