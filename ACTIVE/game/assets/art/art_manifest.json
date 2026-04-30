@@ -211,6 +211,62 @@
       "transparentBackground": true,
       "promptHash": "c30d16c2cac0603362408a1d83d36fe33601e3a85cf3626bef41eb8997549a44",
       "regenerated": 0
+    },
+    {
+      "category": "enemies",
+      "subject": "reply_all_locust",
+      "state": "swarm",
+      "variant": "01",
+      "file": "enemies/locust_swarm_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": true,
+      "promptHash": "6b8fc3c8c2919b3e691f61d25fdd1bc2b3c75784f408b4c89377cf512f7e16fe",
+      "regenerated": 0
+    },
+    {
+      "category": "enemies",
+      "subject": "reply_all_locust",
+      "state": "single",
+      "variant": "01",
+      "file": "enemies/locust_single_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "101c861753f61cb55eb7cbc15d65c3dea3fa4421fc22fe2aa968fd9b11c0be16",
+      "regenerated": 0
+    },
+    {
+      "category": "enemies",
+      "subject": "orientation_clipboard_imp",
+      "state": "idle",
+      "variant": "01",
+      "file": "enemies/orientation_clipboard_imp_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "131762668b74a24a9d4f81b82a8678bad8a0d982824de0341afc2f564ee5766e",
+      "regenerated": 0
+    },
+    {
+      "category": "enemies",
+      "subject": "benefits_premium_pigeon",
+      "state": "idle",
+      "variant": "01",
+      "file": "enemies/benefits_premium_pigeon_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "cd917af6c830ea5a7a67bc5c810d8d854b5d1f85500122498d119290c0e618bc",
+      "regenerated": 0
     }
   ],
   "generatedAt": "2026-04-30T00:00:00Z",
