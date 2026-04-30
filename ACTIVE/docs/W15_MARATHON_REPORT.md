@@ -33,6 +33,7 @@ This side branch staged the deferred W15 buildout while `main` remains launch-fr
 - `W15M-P17`: Tension pool depth (5 axis-keyed tension variants per world × 3 worlds, 15 fragments).
 - `W15M-P18`: Axis-only closer overflow pool (4 chaos + 4 curiosity + 4 efficiency variants, no world weighting, 12 fragments).
 - `W15M-P19`: Replay corpus V3 armor (4 axis-edge fixtures: chaos/curiosity orientation, efficiency benefits, grace rasta; corpus 26 → 30).
+- `W15M-P20`: Fragment audit guardrail (`scripts/audit_fragments.mjs` + `tests/post_fragment_audit.test.mjs`) — 418-fragment census, voice rule + duplicate ID guardrail across all three pools.
 
 ## Closer Pool Receipt Layer (P11-P14)
 
