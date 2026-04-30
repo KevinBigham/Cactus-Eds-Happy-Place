@@ -339,6 +339,33 @@ function sceneHasSheet(scene){
   return !!(scene&&scene.textures&&scene.textures.exists&&scene.textures.exists(SHEET_KEY));
 }
 
+function heroArtKeyForName(name){
+  return ns.Art&&ns.Art.getKey?ns.Art.getKey('characters',name):'';
+}
+
+function heroArtNameForState(actor){
+  var stateName=currentStateName(actor);
+  if (stateName==='run'||stateName==='skid') return 'cactus_ed.walk_keypose';
+  if (stateName==='jumpRise'||stateName==='jumpApex'||stateName==='jumpFall'||stateName==='doubleJump'||stateName==='wallJump'||stateName==='wallSlide'||stateName==='wallClimb'||stateName==='landed') return 'cactus_ed.jump_apex';
+  if (stateName==='ranged'||stateName==='melee'||stateName==='dash'||stateName==='slide') return 'cactus_ed.kick';
+  if (stateName==='iFrameHurt'||stateName==='hitStop'||stateName==='death') return 'cactus_ed.hit';
+  return 'cactus_ed.idle';
+}
+
+function heroArtKeyForState(actor){
+  return heroArtKeyForName(heroArtNameForState(actor));
+}
+
+function heroArtHeight(name,fallback){
+  var asset=ns.Art&&ns.Art.getAsset?ns.Art.getAsset('characters',name):null;
+  return asset&&asset.resolution&&asset.resolution[1]?asset.resolution[1]:fallback;
+}
+
+function sceneHasHeroArt(scene){
+  var key=heroArtKeyForName('cactus_ed.idle');
+  return !!(key&&scene&&scene.textures&&scene.textures.exists&&scene.textures.exists(key));
+}
+
 function ensureSheetFrames(scene){
   var tex=scene&&scene.textures&&scene.textures.get?scene.textures.get(SHEET_KEY):null;
   var i;
@@ -401,6 +428,8 @@ function drawBodyFrame(graphics,useLowerPose){
 }
 
 function ensureTextures(scene){
+  if (sceneHasHeroArt(scene)) return;
+
   if (sceneHasSheet(scene)) {
     ensureSheetFrames(scene);
     return;
@@ -422,6 +451,7 @@ function ensureTextures(scene){
 
 function syncVisualState(actor){
   var nextBodyKey=actor._cehpBreatheState.v>=0.5?BODY_B_KEY:BODY_A_KEY;
+  var nextHeroKey;
   var facingScale=actor.facing<0?-1:1;
   var p5=actor._cehpPhase5;
   var visualX=p5&&p5.visualX?p5.visualX:1;
@@ -430,6 +460,35 @@ function syncVisualState(actor){
   var aimX=actor._cehpSheetImage?9:EYE_X;
   var aimUpY=actor._cehpSheetImage?-18:-10;
   var aimDownY=actor._cehpSheetImage?-10:-5;
+
+  if (actor._cehpHeroArt) {
+    nextHeroKey=heroArtKeyForState(actor);
+    if (nextHeroKey&&actor._cehpBodyKey!==nextHeroKey) {
+      actor._cehpBodyImage.setTexture(nextHeroKey);
+      if (actor._cehpRimCyan&&actor._cehpRimCyan.setTexture) actor._cehpRimCyan.setTexture(nextHeroKey);
+      if (actor._cehpRimMagenta&&actor._cehpRimMagenta.setTexture) actor._cehpRimMagenta.setTexture(nextHeroKey);
+      actor._cehpBodyKey=nextHeroKey;
+   }
+    actor._cehpBodyImage.scaleX=facingScale*visualX*baseScale;
+    actor._cehpBodyImage.scaleY=visualY*baseScale;
+    if (actor._cehpRimCyan) {
+      actor._cehpRimCyan.scaleX=facingScale*visualX*baseScale;
+      actor._cehpRimCyan.scaleY=visualY*baseScale;
+   }
+    if (actor._cehpRimMagenta) {
+      actor._cehpRimMagenta.scaleX=facingScale*visualX*baseScale;
+      actor._cehpRimMagenta.scaleY=visualY*baseScale;
+   }
+    if (actor._cehpAimImage) {
+      actor._cehpAimImage.visible=!!actor._cehpAimY;
+      actor._cehpAimImage.x=aimX*facingScale*visualX*baseScale;
+      actor._cehpAimImage.y=(actor._cehpAimY<0?aimUpY:aimDownY)*visualY*baseScale;
+      actor._cehpAimImage.scaleX=facingScale*visualX*baseScale;
+      actor._cehpAimImage.scaleY=visualY*baseScale;
+      actor._cehpAimImage.rotation=(actor._cehpAimDeg||0)*AIM_RAD*facingScale;
+   }
+    return;
+ }
 
   if (actor._cehpSheetImage) {
     if (actor._cehpSheetImage.setFrame) actor._cehpSheetImage.setFrame(sheetFrameName(sheetFrameForState(actor)));
@@ -539,13 +598,16 @@ function killBreatheTween(scene,actor){
 
 function migrateActor(scene,layer,originalActor){
   var i;
-  var useSheet=sceneHasSheet(scene);
-  var bodyImage=useSheet?scene.add.image(0,BODY_Y,SHEET_KEY,sheetFrameName(0)).setOrigin(0.5):scene.add.image(0,BODY_Y,BODY_A_KEY).setOrigin(0.5);
-  var rimCyan=configureRim(useSheet?scene.add.image(0,BODY_Y,SHEET_KEY,sheetFrameName(0)).setOrigin(0.5):scene.add.image(0,BODY_Y,BODY_A_KEY).setOrigin(0.5),0x5ab0b9);
-  var rimMagenta=configureRim(useSheet?scene.add.image(0,BODY_Y,SHEET_KEY,sheetFrameName(0)).setOrigin(0.5):scene.add.image(0,BODY_Y,BODY_A_KEY).setOrigin(0.5),0xb55284);
-  var eyeImage=useSheet?null:scene.add.image(EYE_X,EYE_Y_A,EYE_KEY).setOrigin(0.5);
+  var useHeroArt=sceneHasHeroArt(scene);
+  var useSheet=!useHeroArt&&sceneHasSheet(scene);
+  var bodyKey=useHeroArt?heroArtKeyForName('cactus_ed.idle'):(useSheet?SHEET_KEY:BODY_A_KEY);
+  var bodyFrame=useSheet?sheetFrameName(0):null;
+  var bodyImage=useSheet?scene.add.image(0,BODY_Y,bodyKey,bodyFrame).setOrigin(0.5):scene.add.image(0,BODY_Y,bodyKey).setOrigin(0.5);
+  var rimCyan=configureRim(useSheet?scene.add.image(0,BODY_Y,bodyKey,bodyFrame).setOrigin(0.5):scene.add.image(0,BODY_Y,bodyKey).setOrigin(0.5),0x5ab0b9);
+  var rimMagenta=configureRim(useSheet?scene.add.image(0,BODY_Y,bodyKey,bodyFrame).setOrigin(0.5):scene.add.image(0,BODY_Y,bodyKey).setOrigin(0.5),0xb55284);
+  var eyeImage=useSheet||useHeroArt?null:scene.add.image(EYE_X,EYE_Y_A,EYE_KEY).setOrigin(0.5);
   var aimImage=scene.add.rectangle(0,-8,9,2,ns.PALETTE.WARM_RIM,0.75).setOrigin(0,0.5);
-  var children=useSheet?[rimCyan,rimMagenta,bodyImage,aimImage]:[rimCyan,rimMagenta,bodyImage,eyeImage,aimImage];
+  var children=useSheet||useHeroArt?[rimCyan,rimMagenta,bodyImage,aimImage]:[rimCyan,rimMagenta,bodyImage,eyeImage,aimImage];
   var actor=scene.add.container(originalActor.x,originalActor.y,children);
 
   actor.setDepth(originalActor.depth&&originalActor.depth>0?originalActor.depth:ACTOR_DEPTH);
@@ -571,8 +633,9 @@ function migrateActor(scene,layer,originalActor){
   actor._cehpRimState=ns.Lens&&ns.Lens.makeRimLightState?ns.Lens.makeRimLightState(layer.seed):null;
   actor._cehpRimMs=0;
   actor._cehpSheetImage=useSheet?bodyImage:null;
-  actor._cehpBaseVisualScale=tuning('ED_RENDER_H',60)/(useSheet?ED_H:FALLBACK_H);
-  actor._cehpBodyKey='';
+  actor._cehpHeroArt=useHeroArt;
+  actor._cehpBaseVisualScale=tuning('ED_RENDER_H',60)/(useHeroArt?heroArtHeight('cactus_ed.idle',1024):(useSheet?ED_H:FALLBACK_H));
+  actor._cehpBodyKey=useHeroArt?bodyKey:'';
   actor._cehpBlinkSchedule=makeBlinkSchedule(layer.seed);
   actor._cehpBlinkMs=0;
   actor._cehpNextBlinkMs=actor._cehpBlinkSchedule.drawInterval();
@@ -716,7 +779,8 @@ ns.Ed={
     applySquash: applySquash,
     updateSquash: updateSquash,
     bodyDimsForState: bodyDimsForState,
-    applyBodyShape: applyBodyShape
+    applyBodyShape: applyBodyShape,
+    heroArtNameForState: heroArtNameForState
 };
 })(CEHP);
 CEHP._register('89_ed_perform');
