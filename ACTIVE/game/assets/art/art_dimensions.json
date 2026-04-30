@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "marathonId": "W15M-ART4",
+  "sourceManifest": "art_manifest.json",
+  "notes": [
+    "Current disk dimensions are locked here for real-art swap-in validation.",
+    "Homogeneous categories use categoryDimensions. Categories already variable on disk use keyDimensions."
+  ],
+  "categoryDimensions": {
+    "characters": [
+      1024,
+      1024
+    ],
+    "bosses": [
+      1024,
+      1024
+    ],
+    "environments": [
+      1024,
+      576
+    ]
+  },
+  "keyDimensions": {
+    "enemies.reply_all_locust.swarm.01": [
+      1024,
+      576
+    ],
+    "enemies.reply_all_locust.single.01": [
+      1024,
+      1024
+    ],
+    "enemies.orientation_clipboard_imp.idle.01": [
+      1024,
+      1024
+    ],
+    "enemies.benefits_premium_pigeon.idle.01": [
+      1024,
+      1024
+    ],
+    "setpieces.trust_fall.hero.01": [
+      1024,
+      1024
+    ],
+    "setpieces.open_concept.hero.01": [
+      1024,
+      576
+    ],
+    "setpieces.supply_chain.hero.01": [
+      1024,
+      576
+    ],
+    "ui.receipt_frame.thermal.01": [
+      768,
+      1024
+    ],
+    "ui.receipt_frame.normal.01": [
+      768,
+      1024
+    ],
+    "ui.fragment_band_decoration.normal.01": [
+      1024,
+      128
+    ],
+    "ui.case_seed_chip.normal.01": [
+      512,
+      256
+    ],
+    "splash.cehp_title_logo.wordmark.01": [
+      1024,
+      512
+    ],
+    "splash.cehp_title_background.title_background.01": [
+      1920,
+      1080
+    ]
+  }
+}

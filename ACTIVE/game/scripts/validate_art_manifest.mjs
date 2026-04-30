@@ -10,6 +10,7 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const gameDir = path.resolve(scriptDir, '..');
 const artDir = path.join(gameDir, 'assets/art');
 const manifestPath = path.join(artDir, 'art_manifest.json');
+const dimensionsPath = path.join(artDir, 'art_dimensions.json');
 const pngMagic = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 function readJson(filePath) {
@@ -48,6 +49,10 @@ function pngHeader(filePath) {
 
 function assetKey(asset) {
   return [asset.category, asset.subject, asset.state, asset.variant].join('.');
+}
+
+function sameSize(a, b) {
+  return Array.isArray(a) && Array.isArray(b) && a[0] === b[0] && a[1] === b[1];
 }
 
 function validateAsset(asset) {
@@ -90,6 +95,7 @@ function validateAsset(asset) {
 
   return {
     key: assetKey(asset),
+    asset,
     file: asset.file || '(missing file)',
     stat,
     header,
@@ -101,7 +107,9 @@ function validate() {
   const manifest = readJson(manifestPath);
   const assets = Array.isArray(manifest.assets) ? manifest.assets : [];
   const results = assets.map(validateAsset);
-  const failures = results.filter((result) => result.errors.length > 0);
+  const failures = [];
+  let contract = null;
+  let contractOk = true;
 
   console.log('CEHP ART MANIFEST VALIDATE');
   console.log('==========================');
@@ -117,6 +125,33 @@ function validate() {
     failures.push({ key: 'manifest', file: 'art_manifest.json', errors: ['totalAssets ' + manifest.totalAssets + ' != assets length ' + assets.length] });
   }
 
+  if (!fs.existsSync(dimensionsPath)) {
+    contractOk = false;
+    failures.push({ key: 'dimensions', file: 'art_dimensions.json', errors: ['dimension contract missing'] });
+  } else {
+    contract = readJson(dimensionsPath);
+    if (contract.schemaVersion !== 1) {
+      contractOk = false;
+      failures.push({ key: 'dimensions', file: 'art_dimensions.json', errors: ['schemaVersion must be 1'] });
+    }
+    results.forEach((result) => {
+      const categoryDimensions = contract.categoryDimensions || {};
+      const keyDimensions = contract.keyDimensions || {};
+      const expected = categoryDimensions[result.asset.category] || keyDimensions[result.key];
+      const actual = result.header && result.header.ok ? [result.header.width, result.header.height] : null;
+      if (!expected) {
+        contractOk = false;
+        result.errors.push('dimension contract missing for ' + result.key);
+      } else if (!sameSize(expected, result.asset.resolution)) {
+        contractOk = false;
+        result.errors.push('dimension contract ' + expected.join('x') + ' != manifest ' + result.asset.resolution.join('x'));
+      } else if (actual && !sameSize(expected, actual)) {
+        contractOk = false;
+        result.errors.push('dimension contract ' + expected.join('x') + ' != PNG ' + actual.join('x'));
+      }
+    });
+  }
+
   results.forEach((result) => {
     if (result.errors.length > 0) {
       console.log('FAIL ' + result.key + ' -> ' + result.file + ': ' + result.errors.join('; '));
@@ -126,9 +161,14 @@ function validate() {
   });
 
   console.log('');
-  if (failures.length > 0) {
+  console.log('Dimension contract: ' + (contractOk ? 'OK' : 'FAIL'));
+
+  const assetFailures = results.filter((result) => result.errors.length > 0);
+  const allFailures = failures.concat(assetFailures);
+
+  if (allFailures.length > 0) {
     console.log('ART MANIFEST VALIDATE: FAIL');
-    console.log((assets.length - failures.length) + '/' + assets.length + ' assets passed');
+    console.log((assets.length - assetFailures.length) + '/' + assets.length + ' assets passed');
     process.exit(1);
   }
 
