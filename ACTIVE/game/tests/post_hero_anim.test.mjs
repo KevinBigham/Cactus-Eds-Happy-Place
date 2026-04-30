@@ -49,6 +49,8 @@ function makeVisualNode() {
   return {
     alpha: 1,
     tint: 0xffffff,
+    scaleX: 1,
+    scaleY: 1,
     setAlpha: function(value) {
       this.alpha = value;
       return this;
@@ -129,4 +131,37 @@ test('ART3 hero hurt-flash dampens alpha pulse when reduceFlash is enabled', fun
 
   assert.equal(scene.tweenConfigs.length, 1);
   assert.ok(scene.tweenConfigs[0].alpha >= 0.72);
+});
+
+test('ART3 hero idle breathing resets visual scale within one frame of movement', function() {
+  var CEHP = loadModules(HERO_ANIM_MODULES);
+  var scene = makeScene({});
+  var bodyImage = makeVisualNode();
+  var actor = {
+    scene: scene,
+    active: true,
+    _cehpBodyImage: bodyImage,
+    _cehpState: { current: 'idle' },
+    body: {
+      velocity: { x: 0, y: 0 },
+      blocked: { down: true },
+      touching: { down: true }
+    }
+  };
+
+  CEHP.EdAnim.updateIdleBreathing(actor, 16);
+
+  assert.equal(scene.tweenConfigs.length, 1);
+  assert.equal(scene.tweenConfigs[0].y, 1.02);
+  assert.equal(scene.tweenConfigs[0].repeat, -1);
+
+  actor._cehpArt3IdleState.y = 1.02;
+  scene.tweenConfigs[0].onUpdate();
+  assert.equal(Number(bodyImage.scaleY.toFixed(2)), 1.02);
+
+  actor.body.velocity.x = 90;
+  CEHP.EdAnim.updateIdleBreathing(actor, 16);
+
+  assert.equal(Number(bodyImage.scaleY.toFixed(2)), 1);
+  assert.equal(actor._cehpArt3IdleTween, null);
 });
