@@ -2,7 +2,7 @@
 
 Date: 2026-04-30
 Branch: `post-launch/w15-buildup`
-Status: Builder complete through P14; review still required before any merge.
+Status: Builder complete through P15; review still required before any merge.
 
 ## Scope
 
@@ -28,6 +28,29 @@ This side branch staged the deferred W15 buildout while `main` remains launch-fr
 - `W15M-P12`: Setpiece closer pool depth (Trust Fall accept + decline, Open Concept, Supply Chain, 16 fragments).
 - `W15M-P13`: Cactus Ed run-complete monologue (9 triple-flag-gated meta closers).
 - `W15M-P14`: Replay corpus armor (3 meta-run-complete fixtures + supervisor chaos receipt fixture, corpus 22 → 26).
+- `W15M-P15`: Closer-pool integration smoke + marathon report v2 (cross-module voice rule, namespace contract, 40-fragment count assertion).
+
+## Closer Pool Receipt Layer (P11-P14)
+
+The W15M closer-pool sub-marathon expanded the receipt experience without
+changing any sacred constraint. Forty new closer fragments distributed
+across three independent modules:
+
+- **84_post_closer_pool_bosses.js** — 15 boss-defeat closers (5 each for
+  Supervisor, Enrollment, Logistics). Flag-gated to `*Defeated` flags.
+- **8B_post_closer_pool_setpieces.js** — 16 setpiece closers covering
+  Trust Fall accept/decline, Open Concept navigated, Supply Chain routed.
+  Includes a net-new decline-path closer family (`W15_TRUST_FALL_DECLINED_*`)
+  that previously fell through to a generic orientation closer.
+- **8C_post_run_complete_monologue.js** — 9 Cactus Ed meta-monologue
+  fragments triple-flag-gated to all three boss defeats. The +5.4
+  triple-flag bonus dominates any single-defeat closer in any world,
+  so the monologue replaces the per-world closer when the player
+  clears the run synthesis.
+
+Voice rule honored across all 40 fragments: ≤8 words, ALL CAPS, ends
+with ".", no "!". Receipt-system scoring is deterministic-LCG only;
+no Math.random in any new module.
 
 ## Final Byte Report
 
