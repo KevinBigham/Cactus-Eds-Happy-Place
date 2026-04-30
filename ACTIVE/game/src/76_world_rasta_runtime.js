@@ -756,6 +756,7 @@
     scene.cameras.main.setBackgroundColor('#1c2418');
     scene.physics.world.setBounds(0, 0, world.width, ns.GAME_H);
     scene.cameras.main.setBounds(0, 0, world.width, ns.GAME_H);
+    if (ns.Parallax && ns.Parallax.attach) world.parallax = ns.Parallax.attach(scene, world, { worldId: 'rasta' });
 
     world.player = ns.Movement.createEd(scene, 72, horizon - 28);
     scene.player = world.player;
@@ -831,6 +832,7 @@
       destroyThing(world.rooms[i].locustSensor);
     }
     if (world.logisticsBoss && world.logisticsBoss.destroy) world.logisticsBoss.destroy();
+    if (world.parallax && world.parallax.destroy) world.parallax.destroy();
   }
 
   ns.WorldRasta = {

@@ -968,6 +968,7 @@
     scene.cameras.main.setBackgroundColor('#21151a');
     scene.physics.world.setBounds(0, 0, world.width, ns.GAME_H);
     scene.cameras.main.setBounds(0, 0, world.width, ns.GAME_H);
+    if (ns.Parallax && ns.Parallax.attach) world.parallax = ns.Parallax.attach(scene, world, { worldId: 'benefits' });
 
     world.player = ns.Movement.createEd(scene, 72, horizon - 28);
     world.player.jumpVelocity = ns.TUNING.JUMP_VELOCITY;
@@ -1044,6 +1045,7 @@
       if (world.hazards[i] && world.hazards[i].destroy) world.hazards[i].destroy();
     }
     if (world.enrollmentBoss && world.enrollmentBoss.destroy) world.enrollmentBoss.destroy();
+    if (world.parallax && world.parallax.destroy) world.parallax.destroy();
   }
 
   ns.WorldBenefits = {
