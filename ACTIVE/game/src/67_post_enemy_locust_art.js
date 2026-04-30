@@ -22,6 +22,15 @@
       offsetY: -2
     }
   };
+  var TAU = Math.PI * 2;
+  var FLUTTER_HZ = 8;
+  var FLUTTER_AMP = 0.15;
+
+  function assistMode(scene){
+    if (scene && scene._assistMode) return scene._assistMode;
+    if (ns.RunState && ns.RunState.assistMode) return ns.RunState.assistMode;
+    return {};
+  }
 
   function artKeyFor(type, state){
     var config;
@@ -49,6 +58,33 @@
     }
     node.scaleX = rect.scaleX || 1;
     node.scaleY = rect.scaleY || 1;
+  }
+
+  function flutterPhase(locust){
+    var rng;
+    var rect = locust && locust.rect;
+    if (!locust) return 0;
+    if (locust._cehpArt3FlutterPhase == null) {
+      rng = ns.makeRNG ? ns.makeRNG('locust|flutter|' + Math.round(rect ? rect.x : 0) + '|' + Math.round(rect ? rect.y : 0)) : null;
+      locust._cehpArt3FlutterPhase = rng && rng.float ? rng.float() * TAU : 0;
+    }
+    return locust._cehpArt3FlutterPhase;
+  }
+
+  function applyLocustFlutter(scene, locust){
+    var mode = assistMode(scene);
+    var amp;
+    var nowMs;
+    var wave;
+    var factor;
+    if (!locust || !locust.art || (mode && mode.reduceParticles)) return false;
+    amp = mode && mode.reduceShake ? FLUTTER_AMP * 0.3 : FLUTTER_AMP;
+    nowMs = scene && scene.time && scene.time.now ? scene.time.now : 0;
+    wave = (Math.sin(((nowMs / 1000) * FLUTTER_HZ * TAU) + flutterPhase(locust)) + 1) / 2;
+    factor = 1 - (amp * wave);
+    locust.art.scaleX = (locust.art.scaleX == null ? 1 : locust.art.scaleX) * factor;
+    locust._cehpArt3FlutterFactor = factor;
+    return true;
   }
 
   function setTexture(node, key, w, h){
@@ -143,6 +179,7 @@
     locust.art.x = locust.rect.x;
     locust.art.y = locust.rect.y;
     setScale(locust.art, locust.rect);
+    applyLocustFlutter(scene, locust);
     setAlpha(locust.art, alpha);
     softenPrimitive(locust.rect);
     return true;
@@ -249,6 +286,7 @@
   ns.Enemies.artKeyFor = artKeyFor;
   ns.Enemies.applyArtSprite = applyArtSprite;
   ns.Enemies.applyLocustArt = applyLocustArt;
+  ns.Enemies.applyLocustFlutter = applyLocustFlutter;
   ns.Enemies.syncSwarmArt = syncSwarmArt;
   wrapEnemySpawner();
   wrapLocustSpawner();

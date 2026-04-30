@@ -10,6 +10,7 @@ const manifestPath = path.join(gameDir, 'assets/art/art_manifest.json');
 
 const ENEMY_ART_MODULES = [
   '00_index.js',
+  '02_rng.js',
   '1A_asset_loader.js',
   '67_post_enemy_locust_art.js'
 ];
@@ -52,6 +53,8 @@ function makeSprite(key) {
     textureKey: key || '',
     displayWidth: 40,
     displayHeight: 48,
+    scaleX: 1,
+    scaleY: 1,
     alpha: 1,
     setTexture(value) {
       this.textureKey = value;
@@ -60,6 +63,11 @@ function makeSprite(key) {
     setDisplaySize(w, h) {
       this.displayWidth = w;
       this.displayHeight = h;
+      return this;
+    },
+    setScale(x, y) {
+      this.scaleX = x;
+      this.scaleY = y == null ? x : y;
       return this;
     },
     setAlpha(value) {
@@ -76,12 +84,14 @@ function makeSprite(key) {
   };
 }
 
-function makeScene(CEHP) {
+function makeScene(CEHP, assistMode = {}) {
   const keys = new Set(CEHP.Art.allAssets().map(function(asset) {
     return asset.key;
   }));
   const scene = {
     images: [],
+    _assistMode: assistMode,
+    time: { now: 0 },
     textures: {
       exists(key) {
         return keys.has(key);
@@ -144,4 +154,32 @@ test('ART2 enemy art creates locust sprites while leaving collision rects intact
   assert.equal(locust.art.y, 64);
   assert.equal(locust.rect.x, 128);
   assert.equal(locust.rect.y, 64);
+});
+
+test('ART3 locust flutter is seeded and reduceParticles skips wing motion', () => {
+  const CEHP = loadModules(ENEMY_ART_MODULES);
+  CEHP.Art.registerManifest(readManifest());
+  const scene = makeScene(CEHP);
+  const locustA = {
+    rect: { x: 128, y: 64, alpha: 0.84, scaleX: 1, scaleY: 1 }
+  };
+  const locustB = {
+    rect: { x: 128, y: 64, alpha: 0.84, scaleX: 1, scaleY: 1 }
+  };
+  const stillScene = makeScene(CEHP, { reduceParticles: true });
+  const stillLocust = {
+    rect: { x: 128, y: 64, alpha: 0.84, scaleX: 1, scaleY: 1 }
+  };
+
+  scene.time.now = 31;
+  assert.equal(CEHP.Enemies.applyLocustArt(scene, locustA, 1), true);
+  assert.equal(CEHP.Enemies.applyLocustArt(scene, locustB, 1), true);
+
+  assert.equal(Number(locustA.art.scaleX.toFixed(4)), Number(locustB.art.scaleX.toFixed(4)));
+  assert.ok(locustA.art.scaleX < 1);
+  assert.ok(locustA.art.scaleX >= 0.85);
+
+  stillScene.time.now = 31;
+  assert.equal(CEHP.Enemies.applyLocustArt(stillScene, stillLocust, 1), true);
+  assert.equal(stillLocust.art.scaleX, 1);
 });
