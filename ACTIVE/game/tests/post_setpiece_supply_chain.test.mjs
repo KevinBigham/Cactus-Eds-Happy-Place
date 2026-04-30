@@ -232,5 +232,8 @@ test('Supply Chain voice and replay wiring stay within W15 rules', () => {
   assert.match(runtime, /attachSupplyChain/);
   assert.equal(fixture.debug_style, 'supply-chain');
   assert.equal(fixture.expected_debug.receipt_flags.supplyChainRouted, true);
-  assert.equal(fixture.expected_debug.receipt_fragment_ids.includes(CLOSER_ID), true);
+  // W15M-P12: closer pool expanded; fixture must hold a Supply Chain pool closer.
+  const fixtureCloser = fixture.expected_debug.receipt_fragment_ids[2];
+  assert.ok(/^W15_SUPPLY_CHAIN_CLOSER_/.test(fixtureCloser),
+    `expected Supply Chain closer in fixture, got ${fixtureCloser}`);
 });

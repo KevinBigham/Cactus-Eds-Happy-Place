@@ -243,5 +243,9 @@ test('Trust Fall voice and replay wiring stay within W15 rules', () => {
   assert.match(runtime, /W1_TRUST_FALL/);
   assert.equal(fixture.debug_style, 'trust-fall-accepted');
   assert.equal(fixture.expected_debug.receipt_flags.trustFallAccepted, true);
-  assert.equal(fixture.expected_debug.receipt_fragment_ids.includes(CLOSER_ID), true);
+  // W15M-P12: closer pool expanded; the fixture closer must come from the
+  // Trust Fall accept pool rather than match a single canonical id.
+  const fixtureCloser = fixture.expected_debug.receipt_fragment_ids[2];
+  assert.ok(/^W15_TRUST_FALL_CLOSER_/.test(fixtureCloser),
+    `expected Trust Fall accept closer in fixture, got ${fixtureCloser}`);
 });
