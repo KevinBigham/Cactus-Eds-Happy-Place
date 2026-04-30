@@ -1,1 +1,93 @@
-{"schemaVersion":1,"marathonId":"W15M-ART1","assets":[]}
+{
+  "schemaVersion": 1,
+  "marathonId": "W15M-ART1",
+  "assets": [
+    {
+      "category": "characters",
+      "subject": "cactus_ed",
+      "state": "idle",
+      "variant": "01",
+      "file": "characters/cactus_ed_idle_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "719ef9a6856c198a354a8c4c3865e62f5c2f12e43fe7134cc27ada721c3f17e5",
+      "regenerated": 0
+    },
+    {
+      "category": "characters",
+      "subject": "cactus_ed",
+      "state": "walk_keypose",
+      "variant": "01",
+      "file": "characters/cactus_ed_walk_keypose_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "9744b0d277309c557a3367e65bf13487dab2ecb792f3be54cd549bdd7bcd8264",
+      "regenerated": 0
+    },
+    {
+      "category": "characters",
+      "subject": "cactus_ed",
+      "state": "jump_apex",
+      "variant": "01",
+      "file": "characters/cactus_ed_jump_apex_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "08bdbb678921e284db4e891f9bdf81faf0e0c54e3f6089a55071a82a8ea53944",
+      "regenerated": 0
+    },
+    {
+      "category": "characters",
+      "subject": "cactus_ed",
+      "state": "kick",
+      "variant": "01",
+      "file": "characters/cactus_ed_kick_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "b159d3835cd3a33ac0b956b63eda2c9cb4c300264c9b7f37601b3626d3d53873",
+      "regenerated": 0
+    },
+    {
+      "category": "characters",
+      "subject": "cactus_ed",
+      "state": "hit",
+      "variant": "01",
+      "file": "characters/cactus_ed_hit_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "75c0fe0be1d10602abb69a6bfeaa667cc41dc9d6f599040a4ab01e017c026236",
+      "regenerated": 0
+    },
+    {
+      "category": "characters",
+      "subject": "cactus_ed",
+      "state": "victory",
+      "variant": "01",
+      "file": "characters/cactus_ed_victory_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "84942b770081117a5844b3b7bd1b6463ead69dd30a49b0bb7be314332d4c8a51",
+      "regenerated": 0
+    }
+  ],
+  "generatedAt": "2026-04-30T00:00:00Z",
+  "styleAnchor": "DKC-pre-rendered-3D applied to bureaucratic horror",
+  "totalAssets": 37
+}
