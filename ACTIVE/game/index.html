@@ -9667,6 +9667,42 @@ drawHeight
 );
 context.restore();
 }
+function uiArtKey(name){
+if (!ns.Art || !ns.Art.getKey) return '';
+return ns.Art.getKey('ui', name);
+}
+function drawReceiptFrameAssets(context, canvas, model, scale){
+var frameImage = sourceImageForTexture(uiArtKey(model.thermal ? 'receipt_frame.thermal' : 'receipt_frame.normal'));
+var bandImage = sourceImageForTexture(uiArtKey('fragment_band_decoration.normal'));
+var chipImage = sourceImageForTexture(uiArtKey('case_seed_chip.normal'));
+drawWatermarkImage(
+context,
+frameImage,
+canvas.width / 2,
+canvas.height / 2,
+canvas.width,
+canvas.height,
+model.thermal ? 0.92 : 0.86
+);
+drawWatermarkImage(
+context,
+chipImage,
+scaledX(scale, 734),
+scaledY(scale, 194),
+scaledX(scale, 236),
+scaledY(scale, 118),
+model.thermal ? 0.34 : 0.5
+);
+drawWatermarkImage(
+context,
+bandImage,
+scaledX(scale, 540),
+scaledY(scale, 846),
+scaledX(scale, 858),
+scaledY(scale, 108),
+model.thermal ? 0.28 : 0.42
+);
+}
 function drawWatermarks(context, model, scale){
 var crestKey;
 var crestImage;
@@ -9749,6 +9785,7 @@ canvas.width - scaledX(scale, 144),
 canvas.height - scaledY(scale, 144)
 );
 drawWatermarks(context, model, scale);
+drawReceiptFrameAssets(context, canvas, model, scale);
 context.fillStyle = model.theme.shadow;
 context.fillRect(
 scaledX(scale, 94),
