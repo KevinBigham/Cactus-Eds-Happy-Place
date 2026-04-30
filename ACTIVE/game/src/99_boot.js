@@ -8,6 +8,7 @@
   function boot(){
     var state = ns.SAVE ? ns.SAVE.boot() : null;
     var search = typeof location !== 'undefined' ? (location.search || '') : '';
+    var sceneList;
 
     if (/[?&]docket=1/.test(search)) {
       var docketEl = (typeof document !== 'undefined') && document.getElementById('cehp-docket');
@@ -29,6 +30,9 @@
       return null; /* headless contexts (Node, tests) */
     }
 
+    sceneList = (ns.Scenes && ns.Scenes.list) ? ns.Scenes.list() : [];
+    if (ns.Art && ns.Art.withPreloadHook) sceneList = ns.Art.withPreloadHook(sceneList);
+
     var cfg = {
       type:            Phaser.AUTO,
       width:           ns.GAME_W,
@@ -39,7 +43,7 @@
       backgroundColor: '#000',
       parent:          'cehp-host',
       physics: { default: 'arcade', arcade: { gravity: { y: ns.TUNING.GRAVITY }, debug: false } },
-      scene: (ns.Scenes && ns.Scenes.list) ? ns.Scenes.list() : []
+      scene: sceneList
     };
 
     ns._game  = new Phaser.Game(cfg);
