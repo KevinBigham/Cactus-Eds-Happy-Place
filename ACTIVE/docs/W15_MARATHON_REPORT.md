@@ -97,8 +97,8 @@ no Math.random in any new module.
 
 ## Final Byte Report
 
-- Bundle bytes: 454767 / 491520
-- Runtime modules: 62
+- Bundle bytes: 461894 / 491520
+- Runtime modules: 63
 - Replay corpus: 30/30
 - Side-branch cap source: `ACTIVE/game/scripts/verify-launch.sh` and `ACTIVE/game/process_manifest.json`
 - Main-branch cap remains launch-frozen and must not be changed there.
@@ -119,7 +119,7 @@ Expected signal:
 - Post-launch oracle: PASS after V3 modules + audit guardrail land
 - Case runs: PASS
 - Replay corpus: 30/30 after P19 axis-edge armor lands
-- Bundle byte check: 454767 / 491520
+- Bundle byte check: 461894 / 491520
 - Fragment audit: 418 fragments, 0 voice violations, 0 duplicate IDs
 - Overall: `CEHP LAUNCH VERIFY: PASS`
 
