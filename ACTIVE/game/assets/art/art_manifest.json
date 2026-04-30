@@ -85,6 +85,132 @@
       "transparentBackground": true,
       "promptHash": "84942b770081117a5844b3b7bd1b6463ead69dd30a49b0bb7be314332d4c8a51",
       "regenerated": 0
+    },
+    {
+      "category": "bosses",
+      "subject": "supervisor",
+      "state": "idle",
+      "variant": "01",
+      "file": "bosses/supervisor_idle_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "00dc0c3e2afea02f9ec079d5f3efbd519777bf81f8741039581dbeab0f3f1a6f",
+      "regenerated": 0
+    },
+    {
+      "category": "bosses",
+      "subject": "supervisor",
+      "state": "telegraph",
+      "variant": "01",
+      "file": "bosses/supervisor_telegraph_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "6a6525729f85dfe5eb73866951daab23ab82fc030533478bcd53873dd3c57efb",
+      "regenerated": 0
+    },
+    {
+      "category": "bosses",
+      "subject": "supervisor",
+      "state": "defeated",
+      "variant": "01",
+      "file": "bosses/supervisor_defeated_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "c56b5487096cc1334d9c141e8a08462ab7dca39d9c8d66db0bfb9d71d499e96b",
+      "regenerated": 0
+    },
+    {
+      "category": "bosses",
+      "subject": "enrollment_officer",
+      "state": "idle",
+      "variant": "01",
+      "file": "bosses/enrollment_officer_idle_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "4d4a4e07d4f627da1f64163a2b0627293b07ac9ac62d2c742dd512844484e312",
+      "regenerated": 0
+    },
+    {
+      "category": "bosses",
+      "subject": "enrollment_officer",
+      "state": "telegraph",
+      "variant": "01",
+      "file": "bosses/enrollment_officer_telegraph_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "4e238c39bac4946f92e90336d8833013a88bd977b73b3348fa7378bc9eb5f7ff",
+      "regenerated": 0
+    },
+    {
+      "category": "bosses",
+      "subject": "enrollment_officer",
+      "state": "defeated",
+      "variant": "01",
+      "file": "bosses/enrollment_officer_defeated_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "2adeb5864915c97bf4b3c8551fa3b43638cc5dbc8c32b39787d93d7243ec7214",
+      "regenerated": 0
+    },
+    {
+      "category": "bosses",
+      "subject": "logistics_foreman",
+      "state": "idle",
+      "variant": "01",
+      "file": "bosses/logistics_foreman_idle_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "932176af4fedb3ec610caa7b92a54d589c99e2fb6b57ef37fef2d0a1b5d1ff24",
+      "regenerated": 0
+    },
+    {
+      "category": "bosses",
+      "subject": "logistics_foreman",
+      "state": "telegraph",
+      "variant": "01",
+      "file": "bosses/logistics_foreman_telegraph_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "bf90dc261cc5204940c5cd080cdc0599025bcecbf36677b9254014a15f3ea1ee",
+      "regenerated": 0
+    },
+    {
+      "category": "bosses",
+      "subject": "logistics_foreman",
+      "state": "defeated",
+      "variant": "01",
+      "file": "bosses/logistics_foreman_defeated_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "c30d16c2cac0603362408a1d83d36fe33601e3a85cf3626bef41eb8997549a44",
+      "regenerated": 0
     }
   ],
   "generatedAt": "2026-04-30T00:00:00Z",
