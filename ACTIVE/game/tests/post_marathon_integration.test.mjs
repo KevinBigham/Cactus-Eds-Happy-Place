@@ -89,5 +89,5 @@ test('W15 bundle cap and marathon report match the built artifact', () => {
   assert.ok(bytes <= manifest.shipArtifact.maxBytes, `${bytes} <= ${manifest.shipArtifact.maxBytes}`);
   assert.match(report, new RegExp(`Bundle bytes: ${bytes} / ${manifest.shipArtifact.maxBytes}`));
   assert.equal(report.includes('Replay corpus: 30/30'), true);
-  assert.match(report, /Do not push from P10/);
+  assert.match(report, /Do not push from any phase mid-stream/);
 });
