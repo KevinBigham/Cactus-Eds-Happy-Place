@@ -2,7 +2,7 @@
 
 Date: 2026-04-30
 Branch: `post-launch/w15-buildup`
-Status: Builder complete through P10; review still required before any merge.
+Status: Builder complete through P11; review still required before any merge.
 
 ## Scope
 
@@ -24,11 +24,12 @@ This side branch staged the deferred W15 buildout while `main` remains launch-fr
 - `W15M-P8c`: Supply Chain W3 setpiece and replay.
 - `W15M-P9`: Replay corpus edge coverage.
 - `W15M-P10`: Marathon integration test and final report.
+- `W15M-P11`: Boss-defeat closer pool depth (Supervisor + Enrollment + Logistics, 15 fragments).
 
 ## Final Byte Report
 
-- Bundle bytes: 423368 / 491520
-- Runtime modules: 54
+- Bundle bytes: 427195 / 491520
+- Runtime modules: 55
 - Replay corpus: 22/22
 - Side-branch cap source: `ACTIVE/game/scripts/verify-launch.sh` and `ACTIVE/game/process_manifest.json`
 - Main-branch cap remains launch-frozen and must not be changed there.
@@ -46,10 +47,10 @@ Expected signal:
 - Save schema: PASS
 - Process manifest: PASS
 - Behavior oracle: 117/117
-- Post-launch oracle: 45/45 after P10 integration test lands
+- Post-launch oracle: 53/53 after P11 boss-closer pool lands
 - Case runs: PASS
 - Replay corpus: 22/22
-- Bundle byte check: 423368 / 491520
+- Bundle byte check: 427195 / 491520
 - Overall: `CEHP LAUNCH VERIFY: PASS`
 
 ## Handoff
