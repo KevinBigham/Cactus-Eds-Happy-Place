@@ -29,6 +29,7 @@ This side branch staged the deferred W15 buildout while `main` remains launch-fr
 - `W15M-P13`: Cactus Ed run-complete monologue (9 triple-flag-gated meta closers).
 - `W15M-P14`: Replay corpus armor (3 meta-run-complete fixtures + supervisor chaos receipt fixture, corpus 22 → 26).
 - `W15M-P15`: Closer-pool integration smoke + marathon report v2 (cross-module voice rule, namespace contract, 40-fragment count assertion).
+- `W15M-P16`: Verdict pool depth (5 axis-keyed verdict variants per world × 3 worlds, 15 fragments).
 
 ## Closer Pool Receipt Layer (P11-P14)
 
@@ -54,8 +55,8 @@ no Math.random in any new module.
 
 ## Final Byte Report
 
-- Bundle bytes: 434224 / 491520
-- Runtime modules: 57
+- Bundle bytes: 437974 / 491520
+- Runtime modules: 58
 - Replay corpus: 26/26
 - Side-branch cap source: `ACTIVE/game/scripts/verify-launch.sh` and `ACTIVE/game/process_manifest.json`
 - Main-branch cap remains launch-frozen and must not be changed there.
