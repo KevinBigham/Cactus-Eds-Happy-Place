@@ -32,6 +32,7 @@ This side branch staged the deferred W15 buildout while `main` remains launch-fr
 - `W15M-P16`: Verdict pool depth (5 axis-keyed verdict variants per world × 3 worlds, 15 fragments).
 - `W15M-P17`: Tension pool depth (5 axis-keyed tension variants per world × 3 worlds, 15 fragments).
 - `W15M-P18`: Axis-only closer overflow pool (4 chaos + 4 curiosity + 4 efficiency variants, no world weighting, 12 fragments).
+- `W15M-P19`: Replay corpus V3 armor (4 axis-edge fixtures: chaos/curiosity orientation, efficiency benefits, grace rasta; corpus 26 → 30).
 
 ## Closer Pool Receipt Layer (P11-P14)
 
@@ -59,7 +60,7 @@ no Math.random in any new module.
 
 - Bundle bytes: 445184 / 491520
 - Runtime modules: 60
-- Replay corpus: 26/26
+- Replay corpus: 30/30
 - Side-branch cap source: `ACTIVE/game/scripts/verify-launch.sh` and `ACTIVE/game/process_manifest.json`
 - Main-branch cap remains launch-frozen and must not be changed there.
 

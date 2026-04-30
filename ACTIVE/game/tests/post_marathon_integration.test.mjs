@@ -66,7 +66,7 @@ test('W15 marathon modules are present in source and shipped artifact', () => {
 test('W15 replay corpus includes boss, setpiece, and combined receipt edges', () => {
   const fixtures = fs.readdirSync(replayDir).filter((file) => /\.json$/.test(file)).sort();
 
-  assert.equal(fixtures.length, 26);
+  assert.equal(fixtures.length, 30);
   W15_FIXTURES.forEach((file) => {
     assert.equal(fixtures.includes(file), true, `${file} is committed`);
     assert.equal(fs.existsSync(path.join(replayDir, file)), true, `${file} exists on disk`);
@@ -88,6 +88,6 @@ test('W15 bundle cap and marathon report match the built artifact', () => {
   assert.equal(verifyLaunch.includes('Bundle bytes: $bytes / 491520'), true);
   assert.ok(bytes <= manifest.shipArtifact.maxBytes, `${bytes} <= ${manifest.shipArtifact.maxBytes}`);
   assert.match(report, new RegExp(`Bundle bytes: ${bytes} / ${manifest.shipArtifact.maxBytes}`));
-  assert.equal(report.includes('Replay corpus: 26/26'), true);
+  assert.equal(report.includes('Replay corpus: 30/30'), true);
   assert.match(report, /Do not push from P10/);
 });

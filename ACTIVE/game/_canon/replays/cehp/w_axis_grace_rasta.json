@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "level_id": "rasta",
+  "engine_version": "0.2.0-rebuild",
+  "ruleset": "R2",
+  "seed": "REPLAY-W15-AXIS-GRACE-RASTA",
+  "debug_plan": "receipt-completion",
+  "completion": {
+    "world_id": "rasta",
+    "room_id": "rasta-axis-grace",
+    "room_order": [
+      "rasta-axis-grace"
+    ],
+    "actions_learned": [
+      "move",
+      "jump",
+      "doubleJump",
+      "tripleJump",
+      "wallSlideJump",
+      "punch",
+      "kick",
+      "spinDash",
+      "cigCopter",
+      "groundSlam",
+      "glide"
+    ],
+    "receipt_flags": {
+      "uninsuredVeteran": false,
+      "premiumSecured": false,
+      "restOpened": false,
+      "rushedRest": false,
+      "cigaretteLit": false,
+      "logisticsDefeated": false
+    },
+    "world_stats": {
+      "premiumsCollected": 0,
+      "premiumRoomsCleared": 0,
+      "deductibleHits": 0,
+      "jumpPenalty": 0,
+      "occlusionUntil": 0
+    },
+    "axes": {
+      "primary": {
+        "grace": 1,
+        "intuition": 0.7,
+        "compliance": 0.4
+      },
+      "micro": {
+        "modulesPassed": 8,
+        "musicSync": 7,
+        "contradictionFollow": 5
+      }
+    }
+  },
+  "initial_state": {
+    "x": 72,
+    "y": 396,
+    "facing": 1
+  },
+  "frames": [],
+  "expected_checkpoints": [],
+  "expected_final": {
+    "frame": 0,
+    "recorder_signature": "debug-plan",
+    "axes_snapshot": {},
+    "receipt_lines": []
+  },
+  "expected_debug": {
+    "world_id": "rasta",
+    "room_id": "rasta-axis-grace",
+    "room_order": [
+      "rasta-axis-grace"
+    ],
+    "actions_learned": [
+      "move",
+      "jump",
+      "doubleJump",
+      "tripleJump",
+      "wallSlideJump",
+      "punch",
+      "kick",
+      "spinDash",
+      "cigCopter",
+      "groundSlam",
+      "glide"
+    ],
+    "receipt_flags": {
+      "uninsuredVeteran": false,
+      "premiumSecured": false,
+      "restOpened": false,
+      "rushedRest": false,
+      "cigaretteLit": false,
+      "logisticsDefeated": false
+    },
+    "world_stats": {
+      "premiumsCollected": 0,
+      "premiumRoomsCleared": 0,
+      "deductibleHits": 0,
+      "jumpPenalty": 0,
+      "occlusionUntil": 0
+    },
+    "receipt_fragment_ids": [
+      "W15_VERDICT_RASTA_DEPTH_03",
+      "W15_TENSION_RASTA_DEPTH_04",
+      "CLOSER_PATIENCE_01"
+    ]
+  }
+}
