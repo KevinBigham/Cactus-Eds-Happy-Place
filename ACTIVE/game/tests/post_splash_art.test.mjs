@@ -107,6 +107,7 @@ function makeScene(CEHP) {
     images: [],
     text: [],
     rectangles: [],
+    tweensMade: [],
     starts: [],
     cameras: {
       main: {
@@ -170,6 +171,12 @@ function makeScene(CEHP) {
     events: {
       once() {}
     },
+    tweens: {
+      add(config) {
+        scene.tweensMade.push(config);
+        return config;
+      }
+    },
     scene: {
       start(key) {
         scene.starts.push(key);
@@ -189,6 +196,8 @@ test('ART2 title splash uses manifest art and waits for input on cold boot', () 
   assert.equal(scene.images[0].key, CEHP.Art.getKey('splash', 'cehp_title_background.title_background'));
   assert.equal(scene.images[1].key, CEHP.Art.getKey('splash', 'cehp_title_logo.wordmark'));
   assert.equal(scene.text.some((node) => node.value === 'PRESS ANY KEY.'), true);
+  assert.equal(scene.tweensMade.filter((tween) => tween.duration === 400 && tween.alpha === 1).length >= 2, true);
+  assert.equal(scene.tweensMade.some((tween) => tween.targets === scene.images[1] && tween.angle === 2 && tween.duration === 3000 && tween.yoyo === true && tween.repeat === -1), true);
 
   scene.keyboardOnce.fn();
   assert.deepEqual(scene.starts, ['Play']);
@@ -223,9 +232,22 @@ test('ART2 game-over splash appears on death and clears after respawn update', (
   assert.equal(scene.pendingDeath.source, 'pit');
   assert.equal(scene.images.some((node) => node.key === CEHP.Art.getKey('splash', 'cehp_title_logo.wordmark')), true);
   assert.equal(scene.text.some((node) => node.value === 'RUN ENDED.'), true);
+  assert.equal(scene.tweensMade.some((tween) => tween.duration === 250 && tween.alpha === 0.34), true);
+  assert.equal(scene.tweensMade.some((tween) => tween.duration === 250 && tween.alpha === 1), true);
 
   PlayScene.prototype.update.call(scene, 0, 16);
 
   assert.equal(scene.pendingDeath, null);
   assert.equal(scene.images.every((node) => node.destroyed), true);
+});
+
+test('ART3 splash polish honors reduceFlash and reduceShake assist flags', () => {
+  const { CEHP } = loadSplashHarness('');
+  const scene = makeScene(CEHP);
+  scene._assistMode = { reduceFlash: true, reduceShake: true };
+
+  CEHP.Splash.showTitle(scene);
+
+  assert.equal(scene.tweensMade.some((tween) => tween.alpha != null), false);
+  assert.equal(scene.tweensMade.some((tween) => tween.angle === 0.6 && tween.duration === 3000), true);
 });

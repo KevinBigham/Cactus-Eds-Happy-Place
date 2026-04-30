@@ -13450,6 +13450,8 @@ function setScroll(node){
 if (node && node.setScrollFactor) node.setScrollFactor(0);
 return node;
 }
+function assistMode(scene){var mode=(scene&&scene._assistMode)||(ns.RunState&&ns.RunState.assistMode),save;if(!mode&&ns.SAVE&&ns.SAVE.boot&&ns.SAVE.assistMode){save=ns.SAVE.boot();mode=ns.SAVE.assistMode(save)}return mode||{}}
+function polish(scene,node,duration,drift){var mode=assistMode(scene),alpha,angle;if(!node||!scene||!scene.tweens||!scene.tweens.add)return node;if(!mode.reduceFlash){alpha=node.alpha==null?1:node.alpha;if(node.setAlpha)node.setAlpha(0);else node.alpha=0;scene.tweens.add({targets:node,alpha:alpha,duration:duration})}if(drift){angle=mode.reduceShake?0.6:2;scene.tweens.add({targets:node,angle:angle,duration:3000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'})}return node}
 function fitImage(scene, key, depth, mode){
 var width = ns.GAME_W || 960;
 var height = ns.GAME_H || 540;
@@ -13489,14 +13491,18 @@ var width = ns.GAME_W || 960;
 var height = ns.GAME_H || 540;
 var bg = fitImage(scene, splashKey(TITLE_BG), 1, 'cover');
 var logo = fitImage(scene, splashKey(TITLE_LOGO), 3, 'contain');
+var prompt;
 if (logo) {
 logo.y = height * 0.36;
 if (logo.setDisplaySize) logo.setDisplaySize(Math.round(width * 0.64), Math.round(width * 0.32));
 }
 if (!bg && scene.add && scene.add.rectangle) {
-setScroll(scene.add.rectangle(width / 2, height / 2, width, height, 0x0b0d12, 1).setDepth(0));
+bg = setScroll(scene.add.rectangle(width / 2, height / 2, width, height, 0x0b0d12, 1).setDepth(0));
 }
-addText(scene, width / 2, height * 0.72, 'PRESS ANY KEY.', 12, 4);
+prompt = addText(scene, width / 2, height * 0.72, 'PRESS ANY KEY.', 12, 4);
+polish(scene, bg, 400, false);
+polish(scene, logo, 400, true);
+polish(scene, prompt, 400, false);
 }
 function startPlayOnce(scene){
 var started = false;
@@ -13535,6 +13541,7 @@ if (logo.setDisplaySize) logo.setDisplaySize(Math.round(width * 0.48), Math.roun
 nodes.push(logo);
 }
 nodes.push(addText(scene, width / 2, height * 0.62, 'RUN ENDED.', 12, 119));
+for (var i = 0; i < nodes.length; i++) polish(scene, nodes[i], 250, false);
 scene._cehpGameOverSplash = nodes;
 }
 function hideGameOver(scene){
