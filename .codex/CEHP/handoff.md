@@ -1,5 +1,32 @@
 # CEHP Handoff
 
+## What Was Just Done (2026-04-30 - W15M-ART2 Phaser Asset Wiring - Codex GPT-5.5)
+
+**Session goal**: Wire the 37 ART1 manifest plates into Phaser runtime presentation without changing gameplay, save state, replay fixtures, art PNGs, manifest contract, process cap, or launch scripts.
+
+### What shipped
+
+- Added `ACTIVE/game/src/1A_asset_loader.js` and manifest-driven `CEHP.Art` APIs.
+- Swapped presentation for Cactus Ed, all three bosses, four enemies, three setpieces, three-world parallax plates, receipt frames, title splash, and game-over splash.
+- Added ART2 tests for loader, hero, bosses, enemies, setpieces, parallax, receipt frame, splash, and cold-boot runtime asset loading.
+- Added `ACTIVE/docs/W15_ART2_REPORT.md` as the final report.
+
+### Verification
+
+| Check | Result |
+|---|---|
+| `bash ACTIVE/game/scripts/verify-launch.sh` | PASS; `CEHP LAUNCH VERIFY: PASS`, post-launch oracle `136/136`, replay corpus `30/30`, bundle `474656 / 491520` |
+| `node --test ACTIVE/game/tests/` | PASS; directory entrypoint ran launch verify |
+| `node ACTIVE/game/build.js && wc -c < ACTIVE/game/index.html` | PASS; `474656` bytes |
+| `node ACTIVE/game/scripts/audit_fragments.mjs` | PASS; `418` fragments, `0` voice violations, `0` duplicate IDs |
+
+### Notes for the next owner
+
+- Branch was not pushed per Kevin's marathon rule.
+- PNG placeholders under `ACTIVE/game/assets/art/` remain Kevin-overwritable; code consumes only `art_manifest.json`.
+- `?case=`, `?splash=0`, and `?thermal=1` bypass the cold title input gate for automation/deep links.
+- Existing pre-session dirty CLAUDE/README/settings files were left untouched.
+
 ## What Was Just Done (2026-04-29 - W13 P6 Launch Freeze - Codex GPT-5.5)
 
 **Session goal**: Close W13 Launch Runway with a freeze record, durable handoff JSON, and launch-freeze tag.

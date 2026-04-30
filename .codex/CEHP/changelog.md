@@ -1,5 +1,27 @@
 # CEHP Changelog
 
+## 2026-04-30 — W15M-ART2 Phaser asset wiring · Codex GPT-5.5
+
+**Context**: W15M-ART2 required runtime wiring for the 37 immutable ART1 plates from `ACTIVE/game/assets/art/art_manifest.json`, with visual-only sprite swaps and atomic phase commits.
+
+**What changed**:
+- Added manifest-driven `CEHP.Art` loading in `ACTIVE/game/src/1A_asset_loader.js` and wrapped scene preload so Phaser queues every manifest image.
+- Swapped visual presentation for Cactus Ed, Supervisor, Enrollment Officer, Logistics Foreman, four enemy visuals, three setpiece backdrops, three-world parallax plates, receipt frame art, and title/game-over splash art.
+- Added `ACTIVE/game/tests/post_art_runtime_smoke.test.mjs`, which cold-boots `/index.html` and verifies all `37` manifest texture keys exist in Phaser with no failed art requests or missing-asset warnings.
+- Added `ACTIVE/docs/W15_ART2_REPORT.md` with the final byte report, test list, asset-load evidence, and handoff.
+
+**Verification**:
+- `bash ACTIVE/game/scripts/verify-launch.sh` PASS: final line `CEHP LAUNCH VERIFY: PASS`, post-launch oracle `136/136`, replay corpus `SUMMARY PASS 30/30`, bundle `474656 / 491520`.
+- `node --test ACTIVE/game/tests/` PASS.
+- `node ACTIVE/game/build.js && wc -c < ACTIVE/game/index.html` PASS: `474656`.
+- `node ACTIVE/game/scripts/audit_fragments.mjs` PASS: `418` fragments, `0` voice violations, `0` duplicate IDs.
+
+**Notes**:
+- No save schema change, replay fixture edits, manifest edits, PNG edits, process-cap edits, launch-script edits, rebase, push, or main-branch touch.
+- The ART2 bundle delta from ART1 head is `+29472` bytes.
+
+---
+
 ## 2026-04-29 — W13 P6 launch freeze · Codex GPT-5.5
 
 **Context**: W13 P6 required the final launch-freeze record, W13 handoff JSON, soak contract, and `launch-freeze` tag.
