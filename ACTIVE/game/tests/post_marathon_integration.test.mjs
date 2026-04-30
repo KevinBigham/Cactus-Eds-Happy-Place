@@ -29,6 +29,7 @@ const W15_MODULES = [
 
 const W15_FIXTURES = [
   'w1_orientation_supervisor.json',
+  'w1_orientation_supervisor_chaos_receipt.json',
   'w1_orientation_trust_fall.json',
   'w1_orientation_trust_declined.json',
   'w1_orientation_supervisor_trust_receipt.json',
@@ -39,7 +40,10 @@ const W15_FIXTURES = [
   'w3_rasta_logistics.json',
   'w3_rasta_locust.json',
   'w3_rasta_supply_chain.json',
-  'w3_rasta_logistics_supply_chain_receipt.json'
+  'w3_rasta_logistics_supply_chain_receipt.json',
+  'w_meta_run_complete_orientation.json',
+  'w_meta_run_complete_benefits.json',
+  'w_meta_run_complete_rasta.json'
 ];
 
 function readJson(filePath) {
@@ -62,7 +66,7 @@ test('W15 marathon modules are present in source and shipped artifact', () => {
 test('W15 replay corpus includes boss, setpiece, and combined receipt edges', () => {
   const fixtures = fs.readdirSync(replayDir).filter((file) => /\.json$/.test(file)).sort();
 
-  assert.equal(fixtures.length, 22);
+  assert.equal(fixtures.length, 26);
   W15_FIXTURES.forEach((file) => {
     assert.equal(fixtures.includes(file), true, `${file} is committed`);
     assert.equal(fs.existsSync(path.join(replayDir, file)), true, `${file} exists on disk`);
@@ -84,6 +88,6 @@ test('W15 bundle cap and marathon report match the built artifact', () => {
   assert.equal(verifyLaunch.includes('Bundle bytes: $bytes / 491520'), true);
   assert.ok(bytes <= manifest.shipArtifact.maxBytes, `${bytes} <= ${manifest.shipArtifact.maxBytes}`);
   assert.match(report, new RegExp(`Bundle bytes: ${bytes} / ${manifest.shipArtifact.maxBytes}`));
-  assert.equal(report.includes('Replay corpus: 22/22'), true);
+  assert.equal(report.includes('Replay corpus: 26/26'), true);
   assert.match(report, /Do not push from P10/);
 });

@@ -2,7 +2,7 @@
 
 Date: 2026-04-30
 Branch: `post-launch/w15-buildup`
-Status: Builder complete through P13; review still required before any merge.
+Status: Builder complete through P14; review still required before any merge.
 
 ## Scope
 
@@ -27,12 +27,13 @@ This side branch staged the deferred W15 buildout while `main` remains launch-fr
 - `W15M-P11`: Boss-defeat closer pool depth (Supervisor + Enrollment + Logistics, 15 fragments).
 - `W15M-P12`: Setpiece closer pool depth (Trust Fall accept + decline, Open Concept, Supply Chain, 16 fragments).
 - `W15M-P13`: Cactus Ed run-complete monologue (9 triple-flag-gated meta closers).
+- `W15M-P14`: Replay corpus armor (3 meta-run-complete fixtures + supervisor chaos receipt fixture, corpus 22 → 26).
 
 ## Final Byte Report
 
 - Bundle bytes: 434224 / 491520
 - Runtime modules: 57
-- Replay corpus: 22/22
+- Replay corpus: 26/26
 - Side-branch cap source: `ACTIVE/game/scripts/verify-launch.sh` and `ACTIVE/game/process_manifest.json`
 - Main-branch cap remains launch-frozen and must not be changed there.
 
@@ -51,7 +52,7 @@ Expected signal:
 - Behavior oracle: 117/117
 - Post-launch oracle: 71/71 after P13 run-complete monologue lands
 - Case runs: PASS
-- Replay corpus: 22/22
+- Replay corpus: 26/26 after P14 corpus armor lands
 - Bundle byte check: 434224 / 491520
 - Overall: `CEHP LAUNCH VERIFY: PASS`
 

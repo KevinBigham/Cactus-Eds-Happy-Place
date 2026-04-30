@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "level_id": "orientation",
+  "engine_version": "0.2.0-rebuild",
+  "ruleset": "R2",
+  "seed": "REPLAY-W15-META-RUN-COMPLETE-ORIENTATION",
+  "debug_plan": "receipt-completion",
+  "completion": {
+    "world_id": "orientation",
+    "room_id": "orientation-meta-run-complete",
+    "room_order": [
+      "orientation-meta-run-complete"
+    ],
+    "actions_learned": [
+      "move",
+      "jump",
+      "doubleJump",
+      "tripleJump",
+      "wallSlideJump",
+      "punch",
+      "kick",
+      "spinDash",
+      "cigCopter",
+      "groundSlam",
+      "glide"
+    ],
+    "receipt_flags": {
+      "uninsuredVeteran": false,
+      "premiumSecured": false,
+      "restOpened": true,
+      "rushedRest": false,
+      "cigaretteLit": false,
+      "supervisorDefeated": true,
+      "enrollmentDefeated": true,
+      "logisticsDefeated": true,
+      "trustFallAccepted": true,
+      "openConceptNavigated": true,
+      "supplyChainRouted": true
+    },
+    "world_stats": {
+      "premiumsCollected": 0,
+      "premiumRoomsCleared": 0,
+      "deductibleHits": 0,
+      "jumpPenalty": 0,
+      "occlusionUntil": 0
+    },
+    "axes": {
+      "primary": {
+        "compliance": 1,
+        "intuition": 1,
+        "grace": 1
+      },
+      "micro": {
+        "modulesPassed": 12,
+        "contradictionFollow": 4
+      }
+    }
+  },
+  "initial_state": {
+    "x": 72,
+    "y": 396,
+    "facing": 1
+  },
+  "frames": [],
+  "expected_checkpoints": [],
+  "expected_final": {
+    "frame": 0,
+    "recorder_signature": "debug-plan",
+    "axes_snapshot": {},
+    "receipt_lines": []
+  },
+  "expected_debug": {
+    "world_id": "orientation",
+    "room_id": "orientation-meta-run-complete",
+    "room_order": [
+      "orientation-meta-run-complete"
+    ],
+    "actions_learned": [
+      "move",
+      "jump",
+      "doubleJump",
+      "tripleJump",
+      "wallSlideJump",
+      "punch",
+      "kick",
+      "spinDash",
+      "cigCopter",
+      "groundSlam",
+      "glide"
+    ],
+    "receipt_flags": {
+      "uninsuredVeteran": false,
+      "premiumSecured": false,
+      "restOpened": true,
+      "rushedRest": false,
+      "cigaretteLit": false,
+      "supervisorDefeated": true,
+      "enrollmentDefeated": true,
+      "logisticsDefeated": true,
+      "trustFallAccepted": true,
+      "openConceptNavigated": true,
+      "supplyChainRouted": true
+    },
+    "world_stats": {
+      "premiumsCollected": 0,
+      "premiumRoomsCleared": 0,
+      "deductibleHits": 0,
+      "jumpPenalty": 0,
+      "occlusionUntil": 0
+    },
+    "receipt_fragment_ids": [
+      "VERDICT_ORIENTATION_10",
+      "TENSION_ORIENTATION_FOLLOW_05",
+      "W15_RUN_COMPLETE_MONOLOGUE_09"
+    ]
+  }
+}
