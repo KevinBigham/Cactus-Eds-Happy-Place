@@ -381,14 +381,104 @@
     var model = cardModel(receipt, opts);
 
     drawReceipt(context, canvas, model);
+    canvas._cehpReceiptReveal = { receipt: receipt, options: opts };
     return canvas;
+  }
+
+  function destroyCover(tween, targets){
+    var cover = targets && targets[0] ? targets[0] : null;
+    if (cover && cover.destroy) cover.destroy();
+  }
+
+  function reveal(scene, image, receipt, options){
+    var opts = options || {};
+    var assist = (scene && scene._assistMode) || (ns.RunState && ns.RunState.assistMode) || {};
+    var scale;
+    var width;
+    var height;
+    var lines;
+    var cover;
+    var depth;
+    var i;
+
+    if (!scene || !image || !scene.add || !scene.add.rectangle) return image;
+    if (assist.reduceFlash) return image;
+
+    lines = receipt && receipt.lines && receipt.lines.length ? receipt.lines.length : 3;
+    if (lines < 2) return image;
+
+    width = opts.width || image.displayWidth || BASE_W;
+    height = opts.height || image.displayHeight || resolveHeight(width, 0);
+    scale = { x: width / BASE_W, y: height / BASE_H };
+    depth = (opts.depth != null ? opts.depth : (image.depth || 10)) + 0.1;
+
+    for (i = 0; i < lines; i++) {
+      cover = scene.add.rectangle(
+        image.x - (width / 2) + scaledX(scale, 540),
+        image.y - (height / 2) + scaledY(scale, 326 + (120 * i)),
+        scaledX(scale, 844),
+        scaledY(scale, 92),
+        opts.thermal ? 0xf0eadb : 0xf8f4e8,
+        1
+      );
+      if (cover.setDepth) cover.setDepth(depth);
+      if (cover.setScrollFactor) cover.setScrollFactor(0);
+      if (scene.tweens && scene.tweens.add) {
+        scene.tweens.add({
+          targets: cover,
+          alpha: 0,
+          delay: 60 * i,
+          duration: 140,
+          onComplete: destroyCover
+        });
+      } else {
+        cover.alpha = 0;
+        destroyCover(null, [cover]);
+      }
+    }
+
+    return image;
+  }
+
+  function installRevealHook(){
+    var factory;
+    var original;
+
+    if (typeof Phaser === 'undefined' || !Phaser.GameObjects || !Phaser.GameObjects.GameObjectFactory) return;
+    factory = Phaser.GameObjects.GameObjectFactory.prototype;
+    if (!factory || factory._cehpReceiptRevealHook || !factory.image) return;
+
+    original = factory.image;
+    factory.image = function(){
+      var image = original.apply(this, arguments);
+      var scene = this.scene;
+      var textures = scene && scene.textures ? scene.textures : null;
+      var texture = textures && textures.get ? textures.get(arguments[2]) : null;
+      var source = texture && texture.getSourceImage ? texture.getSourceImage() : null;
+      var meta = source && source._cehpReceiptReveal ? source._cehpReceiptReveal : null;
+
+      if (meta) {
+        if (scene && scene.time && scene.time.delayedCall) {
+          scene.time.delayedCall(0, function(){
+            reveal(scene, image, meta.receipt, meta.options);
+          });
+        } else {
+          reveal(scene, image, meta.receipt, meta.options);
+        }
+      }
+
+      return image;
+    };
+    factory._cehpReceiptRevealHook = true;
   }
 
   ns.ReceiptRender = {
     BASE_W: BASE_W,
     BASE_H: BASE_H,
     render: render,
-    drawReceipt: drawReceipt
+    drawReceipt: drawReceipt,
+    reveal: reveal
   };
+  installRevealHook();
 })(CEHP);
 CEHP._register('83_receipt_render');
