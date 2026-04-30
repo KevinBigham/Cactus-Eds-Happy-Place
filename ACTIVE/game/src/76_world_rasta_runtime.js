@@ -140,6 +140,29 @@
     }
   }
 
+  function addLocustSensor(world, room, startX){
+    room.locustSensor = sensorZone(world.scene, startX + 338, world.horizon - 72, 190, 142);
+    return room.locustSensor;
+  }
+
+  function triggerLocust(world, room){
+    var swarm;
+    if (!world || !room || room.locustTriggered) return null;
+    if (!ns.Enemies || !ns.Enemies['spawnReplyAllLocust']) return null;
+    if (!(!ns.flags || ns.flags.W3_REPLY_ALL_LOCUST !== false)) return null;
+    room.locustTriggered = true;
+    swarm = ns.Enemies['spawnReplyAllLocust'](world.scene, world, {
+      room: room,
+      seed: (world.runState && world.runState.caseSeed ? world.runState.caseSeed : 'cehp-rasta') + '|' + room.id + '|reply-all',
+      x: room.startX + 76,
+      y: world.horizon - 96,
+      edge: 'left',
+      telegraphMs: 260,
+      decayMs: 9600
+    });
+    return swarm;
+  }
+
   function addBackdrop(world, room, color, accent){
     var width = room.endX - room.startX;
     world.scene.add.rectangle(room.startX + (width / 2), ns.GAME_H / 2, width - 24, ns.GAME_H - 32, color, 1).setDepth(0);
@@ -158,6 +181,9 @@
       signs: [],
       syncPlatforms: [],
       sortingMachines: [],
+      enemies: [],
+      locustSensor: null,
+      locustTriggered: false,
       restGate: null,
       completeX: startX + width - 110
     };
@@ -426,6 +452,7 @@
     addPlatforms(world, room, startX, [220, 10, 250, 18, 0x61784f, 1030, 10, 330, 18, 0x61784f]);
     addSyncs(world, room, startX, [520, 92, 18, 24, 1, 2, 0.00016, 0.00028, 730, 144, 48, 16, 2, 0, 0.00017, 0.00025]);
     addSortingMachines(world, room, startX, [622, 42, 'SORT', 86, -38, 936, 42, 'GUIDE', 92, -30]);
+    addLocustSensor(world, room, startX);
     return room;
   }
 
@@ -496,6 +523,20 @@
     }
   }
 
+  function updateLocustSensors(world){
+    var room = world.currentRoom;
+    if (!room || !room.locustSensor) return;
+    if (intersects(world.player, room.locustSensor)) triggerLocust(world, room);
+  }
+
+  function updateEnemies(world, dtMs){
+    var room = world.currentRoom;
+    if (!room) return;
+    for (var i = 0; i < room.enemies.length; i++) {
+      if (room.enemies[i] && room.enemies[i].update) room.enemies[i].update(world.player, world, dtMs);
+    }
+  }
+
   function restingInputActive(){
     return ns.Input.down('left') || ns.Input.down('right') || ns.Input.down('jump') ||
       ns.Input.down('punch') || ns.Input.down('kick') || ns.Input.down('spinDash') ||
@@ -522,6 +563,8 @@
   }
 
   function resetDebug(world){
+    var enemies;
+    var i;
     ns.Axes.reset();
     if (ns.Metrics && ns.Metrics.reset) ns.Metrics.reset();
     world.scene.recorder.clear();
@@ -541,11 +584,20 @@
     world.stats = world.runState.worldStats;
     world.player.invulnMs = 0;
     ns.Movement.respawn(world.player);
-    for (var i = 0; i < world.syncPlatforms.length; i++) {
+    for (i = 0; i < world.syncPlatforms.length; i++) {
       world.syncPlatforms[i].emitLockUntil = 0;
     }
     for (i = 0; i < world.sortingMachines.length; i++) {
       world.sortingMachines[i].cooldownUntil = 0;
+    }
+    enemies = world.enemies.slice();
+    for (i = 0; i < enemies.length; i++) {
+      if (enemies[i] && enemies[i].destroy) enemies[i].destroy();
+    }
+    world.enemies = [];
+    for (i = 0; i < world.rooms.length; i++) {
+      world.rooms[i].locustTriggered = false;
+      world.rooms[i].enemies = [];
     }
     for (i = 0; i < world.restGates.length; i++) {
       if (world.restGates[i] && world.restGates[i].reset) world.restGates[i].reset();
@@ -610,6 +662,25 @@
     world.scene.recorder.mark(markers[3], world.player.x, world.player.y, 1);
   }
 
+  function debugSurviveLocust(world){
+    var room = world.rooms[3];
+    var swarm;
+    var guard = 0;
+    if (!room) return;
+    world.player.x = room.endX + 260;
+    world.player.y = world.horizon - 136;
+    syncCurrentRoom(world);
+    swarm = triggerLocust(world, room);
+    if (!swarm) return;
+    while (!swarm.dead && guard < 130) {
+      swarm.update(world.player, world, 100);
+      guard += 1;
+    }
+    world.player.x = world.rooms[world.rooms.length - 1].endX - 120;
+    world.player.y = world.horizon - 120;
+    syncCurrentRoom(world);
+  }
+
   function runStyle(world, scene, style){
     if (scene.runComplete && world.runState.receipt) {
       return {
@@ -625,6 +696,7 @@
 
     style = style || 'ambient';
     var run = style === 'logistics' ? 'ambient' : style;
+    if (style === 'locust') run = 'ambient';
     resetDebug(world);
 
     for (var i = 0; i < world.rooms.length; i++) {
@@ -632,6 +704,7 @@
       scriptRoom(world, world.rooms[i], run, [base, base + 180, base + 340, base + 520]);
     }
 
+    if (style === 'locust') debugSurviveLocust(world);
     if (style === 'logistics' && world.logisticsBoss && world.logisticsBoss.debugDefeat) {
       world.logisticsBoss.debugDefeat();
     }
@@ -664,6 +737,7 @@
       width: roomWidth * manifest.rooms.length,
       rooms: [],
       platforms: [],
+      enemies: [],
       syncPlatforms: [],
       sortingMachines: [],
       signs: [],
@@ -729,14 +803,22 @@
     updateSigns(world);
     updateSyncPlatforms(world);
     updateSortingMachines(world);
+    updateLocustSensors(world);
+    updateEnemies(world, dtMs);
     updateRestGate(world, dtMs);
     if (world.logisticsBoss && world.logisticsBoss.update) world.logisticsBoss.update(dtMs);
     if (ns.Curiosity && ns.Curiosity.update) ns.Curiosity.update(scene, dtMs);
   }
 
   function destroy(world){
+    var enemies;
+    var i;
     if (!world) return;
-    for (var i = 0; i < world.sortingMachines.length; i++) {
+    enemies = world.enemies.slice();
+    for (i = 0; i < enemies.length; i++) {
+      if (enemies[i] && enemies[i].destroy) enemies[i].destroy();
+    }
+    for (i = 0; i < world.sortingMachines.length; i++) {
       if (world.sortingMachines[i] && world.sortingMachines[i].destroy) world.sortingMachines[i].destroy();
     }
     for (i = 0; i < world.restGates.length; i++) {
@@ -744,6 +826,9 @@
       destroyThing(world.restGates[i].sensor);
       destroyThing(world.restGates[i].pad);
       destroyThing(world.restGates[i].lamp);
+    }
+    for (i = 0; i < world.rooms.length; i++) {
+      destroyThing(world.rooms[i].locustSensor);
     }
     if (world.logisticsBoss && world.logisticsBoss.destroy) world.logisticsBoss.destroy();
   }
