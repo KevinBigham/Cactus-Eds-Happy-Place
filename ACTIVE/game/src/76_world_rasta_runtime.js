@@ -624,13 +624,17 @@
     }
 
     style = style || 'ambient';
+    var run = style === 'logistics' ? 'ambient' : style;
     resetDebug(world);
 
     for (var i = 0; i < world.rooms.length; i++) {
       var base = i * 580;
-      scriptRoom(world, world.rooms[i], style, [base, base + 180, base + 340, base + 520]);
+      scriptRoom(world, world.rooms[i], run, [base, base + 180, base + 340, base + 520]);
     }
 
+    if (style === 'logistics' && world.logisticsBoss && world.logisticsBoss.debugDefeat) {
+      world.logisticsBoss.debugDefeat();
+    }
     scene.completeRun('debug:' + style);
 
     return {
@@ -696,6 +700,9 @@
     buildHumming(world, manifest.rooms[4], roomWidth * 4, roomWidth);
     buildSoftBelt(world, manifest.rooms[5], roomWidth * 5, roomWidth);
     buildWarmExit(world, manifest.rooms[6], roomWidth * 6, roomWidth);
+    if (ns.bosses && ns.bosses.spawnLogistics && (!ns.flags || ns.flags.W3_LOGISTICS_BOSS !== false)) {
+      world.logisticsBoss = ns.bosses.spawnLogistics(scene, world);
+    }
 
     for (var i = 0; i < world.platforms.length; i++) {
       scene.physics.add.collider(world.player, world.platforms[i]);
@@ -705,7 +712,7 @@
     }
 
     scene.physics.add.overlap(world.player, world.goal, function(){
-      if (world.restGate && world.restGate.opened) scene.completeRun('goal');
+      if (world.restGate && world.restGate.opened && (!world.logisticsBoss || world.logisticsBoss.defeated)) scene.completeRun('goal');
     });
 
     rememberRoom(world, manifest.rooms[0].id);
@@ -723,6 +730,7 @@
     updateSyncPlatforms(world);
     updateSortingMachines(world);
     updateRestGate(world, dtMs);
+    if (world.logisticsBoss && world.logisticsBoss.update) world.logisticsBoss.update(dtMs);
     if (ns.Curiosity && ns.Curiosity.update) ns.Curiosity.update(scene, dtMs);
   }
 
@@ -737,6 +745,7 @@
       destroyThing(world.restGates[i].pad);
       destroyThing(world.restGates[i].lamp);
     }
+    if (world.logisticsBoss && world.logisticsBoss.destroy) world.logisticsBoss.destroy();
   }
 
   ns.WorldRasta = {
