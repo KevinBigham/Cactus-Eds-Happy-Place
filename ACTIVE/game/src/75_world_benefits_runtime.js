@@ -707,6 +707,7 @@
     world.receiptFlags = world.runState.receiptFlags;
     world.stats = world.runState.worldStats;
     world.enemyRng = ns.makeRNG ? ns.makeRNG(world.runState.caseSeed + '|benefits|enemies') : null;
+    if (world.scene && world.scene.time) world.scene.time.now = 0;
     setJumpPenalty(world, 0);
     world.player.invulnMs = 0;
     ns.Movement.respawn(world.player);
@@ -891,16 +892,20 @@
     }
 
     style = style || 'insured';
+    var run = style === 'enrollment' ? 'insured' : style;
     resetDebug(world);
 
     for (var i = 0; i < world.rooms.length; i++) {
       var base = i * 620;
-      scriptRoom(world, world.rooms[i], style, [base, base + 180, base + 380, base + 560]);
+      scriptRoom(world, world.rooms[i], run, [base, base + 180, base + 380, base + 560]);
     }
 
     if (!world.receiptFlags.uninsuredVeteran && world.stats.premiumRoomsCleared >= 4) {
       world.receiptFlags.premiumSecured = true;
       updateRunState(world);
+    }
+    if (style === 'enrollment' && world.enrollmentBoss && world.enrollmentBoss.debugDefeat) {
+      world.enrollmentBoss.debugDefeat();
     }
     world.player.x = world.goal.x;
     world.player.y = world.goal.y;
@@ -987,6 +992,9 @@
     buildDeductible(world, manifest.rooms[6], roomWidth * 6, roomWidth);
     buildWellness(world, manifest.rooms[7], roomWidth * 7, roomWidth);
     buildFinal(world, manifest.rooms[8], roomWidth * 8, roomWidth);
+    if (ns.bosses && ns.bosses.spawnEnrollment && (!ns.flags || ns.flags.W2_ENROLLMENT_BOSS !== false)) {
+      world.enrollmentBoss = ns.bosses.spawnEnrollment(scene, world);
+    }
 
     for (var i = 0; i < world.platforms.length; i++) {
       scene.physics.add.collider(world.player, world.platforms[i]);
@@ -998,7 +1006,7 @@
         world.receiptFlags.premiumSecured = true;
         updateRunState(world);
       }
-      scene.completeRun('goal');
+      if (!world.enrollmentBoss || world.enrollmentBoss.defeated) scene.completeRun('goal');
     });
 
     rememberRoom(world, manifest.rooms[0].id);
@@ -1019,6 +1027,7 @@
     updateNetworkNarrow(world);
     updateHazards(world);
     updateEnemies(world, dtMs);
+    if (world.enrollmentBoss && world.enrollmentBoss.update) world.enrollmentBoss.update(dtMs);
     if (ns.EncounterDirector && ns.EncounterDirector.tick) ns.EncounterDirector.tick(scene, dtMs);
     if (ns.Curiosity && ns.Curiosity.update) ns.Curiosity.update(scene, dtMs);
   }
@@ -1034,6 +1043,7 @@
     for (i = 0; i < world.hazards.length; i++) {
       if (world.hazards[i] && world.hazards[i].destroy) world.hazards[i].destroy();
     }
+    if (world.enrollmentBoss && world.enrollmentBoss.destroy) world.enrollmentBoss.destroy();
   }
 
   ns.WorldBenefits = {
