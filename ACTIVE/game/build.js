@@ -40,6 +40,63 @@ function normalizeBundleSource(source) {
   return String(source || '').replace(/^[ \t]+/gm, '').replace(/^\s*\n/gm, '');
 }
 
+/* String-aware comment stripper. Walks char-by-char, skips contents of
+   single/double-quoted strings (with backslash escapes), strips block
+   comments and line comments outside of strings. Preserves /* MODULE: ... *\/
+   banners so post_marathon_integration tests still find them. */
+function stripBundleComments(source) {
+  var out = '';
+  var i = 0;
+  var n = source.length;
+  while (i < n) {
+    var c = source.charAt(i);
+    if (c === '\'' || c === '"') {
+      var quote = c;
+      out += c;
+      i++;
+      while (i < n) {
+        var cc = source.charAt(i);
+        out += cc;
+        if (cc === '\\') {
+          i++;
+          if (i < n) { out += source.charAt(i); i++; }
+          continue;
+        }
+        if (cc === quote) { i++; break; }
+        if (cc === '\n') { i++; break; }
+        i++;
+      }
+      continue;
+    }
+    if (c === '/' && source.charAt(i + 1) === '*') {
+      var rest = source.substr(i, 200);
+      var banner = rest.match(/^\/\*\s*MODULE:[^*]*\*\//);
+      if (banner) {
+        out += banner[0];
+        i += banner[0].length;
+        continue;
+      }
+      var end = source.indexOf('*/', i + 2);
+      if (end === -1) { i = n; break; }
+      i = end + 2;
+      continue;
+    }
+    if (c === '/' && source.charAt(i + 1) === '/') {
+      while (i < n && source.charAt(i) !== '\n') i++;
+      continue;
+    }
+    out += c;
+    i++;
+  }
+  return out;
+}
+
+function collapseBundleBlanks(source) {
+  return String(source || '')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{2,}/g, '\n');
+}
+
 function priorityIndex(file) {
   var i;
   for (i = 0; i < PRIORITY.length; i++) {
@@ -70,6 +127,9 @@ var bundle = files.map(function(f){
   source = normalizeBundleSource(source);
   return bannerFor(f) + '\n' + source;
 }).join('\n');
+
+bundle = stripBundleComments(bundle);
+bundle = collapseBundleBlanks(bundle);
 
 var tmpl  = fs.readFileSync(TMPL, 'utf8');
 var block = '<!-- BUILD START -->\n<script>\n' + bundle + '\n</script>\n<!-- BUILD END -->';
