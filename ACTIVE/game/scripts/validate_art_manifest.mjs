@@ -55,12 +55,17 @@ function sameSize(a, b) {
   return Array.isArray(a) && Array.isArray(b) && a[0] === b[0] && a[1] === b[1];
 }
 
+function promptSidecarPath(asset) {
+  return path.join(artDir, String(asset.file || '').replace(/\.png$/, '.prompt.md'));
+}
+
 function validateAsset(asset) {
   const errors = [];
   const filePath = path.join(artDir, asset.file || '');
   let stat;
   let header;
   let expected;
+  let promptPath;
 
   if (!asset.category) errors.push('missing category');
   if (!asset.subject) errors.push('missing subject');
@@ -93,10 +98,20 @@ function validateAsset(asset) {
     }
   }
 
+  if (!errors.length) {
+    promptPath = promptSidecarPath(asset);
+    if (!fs.existsSync(promptPath)) {
+      errors.push('prompt sidecar missing');
+    } else if (fs.statSync(promptPath).size <= 0) {
+      errors.push('prompt sidecar is empty');
+    }
+  }
+
   return {
     key: assetKey(asset),
     asset,
     file: asset.file || '(missing file)',
+    prompt: promptPath,
     stat,
     header,
     errors
@@ -110,6 +125,7 @@ function validate() {
   const failures = [];
   let contract = null;
   let contractOk = true;
+  let promptOk = true;
 
   console.log('CEHP ART MANIFEST VALIDATE');
   console.log('==========================');
@@ -153,6 +169,7 @@ function validate() {
   }
 
   results.forEach((result) => {
+    if (!result.prompt || !fs.existsSync(result.prompt)) promptOk = false;
     if (result.errors.length > 0) {
       console.log('FAIL ' + result.key + ' -> ' + result.file + ': ' + result.errors.join('; '));
     } else {
@@ -162,6 +179,7 @@ function validate() {
 
   console.log('');
   console.log('Dimension contract: ' + (contractOk ? 'OK' : 'FAIL'));
+  console.log('Prompt sidecars: ' + (promptOk ? 'OK' : 'FAIL'));
 
   const assetFailures = results.filter((result) => result.errors.length > 0);
   const allFailures = failures.concat(assetFailures);
