@@ -435,6 +435,62 @@
       "transparentBackground": true,
       "promptHash": "97d78891f1e28302f805e9e331d2027c90ee2046be2e3b41da9f41dfdabe39ae",
       "regenerated": 0
+    },
+    {
+      "category": "ui",
+      "subject": "receipt_frame",
+      "state": "thermal",
+      "variant": "01",
+      "file": "ui/receipt_frame_thermal_01.png",
+      "resolution": [
+        768,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "18ecf581ba0356950adce0d46749f01bc72bc2aa824158706fb4af6410329189",
+      "regenerated": 0
+    },
+    {
+      "category": "ui",
+      "subject": "receipt_frame",
+      "state": "normal",
+      "variant": "01",
+      "file": "ui/receipt_frame_normal_01.png",
+      "resolution": [
+        768,
+        1024
+      ],
+      "transparentBackground": true,
+      "promptHash": "fa9cc242fcbdde78f92de7286b113d89f2bf7260da00ce210b253b3214051d8d",
+      "regenerated": 0
+    },
+    {
+      "category": "ui",
+      "subject": "fragment_band_decoration",
+      "state": "normal",
+      "variant": "01",
+      "file": "ui/fragment_band_decoration_01.png",
+      "resolution": [
+        1024,
+        128
+      ],
+      "transparentBackground": true,
+      "promptHash": "a98ef794b49afd7026de4d8385f47380143026105d0d5142b6c4b418397c1206",
+      "regenerated": 0
+    },
+    {
+      "category": "ui",
+      "subject": "case_seed_chip",
+      "state": "normal",
+      "variant": "01",
+      "file": "ui/case_seed_chip_01.png",
+      "resolution": [
+        512,
+        256
+      ],
+      "transparentBackground": true,
+      "promptHash": "6f6cde41ecd19cb658bc8d88955e63269399799ec55b031e86860c84bce0d3bd",
+      "regenerated": 0
     }
   ],
   "generatedAt": "2026-04-30T00:00:00Z",
