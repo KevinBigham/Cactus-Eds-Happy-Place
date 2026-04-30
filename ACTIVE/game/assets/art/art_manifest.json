@@ -267,6 +267,48 @@
       "transparentBackground": true,
       "promptHash": "cd917af6c830ea5a7a67bc5c810d8d854b5d1f85500122498d119290c0e618bc",
       "regenerated": 0
+    },
+    {
+      "category": "setpieces",
+      "subject": "trust_fall",
+      "state": "hero",
+      "variant": "01",
+      "file": "setpieces/trust_fall_01.png",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "transparentBackground": false,
+      "promptHash": "ba3e8c2de0612a3bb8c239cdc968f244a91f760d7c261dee780e160cfbc2bfbb",
+      "regenerated": 0
+    },
+    {
+      "category": "setpieces",
+      "subject": "open_concept",
+      "state": "hero",
+      "variant": "01",
+      "file": "setpieces/open_concept_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": false,
+      "promptHash": "f4e0ad72cba83d7bd76fe596e91662ce4e50c54cf67d8c5970600baa570f48e7",
+      "regenerated": 0
+    },
+    {
+      "category": "setpieces",
+      "subject": "supply_chain",
+      "state": "hero",
+      "variant": "01",
+      "file": "setpieces/supply_chain_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": false,
+      "promptHash": "561058fc863259cacc42606eacf55158568aa456c273a613b6f06f5045a0c61b",
+      "regenerated": 0
     }
   ],
   "generatedAt": "2026-04-30T00:00:00Z",
