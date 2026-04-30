@@ -491,6 +491,34 @@
       "transparentBackground": true,
       "promptHash": "6f6cde41ecd19cb658bc8d88955e63269399799ec55b031e86860c84bce0d3bd",
       "regenerated": 0
+    },
+    {
+      "category": "splash",
+      "subject": "cehp_title_logo",
+      "state": "wordmark",
+      "variant": "01",
+      "file": "splash/cehp_title_logo_01.png",
+      "resolution": [
+        1024,
+        512
+      ],
+      "transparentBackground": true,
+      "promptHash": "ea1756a8e4a156991e5a14378d9d0071b2b68abddd929aeb08060cf8dec571a3",
+      "regenerated": 0
+    },
+    {
+      "category": "splash",
+      "subject": "cehp_title_background",
+      "state": "title_background",
+      "variant": "01",
+      "file": "splash/cehp_title_background_01.png",
+      "resolution": [
+        1920,
+        1080
+      ],
+      "transparentBackground": false,
+      "promptHash": "97784024eb93bf3449d25e731ed83ffded5e1ba75f54ecbe1c102051f340bafa",
+      "regenerated": 0
     }
   ],
   "generatedAt": "2026-04-30T00:00:00Z",
