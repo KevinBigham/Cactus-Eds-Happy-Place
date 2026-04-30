@@ -309,6 +309,132 @@
       "transparentBackground": false,
       "promptHash": "561058fc863259cacc42606eacf55158568aa456c273a613b6f06f5045a0c61b",
       "regenerated": 0
+    },
+    {
+      "category": "environments",
+      "subject": "orientation",
+      "state": "far",
+      "variant": "01",
+      "file": "environments/orientation_far_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": true,
+      "promptHash": "f588cd36266e6ef9d121640c20ba6905dfdf599d1f5a8d3e4b5cb58951f037bd",
+      "regenerated": 0
+    },
+    {
+      "category": "environments",
+      "subject": "orientation",
+      "state": "mid",
+      "variant": "01",
+      "file": "environments/orientation_mid_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": true,
+      "promptHash": "5ed2f2172c53ef5b07642bb44747583a27461bb0b2143579c1eb1d9296ef42a4",
+      "regenerated": 0
+    },
+    {
+      "category": "environments",
+      "subject": "orientation",
+      "state": "near",
+      "variant": "01",
+      "file": "environments/orientation_near_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": true,
+      "promptHash": "2e31125db36f00ec0e9d07f1a99e6f30b51c265e8f77b7ea6935434b83640faf",
+      "regenerated": 0
+    },
+    {
+      "category": "environments",
+      "subject": "benefits",
+      "state": "far",
+      "variant": "01",
+      "file": "environments/benefits_far_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": true,
+      "promptHash": "f18b51accae2564aa07f87b97f8e460ddd14970f136564b3146625906b8db557",
+      "regenerated": 0
+    },
+    {
+      "category": "environments",
+      "subject": "benefits",
+      "state": "mid",
+      "variant": "01",
+      "file": "environments/benefits_mid_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": true,
+      "promptHash": "e9ed3cf27d650a806e4f32e9628125e6a5844b33e4a4bce77ebdc3a237249e4d",
+      "regenerated": 0
+    },
+    {
+      "category": "environments",
+      "subject": "benefits",
+      "state": "near",
+      "variant": "01",
+      "file": "environments/benefits_near_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": true,
+      "promptHash": "8af1d36302f8e88f82924c132f97bf3ae010795e7dc1f10b882ada28cd340025",
+      "regenerated": 0
+    },
+    {
+      "category": "environments",
+      "subject": "rasta",
+      "state": "far",
+      "variant": "01",
+      "file": "environments/rasta_far_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": true,
+      "promptHash": "36bcc629b70a4fd3a0fa7c6aa295f444032e47a68ff326f49bb6c24e4ffa5cca",
+      "regenerated": 0
+    },
+    {
+      "category": "environments",
+      "subject": "rasta",
+      "state": "mid",
+      "variant": "01",
+      "file": "environments/rasta_mid_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": true,
+      "promptHash": "82f733a12401440f520b01ba401b90acb2f936dab0a5079943831c4c0e5c2ffa",
+      "regenerated": 0
+    },
+    {
+      "category": "environments",
+      "subject": "rasta",
+      "state": "near",
+      "variant": "01",
+      "file": "environments/rasta_near_01.png",
+      "resolution": [
+        1024,
+        576
+      ],
+      "transparentBackground": true,
+      "promptHash": "97d78891f1e28302f805e9e331d2027c90ee2046be2e3b41da9f41dfdabe39ae",
+      "regenerated": 0
     }
   ],
   "generatedAt": "2026-04-30T00:00:00Z",
