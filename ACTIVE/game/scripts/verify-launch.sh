@@ -72,5 +72,6 @@ run_component accessibility node tests/cehp_accessibility_settings.mjs
 run_component case_runs node tests/cehp_rebuild_case_runs.mjs
 run_component replay_corpus npm run test:replay
 run_component bundle_byte_check check_bundle_bytes
+run_component art_manifest_validate node scripts/validate_art_manifest.mjs
 
 echo "CEHP LAUNCH VERIFY: PASS"

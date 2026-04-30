@@ -9,6 +9,7 @@ const artDir = path.join(gameDir, 'assets/art');
 const manifestPath = path.join(artDir, 'art_manifest.json');
 const validatorPath = path.join(gameDir, 'scripts/validate_art_manifest.mjs');
 const dimensionsPath = path.join(gameDir, 'assets/art/art_dimensions.json');
+const verifyLaunchPath = path.join(gameDir, 'scripts/verify-launch.sh');
 
 function sidecarPath(file) {
   return path.join(artDir, file.replace(/\.png$/, '.prompt.md'));
@@ -64,4 +65,13 @@ test('ART4 prompt sidecars exist for every manifest asset', () => {
   });
   assert.equal(result.status, 0, result.stdout + result.stderr);
   assert.match(result.stdout, /Prompt sidecars: OK/);
+});
+
+test('ART4 launch gate runs manifest validator after bundle byte check', () => {
+  const source = fs.readFileSync(verifyLaunchPath, 'utf8');
+  const bundleLine = 'run_component bundle_byte_check check_bundle_bytes';
+  const validateLine = 'run_component art_manifest_validate node scripts/validate_art_manifest.mjs';
+
+  assert.match(source, /run_component art_manifest_validate node scripts\/validate_art_manifest\.mjs/);
+  assert.ok(source.indexOf(validateLine) > source.indexOf(bundleLine), 'art_manifest_validate runs after bundle_byte_check');
 });
