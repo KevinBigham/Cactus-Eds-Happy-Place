@@ -746,6 +746,7 @@
         world.rooms[i].premiums[j].label.setVisible(true);
       }
     }
+    if (world.openConcept && world.openConcept.reset) world.openConcept.reset();
     rememberRoom(world, world.rooms[0].id);
     world.currentRoom = world.rooms[0];
     setRoomRespawn(world, world.rooms[0]);
@@ -892,7 +893,7 @@
     }
 
     style = style || 'insured';
-    var run = style === 'enrollment' ? 'insured' : style;
+    var run = style === 'enrollment' || style === 'open-concept' ? 'insured' : style;
     resetDebug(world);
 
     for (var i = 0; i < world.rooms.length; i++) {
@@ -906,6 +907,9 @@
     }
     if (style === 'enrollment' && world.enrollmentBoss && world.enrollmentBoss.debugDefeat) {
       world.enrollmentBoss.debugDefeat();
+    }
+    if (style === 'open-concept' && world.openConcept && world.openConcept.debugNavigate) {
+      world.openConcept.debugNavigate();
     }
     world.player.x = world.goal.x;
     world.player.y = world.goal.y;
@@ -993,6 +997,9 @@
     buildDeductible(world, manifest.rooms[6], roomWidth * 6, roomWidth);
     buildWellness(world, manifest.rooms[7], roomWidth * 7, roomWidth);
     buildFinal(world, manifest.rooms[8], roomWidth * 8, roomWidth);
+    if (ns.Setpieces && ns.Setpieces.attachOpenConcept && (!ns.flags || ns.flags.W2_OPEN_CONCEPT !== false)) {
+      world.openConcept = ns.Setpieces.attachOpenConcept(scene, world, { room: world.rooms[1] });
+    }
     if (ns.bosses && ns.bosses.spawnEnrollment && (!ns.flags || ns.flags.W2_ENROLLMENT_BOSS !== false)) {
       world.enrollmentBoss = ns.bosses.spawnEnrollment(scene, world);
     }
@@ -1045,6 +1052,7 @@
       if (world.hazards[i] && world.hazards[i].destroy) world.hazards[i].destroy();
     }
     if (world.enrollmentBoss && world.enrollmentBoss.destroy) world.enrollmentBoss.destroy();
+    if (world.openConcept && world.openConcept.destroy) world.openConcept.destroy();
     if (world.parallax && world.parallax.destroy) world.parallax.destroy();
   }
 

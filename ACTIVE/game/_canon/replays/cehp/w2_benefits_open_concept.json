@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "level_id": "benefits",
+  "engine_version": "0.2.0-rebuild",
+  "ruleset": "R2",
+  "seed": "REPLAY-W2-BENEFITS-OPEN-CONCEPT",
+  "debug_style": "open-concept",
+  "initial_state": {
+    "x": 72,
+    "y": 396,
+    "facing": 1
+  },
+  "frames": [],
+  "expected_checkpoints": [],
+  "expected_final": {
+    "frame": 0,
+    "recorder_signature": "debug-plan",
+    "axes_snapshot": {},
+    "receipt_lines": []
+  },
+  "expected_debug": {
+    "world_id": "benefits",
+    "room_id": "final-processing",
+    "room_order": [
+      "benefits-risk-atrium",
+      "benefits-claim-window",
+      "benefits-network-narrow",
+      "enrollment-intake",
+      "premium-pathways",
+      "network-validation",
+      "deductible-adjustment",
+      "wellness-incentive",
+      "final-processing"
+    ],
+    "actions_learned": [],
+    "receipt_flags": {
+      "uninsuredVeteran": false,
+      "premiumSecured": true,
+      "openConceptNavigated": true
+    },
+    "world_stats": {
+      "premiumsCollected": 14,
+      "premiumRoomsCleared": 9,
+      "deductibleHits": 1,
+      "jumpPenalty": 0,
+      "occlusionUntil": 2800
+    },
+    "receipt_fragment_ids": [
+      "VERDICT_BENEFITS_SECURED_04",
+      "TENSION_BENEFITS_SECURED_04",
+      "W15_OPEN_CONCEPT_CLOSER_01"
+    ]
+  }
+}

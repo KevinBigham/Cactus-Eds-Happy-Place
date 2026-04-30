@@ -268,7 +268,7 @@ test('W2 runtime gates Enrollment integration and preserves non-boss debug style
   );
   assert.match(
     source,
-    /var run = style === 'enrollment' \? 'insured' : style;/
+    /var run = style === 'enrollment' \|\| style === 'open-concept' \? 'insured' : style;/
   );
   assert.match(
     source,
