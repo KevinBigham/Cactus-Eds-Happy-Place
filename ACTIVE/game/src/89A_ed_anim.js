@@ -8,6 +8,13 @@
   var IDLE_BREATHE_Y = 1.02;
   var IDLE_BREATHE_MS = 800;
   var MOVE_EPSILON = 4;
+  var REDUCE_SHAKE_SCALE = 0.3;
+  var JUMP_SQUASH_X = 0.9;
+  var JUMP_SQUASH_Y = 1.15;
+  var JUMP_SQUASH_MS = 80;
+  var LAND_SQUASH_X = 1.1;
+  var LAND_SQUASH_Y = 0.85;
+  var LAND_SQUASH_MS = 100;
 
   function stopTween(tween){
     if (!tween) return;
@@ -115,6 +122,20 @@
     return true;
   }
 
+  function ensureScaleState(actor){
+    if (!actor._cehpArt3ScaleState) {
+      actor._cehpArt3ScaleState = {
+        idleX: 1,
+        idleY: 1,
+        squashX: 1,
+        squashY: 1,
+        appliedX: 1,
+        appliedY: 1
+      };
+    }
+    return actor._cehpArt3ScaleState;
+  }
+
   function setNodeScale(node, x, y){
     if (!node) return;
     if (node.setScale) node.setScale(x, y);
@@ -124,9 +145,13 @@
     }
   }
 
-  function applyIdleScale(actor, factor){
+  function applyCombinedScale(actor, freshBase){
     var nodes = visualNodes(actor);
-    var previous = actor && actor._cehpArt3IdleAppliedY ? actor._cehpArt3IdleAppliedY : 1;
+    var state;
+    var combinedX;
+    var combinedY;
+    var previousX;
+    var previousY;
     var node;
     var baseX;
     var baseY;
@@ -134,15 +159,41 @@
 
     if (!actor) return;
 
+    state = ensureScaleState(actor);
+    combinedX = state.idleX * state.squashX;
+    combinedY = state.idleY * state.squashY;
+    previousX = freshBase ? 1 : state.appliedX || 1;
+    previousY = freshBase ? 1 : state.appliedY || 1;
+
     for (i = 0; i < nodes.length; i++) {
       node = nodes[i];
       baseX = node.scaleX == null ? 1 : node.scaleX;
       baseY = node.scaleY == null ? 1 : node.scaleY;
-      if (previous) baseY = baseY / previous;
-      setNodeScale(node, baseX, baseY * factor);
+      if (previousX) baseX = baseX / previousX;
+      if (previousY) baseY = baseY / previousY;
+      setNodeScale(node, baseX * combinedX, baseY * combinedY);
     }
 
-    actor._cehpArt3IdleAppliedY = factor;
+    state.appliedX = combinedX;
+    state.appliedY = combinedY;
+  }
+
+  function setScaleFactors(actor, bucket, x, y, freshBase){
+    var state;
+    if (!actor) return;
+    state = ensureScaleState(actor);
+    if (bucket === 'idle') {
+      state.idleX = x;
+      state.idleY = y;
+    } else if (bucket === 'squash') {
+      state.squashX = x;
+      state.squashY = y;
+    }
+    applyCombinedScale(actor, freshBase);
+  }
+
+  function applyIdleScale(actor, factor){
+    setScaleFactors(actor, 'idle', 1, factor, false);
   }
 
   function stopIdleBreathing(actor){
@@ -173,6 +224,54 @@
     return true;
   }
 
+  function dampScale(scene, value){
+    var mode = assistMode(scene);
+    if (mode && mode.reduceShake) return 1 + ((value - 1) * REDUCE_SHAKE_SCALE);
+    return value;
+  }
+
+  function startSquashTween(actor, x, y, durationMs){
+    var scene = actor && actor.scene;
+    var state;
+
+    if (!actor || !scene || !scene.tweens || !scene.tweens.add) return false;
+
+    stopTween(actor._cehpArt3SquashTween);
+    state = {
+      x: dampScale(scene, x),
+      y: dampScale(scene, y)
+    };
+    actor._cehpArt3SquashState = state;
+    setScaleFactors(actor, 'squash', state.x, state.y, false);
+
+    actor._cehpArt3SquashTween = scene.tweens.add({
+      targets: state,
+      x: 1,
+      y: 1,
+      duration: durationMs,
+      ease: 'Sine.easeOut',
+      onUpdate: function(){
+        setScaleFactors(actor, 'squash', state.x, state.y, false);
+      },
+      onComplete: function(){
+        state.x = 1;
+        state.y = 1;
+        setScaleFactors(actor, 'squash', 1, 1, false);
+        actor._cehpArt3SquashTween = null;
+      }
+    });
+
+    return true;
+  }
+
+  function jumpSquash(actor){
+    return startSquashTween(actor, JUMP_SQUASH_X, JUMP_SQUASH_Y, JUMP_SQUASH_MS);
+  }
+
+  function landSquash(actor){
+    return startSquashTween(actor, LAND_SQUASH_X, LAND_SQUASH_Y, LAND_SQUASH_MS);
+  }
+
   function updateIdleBreathing(actor){
     if (!actor) return false;
     if (isIdle(actor)) {
@@ -189,6 +288,7 @@
     if (!layer || !layer.actors) return;
     for (i = 0; i < layer.actors.length; i++) {
       updateIdleBreathing(layer.actors[i], dtMs);
+      applyCombinedScale(layer.actors[i], true);
     }
   }
 
@@ -204,6 +304,12 @@
     layer.offFns = layer.offFns || [];
     layer.offFns.push(ns.Events.on('player:death', function(payload){
       hurtFlash(actorFor(layer, payload));
+    }));
+    layer.offFns.push(ns.Events.on('movement:jump', function(payload){
+      jumpSquash(actorFor(layer, payload));
+    }));
+    layer.offFns.push(ns.Events.on('movement:landed', function(payload){
+      landSquash(actorFor(layer, payload));
     }));
     return layer;
   }
@@ -233,6 +339,8 @@
   ns.EdAnim = {
     hurtFlash: hurtFlash,
     updateIdleBreathing: updateIdleBreathing,
+    jumpSquash: jumpSquash,
+    landSquash: landSquash,
     assistMode: assistMode,
     install: install
   };

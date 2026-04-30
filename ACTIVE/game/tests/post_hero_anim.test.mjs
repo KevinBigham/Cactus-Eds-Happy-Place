@@ -165,3 +165,73 @@ test('ART3 hero idle breathing resets visual scale within one frame of movement'
   assert.equal(Number(bodyImage.scaleY.toFixed(2)), 1);
   assert.equal(actor._cehpArt3IdleTween, null);
 });
+
+test('ART3 hero jump squash-stretch tweens display scale without body changes', function() {
+  var CEHP = loadModules(HERO_ANIM_MODULES);
+  var scene = makeScene({});
+  var bodyImage = makeVisualNode();
+  var setSizeCalls = 0;
+  var actor = {
+    scene: scene,
+    active: true,
+    _cehpBodyImage: bodyImage,
+    body: {
+      width: 22,
+      height: 46,
+      setSize: function() {
+        setSizeCalls += 1;
+      }
+    }
+  };
+
+  installLayer(CEHP, scene, actor);
+  CEHP.Events.emit('movement:jump', { actor: actor });
+
+  assert.equal(Number(bodyImage.scaleX.toFixed(2)), 0.9);
+  assert.equal(Number(bodyImage.scaleY.toFixed(2)), 1.15);
+  assert.equal(scene.tweenConfigs[0].duration, 80);
+  assert.equal(setSizeCalls, 0);
+  assert.equal(actor.body.width, 22);
+  assert.equal(actor.body.height, 46);
+
+  actor._cehpArt3SquashState.x = 1;
+  actor._cehpArt3SquashState.y = 1;
+  scene.tweenConfigs[0].onComplete();
+
+  assert.equal(Number(bodyImage.scaleX.toFixed(2)), 1);
+  assert.equal(Number(bodyImage.scaleY.toFixed(2)), 1);
+});
+
+test('ART3 hero land squash-stretch restores and reduceShake dampens jump amplitude', function() {
+  var CEHP = loadModules(HERO_ANIM_MODULES);
+  var scene = makeScene({ reduceShake: true });
+  var bodyImage = makeVisualNode();
+  var actor = {
+    scene: scene,
+    active: true,
+    _cehpBodyImage: bodyImage,
+    body: {
+      width: 22,
+      height: 46
+    }
+  };
+
+  installLayer(CEHP, scene, actor);
+  CEHP.Events.emit('movement:jump', { actor: actor });
+
+  assert.equal(Number(bodyImage.scaleX.toFixed(3)), 0.97);
+  assert.equal(Number(bodyImage.scaleY.toFixed(3)), 1.045);
+
+  CEHP.Events.emit('movement:landed', { actor: actor });
+
+  assert.equal(Number(bodyImage.scaleX.toFixed(2)), 1.03);
+  assert.equal(Number(bodyImage.scaleY.toFixed(3)), 0.955);
+  assert.equal(scene.tweenConfigs[1].duration, 100);
+
+  actor._cehpArt3SquashState.x = 1;
+  actor._cehpArt3SquashState.y = 1;
+  scene.tweenConfigs[1].onComplete();
+
+  assert.equal(Number(bodyImage.scaleX.toFixed(2)), 1);
+  assert.equal(Number(bodyImage.scaleY.toFixed(2)), 1);
+});
